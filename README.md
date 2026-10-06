@@ -3,15 +3,16 @@ assx checks ASS subtitle files for lint issues.
 ## Usage
 
 ```text
-assx [--format text|json] [--fix] [--unsafe-fix] [--check-fonts] [--font-dir DIR] file.ass
+assx [--format pretty|plain|json] [--fix] [--unsafe-fix] [--check-fonts] [--font-dir DIR] file.ass
 ```
 
 - `file.ass`: the ASS file to check.
-- `--format text|json`: choose diagnostic output format; defaults to `text`.
+- `--format pretty|plain|json`: choose output format; defaults to `pretty`. Pretty output uses color in a terminal and shows a scan spinner when stderr is interactive. `plain` disables color and the spinner; `json` emits machine-readable diagnostics.
 - `--fix`: apply safe fixes.
 - `--unsafe-fix`: apply safe and unsafe fixes.
 - `--check-fonts`: check whether used font families are available and contain dialogue characters. Disabled by default.
 - `--font-dir DIR`: recursively scan this folder for fonts instead of searching system font folders. Used with `--check-fonts`.
+
 
 Font indexing is cached under the operating system's user cache directory. Font files are still discovered on every run, so added or removed fonts take effect immediately; cached metadata is reused only while a file's size and modification time match.
 
