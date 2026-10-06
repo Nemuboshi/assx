@@ -1,0 +1,32 @@
+default_install_hook_types:
+  - pre-commit
+  - commit-msg
+
+repos:
+  - repo: local
+    hooks:
+      - id: gofmt
+        name: gofmt
+        entry: gofmt -w
+        language: system
+        stages: [pre-commit]
+        types: [go]
+      - id: govet
+        name: go vet ./...
+        entry: go vet ./...
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
+      - id: gobuild
+        name: go build ./...
+        entry: go build ./...
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
+
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v4.19.1
+    hooks:
+      - id: commitizen
