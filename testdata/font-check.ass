@@ -1,0 +1,15 @@
+[Script Info]
+PlayResX: 640
+PlayResY: 480
+YCbCr Matrix: None
+LayoutResX: 640
+LayoutResY: 480
+[V4+ Styles]
+Format: Name, Fontname, Bold, Italic
+Style: Installed, Go, 0, 0
+Style: Missing, Asscheck Missing Family, 0, 0
+[Events]
+Format: Layer, Start, End, Style, Text
+Dialogue: 0,0:00:00.00,0:00:01.00,Installed,Font glyph: MISSING_GLYPH
+Dialogue: 0,0:00:01.00,0:00:02.00,Missing,Missing family
+Dialogue: 0,0:00:02.00,0:00:03.00,Installed,{\fnAsscheck Override}Overridden{\r}Restored
