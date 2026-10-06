@@ -84,6 +84,7 @@ func Analyze(dialogue ass.Dialogue) []Diagnostic {
 			}}
 		}
 	}
+	m.diagnostics = append(m.diagnostics, analyzeRepeatedOpenBraces(dialogue)...)
 	if m.hasVSFilterModTag {
 		for i := range m.diagnostics {
 			m.diagnostics[i].FixSafety = ""
@@ -91,6 +92,50 @@ func Analyze(dialogue ass.Dialogue) []Diagnostic {
 		}
 	}
 	return m.diagnostics
+}
+
+func analyzeRepeatedOpenBraces(dialogue ass.Dialogue) []Diagnostic {
+	text := dialogue.Text
+	var diagnostics []Diagnostic
+	for offset := 0; offset < len(text); {
+		open := nextUnescapedOpenBrace(text, offset)
+		if open < 0 {
+			break
+		}
+		close := strings.IndexByte(text[open+1:], '}')
+		if close < 0 {
+			break
+		}
+		close += open + 1
+		runEnd := open + 1
+		for runEnd < len(text) && text[runEnd] == '{' {
+			runEnd++
+		}
+		if runEnd > open+1 {
+			rule := Rules[IssueRepeatedOpenBrace]
+			diagnostics = append(diagnostics, Diagnostic{
+				ID: rule.ID, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
+				Fix: rule.Fix, FixSafety: rule.FixSafety, Line: dialogue.Line, Column: open + 2,
+				Edits:   []TextEdit{{Start: dialogue.TextStart + open + 1, End: dialogue.TextStart + runEnd}},
+				Sources: rule.Sources,
+			})
+		}
+		offset = close + 1
+	}
+	return diagnostics
+}
+
+func nextUnescapedOpenBrace(text string, start int) int {
+	for i := start; i < len(text); i++ {
+		if text[i] == '\\' && i+1 < len(text) && text[i+1] == '{' {
+			i++
+			continue
+		}
+		if text[i] == '{' {
+			return i
+		}
+	}
+	return -1
 }
 
 func (m *machine) add(id string, tag Tag, detail string) {

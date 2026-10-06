@@ -14,6 +14,7 @@ const (
 	IssueStyleInteger           = "ASS-L006"
 	IssueStyleFloat             = "ASS-L007"
 	IssueRedundantFontOverrides = "ASS-L008"
+	IssueRepeatedOpenBrace      = "ASS-L009"
 	IssueFontMissing            = "F001"
 	IssueMissingGlyphs          = "F002"
 )
@@ -111,6 +112,12 @@ var Rules = map[string]Rule{
 		ID: IssueRedundantFontOverrides, Severity: Lint, FixSafety: SafeFix, Title: "Font overrides match style",
 		Description: "Font override tags leave the style font state unchanged across dialogue text.",
 		Fix:         "Remove the redundant font override tags.",
+	},
+	IssueRepeatedOpenBrace: {
+		ID: IssueRepeatedOpenBrace, Severity: Lint, FixSafety: SafeFix, Title: "Extra opening brace in override block",
+		Description: "Only the first of consecutive opening braces starts the override block; the extras are ignored while tags are parsed.",
+		Fix:         "Remove the extra opening brace(s).",
+		Sources:     []string{"https://github.com/libass/libass/blob/f61db56/libass/ass_render.c#L2066-L2075", "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L282-L290", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2954-L2958", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2075-L2082"},
 	},
 	IssueFontMissing: {
 		ID: IssueFontMissing, Severity: Lint, Title: "Subtitle font is missing",

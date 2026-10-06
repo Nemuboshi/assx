@@ -87,6 +87,16 @@ References: libass float parsing via [`ass_atof`](https://github.com/libass/liba
 
 This rule compares `\fn`, `\fs`, `\b`, `\i`, `\fscx`, `\fscy`, and `\fsp` against the dialogue's style. It reports when those tags leave the tracked font state equal to the style for all rendered text: leading blocks may contain multiple assignments before text, and later assignments are accepted only when they leave the current value unchanged. The safe fix removes only those font tags and preserves other formatting tags. Empty-value resets to the active style are modeled; relative `\fs+` and `\fs-` forms are skipped rather than interpreted as absolute sizes. The rule also skips ambiguous styles, style resets, transforms, drawing mode, and unsupported font properties.
 
+## ASS-L008 — Font overrides match style
+
+This rule compares `\fn`, `\fs`, `\b`, `\i`, `\fscx`, `\fscy`, and `\fsp` against the dialogue's style. It reports when those tags leave the tracked font state equal to the style for all rendered text: leading blocks may contain multiple assignments before text, and later assignments are accepted only when they leave the current value unchanged. The safe fix removes only those font tags and preserves other formatting tags. Empty-value resets to the active style are modeled; relative `\fs+` and `\fs-` forms are skipped rather than interpreted as absolute sizes. The rule also skips ambiguous styles, style resets, transforms, drawing mode, and unsupported font properties.
+
+## ASS-L009 — Extra opening brace in override block
+
+A run such as `{{\i1}` has one extra opening brace before a matched override block. libass and VSFilter parse the block through its first `}` and look for tags after the opening brace, so the extra consecutive braces do not affect the parsed tags. The safe fix removes all but the first brace. Escaped braces such as `\{` are ignored, and unmatched runs are left alone because their rendered meaning is ambiguous.
+
+References: libass [event override parsing](https://github.com/libass/libass/blob/f61db56/libass/ass_render.c#L2066-L2075) and [tag scanning](https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L282-L290); VSFilter [override block parsing](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2954-L2958) and [tag scanning](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2075-L2082).
+
 ## F001 — Subtitle font is missing
 
 With `--check-fonts`, this finding reports an effective font family that was not found. The checker scans system font folders by default; `--font-dir DIR` makes it scan only that folder recursively. Font checks are disabled unless `--check-fonts` is set.
