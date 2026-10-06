@@ -91,6 +91,25 @@ func TestAnalyzeAssignFirstWinsAndTransitionBehavior(t *testing.T) {
 	}
 }
 
+func TestSafeFixRemovesExtraBackslashes(t *testing.T) {
+	for _, test := range []struct {
+		text string
+		want string
+	}{
+		{text: `{\\blur2}x`, want: `{\blur2}x`},
+		{text: `{\\\blur2}x`, want: `{\blur2}x`},
+	} {
+		diagnostics := Analyze(ass.Dialogue{Text: test.text})
+		fixed, count, err := ApplyFixes(test.text, diagnostics, false)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if count != 1 || fixed != test.want {
+			t.Errorf("safe fix = (%q, %d), want (%q, 1)", fixed, count, test.want)
+		}
+	}
+}
+
 func TestSafeFixRemovesOnlyTheRedundantTag(t *testing.T) {
 	text := `{\fs10\fs20}word`
 	diagnostics := Analyze(ass.Dialogue{Text: text})
