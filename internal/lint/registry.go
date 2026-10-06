@@ -94,7 +94,7 @@ var Rules = map[string]Rule{
 		Sources:     []string{"https://github.com/libass/libass/blob/f61db56/libass/ass.c#L888", "https://github.com/libass/libass/blob/f61db56/libass/ass_render.c#L1008", "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L939"},
 	},
 	IssueRepeatedSlash: {
-		ID: IssueRepeatedSlash, Severity: Lint, Title: "Repeated backslash in override block",
+		ID: IssueRepeatedSlash, Severity: Lint, FixSafety: SafeFix, Title: "Repeated backslash in override block",
 		Description: "More than one backslash precedes an override tag.", Fix: "Remove the extra backslash and keep the intended tag.",
 	},
 	IssueStyleInteger: {

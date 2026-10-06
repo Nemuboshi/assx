@@ -184,6 +184,9 @@ func (m *machine) consumeTag(tag Tag) {
 	m.allTags = append(m.allTags, tag)
 	if tag.RepeatedSlashes > 0 {
 		m.add(IssueRepeatedSlash, tag, fmt.Sprintf("Found %d extra backslash(es) before the tag.", tag.RepeatedSlashes))
+		m.diagnostics[len(m.diagnostics)-1].Edits = []TextEdit{{
+			Start: m.textStart + tag.Start, End: m.textStart + tag.Start + tag.RepeatedSlashes,
+		}}
 		return
 	}
 	m.validate(tag)
