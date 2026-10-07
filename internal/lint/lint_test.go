@@ -64,6 +64,57 @@ func TestAnalyzeReportsUnknownAndRepeatedSlashAsSuggestion(t *testing.T) {
 	}
 }
 
+func TestAnalyzeReportsSameValueAssignments(t *testing.T) {
+	cases := []struct {
+		name string
+		text string
+		want int
+	}{
+		{name: "same font size", text: `{\fs20}A{\fs20}B`, want: 1},
+		{name: "numeric forms", text: `{\fs20}A{\fs20.0}B`, want: 1},
+		{name: "same blur", text: `{\blur1}A{\blur1}B`, want: 1},
+		{name: "color alias", text: `{\c&HFFFFFF&}A{\1c&HFFFFFF&}B`, want: 1},
+		{name: "rotation alias", text: `{\fr1}A{\frz1.0}B`, want: 1},
+		{name: "all border slots", text: `{\xbord2\ybord2}A{\bord2}B`, want: 1},
+		{name: "partial border slots", text: `{\xbord2\ybord3}A{\bord2}B`},
+		{name: "alpha multi-slot alias", text: `{\alpha&HFF&}A{\1a&HFF&}B`, want: 1},
+		{name: "reset invalidates prior value", text: `{\fs20\r\fs20}A`, want: 1},
+		{name: "relative size is not absolute", text: `{\fs20}A{\fs+10}B`},
+	}
+	for _, test := range cases {
+		t.Run(test.name, func(t *testing.T) {
+			var findings []Diagnostic
+			for _, diagnostic := range Analyze(ass.Dialogue{Text: test.text}) {
+				if diagnostic.ID == IssueNoEffect {
+					findings = append(findings, diagnostic)
+				}
+			}
+			if len(findings) != test.want {
+				t.Fatalf("ASS006 findings = %#v, want %d", findings, test.want)
+			}
+			if test.name == "reset invalidates prior value" && !strings.Contains(findings[0].Detail, "Reset before") {
+				t.Fatalf("reset finding = %#v, want only the pre-reset assignment", findings[0])
+			}
+		})
+	}
+}
+
+func TestAnalyzeAssignsMultiSlotTagsOnlyWhenEverySlotMatches(t *testing.T) {
+	text := `{\xbord2\ybord2}A{\bord2}B`
+	var findings []Diagnostic
+	for _, diagnostic := range Analyze(ass.Dialogue{Text: text}) {
+		if diagnostic.ID == IssueNoEffect {
+			findings = append(findings, diagnostic)
+		}
+	}
+	if len(findings) != 1 || findings[0].Tag != "bord" {
+		t.Fatalf("multi-slot findings = %#v", findings)
+	}
+	if got := text[findings[0].Edits[0].Start:findings[0].Edits[0].End]; got != `\bord2` {
+		t.Fatalf("reported source = %q, want redundant \\bord2", got)
+	}
+}
+
 func TestAnalyzeAssignFirstWinsAndTransitionBehavior(t *testing.T) {
 	cases := []struct {
 		name string

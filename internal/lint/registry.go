@@ -74,7 +74,7 @@ var Rules = map[string]Rule{
 	},
 	IssueNoEffect: {
 		ID: IssueNoEffect, Severity: Suggestion, FixSafety: SafeFix, Title: "Override has no effect",
-		Description: "An override is replaced, reset, or ignored before it affects any dialogue text.", Fix: "Remove it or move it to the intended text boundary.",
+		Description: "An override is replaced, reset, or ignored before it affects dialogue text, or repeats the value already active in every affected state slot.", Fix: "Remove it or move it to the intended text boundary.",
 		Sources: []string{"https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584", "https://github.com/libass/libass/blob/f61db56/libass/ass_render.c#L1075", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2301", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2396", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2575", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2643"},
 	},
 	IssueUnknownTag: {

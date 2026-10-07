@@ -45,6 +45,7 @@ type machine struct {
 	drawing           bool
 	tagIndex          int
 	active            map[string]owner
+	state             map[string]stateValue
 	latched           map[string]int
 	allTags           []Tag
 	live              map[int]bool
@@ -56,6 +57,7 @@ type machine struct {
 type pendingLint struct {
 	tag    Tag
 	detail string
+	always bool
 }
 
 var (
@@ -66,7 +68,7 @@ var (
 
 func Analyze(dialogue ass.Dialogue) []Diagnostic {
 	m := machine{
-		line: dialogue.Line, textStart: dialogue.TextStart, active: map[string]owner{}, latched: map[string]int{},
+		line: dialogue.Line, textStart: dialogue.TextStart, active: map[string]owner{}, state: map[string]stateValue{}, latched: map[string]int{},
 		live: map[int]bool{}, candidates: map[int]pendingLint{},
 	}
 	for _, token := range Lex(dialogue.Text) {
@@ -76,13 +78,15 @@ func Analyze(dialogue ass.Dialogue) []Diagnostic {
 			m.consumeTag(*token.Tag)
 		}
 	}
-	for index, pending := range m.candidates {
-		if !m.live[index] {
-			m.add(IssueNoEffect, pending.tag, pending.detail)
-			m.diagnostics[len(m.diagnostics)-1].Edits = []TextEdit{{
-				Start: m.textStart + pending.tag.Start, End: m.textStart + pending.tag.End,
-			}}
+	for index, tag := range m.allTags {
+		pending, ok := m.candidates[index]
+		if !ok || (!pending.always && m.live[index]) {
+			continue
 		}
+		m.add(IssueNoEffect, pending.tag, pending.detail)
+		m.diagnostics[len(m.diagnostics)-1].Edits = []TextEdit{{
+			Start: m.textStart + tag.Start, End: m.textStart + tag.End,
+		}}
 	}
 	m.diagnostics = append(m.diagnostics, analyzeRepeatedOpenBraces(dialogue)...)
 	if m.hasVSFilterModTag {
@@ -207,6 +211,9 @@ func (m *machine) consumeTag(tag Tag) {
 	if spec.Counts != nil && !contains(spec.Counts, len(tag.Args)) {
 		return
 	}
+	if tag.InTransition {
+		return
+	}
 	if spec.Behavior == StyleReset {
 		m.resetStyle()
 		return
@@ -223,26 +230,50 @@ func (m *machine) consumeTag(tag Tag) {
 			slots, behavior = []string{"clip_vector"}, FirstWins
 		}
 	}
-	for _, slot := range slots {
+	if relativeFontSize(tag) {
+		m.state["fontsize"] = stateValue{}
+		return
+	}
+	values, valuesKnown := canonicalTagState(tag, spec, slots)
+	sameValue := behavior == Assign && valuesKnown && sameSlotValues(m.state, slots, values)
+	if sameValue {
+		m.markCandidate(index, tag, "Assigns the value already active in every affected state slot.", true)
+	}
+	var assignedSlots, assignedValues []string
+	for slotIndex, slot := range slots {
 		if behavior == FirstWins {
 			if first, exists := m.latched[slot]; exists {
-				m.candidates[index] = pendingLint{tag: tag, detail: fmt.Sprintf("Ignored because an earlier tag with index %d owns this first-wins slot.", first)}
+				m.markCandidate(index, tag, fmt.Sprintf("Ignored because an earlier tag with index %d owns this first-wins slot.", first), false)
 				continue
 			}
 			m.latched[slot] = index
 		}
-		if previous, exists := m.active[slot]; exists && previous.index >= 0 && previous.start == m.position && !tag.InTransition {
-			m.candidates[previous.index] = pendingLint{tag: m.tagAt(previous.index), detail: "Overwritten before any dialogue text used it."}
+		if previous, exists := m.active[slot]; exists && previous.index >= 0 && previous.start == m.position {
+			m.markCandidate(previous.index, m.tagAt(previous.index), "Overwritten before any dialogue text used it.", false)
 		}
 		m.active[slot] = owner{index: index, start: m.position}
+		assignedSlots = append(assignedSlots, slot)
+		if valuesKnown {
+			assignedValues = append(assignedValues, values[slotIndex])
+		}
+	}
+	setSlotValues(m.state, assignedSlots, assignedValues, valuesKnown)
+	for _, slot := range assignedSlots {
 		if slot == "drawing_scale" {
 			value := 0
-			if len(tag.Args) > 0 {
+			if valuesKnown {
 				value, _ = parseInteger(tag.Args[0])
 			}
 			m.drawing = value > 0
 		}
 	}
+}
+
+func (m *machine) markCandidate(index int, tag Tag, detail string, always bool) {
+	if previous, exists := m.candidates[index]; exists {
+		always = always || previous.always
+	}
+	m.candidates[index] = pendingLint{tag: tag, detail: detail, always: always}
 }
 
 func (m *machine) tagAt(index int) Tag {
@@ -257,11 +288,12 @@ func (m *machine) resetStyle() {
 		if KeepOnStyleReset[slot] {
 			continue
 		}
+		m.state[slot] = stateValue{}
 		if _, firstWins := m.latched[slot]; firstWins {
 			continue
 		}
 		if previous.index >= 0 && previous.start == m.position {
-			m.candidates[previous.index] = pendingLint{tag: m.tagAt(previous.index), detail: "Reset before any dialogue text used it."}
+			m.markCandidate(previous.index, m.tagAt(previous.index), "Reset before any dialogue text used it.", false)
 		}
 		m.active[slot] = owner{index: -1, start: m.position}
 	}

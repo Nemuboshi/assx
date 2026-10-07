@@ -44,7 +44,7 @@ References: pinned VSFilterMod [tag handlers](https://github.com/AmusementClub/V
 
 ## ASS006 — Override has no effect
 
-An override is replaced or reset before it affects dialogue text, or a first-wins tag is ignored by an earlier tag. Remove it or move it to the intended text boundary. Tags inside `\t(...)` are tracked as transition values so they do not incorrectly make their starting value appear dead.
+An override is replaced or reset before it affects dialogue text, repeats the known value already active in every affected state slot, or loses a first-wins slot to an earlier tag. Numeric forms are compared by renderer-consumed value, and aliases share their semantic slots. Relative font-size operations and transform contents are not treated as absolute assignments. Remove the redundant tag or move it to the intended text boundary.
 
 References: libass [first-wins handling](https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584) and [style reset](https://github.com/libass/libass/blob/f61db56/libass/ass_render.c#L1075); VSFilter [alignment](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2301), [fade](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2396), [position/origin](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2575), and [style reset](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2643).
 
