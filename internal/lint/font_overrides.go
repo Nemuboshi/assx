@@ -1,7 +1,6 @@
 package lint
 
 import (
-	"math"
 	"sort"
 	"strconv"
 	"strings"
@@ -10,14 +9,44 @@ import (
 )
 
 const (
-	fontNameProperty = "fontname"
-	fontSizeProperty = "fontsize"
-	boldProperty     = "bold"
-	italicProperty   = "italic"
-	scaleXProperty   = "scalex"
-	scaleYProperty   = "scaley"
-	spacingProperty  = "spacing"
+	fontNameProperty        = "fontname"
+	fontSizeProperty        = "fontsize"
+	boldProperty            = "bold"
+	italicProperty          = "italic"
+	scaleXProperty          = "scalex"
+	scaleYProperty          = "scaley"
+	spacingProperty         = "spacing"
+	underlineProperty       = "underline"
+	strikeOutProperty       = "strikeout"
+	primaryColourProperty   = "primarycolour"
+	secondaryColourProperty = "secondarycolour"
+	outlineColourProperty   = "outlinecolour"
+	backColourProperty      = "backcolour"
+	outlineProperty         = "outline"
+	shadowProperty          = "shadow"
+	angleProperty           = "angle"
+	encodingProperty        = "encoding"
 )
+
+var stylePropertySlots = map[string][]string{
+	fontNameProperty:        {"fontname"},
+	fontSizeProperty:        {"fontsize"},
+	boldProperty:            {"bold"},
+	italicProperty:          {"italic"},
+	scaleXProperty:          {"scale_x"},
+	scaleYProperty:          {"scale_y"},
+	spacingProperty:         {"spacing"},
+	underlineProperty:       {"underline"},
+	strikeOutProperty:       {"strikeout"},
+	primaryColourProperty:   {"c1", "a1"},
+	secondaryColourProperty: {"c2", "a2"},
+	outlineColourProperty:   {"c3", "a3"},
+	backColourProperty:      {"c4", "a4"},
+	outlineProperty:         {"border_x", "border_y"},
+	shadowProperty:          {"shadow_x", "shadow_y"},
+	angleProperty:           {"frz"},
+	encodingProperty:        {"charset"},
+}
 
 type styleRowKey struct {
 	name   string
@@ -30,7 +59,12 @@ type fontBlockRange struct {
 	end   int
 }
 
-// AnalyzeRedundantFontOverrides checks font state against each dialogue's style.
+type styleState struct {
+	slots  map[string]bool
+	values map[string]stateValue
+}
+
+// AnalyzeRedundantFontOverrides checks Style-backed override state for each dialogue.
 func AnalyzeRedundantFontOverrides(doc ass.Document) []Diagnostic {
 	styles := fontStylesByName(doc.StyleFields)
 	var diagnostics []Diagnostic
@@ -83,213 +117,199 @@ func fontStylesByName(fields []ass.StyleField) map[string]map[string]string {
 }
 
 func analyzeRedundantFontDialogue(dialogue ass.Dialogue, styleFields map[string]string) (Diagnostic, bool) {
-	style := make(map[string]string)
-	for _, field := range []string{fontNameProperty, fontSizeProperty, boldProperty, italicProperty, scaleXProperty, scaleYProperty, spacingProperty} {
-		if value, ok := canonicalStyleFontValue(field, styleFields[field]); ok {
-			style[field] = value
-		}
-	}
-	state := make(map[string]string, len(style))
-	for property, value := range style {
-		state[property] = value
+	base := canonicalStyleState(styleFields)
+	state := make(map[string]stateValue, len(base.values))
+	for slot, value := range base.values {
+		state[slot] = value
 	}
 
 	tokens := Lex(dialogue.Text)
-	var allTags, fontTags []Tag
-	properties := make(map[string]bool)
-	textStarted := false
+	var allTags, styleTags []Tag
+	touched := make(map[string]bool)
 	hasText := false
 	for _, token := range tokens {
 		if token.Tag == nil {
-			if token.Text != "" {
-				if !textStarted {
-					for property := range properties {
-						if state[property] != style[property] {
-							return Diagnostic{}, false
-						}
-					}
-					textStarted = true
+			if token.Text == "" {
+				continue
+			}
+			hasText = true
+			for slot := range touched {
+				if state[slot] != base.values[slot] {
+					return Diagnostic{}, false
 				}
-				hasText = true
 			}
 			continue
 		}
 
 		tag := *token.Tag
 		allTags = append(allTags, tag)
-		if tag.InTransition || tag.RepeatedSlashes > 0 || !safeIndependentFontTag(tag) {
+		if !safeIndependentStyleTag(tag) {
 			return Diagnostic{}, false
 		}
-		property, value, isFontTag, ok := fontAssignment(tag, style)
+		spec := TagSpecs[tag.Name]
+		var slots []string
+		for _, slot := range spec.Slots {
+			if base.slots[slot] {
+				slots = append(slots, slot)
+			}
+		}
+		if len(slots) == 0 {
+			continue
+		}
+		if len(slots) != len(spec.Slots) {
+			return Diagnostic{}, false
+		}
+		values, ok := styleTagState(tag, spec, slots, base.values)
 		if !ok {
 			return Diagnostic{}, false
 		}
-		if !isFontTag {
-			continue
+		styleTags = append(styleTags, tag)
+		for i, slot := range slots {
+			state[slot] = stateValue{value: values[i], known: true}
+			touched[slot] = true
 		}
-		_, exists := style[property]
-		if !exists {
-			return Diagnostic{}, false
-		}
-		properties[property] = true
-		if textStarted && state[property] != value {
-			return Diagnostic{}, false
-		}
-		state[property] = value
-		fontTags = append(fontTags, tag)
 	}
-	if !hasText || len(fontTags) == 0 {
+	if !hasText || len(styleTags) == 0 {
 		return Diagnostic{}, false
 	}
-	for property := range properties {
-		if state[property] != style[property] {
-			return Diagnostic{}, false
-		}
-	}
 
-	edits := redundantFontEdits(dialogue, allTags, fontTags)
+	edits := redundantStyleEdits(dialogue, allTags, styleTags)
 	if len(edits) == 0 {
 		return Diagnostic{}, false
 	}
-	first := fontTags[0]
+	first := styleTags[0]
 	return Diagnostic{
 		ID: IssueRedundantFontOverrides, Severity: Suggestion, FixSafety: SafeFix,
 		Line: dialogue.Line, Column: first.Column, Tag: first.Name,
-		Detail: "The font override tags leave the style font state unchanged across dialogue text.",
+		Detail: "The override tags leave the tracked Style properties unchanged across dialogue text.",
 		Edits:  edits,
 	}, true
 }
 
-func canonicalStyleFontValue(property, raw string) (string, bool) {
+func canonicalStyleState(fields map[string]string) styleState {
+	state := styleState{slots: make(map[string]bool), values: make(map[string]stateValue)}
+	for property, slots := range stylePropertySlots {
+		raw, exists := fields[property]
+		if !exists {
+			continue
+		}
+		for _, slot := range slots {
+			state.slots[slot] = true
+		}
+		values, ok := canonicalStyleValues(property, raw, slots)
+		if !ok {
+			continue
+		}
+		for i, slot := range slots {
+			state.values[slot] = stateValue{value: values[i], known: true}
+		}
+	}
+	return state
+}
+
+func canonicalStyleValues(property, raw string, slots []string) ([]string, bool) {
 	raw = strings.TrimSpace(raw)
+	var value string
+	var ok bool
 	switch property {
 	case fontNameProperty:
-		return raw, raw != ""
-	case boldProperty, italicProperty:
-		value, err := strconv.Atoi(raw)
-		if err != nil || (value != -1 && value != 0 && value != 1) {
-			return "", false
+		value, ok = raw, raw != ""
+	case boldProperty:
+		value, ok = canonicalStateBold(raw, true)
+	case italicProperty, underlineProperty, strikeOutProperty:
+		var number int
+		number, ok = parseStyleInteger(raw)
+		if ok && (number == -1 || number == 1) {
+			number = 1
 		}
-		if value == 0 {
-			return "0", true
+		if ok && (number == 0 || number == 1) {
+			value = strconv.Itoa(number)
+		} else {
+			ok = false
 		}
-		return "1", true
-	case fontSizeProperty, scaleXProperty, scaleYProperty, spacingProperty:
-		return canonicalFontNumber(raw)
+	case fontSizeProperty, scaleXProperty, scaleYProperty, spacingProperty, outlineProperty, shadowProperty, angleProperty:
+		if property == scaleXProperty || property == scaleYProperty {
+			if number, parsed := parseStateFloat(raw); parsed && number < 0 {
+				raw = "0"
+			}
+		}
+		value, ok = canonicalStateNumber(raw)
+	case encodingProperty:
+		value, ok = canonicalStateInteger(raw)
+	case primaryColourProperty, secondaryColourProperty, outlineColourProperty, backColourProperty:
+		colour, alpha, valid := canonicalStyleColour(raw)
+		if !valid {
+			return nil, false
+		}
+		return []string{colour, alpha}, true
 	default:
-		return "", false
+		return nil, false
 	}
+	if !ok {
+		return nil, false
+	}
+	values := make([]string, len(slots))
+	for i := range values {
+		values[i] = value
+	}
+	return values, true
 }
 
-func canonicalFontNumber(raw string) (string, bool) {
-	value, err := strconv.ParseFloat(strings.TrimSpace(raw), 64)
-	if err != nil || math.IsNaN(value) || math.IsInf(value, 0) {
-		return "", false
+func canonicalStyleColour(raw string) (colour, alpha string, ok bool) {
+	raw = strings.TrimSpace(raw)
+	if len(raw) >= 2 && strings.EqualFold(raw[:2], "&H") {
+		raw = raw[2:]
 	}
-	value32 := float32(value)
-	if math.IsInf(float64(value32), 0) {
-		return "", false
+	if strings.HasSuffix(raw, "&") {
+		raw = raw[:len(raw)-1]
 	}
-	if value == 0 {
-		value = 0
+	if len(raw) != 8 {
+		return "", "", false
 	}
-	if value32 == 0 {
-		value32 = 0
+	value, err := strconv.ParseUint(raw, 16, 32)
+	if err != nil {
+		return "", "", false
 	}
-	return strconv.FormatFloat(value, 'g', -1, 64) + ":" + strconv.FormatFloat(float64(value32), 'g', -1, 32), true
+	return strconv.FormatUint(value&0xffffff, 16), strconv.FormatUint((value>>24)&0xff, 16), true
 }
 
-func fontAssignment(tag Tag, style map[string]string) (property, value string, isFontTag, ok bool) {
+func parseStyleInteger(raw string) (int, bool) {
+	value, err := strconv.Atoi(strings.TrimSpace(raw))
+	return value, err == nil
+}
+
+func styleTagState(tag Tag, spec TagSpec, slots []string, base map[string]stateValue) ([]string, bool) {
 	name := strings.ToLower(tag.Name)
+	resetToStyle := false
 	switch name {
 	case "fn":
-		property = fontNameProperty
-		if len(tag.Args) == 0 || (!tag.Paren && len(tag.Args) == 1 && strings.TrimSpace(tag.Args[0]) == "0") {
-			value, ok = style[property]
-			return property, value, true, ok
-		}
-		if tag.Paren || len(tag.Args) != 1 {
-			return "", "", true, false
-		}
-		value = strings.TrimSpace(tag.Args[0])
-		return property, value, true, value != ""
+		resetToStyle = len(tag.Args) == 0 || (!tag.Paren && len(tag.Args) == 1 && strings.TrimSpace(tag.Args[0]) == "0")
 	case "fs":
-		property = fontSizeProperty
-		if len(tag.Args) == 0 {
-			value, ok = style[property]
-			return property, value, true, ok
+		resetToStyle = len(tag.Args) == 0
+		if len(tag.Args) == 1 && !relativeFontSize(tag) {
+			if number, ok := parseStateFloat(tag.Args[0]); ok && number == 0 {
+				resetToStyle = true
+			}
 		}
-		if tag.Paren || len(tag.Args) != 1 {
-			return "", "", true, false
-		}
-		raw := strings.TrimSpace(tag.Args[0])
-		if strings.HasPrefix(raw, "+") || strings.HasPrefix(raw, "-") {
-			return "", "", true, false
-		}
-		number, err := strconv.ParseFloat(raw, 64)
-		if err != nil || math.IsNaN(number) || math.IsInf(number, 0) {
-			return "", "", true, false
-		}
-		if number <= 0 {
-			value, ok = style[property]
-			return property, value, true, ok
-		}
-		value, ok = canonicalFontNumber(raw)
-		return property, value, true, ok
-	case "fscx", "fscy", "fsp":
-		property = scaleXProperty
-		if name == "fscy" {
-			property = scaleYProperty
-		} else if name == "fsp" {
-			property = spacingProperty
-		}
-		if len(tag.Args) == 0 {
-			value, ok = style[property]
-			return property, value, true, ok
-		}
-		if tag.Paren || len(tag.Args) != 1 {
-			return "", "", true, false
-		}
-		value, ok = canonicalFontTagNumber(tag.Args[0], property == scaleXProperty || property == scaleYProperty)
-		return property, value, true, ok
-	case "b", "i":
-		property = boldProperty
-		if name == "i" {
-			property = italicProperty
-		}
-		if len(tag.Args) == 0 {
-			value, ok = style[property]
-			return property, value, true, ok
-		}
-		if tag.Paren || len(tag.Args) != 1 {
-			return "", "", true, false
-		}
-		parsed, err := strconv.Atoi(strings.TrimSpace(tag.Args[0]))
-		if err != nil || (parsed != 0 && parsed != 1) {
-			return "", "", true, false
-		}
-		return property, strconv.Itoa(parsed), true, true
-	default:
-		return "", "", false, true
+	case "fscx", "fscy", "fsp", "b", "i":
+		resetToStyle = len(tag.Args) == 0
 	}
+	if resetToStyle {
+		values := make([]string, len(slots))
+		for i, slot := range slots {
+			value := base[slot]
+			if !value.known {
+				return nil, false
+			}
+			values[i] = value.value
+		}
+		return values, true
+	}
+	return canonicalTagState(tag, spec, slots)
 }
 
-func canonicalFontTagNumber(raw string, clampNegative bool) (string, bool) {
-	raw = strings.TrimSpace(raw)
-	value, err := strconv.ParseFloat(raw, 64)
-	if err != nil || math.IsNaN(value) || math.IsInf(value, 0) {
-		return "", false
-	}
-	if clampNegative && value < 0 {
-		return canonicalFontNumber("0")
-	}
-	return canonicalFontNumber(raw)
-}
-
-func safeIndependentFontTag(tag Tag) bool {
-	name := strings.ToLower(tag.Name)
-	switch name {
-	case "r", "t", "p", "fe", "fsc", "fr", "frx", "fry", "frz", "fax", "fay", "n", "h":
+func safeIndependentStyleTag(tag Tag) bool {
+	if tag.InTransition || tag.RepeatedSlashes > 0 || tag.Name == "p" || tag.Name == "n" || tag.Name == "h" || relativeFontSize(tag) {
 		return false
 	}
 	spec, ok := TagSpecs[tag.Name]
@@ -311,11 +331,11 @@ func safeIndependentFontTag(tag Tag) bool {
 	return true
 }
 
-func redundantFontEdits(dialogue ass.Dialogue, allTags, fontTags []Tag) []TextEdit {
+func redundantStyleEdits(dialogue ass.Dialogue, allTags, styleTags []Tag) []TextEdit {
 	text := dialogue.Text
-	candidate := make(map[[2]int]bool, len(fontTags))
+	candidate := make(map[[2]int]bool, len(styleTags))
 	allByBlock := make(map[fontBlockRange][]Tag)
-	fontByBlock := make(map[fontBlockRange][]Tag)
+	styleByBlock := make(map[fontBlockRange][]Tag)
 	for _, tag := range allTags {
 		block, ok := fontTagBlock(text, tag)
 		if !ok {
@@ -323,16 +343,16 @@ func redundantFontEdits(dialogue ass.Dialogue, allTags, fontTags []Tag) []TextEd
 		}
 		allByBlock[block] = append(allByBlock[block], tag)
 	}
-	for _, tag := range fontTags {
+	for _, tag := range styleTags {
 		candidate[[2]int{tag.Start, tag.End}] = true
 		block, ok := fontTagBlock(text, tag)
 		if ok {
-			fontByBlock[block] = append(fontByBlock[block], tag)
+			styleByBlock[block] = append(styleByBlock[block], tag)
 		}
 	}
 
 	var edits []TextEdit
-	for block, tags := range fontByBlock {
+	for block, tags := range styleByBlock {
 		all := allByBlock[block]
 		if len(all) == len(tags) && onlyWhitespaceBetweenTags(text, block, all, candidate) {
 			edits = append(edits, TextEdit{Start: dialogue.TextStart + block.start, End: dialogue.TextStart + block.end})
