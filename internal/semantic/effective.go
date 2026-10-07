@@ -1,9 +1,7 @@
 package semantic
 
 import (
-	"strconv"
-	"strings"
-	"unicode/utf8"
+	"slices"
 
 	"assx/internal/ass"
 	"assx/internal/ass/spec"
@@ -39,7 +37,6 @@ type noEffectCandidate struct {
 
 type effectiveStateEngine struct {
 	position          int
-	drawing           bool
 	collisionDisabled bool
 	tagIndex          int
 	active            map[string]owner
@@ -83,25 +80,9 @@ func EvaluateDialogue(tree ass.DialogueText) []NoEffect {
 }
 
 func (m *effectiveStateEngine) consumeText(text string) {
-	if text == "" {
-		return
-	}
-	if m.drawing {
+	if text != "" {
 		m.markActiveLive()
 		m.position++
-		return
-	}
-	for i := 0; i < len(text); {
-		if text[i] == '\\' && i+1 < len(text) && strings.ContainsRune("Nnh{}", rune(text[i+1])) {
-			m.markActiveLive()
-			m.position++
-			i += 2
-			continue
-		}
-		_, size := utf8.DecodeRuneInString(text[i:])
-		m.markActiveLive()
-		m.position++
-		i += size
 	}
 }
 
@@ -126,7 +107,7 @@ func (m *effectiveStateEngine) consumeTag(tag ass.Tag) {
 	if !known || tag.Name == "N" || tag.Name == "n" || tag.Name == "h" || tagSpec.VSFilterModOnly {
 		return
 	}
-	if tagSpec.Counts != nil && !containsCount(tagSpec.Counts, len(tag.Args)) {
+	if tagSpec.Counts != nil && !slices.Contains(tagSpec.Counts, len(tag.Args)) {
 		return
 	}
 	if tag.InTransition {
@@ -146,7 +127,7 @@ func (m *effectiveStateEngine) consumeTag(tag ass.Tag) {
 		}
 		m.collisionDisabled = true
 		if !stateNoEffect {
-			m.invalidateStateAfterTransition()
+			m.state = make(map[string]StateValue)
 		}
 		return
 	}
@@ -190,24 +171,15 @@ func (m *effectiveStateEngine) consumeTag(tag ass.Tag) {
 
 		m.active[slot] = owner{index: index, start: m.position}
 		assignedSlots = append(assignedSlots, slot)
+		if slot == "position" || slot == "origin" {
+			m.collisionDisabled = true
+		}
 		if valuesKnown {
 			assignedValues = append(assignedValues, values[slotIndex])
 		}
 	}
 
 	SetSlotValues(m.state, assignedSlots, assignedValues, valuesKnown)
-	for _, slot := range assignedSlots {
-		switch slot {
-		case "position", "origin":
-			m.collisionDisabled = true
-		case "drawing_scale":
-			value := 0
-			if valuesKnown && len(tag.Args) > 0 {
-				value, _ = strconv.Atoi(strings.TrimSpace(tag.Args[0]))
-			}
-			m.drawing = value > 0
-		}
-	}
 }
 
 func (m *effectiveStateEngine) transitionHasNoEffect(tag ass.Tag) bool {
@@ -233,10 +205,6 @@ func (m *effectiveStateEngine) transitionHasNoEffect(tag ass.Tag) bool {
 		}
 	}
 	return true
-}
-
-func (m *effectiveStateEngine) invalidateStateAfterTransition() {
-	m.state = make(map[string]StateValue)
 }
 
 func safeTransformStateTag(name string) bool {
@@ -287,13 +255,4 @@ func (m *effectiveStateEngine) resetStyle() {
 		}
 		m.active[slot] = owner{index: -1, start: m.position}
 	}
-}
-
-func containsCount(values []int, want int) bool {
-	for _, value := range values {
-		if value == want {
-			return true
-		}
-	}
-	return false
 }

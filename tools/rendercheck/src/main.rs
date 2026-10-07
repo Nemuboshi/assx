@@ -113,10 +113,6 @@ struct RenderContext<'a> {
     track: *mut AssTrack,
     width: usize,
     height: usize,
-    _font_names: Vec<CString>,
-    _font_data: Vec<Vec<u8>>,
-    _default_font: CString,
-    _ass_path: CString,
 }
 
 impl<'a> RenderContext<'a> {
@@ -138,8 +134,6 @@ impl<'a> RenderContext<'a> {
 
         unsafe { (api.set_extract_fonts)(library, 1) };
 
-        let mut font_names = Vec::with_capacity(font_files.len());
-        let mut font_data = Vec::with_capacity(font_files.len());
         for path in &font_files {
             let name = CString::new(
                 path.file_name()
@@ -157,8 +151,6 @@ impl<'a> RenderContext<'a> {
                     data.len() as c_int,
                 );
             }
-            font_names.push(name);
-            font_data.push(data);
         }
 
         let renderer = unsafe { (api.renderer_init)(library) };
@@ -196,10 +188,6 @@ impl<'a> RenderContext<'a> {
             track,
             width,
             height,
-            _font_names: font_names,
-            _font_data: font_data,
-            _default_font: default_font_c,
-            _ass_path: ass_path_c,
         })
     }
     fn render(&mut self, time_ms: i64) -> Vec<u8> {

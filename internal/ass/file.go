@@ -131,11 +131,7 @@ func Parse(text string) Document {
 		if section == "v4+ styles" || section == "v4 styles" || section == "v4++ styles" {
 			lower := strings.ToLower(trimmed)
 			if strings.HasPrefix(lower, "format:") {
-				columns := strings.Split(trimmed[strings.IndexByte(trimmed, ':')+1:], ",")
-				styleFormat = make([]string, len(columns))
-				for i, column := range columns {
-					styleFormat[i] = strings.ToLower(strings.TrimSpace(column))
-				}
+				styleFormat = splitFormat(trimmed[strings.IndexByte(trimmed, ':')+1:])
 			} else if strings.HasPrefix(lower, "style:") && len(styleFormat) > 0 {
 				doc.StyleFields = append(doc.StyleFields, parseStyleFields(content, offset, line, styleFormat)...)
 			}

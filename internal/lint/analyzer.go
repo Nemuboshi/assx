@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -132,7 +133,7 @@ func (a *dialogueAnalyzer) validate(tag ass.Tag) {
 	if !known {
 		return
 	}
-	if tagSpec.Counts != nil && !contains(tagSpec.Counts, len(tag.Args)) {
+	if tagSpec.Counts != nil && !slices.Contains(tagSpec.Counts, len(tag.Args)) {
 		a.add(IssueArgumentCount, tag, fmt.Sprintf("Found %d arguments; expected %s.", len(tag.Args), countsText(tagSpec.Counts)))
 		return
 	}
@@ -249,15 +250,6 @@ func nextUnescapedOpenBrace(text string, start int) int {
 		}
 	}
 	return -1
-}
-
-func contains(values []int, want int) bool {
-	for _, value := range values {
-		if value == want {
-			return true
-		}
-	}
-	return false
 }
 
 func countsText(values []int) string {

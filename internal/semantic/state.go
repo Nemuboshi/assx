@@ -85,8 +85,8 @@ func CanonicalTagState(tag ass.Tag, tagSpec spec.TagSpec, slots []string) ([]str
 				value, ok = CanonicalInteger(raw)
 			}
 		}
-	case spec.NumberListValue:
-		if len(tag.Args) == 0 {
+	case spec.NumberListValue, spec.RectValue:
+		if len(tag.Args) == 0 || (tagSpec.Value == spec.RectValue && len(tag.Args) != 4) {
 			return nil, false
 		}
 		parts := make([]string, len(tag.Args))
@@ -97,18 +97,9 @@ func CanonicalTagState(tag ass.Tag, tagSpec spec.TagSpec, slots []string) ([]str
 			}
 		}
 		value, ok = strings.Join(parts, ","), true
-	case spec.RectValue:
-		if len(tag.Args) != 4 {
-			return nil, false
+		if tagSpec.Value == spec.RectValue {
+			value = tag.Name + ":" + value
 		}
-		parts := make([]string, len(tag.Args))
-		for i, arg := range tag.Args {
-			parts[i], ok = CanonicalNumber(arg)
-			if !ok {
-				return nil, false
-			}
-		}
-		value, ok = tag.Name+":"+strings.Join(parts, ","), true
 	}
 	if !ok {
 		return nil, false
