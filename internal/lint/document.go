@@ -9,6 +9,7 @@ import (
 func AnalyzeDocument(doc ass.Document) []Diagnostic {
 	diagnostics := AnalyzeHeaders(doc)
 	diagnostics = append(diagnostics, AnalyzeStyles(doc)...)
+	diagnostics = append(diagnostics, analyzeUndefinedStyleReferences(doc)...)
 	for _, dialogue := range doc.Dialogues {
 		diagnostics = append(diagnostics, Analyze(dialogue)...)
 	}

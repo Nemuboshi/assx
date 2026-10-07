@@ -178,7 +178,7 @@ func TestRuleRegistryHasStableMetadata(t *testing.T) {
 		{IssueLayoutRes, "ASS009"}, {IssueRepeatedSlash, "ASS010"},
 		{IssueStyleInteger, "ASS011"}, {IssueStyleFloat, "ASS012"},
 		{IssueRedundantFontOverrides, "ASS013"}, {IssueRepeatedOpenBrace, "ASS014"},
-		{IssueFontMissing, "ASS015"}, {IssueMissingGlyphs, "ASS016"},
+		{IssueFontMissing, "ASS015"}, {IssueMissingGlyphs, "ASS016"}, {IssueUndefinedStyle, "ASS017"},
 	}
 	for _, test := range rules {
 		id := test.id

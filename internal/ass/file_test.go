@@ -2,6 +2,7 @@ package ass
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -24,6 +25,19 @@ func TestParseDialogueTextOffsetsAndHeaderValues(t *testing.T) {
 	}
 	if doc.ScriptInfoLine != 1 || text[doc.ScriptInfoInsert:doc.ScriptInfoInsert+len("PlayResX")] != "PlayResX" {
 		t.Fatalf("Script Info insertion point = line %d, offset %d", doc.ScriptInfoLine, doc.ScriptInfoInsert)
+	}
+}
+
+func TestParseDialogueStyleColumn(t *testing.T) {
+	line := "Dialogue: 0,0,1,  *default  ,hello"
+	doc := Parse("[Events]\nFormat: Layer, Start, End, Style, Text\n" + line + "\n")
+	if len(doc.Dialogues) != 1 {
+		t.Fatalf("got %d dialogue rows, want 1", len(doc.Dialogues))
+	}
+	dialogue := doc.Dialogues[0]
+	wantColumn := strings.Index(line, "*default") + 1
+	if dialogue.Style != "*default" || dialogue.StyleColumn != wantColumn {
+		t.Fatalf("dialogue style location = %q at column %d, want %q at column %d", dialogue.Style, dialogue.StyleColumn, "*default", wantColumn)
 	}
 }
 
