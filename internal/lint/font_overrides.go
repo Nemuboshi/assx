@@ -153,7 +153,7 @@ func analyzeRedundantFontDialogue(dialogue ass.Dialogue, styleFields map[string]
 	}
 	first := fontTags[0]
 	return Diagnostic{
-		ID: IssueRedundantFontOverrides, Severity: Lint, FixSafety: SafeFix,
+		ID: IssueRedundantFontOverrides, Severity: Suggestion, FixSafety: SafeFix,
 		Line: dialogue.Line, Column: first.Column, Tag: first.Name,
 		Detail: "The font override tags leave the style font state unchanged across dialogue text.",
 		Edits:  edits,

@@ -37,6 +37,9 @@ func TestAnalyzeFontsReportsMissingFamilyAndGlyph(t *testing.T) {
 	counts := map[string]int{}
 	for _, diagnostic := range diagnostics {
 		counts[diagnostic.ID]++
+		if diagnostic.Severity != Suggestion {
+			t.Errorf("font finding %s severity = %q, want %q", diagnostic.ID, diagnostic.Severity, Suggestion)
+		}
 		if diagnostic.FixSafety != "" || len(diagnostic.Edits) != 0 {
 			t.Errorf("font finding %s has automatic fix metadata: %#v", diagnostic.ID, diagnostic)
 		}

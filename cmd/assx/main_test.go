@@ -134,7 +134,7 @@ func TestRunUnsafeFixIsOptInAndPreservesExitStatus(t *testing.T) {
 	}
 }
 
-func TestRunJSONStaysValidAndReportsUnknownTagsAsLint(t *testing.T) {
+func TestRunJSONStaysValidAndReportsUnknownTagsAsSuggestion(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "unknown.ass")
 	input := "[Script Info]\nYCbCr Matrix: None\nPlayResX: 640\nPlayResY: 480\nLayoutResX: 640\nLayoutResY: 480\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0,1,Default,,0,0,0,,{\\unknownTag}text\n"
 	if err := os.WriteFile(path, []byte(input), 0o600); err != nil {
@@ -148,11 +148,19 @@ func TestRunJSONStaysValidAndReportsUnknownTagsAsLint(t *testing.T) {
 	if err := json.Unmarshal([]byte(stdout.String()), &diagnostics); err != nil {
 		t.Fatalf("invalid JSON: %v\n%s", err, stdout.String())
 	}
-	if len(diagnostics) != 1 || diagnostics[0]["id"] != "ASS-L002" || diagnostics[0]["severity"] != "lint" {
+	if len(diagnostics) != 1 || diagnostics[0]["id"] != "ASS007" || diagnostics[0]["severity"] != "suggestion" {
 		t.Fatalf("diagnostics = %#v", diagnostics)
 	}
 	if !strings.Contains(stderr.String(), "Fixes available: 0 safe, 0 unsafe, 1 not auto-fixable.") {
 		t.Fatalf("JSON summary = %q", stderr.String())
+	}
+	stdout.Reset()
+	stderr.Reset()
+	if code := run([]string{"--format", "plain", path}, &stdout, &stderr); code != 0 {
+		t.Fatalf("plain run returned %d: %s", code, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), "SUGGESTION[ASS007]") || !strings.Contains(stdout.String(), "1 suggestions") {
+		t.Fatalf("plain suggestion output = %q", stdout.String())
 	}
 }
 
@@ -212,7 +220,7 @@ func TestRunFontChecksAreOptionalAndNotAutoFixed(t *testing.T) {
 	if code := run([]string{"--font-dir", filepath.Dir(fontDir), path}, &stdout, &stderr); code != 0 {
 		t.Fatalf("default font-check run returned %d: %s", code, stderr.String())
 	}
-	if strings.Contains(stdout.String(), "F001") || strings.Contains(stdout.String(), "F002") {
+	if strings.Contains(stdout.String(), lint.IssueFontMissing) || strings.Contains(stdout.String(), lint.IssueMissingGlyphs) {
 		t.Fatalf("font checks ran without --check-fonts: %s", stdout.String())
 	}
 
@@ -229,6 +237,9 @@ func TestRunFontChecksAreOptionalAndNotAutoFixed(t *testing.T) {
 	counts := map[string]int{}
 	for _, diagnostic := range diagnostics {
 		counts[diagnostic.ID]++
+		if diagnostic.Severity != lint.Suggestion {
+			t.Errorf("font finding %s severity = %q, want %q", diagnostic.ID, diagnostic.Severity, lint.Suggestion)
+		}
 		if diagnostic.FixSafety != "" || len(diagnostic.Edits) != 0 {
 			t.Errorf("font finding %s has automatic fix metadata: %#v", diagnostic.ID, diagnostic)
 		}
@@ -245,6 +256,15 @@ func TestRunFontChecksAreOptionalAndNotAutoFixed(t *testing.T) {
 	}
 	if string(after) != input {
 		t.Fatal("font check modified the ASS file")
+	}
+
+	stdout.Reset()
+	stderr.Reset()
+	if code := run([]string{"--check-fonts", "--font-dir", filepath.Dir(fontDir), "--format", "plain", path}, &stdout, &stderr); code != 0 {
+		t.Fatalf("plain font-check run returned %d: %s", code, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), "SUGGESTION[ASS016]") || !strings.Contains(stdout.String(), "does not contain these characters:") {
+		t.Fatalf("font detail was not rendered by diagnostic data: %q", stdout.String())
 	}
 }
 
