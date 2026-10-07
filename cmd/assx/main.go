@@ -78,7 +78,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 		}
 	}
 	analyzeDoc := func(doc ass.Document) ([]lint.Diagnostic, error) {
-		diagnostics := analyze(doc)
+		diagnostics := lint.AnalyzeDocument(doc)
 		if fontChecker != nil {
 			fontDiagnostics, err := lint.AnalyzeFonts(doc, fontChecker)
 			if err != nil {
@@ -323,10 +323,6 @@ func formatDuration(elapsed time.Duration) string {
 		return "<1ms"
 	}
 	return elapsed.Round(time.Millisecond).String()
-}
-
-func analyze(doc ass.Document) []lint.Diagnostic {
-	return lint.AnalyzeDocument(doc)
 }
 
 func writeAtomically(path string, data []byte, mode os.FileMode) error {

@@ -31,7 +31,7 @@ func TestDialogueTokensMarkTransitionTagsAndSourceSpans(t *testing.T) {
 }
 
 func TestDialogueTokensPreserveLegacyRepeatedSlashWalk(t *testing.T) {
-	tokens := Lex(`{\\blur2\mystery3} outside \\text`)
+	tokens := ParseDialogueText(`{\\blur2\mystery3} outside \\text`).Tokens()
 	if len(tokens) != 4 {
 		t.Fatalf("got %d tokens: %#v", len(tokens), tokens)
 	}
@@ -48,7 +48,7 @@ func TestDialogueTokensPreserveLegacyRepeatedSlashWalk(t *testing.T) {
 		t.Fatalf("outside text token = %#v", tokens[3])
 	}
 
-	triple := Lex(`{\\\blur1}`)
+	triple := ParseDialogueText(`{\\\blur1}`).Tokens()
 	if len(triple) != 2 || triple[0].Tag == nil || triple[0].Tag.RepeatedSlashes != 2 || triple[1].Tag == nil || triple[1].Tag.Name != "blur" {
 		t.Fatalf("three-slash tokenization = %#v", triple)
 	}

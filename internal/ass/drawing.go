@@ -99,7 +99,7 @@ func ParseDrawing(fragments []DrawingFragment) Drawing {
 	for _, fragment := range fragments {
 		for i := 0; i < len(fragment.Text); {
 			ch := fragment.Text[i]
-			if isDrawingSpace(ch) {
+			if isSpace(ch) {
 				i++
 				continue
 			}
@@ -139,7 +139,7 @@ func ParseDrawing(fragments []DrawingFragment) Drawing {
 			}
 
 			start := i
-			for i < len(fragment.Text) && !isDrawingSpace(fragment.Text[i]) &&
+			for i < len(fragment.Text) && !isSpace(fragment.Text[i]) &&
 				!isDrawingCommand(fragment.Text[i]) &&
 				drawingNumberPrefix.FindString(fragment.Text[i:]) == "" {
 				i++
@@ -183,15 +183,6 @@ func validateDrawingCommand(drawing *Drawing, command DrawingCommand) {
 func isDrawingCommand(ch byte) bool {
 	switch ch {
 	case 'm', 'n', 'l', 'b', 's', 'p', 'c':
-		return true
-	default:
-		return false
-	}
-}
-
-func isDrawingSpace(ch byte) bool {
-	switch ch {
-	case ' ', '\t', '\r', '\n', '\f', '\v':
 		return true
 	default:
 		return false

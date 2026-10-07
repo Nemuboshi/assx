@@ -1,6 +1,7 @@
 package lint
 
 import (
+	"maps"
 	"sort"
 	"strings"
 
@@ -8,11 +9,6 @@ import (
 	"assx/internal/ass/spec"
 	"assx/internal/semantic"
 )
-
-type overrideBlockRange struct {
-	start int
-	end   int
-}
 
 // AnalyzeRedundantStyleOverrides checks Style-backed override state for each dialogue.
 func AnalyzeRedundantStyleOverrides(doc ass.Document) []Diagnostic {
@@ -40,10 +36,10 @@ func analyzeRedundantStyleDialogue(dialogue ass.Dialogue, originalStyle string, 
 	if !ok {
 		return Diagnostic{}, false
 	}
-	state := cloneStyleValues(activeBase.Values)
+	state := maps.Clone(activeBase.Values)
 
 	tree := dialogue.ParsedText()
-	var allTags, candidates, runTags []ass.Tag
+	var candidates, runTags []ass.Tag
 	runStart := make(map[string]semantic.StateValue)
 	runTouched := make(map[string]bool)
 
@@ -78,7 +74,6 @@ func analyzeRedundantStyleDialogue(dialogue ass.Dialogue, originalStyle string, 
 		}
 
 		tag := *token.Tag
-		allTags = append(allTags, tag)
 		tagSpec, known := spec.TagSpecs[tag.Name]
 		if !known || tagSpec.VSFilterModOnly || tag.InTransition || tag.RepeatedSlashes > 0 {
 			flushRun(false)
@@ -96,7 +91,7 @@ func analyzeRedundantStyleDialogue(dialogue ass.Dialogue, originalStyle string, 
 				break
 			}
 			activeBase = nextBase
-			state = cloneStyleValues(activeBase.Values)
+			state = maps.Clone(activeBase.Values)
 			continue
 		}
 
@@ -140,7 +135,7 @@ func analyzeRedundantStyleDialogue(dialogue ass.Dialogue, originalStyle string, 
 	if len(candidates) == 0 {
 		return Diagnostic{}, false
 	}
-	edits := redundantStyleEdits(dialogue, tree, allTags, candidates)
+	edits := redundantStyleEdits(dialogue, tree, candidates)
 	if len(edits) == 0 {
 		return Diagnostic{}, false
 	}
@@ -153,54 +148,31 @@ func analyzeRedundantStyleDialogue(dialogue ass.Dialogue, originalStyle string, 
 	}, true
 }
 
-func cloneStyleValues(values map[string]semantic.StateValue) map[string]semantic.StateValue {
-	cloned := make(map[string]semantic.StateValue, len(values))
-	for slot, value := range values {
-		cloned[slot] = value
-	}
-	return cloned
-}
-
-func redundantStyleEdits(dialogue ass.Dialogue, tree ass.DialogueText, allTags, styleTags []ass.Tag) []TextEdit {
+func redundantStyleEdits(dialogue ass.Dialogue, tree ass.DialogueText, styleTags []ass.Tag) []TextEdit {
 	candidate := make(map[[2]int]bool, len(styleTags))
 	for _, tag := range styleTags {
 		candidate[[2]int{tag.Start, tag.End}] = true
 	}
 
-	blockByTag := make(map[[2]int]overrideBlockRange)
-	blockNodes := make(map[overrideBlockRange]*ass.OverrideBlock)
-	for i := range tree.Nodes {
-		node := &tree.Nodes[i]
-		if node.Block == nil {
+	var edits []TextEdit
+	for _, node := range tree.Nodes {
+		block := node.Block
+		if node.Kind != ass.OverrideNode || block == nil {
 			continue
 		}
-		block := overrideBlockRange{start: node.Block.Start, end: node.Block.End}
-		blockNodes[block] = node.Block
-		for _, tag := range node.Block.Tags() {
-			blockByTag[[2]int{tag.Start, tag.End}] = block
+		var tags []ass.Tag
+		for _, tag := range block.Tags() {
+			if candidate[[2]int{tag.Start, tag.End}] {
+				tags = append(tags, tag)
+			}
 		}
-	}
-
-	allByBlock := make(map[overrideBlockRange][]ass.Tag)
-	styleByBlock := make(map[overrideBlockRange][]ass.Tag)
-	for _, tag := range allTags {
-		if block, ok := blockByTag[[2]int{tag.Start, tag.End}]; ok {
-			allByBlock[block] = append(allByBlock[block], tag)
+		if len(tags) == 0 {
+			continue
 		}
-	}
-	for _, tag := range styleTags {
-		if block, ok := blockByTag[[2]int{tag.Start, tag.End}]; ok {
-			styleByBlock[block] = append(styleByBlock[block], tag)
-		}
-	}
-
-	var edits []TextEdit
-	for block, tags := range styleByBlock {
-		all := allByBlock[block]
-		if len(all) == len(tags) && blockContainsOnlyCandidateTags(blockNodes[block], candidate) {
+		if blockContainsOnlyCandidateTags(block, candidate) {
 			edits = append(edits, TextEdit{
-				Start: dialogue.TextStart + block.start,
-				End:   dialogue.TextStart + block.end,
+				Start: dialogue.TextStart + block.Start,
+				End:   dialogue.TextStart + block.End,
 			})
 			continue
 		}

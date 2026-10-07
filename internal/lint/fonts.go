@@ -220,22 +220,9 @@ func fontName(font *sfnt.Font, buf *sfnt.Buffer, ids ...sfnt.NameID) string {
 }
 
 func normalizeFontFamily(name string) string {
-	var tokens []string
-	var token strings.Builder
-	flush := func() {
-		if token.Len() > 0 {
-			tokens = append(tokens, token.String())
-			token.Reset()
-		}
-	}
-	for _, r := range strings.ToLower(strings.TrimSpace(name)) {
-		if unicode.IsLetter(r) || unicode.IsDigit(r) {
-			token.WriteRune(r)
-		} else {
-			flush()
-		}
-	}
-	flush()
+	tokens := strings.FieldsFunc(strings.ToLower(name), func(r rune) bool {
+		return !unicode.IsLetter(r) && !unicode.IsDigit(r)
+	})
 	var normalized strings.Builder
 	for _, part := range tokens {
 		switch part {

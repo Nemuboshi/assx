@@ -130,12 +130,6 @@ func ParseDialogueText(text string) DialogueText {
 	return tree
 }
 
-// Lex returns the legacy flat token walk over the structured dialogue tree.
-// New consumers should prefer ParseDialogueText and inspect Nodes/OverrideBlock.
-func Lex(text string) []Token {
-	return ParseDialogueText(text).Tokens()
-}
-
 func (tree DialogueText) Tokens() []Token {
 	var tokens []Token
 	for _, node := range tree.Nodes {

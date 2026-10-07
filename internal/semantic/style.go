@@ -1,6 +1,7 @@
 package semantic
 
 import (
+	"slices"
 	"strconv"
 	"strings"
 
@@ -251,17 +252,8 @@ func SafeIndependentStyleTag(tag ass.Tag) bool {
 	if !ok || tagSpec.VSFilterModOnly || tagSpec.Behavior == spec.StyleReset || tagSpec.Behavior == spec.Transition {
 		return false
 	}
-	if tagSpec.Counts != nil {
-		validCount := false
-		for _, count := range tagSpec.Counts {
-			if count == len(tag.Args) {
-				validCount = true
-				break
-			}
-		}
-		if !validCount {
-			return false
-		}
+	if tagSpec.Counts != nil && !slices.Contains(tagSpec.Counts, len(tag.Args)) {
+		return false
 	}
 	return true
 }
