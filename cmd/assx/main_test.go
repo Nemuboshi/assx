@@ -40,7 +40,7 @@ func TestRunSafeFixAndConciseSummary(t *testing.T) {
 	}
 }
 
-func TestRunRedundantFontOverridesSafeFix(t *testing.T) {
+func TestRunRedundantStyleOverridesSafeFix(t *testing.T) {
 	fixture, err := os.ReadFile(filepath.Join("..", "..", "testdata", "redundant-font.ass"))
 	if err != nil {
 		t.Fatal(err)

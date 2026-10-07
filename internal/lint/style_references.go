@@ -44,12 +44,16 @@ func definedStyleNames(fields []ass.StyleField) map[string]struct{} {
 	return styles
 }
 
-func resolveDialogueStyleReference(name string, styles map[string]struct{}) bool {
+func dialogueStyleLookupName(name string) string {
 	name = strings.TrimLeft(strings.TrimSpace(name), "*")
 	if strings.EqualFold(name, "Default") {
-		name = "Default"
+		return "Default"
 	}
-	_, exists := styles[name]
+	return name
+}
+
+func resolveDialogueStyleReference(name string, styles map[string]struct{}) bool {
+	_, exists := styles[dialogueStyleLookupName(name)]
 	return exists
 }
 

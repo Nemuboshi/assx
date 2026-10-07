@@ -48,13 +48,12 @@ var stylePropertySlots = map[string][]string{
 	encodingProperty:        {"charset"},
 }
 
-type styleRowKey struct {
-	name   string
-	folded string
-	line   int
+type styleDefinitionKey struct {
+	name string
+	line int
 }
 
-type fontBlockRange struct {
+type overrideBlockRange struct {
 	start int
 	end   int
 }
@@ -64,16 +63,16 @@ type styleState struct {
 	values map[string]stateValue
 }
 
-// AnalyzeRedundantFontOverrides checks Style-backed override state for each dialogue.
-func AnalyzeRedundantFontOverrides(doc ass.Document) []Diagnostic {
-	styles := fontStylesByName(doc.StyleFields)
+// AnalyzeRedundantStyleOverrides checks Style-backed override state for each dialogue.
+func AnalyzeRedundantStyleOverrides(doc ass.Document) []Diagnostic {
+	styles := styleDefinitionsByName(doc.StyleFields)
 	var diagnostics []Diagnostic
 	for _, dialogue := range doc.Dialogues {
-		fields, ok := styles[strings.TrimSpace(dialogue.Style)]
+		fields, ok := styles[dialogueStyleLookupName(dialogue.Style)]
 		if !ok {
 			continue
 		}
-		diagnostic, ok := analyzeRedundantFontDialogue(dialogue, fields)
+		diagnostic, ok := analyzeRedundantStyleDialogue(dialogue, fields)
 		if ok {
 			diagnostics = append(diagnostics, diagnostic)
 		}
@@ -81,16 +80,16 @@ func AnalyzeRedundantFontOverrides(doc ass.Document) []Diagnostic {
 	return diagnostics
 }
 
-func fontStylesByName(fields []ass.StyleField) map[string]map[string]string {
-	rows := make(map[styleRowKey]map[string]string)
-	duplicates := make(map[styleRowKey]bool)
+func styleDefinitionsByName(fields []ass.StyleField) map[string]map[string]string {
+	rows := make(map[styleDefinitionKey]map[string]string)
+	duplicates := make(map[styleDefinitionKey]bool)
 	for _, field := range fields {
 		name := strings.TrimSpace(field.StyleName)
 		fieldName := strings.ToLower(strings.TrimSpace(field.Name))
 		if name == "" || fieldName == "" {
 			continue
 		}
-		key := styleRowKey{name: name, folded: strings.ToLower(name), line: field.Line}
+		key := styleDefinitionKey{name: name, line: field.Line}
 		row := rows[key]
 		if row == nil {
 			row = make(map[string]string)
@@ -102,21 +101,21 @@ func fontStylesByName(fields []ass.StyleField) map[string]map[string]string {
 		row[fieldName] = field.Value
 	}
 
-	byFoldedName := make(map[string][]styleRowKey)
+	byName := make(map[string][]styleDefinitionKey)
 	for key := range rows {
-		byFoldedName[key.folded] = append(byFoldedName[key.folded], key)
+		byName[key.name] = append(byName[key.name], key)
 	}
 	styles := make(map[string]map[string]string)
-	for _, keys := range byFoldedName {
+	for name, keys := range byName {
 		if len(keys) != 1 || duplicates[keys[0]] {
 			continue
 		}
-		styles[keys[0].name] = rows[keys[0]]
+		styles[name] = rows[keys[0]]
 	}
 	return styles
 }
 
-func analyzeRedundantFontDialogue(dialogue ass.Dialogue, styleFields map[string]string) (Diagnostic, bool) {
+func analyzeRedundantStyleDialogue(dialogue ass.Dialogue, styleFields map[string]string) (Diagnostic, bool) {
 	base := canonicalStyleState(styleFields)
 	state := make(map[string]stateValue, len(base.values))
 	for slot, value := range base.values {
@@ -179,7 +178,7 @@ func analyzeRedundantFontDialogue(dialogue ass.Dialogue, styleFields map[string]
 	}
 	first := styleTags[0]
 	return Diagnostic{
-		ID: IssueRedundantFontOverrides, Severity: Suggestion, FixSafety: SafeFix,
+		ID: IssueRedundantStyleOverrides, Severity: Suggestion, FixSafety: SafeFix,
 		Line: dialogue.Line, Column: first.Column, Tag: first.Name,
 		Detail: "The override tags leave the tracked Style properties unchanged across dialogue text.",
 		Edits:  edits,
@@ -334,10 +333,10 @@ func safeIndependentStyleTag(tag Tag) bool {
 func redundantStyleEdits(dialogue ass.Dialogue, allTags, styleTags []Tag) []TextEdit {
 	text := dialogue.Text
 	candidate := make(map[[2]int]bool, len(styleTags))
-	allByBlock := make(map[fontBlockRange][]Tag)
-	styleByBlock := make(map[fontBlockRange][]Tag)
+	allByBlock := make(map[overrideBlockRange][]Tag)
+	styleByBlock := make(map[overrideBlockRange][]Tag)
 	for _, tag := range allTags {
-		block, ok := fontTagBlock(text, tag)
+		block, ok := overrideTagBlock(text, tag)
 		if !ok {
 			continue
 		}
@@ -345,7 +344,7 @@ func redundantStyleEdits(dialogue ass.Dialogue, allTags, styleTags []Tag) []Text
 	}
 	for _, tag := range styleTags {
 		candidate[[2]int{tag.Start, tag.End}] = true
-		block, ok := fontTagBlock(text, tag)
+		block, ok := overrideTagBlock(text, tag)
 		if ok {
 			styleByBlock[block] = append(styleByBlock[block], tag)
 		}
@@ -366,23 +365,23 @@ func redundantStyleEdits(dialogue ass.Dialogue, allTags, styleTags []Tag) []Text
 	return edits
 }
 
-func fontTagBlock(text string, tag Tag) (fontBlockRange, bool) {
+func overrideTagBlock(text string, tag Tag) (overrideBlockRange, bool) {
 	if tag.Start < 0 || tag.End > len(text) || tag.Start >= tag.End {
-		return fontBlockRange{}, false
+		return overrideBlockRange{}, false
 	}
 	open := strings.LastIndex(text[:tag.Start], "{")
 	closeOffset := strings.IndexByte(text[tag.End:], '}')
 	if open < 0 || closeOffset < 0 {
-		return fontBlockRange{}, false
+		return overrideBlockRange{}, false
 	}
 	close := tag.End + closeOffset
 	if open >= tag.Start || close < tag.End {
-		return fontBlockRange{}, false
+		return overrideBlockRange{}, false
 	}
-	return fontBlockRange{start: open, end: close + 1}, true
+	return overrideBlockRange{start: open, end: close + 1}, true
 }
 
-func onlyWhitespaceBetweenTags(text string, block fontBlockRange, tags []Tag, candidates map[[2]int]bool) bool {
+func onlyWhitespaceBetweenTags(text string, block overrideBlockRange, tags []Tag, candidates map[[2]int]bool) bool {
 	sort.Slice(tags, func(i, j int) bool { return tags[i].Start < tags[j].Start })
 	cursor := block.start + 1
 	for _, tag := range tags {
