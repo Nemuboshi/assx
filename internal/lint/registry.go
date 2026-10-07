@@ -1,23 +1,23 @@
 package lint
 
 const (
-	IssueArgumentCount          = "ASS001"
-	IssueInvalidValue           = "ASS002"
-	IssueRendererDiff           = "ASS003"
-	IssueFontComma              = "ASS004"
-	IssueVSFilterModTag         = "ASS005"
-	IssueNoEffect               = "ASS006"
-	IssueUnknownTag             = "ASS007"
-	IssueMatrixHeader           = "ASS008"
-	IssueLayoutRes              = "ASS009"
-	IssueRepeatedSlash          = "ASS010"
-	IssueStyleInteger           = "ASS011"
-	IssueStyleFloat             = "ASS012"
-	IssueRedundantFontOverrides = "ASS013"
-	IssueRepeatedOpenBrace      = "ASS014"
-	IssueFontMissing            = "ASS015"
-	IssueMissingGlyphs          = "ASS016"
-	IssueUndefinedStyle         = "ASS017"
+	IssueArgumentCount           = "ASS001"
+	IssueInvalidValue            = "ASS002"
+	IssueRendererDiff            = "ASS003"
+	IssueFontComma               = "ASS004"
+	IssueVSFilterModTag          = "ASS005"
+	IssueNoEffect                = "ASS006"
+	IssueUnknownTag              = "ASS007"
+	IssueMatrixHeader            = "ASS008"
+	IssueLayoutRes               = "ASS009"
+	IssueRepeatedSlash           = "ASS010"
+	IssueStyleInteger            = "ASS011"
+	IssueStyleFloat              = "ASS012"
+	IssueRedundantStyleOverrides = "ASS013"
+	IssueRepeatedOpenBrace       = "ASS014"
+	IssueFontMissing             = "ASS015"
+	IssueMissingGlyphs           = "ASS016"
+	IssueUndefinedStyle          = "ASS017"
 )
 
 type Severity string
@@ -109,10 +109,10 @@ var Rules = map[string]Rule{
 		Fix:         "Round to the VSFilter 32-bit float value only after reviewing the small rendering change in libass.",
 		Sources:     []string{"https://github.com/libass/libass/blob/f61db56/libass/ass.c#L435", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L1254", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L1509"},
 	},
-	IssueRedundantFontOverrides: {
-		ID: IssueRedundantFontOverrides, Severity: Suggestion, FixSafety: SafeFix, Title: "Overrides match style",
+	IssueRedundantStyleOverrides: {
+		ID: IssueRedundantStyleOverrides, Severity: Suggestion, FixSafety: SafeFix, Title: "Overrides match style",
 		Description: "Style-backed override tags leave the corresponding Style properties unchanged across dialogue text.",
-		Fix:         "Remove the redundant font override tags.",
+		Fix:         "Remove the redundant override tags.",
 	},
 	IssueRepeatedOpenBrace: {
 		ID: IssueRepeatedOpenBrace, Severity: Suggestion, FixSafety: SafeFix, Title: "Extra opening brace in override block",

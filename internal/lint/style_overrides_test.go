@@ -9,7 +9,7 @@ import (
 	"assx/internal/ass"
 )
 
-func TestRedundantFontOverridesSafeFix(t *testing.T) {
+func TestRedundantStyleOverridesSafeFix(t *testing.T) {
 	path := filepath.Join("..", "..", "testdata", "redundant-font.ass")
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -17,11 +17,11 @@ func TestRedundantFontOverridesSafeFix(t *testing.T) {
 	}
 	doc := ass.Parse(string(data))
 	diagnostics := AnalyzeDocument(doc)
-	if len(diagnostics) != 1 || diagnostics[0].ID != IssueRedundantFontOverrides {
+	if len(diagnostics) != 1 || diagnostics[0].ID != IssueRedundantStyleOverrides {
 		t.Fatalf("diagnostics = %#v", diagnostics)
 	}
 	if diagnostics[0].FixSafety != SafeFix || len(diagnostics[0].Edits) != 3 {
-		t.Fatalf("redundant font finding = %#v", diagnostics[0])
+		t.Fatalf("redundant style finding = %#v", diagnostics[0])
 	}
 	fixed, count, err := ApplyFixes(doc.Text, diagnostics, false)
 	if err != nil {
@@ -30,12 +30,12 @@ func TestRedundantFontOverridesSafeFix(t *testing.T) {
 	if count != 1 || !strings.Contains(fixed, "Default,alpha beta\n") {
 		t.Fatalf("fixed document (%d edits):\n%s", count, fixed)
 	}
-	if remaining := AnalyzeRedundantFontOverrides(ass.Parse(fixed)); len(remaining) != 0 {
-		t.Fatalf("fixed document still has redundant font overrides: %#v", remaining)
+	if remaining := AnalyzeRedundantStyleOverrides(ass.Parse(fixed)); len(remaining) != 0 {
+		t.Fatalf("fixed document still has redundant style overrides: %#v", remaining)
 	}
 }
 
-func TestRedundantFontOverrideStateTracking(t *testing.T) {
+func TestRedundantStyleOverrideStateTracking(t *testing.T) {
 	cases := []struct {
 		name string
 		text string
@@ -52,12 +52,12 @@ func TestRedundantFontOverrideStateTracking(t *testing.T) {
 		{name: "bold assignments settle on style", text: `{\b1\b0}A`, want: true},
 		{name: "scale assignments settle on style", text: `{\fscx110\fscx100}A`, want: true},
 		{name: "italic y scale and spacing settle on style", text: `{\i1\i0\fscy120\fscy100\fsp2\fsp0}A`, want: true},
-		{name: "font state differs at first text", text: `{\fnCourier New}A{\fnArial}B`},
-		{name: "font changes in the middle", text: `{\fnArial}A{\fnCourier New}B{\fnArial}C`},
+		{name: "Style-backed state differs at first text", text: `{\fnCourier New}A{\fnArial}B`},
+		{name: "Style-backed state changes in the middle", text: `{\fnArial}A{\fnCourier New}B{\fnArial}C`},
 		{name: "style reset is unsupported", text: `{\fnArial}A{\rOther}B`},
-		{name: "font transform is unsupported", text: `{\fnArial}A{\t(0,500,\fs24)}B`},
-		{name: "rotation is not modeled", text: `{\frz0}A`},
-		{name: "encoding is not modeled", text: `{\fe1}A`},
+		{name: "transforms are skipped", text: `{\fnArial}A{\t(0,500,\fs24)}B`},
+		{name: "rotation has no Style field", text: `{\frz0}A`},
+		{name: "encoding has no Style field", text: `{\fe1}A`},
 		{name: "font family comparison is exact", text: `{\fnarial}A`},
 		{name: "weight values are restricted", text: `{\b100}A`},
 		{name: "invalid numeric values are skipped", text: `{\fs20px}A`},
@@ -66,9 +66,9 @@ func TestRedundantFontOverrideStateTracking(t *testing.T) {
 	for _, test := range cases {
 		t.Run(test.name, func(t *testing.T) {
 			doc := parseFontOverrideText(test.text)
-			got := len(AnalyzeRedundantFontOverrides(doc)) != 0
+			got := len(AnalyzeRedundantStyleOverrides(doc)) != 0
 			if got != test.want {
-				t.Fatalf("found redundant font override = %t, want %t", got, test.want)
+				t.Fatalf("found redundant style override = %t, want %t", got, test.want)
 			}
 		})
 	}
@@ -101,14 +101,14 @@ func TestRedundantStyleOverrideProperties(t *testing.T) {
 	for _, test := range cases {
 		t.Run(test.name, func(t *testing.T) {
 			doc := parseStyleOverrideText(test.format, test.style, test.text)
-			diagnostics := AnalyzeRedundantFontOverrides(doc)
-			if len(diagnostics) != 1 || diagnostics[0].ID != IssueRedundantFontOverrides {
+			diagnostics := AnalyzeRedundantStyleOverrides(doc)
+			if len(diagnostics) != 1 || diagnostics[0].ID != IssueRedundantStyleOverrides {
 				t.Fatalf("diagnostics = %#v", diagnostics)
 			}
 			if diagnostics[0].Severity != Suggestion || diagnostics[0].FixSafety != SafeFix {
 				t.Fatalf("finding metadata = %#v", diagnostics[0])
 			}
-			if rule := Rules[IssueRedundantFontOverrides]; rule.Title != "Overrides match style" || rule.Severity != Suggestion || rule.FixSafety != SafeFix {
+			if rule := Rules[IssueRedundantStyleOverrides]; rule.Title != "Overrides match style" || rule.Severity != Suggestion || rule.FixSafety != SafeFix {
 				t.Fatalf("ASS013 rule metadata = %#v", rule)
 			}
 		})
@@ -125,13 +125,13 @@ func TestRedundantStyleOverrideRestorationAndOverlap(t *testing.T) {
 		"Default,&H00FFFFFF&,&H80000000&,&H00112233&,&H00445566&",
 		`{\alpha&H00&}A`,
 	)
-	if diagnostics := AnalyzeRedundantFontOverrides(mixedAlpha); len(diagnostics) != 0 {
+	if diagnostics := AnalyzeRedundantStyleOverrides(mixedAlpha); len(diagnostics) != 0 {
 		t.Fatalf("partially matching alpha tag was reported: %#v", diagnostics)
 	}
 
 	doc := parseStyleOverrideText(format, style, `{\bord4\bord2}A`)
 	diagnostics := AnalyzeDocument(doc)
-	if len(diagnostics) != 1 || diagnostics[0].ID != IssueRedundantFontOverrides {
+	if len(diagnostics) != 1 || diagnostics[0].ID != IssueRedundantStyleOverrides {
 		t.Fatalf("redundant sequence diagnostics = %#v", diagnostics)
 	}
 	fixed, count, err := ApplyFixes(doc.Text, diagnostics, false)
@@ -140,7 +140,7 @@ func TestRedundantStyleOverrideRestorationAndOverlap(t *testing.T) {
 	}
 
 	overlap := AnalyzeDocument(parseStyleOverrideText(format, style, `{\bord2\bord2}A`))
-	if len(overlap) != 1 || overlap[0].ID != IssueRedundantFontOverrides {
+	if len(overlap) != 1 || overlap[0].ID != IssueRedundantStyleOverrides {
 		t.Fatalf("ASS006/ASS013 overlap was not assigned to ASS013: %#v", overlap)
 	}
 }
@@ -150,7 +150,7 @@ func TestRedundantStyleOverridesDoNotModelUnsupportedProperties(t *testing.T) {
 	for _, text := range tags {
 		t.Run(text, func(t *testing.T) {
 			doc := parseStyleOverrideText("Name, Outline", "Default,2", text)
-			if diagnostics := AnalyzeRedundantFontOverrides(doc); len(diagnostics) != 0 {
+			if diagnostics := AnalyzeRedundantStyleOverrides(doc); len(diagnostics) != 0 {
 				t.Fatalf("unsupported property produced ASS013: %#v", diagnostics)
 			}
 		})
@@ -198,10 +198,10 @@ func TestSameValueAssignmentsKeepPreviousEffectiveOwner(t *testing.T) {
 	}
 }
 
-func TestRedundantFontFixPreservesOtherTags(t *testing.T) {
+func TestRedundantStyleFixPreservesOtherTags(t *testing.T) {
 	doc := parseFontOverrideText(`{\c&H00FF00&\fnCourier New\fnArial}A{\fnArial}B`)
 	diagnostics := AnalyzeDocument(doc)
-	if len(diagnostics) != 1 || diagnostics[0].ID != IssueRedundantFontOverrides {
+	if len(diagnostics) != 1 || diagnostics[0].ID != IssueRedundantStyleOverrides {
 		t.Fatalf("diagnostics = %#v", diagnostics)
 	}
 	fixed, count, err := ApplyFixes(doc.Text, diagnostics, false)
@@ -213,18 +213,53 @@ func TestRedundantFontFixPreservesOtherTags(t *testing.T) {
 	}
 }
 
-func TestRedundantFontRuleRejectsAmbiguousStyles(t *testing.T) {
+func TestRedundantStyleRuleRejectsDuplicateDefinitions(t *testing.T) {
 	text := fontOverrideDocument(`{\fnArial}A`, "")
 	text = strings.Replace(text, "Style: Default, Arial, 20, 0, 0, 100, 100, 0\n", "Style: Default, Arial, 20, 0, 0, 100, 100, 0\nStyle: Default, Arial, 20, 0, 0, 100, 100, 0\n", 1)
-	if diagnostics := AnalyzeRedundantFontOverrides(ass.Parse(text)); len(diagnostics) != 0 {
+	if diagnostics := AnalyzeRedundantStyleOverrides(ass.Parse(text)); len(diagnostics) != 0 {
 		t.Fatalf("ambiguous style produced findings: %#v", diagnostics)
 	}
 }
 
-func TestRedundantFontRuleRequiresExactStyleReference(t *testing.T) {
-	text := strings.Replace(fontOverrideDocument(`{\fnArial}A`, ""), "Default,{\\fnArial}", "default,{\\fnArial}", 1)
-	if diagnostics := AnalyzeRedundantFontOverrides(ass.Parse(text)); len(diagnostics) != 0 {
-		t.Fatalf("case-mismatched style reference produced findings: %#v", diagnostics)
+func TestRedundantStyleRuleUsesRendererDialogueStyleLookup(t *testing.T) {
+	definitions := "Style: Default,Arial,20\n"
+	for _, name := range []string{"Default", "default", "DEFAULT", "*Default", "  *DEFAULT  "} {
+		t.Run(name, func(t *testing.T) {
+			doc := parseStyleDefinitionsText("Name, Fontname, Fontsize", definitions, name, `{\fs20}A`)
+			var styleFinding, undefinedFinding bool
+			for _, diagnostic := range AnalyzeDocument(doc) {
+				styleFinding = styleFinding || diagnostic.ID == IssueRedundantStyleOverrides
+				undefinedFinding = undefinedFinding || diagnostic.ID == IssueUndefinedStyle
+			}
+			if !styleFinding || undefinedFinding {
+				t.Fatalf("dialogue Style %q did not resolve consistently: style=%t undefined=%t", name, styleFinding, undefinedFinding)
+			}
+		})
+	}
+}
+
+func TestRedundantStyleRuleKeepsNonDefaultNamesCaseSensitive(t *testing.T) {
+	definitions := "Style: Main,Arial,20\nStyle: main,Arial,30\n"
+	for _, test := range []struct {
+		name string
+		text string
+		want bool
+	}{
+		{name: "Main", text: `{\fs20}A`, want: true},
+		{name: "main", text: `{\fs30}A`, want: true},
+		{name: "MAIN", text: `{\fs20}A`},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			doc := parseStyleDefinitionsText("Name, Fontname, Fontsize", definitions, test.name, test.text)
+			var styleFinding, undefinedFinding bool
+			for _, diagnostic := range AnalyzeDocument(doc) {
+				styleFinding = styleFinding || diagnostic.ID == IssueRedundantStyleOverrides
+				undefinedFinding = undefinedFinding || diagnostic.ID == IssueUndefinedStyle
+			}
+			if styleFinding != test.want || undefinedFinding == test.want {
+				t.Fatalf("Style %q: redundant=%t undefined=%t, want redundant=%t", test.name, styleFinding, undefinedFinding, test.want)
+			}
+		})
 	}
 }
 
@@ -233,10 +268,14 @@ func parseFontOverrideText(text string) ass.Document {
 }
 
 func parseStyleOverrideText(format, style, text string) ass.Document {
+	return parseStyleDefinitionsText(format, "Style: "+style+"\n", "Default", text)
+}
+
+func parseStyleDefinitionsText(format, definitions, dialogueStyle, text string) ass.Document {
 	return ass.Parse("[Script Info]\nPlayResX: 640\nPlayResY: 480\nYCbCr Matrix: None\nLayoutResX: 640\nLayoutResY: 480\n" +
-		"[V4+ Styles]\nFormat: " + format + "\nStyle: " + style + "\n" +
+		"[V4+ Styles]\nFormat: " + format + "\n" + definitions +
 		"[Events]\nFormat: Layer, Start, End, Style, Text\n" +
-		"Dialogue: 0, 0:00:00.00, 0:00:02.00, Default," + text + "\n")
+		"Dialogue: 0, 0:00:00.00, 0:00:02.00, " + dialogueStyle + "," + text + "\n")
 }
 
 func fontOverrideDocument(text, extraStyle string) string {

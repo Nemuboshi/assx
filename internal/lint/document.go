@@ -14,10 +14,10 @@ func AnalyzeDocument(doc ass.Document) []Diagnostic {
 		diagnostics = append(diagnostics, Analyze(dialogue)...)
 	}
 
-	fontDiagnostics := AnalyzeRedundantFontOverrides(doc)
-	if len(fontDiagnostics) != 0 {
-		diagnostics = suppressOverlappingNoEffect(diagnostics, fontDiagnostics)
-		diagnostics = append(diagnostics, fontDiagnostics...)
+	styleDiagnostics := AnalyzeRedundantStyleOverrides(doc)
+	if len(styleDiagnostics) != 0 {
+		diagnostics = suppressOverlappingNoEffect(diagnostics, styleDiagnostics)
+		diagnostics = append(diagnostics, styleDiagnostics...)
 	}
 	sort.SliceStable(diagnostics, func(i, j int) bool {
 		if diagnostics[i].Line == diagnostics[j].Line {
