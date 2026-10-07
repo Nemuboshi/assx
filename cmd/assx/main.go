@@ -294,7 +294,7 @@ func renderHuman(writer io.Writer, path string, diagnostics []lint.Diagnostic, e
 			if diagnostic.Field != "" {
 				fmt.Fprintf(writer, "    field: %s\n", diagnostic.Field)
 			}
-			if strings.HasPrefix(diagnostic.ID, "F") && diagnostic.Detail != "" {
+			if diagnostic.Detail != "" {
 				fmt.Fprintf(writer, "    %s\n", diagnostic.Detail)
 			}
 			if i+1 < len(ordered) {
@@ -303,7 +303,7 @@ func renderHuman(writer io.Writer, path string, diagnostics []lint.Diagnostic, e
 		}
 	}
 
-	errors, warnings, lints := 0, 0, 0
+	errors, warnings, suggestions := 0, 0, 0
 	for _, diagnostic := range ordered {
 		switch diagnostic.Severity {
 		case lint.Error:
@@ -311,10 +311,10 @@ func renderHuman(writer io.Writer, path string, diagnostics []lint.Diagnostic, e
 		case lint.Warning:
 			warnings++
 		default:
-			lints++
+			suggestions++
 		}
 	}
-	fmt.Fprintf(writer, "\nChecked %s in %s. Summary: %d diagnostics (%d errors, %d warnings, %d lint findings).\n", path, formatDuration(elapsed), len(ordered), errors, warnings, lints)
+	fmt.Fprintf(writer, "\nChecked %s in %s. Summary: %d diagnostics (%d errors, %d warnings, %d suggestions).\n", path, formatDuration(elapsed), len(ordered), errors, warnings, suggestions)
 	fmt.Fprintln(writer, fixSummary)
 }
 

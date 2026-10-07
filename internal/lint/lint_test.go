@@ -53,13 +53,13 @@ func TestLexFindsExcessBackslashesOnlyInsideOverrideBlocks(t *testing.T) {
 	}
 }
 
-func TestAnalyzeReportsUnknownAndRepeatedSlashAsLint(t *testing.T) {
+func TestAnalyzeReportsUnknownAndRepeatedSlashAsSuggestion(t *testing.T) {
 	diagnostics := Analyze(ass.Dialogue{Text: `{\\blur2\mystery}`})
 	ids := make(map[string]Severity)
 	for _, diagnostic := range diagnostics {
 		ids[diagnostic.ID] = diagnostic.Severity
 	}
-	if ids[IssueRepeatedSlash] != Lint || ids[IssueUnknownTag] != Lint {
+	if ids[IssueRepeatedSlash] != Suggestion || ids[IssueUnknownTag] != Suggestion {
 		t.Fatalf("diagnostic severities = %#v", ids)
 	}
 }
@@ -168,7 +168,23 @@ func TestApplyFixesRejectsOverlappingEdits(t *testing.T) {
 }
 
 func TestRuleRegistryHasStableMetadata(t *testing.T) {
-	for _, id := range []string{IssueArgumentCount, IssueInvalidValue, IssueRendererDiff, IssueFontComma, IssueVSFilterModTag, IssueNoEffect, IssueUnknownTag, IssueMatrixHeader, IssueLayoutRes, IssueRepeatedSlash, IssueStyleInteger, IssueStyleFloat, IssueRedundantFontOverrides} {
+	rules := []struct {
+		id, want string
+	}{
+		{IssueArgumentCount, "ASS001"}, {IssueInvalidValue, "ASS002"},
+		{IssueRendererDiff, "ASS003"}, {IssueFontComma, "ASS004"},
+		{IssueVSFilterModTag, "ASS005"}, {IssueNoEffect, "ASS006"},
+		{IssueUnknownTag, "ASS007"}, {IssueMatrixHeader, "ASS008"},
+		{IssueLayoutRes, "ASS009"}, {IssueRepeatedSlash, "ASS010"},
+		{IssueStyleInteger, "ASS011"}, {IssueStyleFloat, "ASS012"},
+		{IssueRedundantFontOverrides, "ASS013"}, {IssueRepeatedOpenBrace, "ASS014"},
+		{IssueFontMissing, "ASS015"}, {IssueMissingGlyphs, "ASS016"},
+	}
+	for _, test := range rules {
+		id := test.id
+		if id != test.want {
+			t.Errorf("rule ID = %q, want %q", id, test.want)
+		}
 		rule, ok := Rules[id]
 		if !ok || rule.ID != id || rule.Title == "" || rule.Description == "" {
 			t.Errorf("rule %q is missing required metadata: %#v", id, rule)
