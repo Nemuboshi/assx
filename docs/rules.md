@@ -83,9 +83,11 @@ There is no universal decimal-place limit for style numbers. libass parses float
 
 References: libass float parsing via [`ass_atof`](https://github.com/libass/libass/blob/f61db56/libass/ass.c#L42) and style field dispatch in [`ass.c`](https://github.com/libass/libass/blob/f61db56/libass/ass.c#L606); VSFilter [`GetFloat`](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L1254) and style parsing in [`STS.cpp`](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L1509).
 
-## ASS013 — Font overrides match style
+## ASS013 — Overrides match style
 
-This rule compares `\fn`, `\fs`, `\b`, `\i`, `\fscx`, `\fscy`, and `\fsp` against the dialogue's style. It reports when those tags leave the tracked font state equal to the style for all rendered text: leading blocks may contain multiple assignments before text, and later assignments are accepted only when they leave the current value unchanged. The safe fix removes only those font tags and preserves other formatting tags. Empty-value resets to the active style are modeled; relative `\fs+` and `\fs-` forms are skipped rather than interpreted as absolute sizes. The rule also skips ambiguous styles, style resets, transforms, drawing mode, and unsupported font properties.
+This rule compares supported override slots with properties declared in the dialogue's Style. It supports Fontname, Fontsize, Bold, Italic, ScaleX, ScaleY, Spacing, Underline, StrikeOut, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Outline, Shadow, Angle, and Encoding. Colors are tracked as separate color and alpha slots; `\bord`/`\xbord`/`\ybord`, `\shad`/`\xshad`/`\yshad`, and `\fr`/`\frz` share their renderer state slots.
+
+The safe fix removes relevant override tags only when tracked state matches the Style at every visible text boundary. Intermediate changes overwritten before text can be removed, while a later assignment that restores a Style value after visible text is kept. Other formatting tags are preserved. Relative `\fs+`/`\fs-` forms, style resets, transforms, drawing mode, malformed values, ambiguous styles, and unsupported state are skipped. Properties without a corresponding Style field, including blur, be, frx, fry, fax, fay, clip, p, and pbo, are not compared.
 
 ## ASS014 — Extra opening brace in override block
 

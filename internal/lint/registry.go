@@ -110,8 +110,8 @@ var Rules = map[string]Rule{
 		Sources:     []string{"https://github.com/libass/libass/blob/f61db56/libass/ass.c#L435", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L1254", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L1509"},
 	},
 	IssueRedundantFontOverrides: {
-		ID: IssueRedundantFontOverrides, Severity: Suggestion, FixSafety: SafeFix, Title: "Font overrides match style",
-		Description: "Font override tags leave the style font state unchanged across dialogue text.",
+		ID: IssueRedundantFontOverrides, Severity: Suggestion, FixSafety: SafeFix, Title: "Overrides match style",
+		Description: "Style-backed override tags leave the corresponding Style properties unchanged across dialogue text.",
 		Fix:         "Remove the redundant font override tags.",
 	},
 	IssueRepeatedOpenBrace: {
