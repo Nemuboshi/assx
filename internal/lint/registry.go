@@ -1,30 +1,30 @@
 package lint
 
 const (
-	IssueArgumentCount          = "ASS-E001"
-	IssueInvalidValue           = "ASS-E002"
-	IssueRendererDiff           = "ASS-W001"
-	IssueFontComma              = "ASS-W002"
-	IssueVSFilterModTag         = "ASS-W003"
-	IssueNoEffect               = "ASS-L001"
-	IssueUnknownTag             = "ASS-L002"
-	IssueMatrixHeader           = "ASS-L003"
-	IssueLayoutRes              = "ASS-L004"
-	IssueRepeatedSlash          = "ASS-L005"
-	IssueStyleInteger           = "ASS-L006"
-	IssueStyleFloat             = "ASS-L007"
-	IssueRedundantFontOverrides = "ASS-L008"
-	IssueRepeatedOpenBrace      = "ASS-L009"
-	IssueFontMissing            = "F001"
-	IssueMissingGlyphs          = "F002"
+	IssueArgumentCount          = "ASS001"
+	IssueInvalidValue           = "ASS002"
+	IssueRendererDiff           = "ASS003"
+	IssueFontComma              = "ASS004"
+	IssueVSFilterModTag         = "ASS005"
+	IssueNoEffect               = "ASS006"
+	IssueUnknownTag             = "ASS007"
+	IssueMatrixHeader           = "ASS008"
+	IssueLayoutRes              = "ASS009"
+	IssueRepeatedSlash          = "ASS010"
+	IssueStyleInteger           = "ASS011"
+	IssueStyleFloat             = "ASS012"
+	IssueRedundantFontOverrides = "ASS013"
+	IssueRepeatedOpenBrace      = "ASS014"
+	IssueFontMissing            = "ASS015"
+	IssueMissingGlyphs          = "ASS016"
 )
 
 type Severity string
 
 const (
-	Error   Severity = "error"
-	Warning Severity = "warning"
-	Lint    Severity = "lint"
+	Error      Severity = "error"
+	Warning    Severity = "warning"
+	Suggestion Severity = "suggestion"
 )
 
 type Rule struct {
@@ -66,66 +66,66 @@ var Rules = map[string]Rule{
 		Sources: []string{"https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L302", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2110", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2447"},
 	},
 	IssueVSFilterModTag: {
-		ID: IssueVSFilterModTag, Severity: Warning, Title: "VSFilterMod tag may be unsupported by libass/VSFilter; no safe fix",
+		ID: IssueVSFilterModTag, Severity: Warning, Title: "VSFilterMod tag may be unsupported by libass/VSFilter",
 		Description: "This VSFilterMod-only tag may not be supported by libass or original VSFilter. Content using it cannot be safely auto-fixed.",
 		Fix:         "Verify support and rendering in the target renderer; no safe automatic fix is available for content using this tag.",
 		Sources:     []string{"https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2745-L3717", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L1716-L1769", "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L281-L888"},
 	},
 	IssueNoEffect: {
-		ID: IssueNoEffect, Severity: Lint, FixSafety: SafeFix, Title: "Override has no effect",
+		ID: IssueNoEffect, Severity: Suggestion, FixSafety: SafeFix, Title: "Override has no effect",
 		Description: "An override is replaced, reset, or ignored before it affects any dialogue text.", Fix: "Remove it or move it to the intended text boundary.",
 		Sources: []string{"https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584", "https://github.com/libass/libass/blob/f61db56/libass/ass_render.c#L1075", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2301", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2396", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2575", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2643"},
 	},
 	IssueUnknownTag: {
-		ID: IssueUnknownTag, Severity: Lint, Title: "Unknown or misplaced override tag",
+		ID: IssueUnknownTag, Severity: Suggestion, Title: "Unknown or misplaced override tag",
 		Description: "The tag is unknown, or a text escape was placed in an override block.", Fix: "Correct the spelling, remove the tag, or move the text escape into dialogue text.",
 		Sources: []string{"https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L348", "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L1119", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L1716", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2156"},
 	},
 	IssueMatrixHeader: {
-		ID: IssueMatrixHeader, Severity: Lint, FixSafety: UnsafeFix, Title: "YCbCr matrix should be declared",
+		ID: IssueMatrixHeader, Severity: Suggestion, FixSafety: UnsafeFix, Title: "YCbCr matrix needs review",
 		Description: "An absent YCbCr matrix defaults to renderer-dependent color conversion, or TV/PC.601 is used above PlayResY 576.",
 		Fix:         "Set an explicit matrix. The suggested edit uses None when absent and the matching 709 range when 601 is used above 576p.",
 		Sources:     []string{"https://github.com/libass/libass/blob/f61db56/libass/ass_types.h#L175", "https://github.com/libass/libass/blob/f61db56/libass/ass.c#L351", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L1633"},
 	},
 	IssueLayoutRes: {
-		ID: IssueLayoutRes, Severity: Lint, FixSafety: UnsafeFix, Title: "Layout resolution is missing",
+		ID: IssueLayoutRes, Severity: Suggestion, FixSafety: UnsafeFix, Title: "Layout resolution is missing",
 		Description: "libass uses layout resolution to scale font, blur, borders, shadows, and layout calculations.",
 		Fix:         "Set missing LayoutResX and LayoutResY values to the corresponding PlayRes dimensions after reviewing the rendering change.",
 		Sources:     []string{"https://github.com/libass/libass/blob/f61db56/libass/ass.c#L888", "https://github.com/libass/libass/blob/f61db56/libass/ass_render.c#L1008", "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L939"},
 	},
 	IssueRepeatedSlash: {
-		ID: IssueRepeatedSlash, Severity: Lint, FixSafety: SafeFix, Title: "Repeated backslash in override block",
+		ID: IssueRepeatedSlash, Severity: Suggestion, FixSafety: SafeFix, Title: "Repeated backslash in override block",
 		Description: "More than one backslash precedes an override tag.", Fix: "Remove the extra backslash and keep the intended tag.",
 	},
 	IssueStyleInteger: {
-		ID: IssueStyleInteger, Severity: Lint, FixSafety: SafeFix, Title: "Fractional value in integer style field",
+		ID: IssueStyleInteger, Severity: Suggestion, FixSafety: SafeFix, Title: "Fractional value in integer style field",
 		Description: "This style field is parsed as an integer; the fractional part is ignored.", Fix: "Remove the fractional part while keeping the renderer-consumed integer value.",
 		Sources: []string{"https://github.com/libass/libass/blob/f61db56/libass/ass.c#L323", "https://github.com/libass/libass/blob/f61db56/libass/ass.c#L434", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L1237", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L1511"},
 	},
 	IssueStyleFloat: {
-		ID: IssueStyleFloat, Severity: Lint, FixSafety: UnsafeFix, Title: "Style value exceeds VSFilter float precision",
+		ID: IssueStyleFloat, Severity: Suggestion, FixSafety: UnsafeFix, Title: "Style value exceeds VSFilter float precision",
 		Description: "This field is parsed as a double by libass and a 32-bit float by VSFilter; significant digits can be rounded differently.",
 		Fix:         "Round to the VSFilter 32-bit float value only after reviewing the small rendering change in libass.",
 		Sources:     []string{"https://github.com/libass/libass/blob/f61db56/libass/ass.c#L435", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L1254", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L1509"},
 	},
 	IssueRedundantFontOverrides: {
-		ID: IssueRedundantFontOverrides, Severity: Lint, FixSafety: SafeFix, Title: "Font overrides match style",
+		ID: IssueRedundantFontOverrides, Severity: Suggestion, FixSafety: SafeFix, Title: "Font overrides match style",
 		Description: "Font override tags leave the style font state unchanged across dialogue text.",
 		Fix:         "Remove the redundant font override tags.",
 	},
 	IssueRepeatedOpenBrace: {
-		ID: IssueRepeatedOpenBrace, Severity: Lint, FixSafety: SafeFix, Title: "Extra opening brace in override block",
+		ID: IssueRepeatedOpenBrace, Severity: Suggestion, FixSafety: SafeFix, Title: "Extra opening brace in override block",
 		Description: "Only the first of consecutive opening braces starts the override block; the extras are ignored while tags are parsed.",
 		Fix:         "Remove the extra opening brace(s).",
 		Sources:     []string{"https://github.com/libass/libass/blob/f61db56/libass/ass_render.c#L2066-L2075", "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L282-L290", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2954-L2958", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2075-L2082"},
 	},
 	IssueFontMissing: {
-		ID: IssueFontMissing, Severity: Lint, Title: "Subtitle font is missing",
+		ID: IssueFontMissing, Severity: Suggestion, Title: "Subtitle font is missing",
 		Description: "The font family used by subtitle text was not found in the selected font set.",
 		Fix:         "Install the font or point --font-dir at a folder containing it.",
 	},
 	IssueMissingGlyphs: {
-		ID: IssueMissingGlyphs, Severity: Lint, Title: "Font is missing subtitle characters",
+		ID: IssueMissingGlyphs, Severity: Suggestion, Title: "Font is missing subtitle characters",
 		Description: "The selected font does not contain glyphs for some subtitle characters.",
 		Fix:         "Use a font that contains the missing characters.",
 	},
