@@ -9,10 +9,11 @@ import (
 )
 
 type Dialogue struct {
-	Text      string
-	Style     string
-	Line      int
-	TextStart int
+	Text        string
+	Style       string
+	StyleColumn int
+	Line        int
+	TextStart   int
 }
 
 type HeaderField struct {
@@ -174,14 +175,21 @@ func Parse(text string) Document {
 				}
 				if separator >= 0 {
 					style := ""
+					styleFieldColumn := 0
 					if styleColumn < textColumn {
 						fields := strings.Split(body[:separator], ",")
 						if styleColumn < len(fields) {
-							style = strings.TrimSpace(fields[styleColumn])
+							raw := fields[styleColumn]
+							style = strings.TrimSpace(raw)
+							styleOffset := bodyStart
+							for _, field := range fields[:styleColumn] {
+								styleOffset += len(field) + 1
+							}
+							styleFieldColumn = styleOffset + len(raw) - len(strings.TrimLeft(raw, " \t")) + 1
 						}
 					}
 					textStart := bodyStart + separator + 1
-					doc.Dialogues = append(doc.Dialogues, Dialogue{Text: body[separator+1:], Style: style, Line: line, TextStart: offset + textStart})
+					doc.Dialogues = append(doc.Dialogues, Dialogue{Text: body[separator+1:], Style: style, StyleColumn: styleFieldColumn, Line: line, TextStart: offset + textStart})
 				}
 			}
 		}

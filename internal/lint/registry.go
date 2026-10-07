@@ -17,6 +17,7 @@ const (
 	IssueRepeatedOpenBrace      = "ASS014"
 	IssueFontMissing            = "ASS015"
 	IssueMissingGlyphs          = "ASS016"
+	IssueUndefinedStyle         = "ASS017"
 )
 
 type Severity string
@@ -128,6 +129,11 @@ var Rules = map[string]Rule{
 		ID: IssueMissingGlyphs, Severity: Suggestion, Title: "Font is missing subtitle characters",
 		Description: "The selected font does not contain glyphs for some subtitle characters.",
 		Fix:         "Use a font that contains the missing characters.",
+	},
+	IssueUndefinedStyle: {
+		ID: IssueUndefinedStyle, Severity: Warning, Title: "Undefined style reference",
+		Description: "A dialogue or override tag references a style that is not defined in the script.",
+		Fix:         "Correct the style name or define the referenced style.",
 	},
 }
 

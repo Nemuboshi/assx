@@ -105,7 +105,7 @@ func TestRunVSFilterModTagWarningDisablesFixes(t *testing.T) {
 
 func TestRunUnsafeFixIsOptInAndPreservesExitStatus(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "unsafe.ass")
-	input := "[Script Info]\nPlayResX: 1920\nPlayResY: 1080\nYCbCr Matrix: TV.601\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0,1,Default,,0,0,0,,text\n"
+	input := "[Script Info]\nPlayResX: 1920\nPlayResY: 1080\nYCbCr Matrix: TV.601\n[V4+ Styles]\nFormat: Name, Fontname, Fontsize\nStyle: Default, Arial, 20\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0,1,Default,,0,0,0,,text\n"
 	if err := os.WriteFile(path, []byte(input), 0o600); err != nil {
 		t.Fatal(err)
 	}
@@ -136,7 +136,7 @@ func TestRunUnsafeFixIsOptInAndPreservesExitStatus(t *testing.T) {
 
 func TestRunJSONStaysValidAndReportsUnknownTagsAsSuggestion(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "unknown.ass")
-	input := "[Script Info]\nYCbCr Matrix: None\nPlayResX: 640\nPlayResY: 480\nLayoutResX: 640\nLayoutResY: 480\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0,1,Default,,0,0,0,,{\\unknownTag}text\n"
+	input := "[Script Info]\nYCbCr Matrix: None\nPlayResX: 640\nPlayResY: 480\nLayoutResX: 640\nLayoutResY: 480\n[V4+ Styles]\nFormat: Name, Fontname, Fontsize\nStyle: Default, Arial, 20\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0,1,Default,,0,0,0,,{\\unknownTag}text\n"
 	if err := os.WriteFile(path, []byte(input), 0o600); err != nil {
 		t.Fatal(err)
 	}

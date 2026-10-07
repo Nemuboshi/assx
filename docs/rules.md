@@ -8,7 +8,7 @@ Issue IDs are assx identifiers, not renderer error codes. Optional font checks u
 - `warning`: the CLI exits successfully.
 - `suggestion`: the CLI exits successfully.
 
-Invalid command-line usage and unreadable input exit with status 2. Diagnostics point to the physical ASS file line; columns are one-based within the Dialogue `Text` field.
+Invalid command-line usage and unreadable input exit with status 2. Diagnostics point to the physical ASS file line; columns are one-based and point into Dialogue `Text` for override tags or the referenced field for header, style, and Dialogue style-reference findings.
 
 The references below are pinned to libass [`f61db56`](https://github.com/libass/libass/tree/f61db56) and xy-VSFilter [`135a3015`](https://github.com/Masaiki/xy-VSFilter/tree/135a3015). Each section links only to the source relevant to that rule.
 
@@ -100,6 +100,12 @@ With `--check-fonts`, this finding reports an effective font family that was not
 ## ASS016 — Font is missing subtitle characters
 
 The selected font family exists, but does not contain glyphs for one or more characters used by dialogue text. The finding lists the missing characters. Both font findings are informational suggestions with no automatic fixes.
+
+## ASS017 — Undefined style reference
+
+A Dialogue `Style` field must resolve to a style defined in the script. Dialogue style lookup removes leading `*` characters and treats every case variation of `Default` as `Default`; other style names are case-sensitive. A named `\rStyleName` reset uses exact style-name lookup, and a bare `\r` resets to the Dialogue's base style without naming another style. Both reference forms use this warning and have no automatic fix because assx cannot determine whether to correct the name, add a style, or change the reference.
+
+References: libass [Dialogue style lookup](https://github.com/libass/libass/blob/f61db56/libass/ass_utils.c#L253-L272) and [strict `\r` lookup](https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L261-L272), [named and bare `\r` handling](https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L805-L811); VSFilter [Dialogue style normalization](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L1478-L1480), [unknown Dialogue style lookup](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L2222-L2250), and [named `\r` lookup](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2643-L2647).
 
 ## Fixes
 
