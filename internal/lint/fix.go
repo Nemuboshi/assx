@@ -1,10 +1,6 @@
 package lint
 
-import (
-	"fmt"
-	"sort"
-	"strings"
-)
+import "assx/internal/edit"
 
 func CountFixes(diagnostics []Diagnostic) (safe, unsafe, unfixable int) {
 	for _, diagnostic := range diagnostics {
@@ -23,8 +19,9 @@ func CountFixes(diagnostics []Diagnostic) (safe, unsafe, unfixable int) {
 	}
 	return safe, unsafe, unfixable
 }
+
 func ApplyFixes(text string, diagnostics []Diagnostic, includeUnsafe bool) (string, int, error) {
-	var edits []TextEdit
+	var edits []edit.TextEdit
 	fixes := 0
 	for _, diagnostic := range diagnostics {
 		if diagnostic.FixSafety != SafeFix && !(includeUnsafe && diagnostic.FixSafety == UnsafeFix) {
@@ -39,22 +36,10 @@ func ApplyFixes(text string, diagnostics []Diagnostic, includeUnsafe bool) (stri
 	if len(edits) == 0 {
 		return text, 0, nil
 	}
-	sort.SliceStable(edits, func(i, j int) bool {
-		if edits[i].Start == edits[j].Start {
-			return edits[i].End < edits[j].End
-		}
-		return edits[i].Start < edits[j].Start
-	})
-	var out strings.Builder
-	cursor := 0
-	for _, edit := range edits {
-		if edit.Start < cursor || edit.Start < 0 || edit.End < edit.Start || edit.End > len(text) {
-			return "", 0, fmt.Errorf("overlapping or invalid fix range [%d:%d]", edit.Start, edit.End)
-		}
-		out.WriteString(text[cursor:edit.Start])
-		out.WriteString(edit.Replacement)
-		cursor = edit.End
+
+	fixed, err := edit.Apply(text, edits)
+	if err != nil {
+		return "", 0, err
 	}
-	out.WriteString(text[cursor:])
-	return out.String(), fixes, nil
+	return fixed, fixes, nil
 }

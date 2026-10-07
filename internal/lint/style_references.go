@@ -5,24 +5,25 @@ import (
 	"strings"
 
 	"assx/internal/ass"
+	"assx/internal/semantic"
 )
 
 func analyzeUndefinedStyleReferences(doc ass.Document) []Diagnostic {
-	styles := definedStyleNames(doc.StyleFields)
+	styles := semantic.DefinedStyleNames(doc.StyleFields)
 	var diagnostics []Diagnostic
 	for _, dialogue := range doc.Dialogues {
-		if name := strings.TrimSpace(dialogue.Style); name != "" && !resolveDialogueStyleReference(name, styles) {
+		if name := strings.TrimSpace(dialogue.Style); name != "" && !semantic.ResolveDialogueStyleReference(name, styles) {
 			diagnostics = append(diagnostics, undefinedStyleDiagnostic(
 				dialogue.Line, dialogue.StyleColumn, "", "Style",
 				fmt.Sprintf("Dialogue references undefined style %q.", name),
 			))
 		}
-		for _, token := range Lex(dialogue.Text) {
+		for _, token := range dialogue.ParsedText().Tokens() {
 			if token.Tag == nil || token.Tag.Name != "r" || len(token.Tag.Args) == 0 {
 				continue
 			}
 			name := strings.TrimSpace(strings.Join(token.Tag.Args, ","))
-			if name == "" || resolveResetStyleReference(name, styles) {
+			if name == "" || semantic.ResolveResetStyleReference(name, styles) {
 				continue
 			}
 			diagnostics = append(diagnostics, undefinedStyleDiagnostic(
@@ -32,34 +33,6 @@ func analyzeUndefinedStyleReferences(doc ass.Document) []Diagnostic {
 		}
 	}
 	return diagnostics
-}
-
-func definedStyleNames(fields []ass.StyleField) map[string]struct{} {
-	styles := make(map[string]struct{})
-	for _, field := range fields {
-		if field.Name == "name" {
-			styles[field.Value] = struct{}{}
-		}
-	}
-	return styles
-}
-
-func dialogueStyleLookupName(name string) string {
-	name = strings.TrimLeft(strings.TrimSpace(name), "*")
-	if strings.EqualFold(name, "Default") {
-		return "Default"
-	}
-	return name
-}
-
-func resolveDialogueStyleReference(name string, styles map[string]struct{}) bool {
-	_, exists := styles[dialogueStyleLookupName(name)]
-	return exists
-}
-
-func resolveResetStyleReference(name string, styles map[string]struct{}) bool {
-	_, exists := styles[strings.TrimSpace(name)]
-	return exists
 }
 
 func undefinedStyleDiagnostic(line, column int, tag, field, detail string) Diagnostic {

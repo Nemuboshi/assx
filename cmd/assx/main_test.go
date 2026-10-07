@@ -58,7 +58,7 @@ func TestRunRedundantStyleOverridesSafeFix(t *testing.T) {
 		t.Fatal(err)
 	}
 	if strings.Contains(string(fixed), `\fn`) || !strings.Contains(string(fixed), "Default,alpha beta") {
-		t.Fatalf("redundant font overrides were not removed:\n%s", fixed)
+		t.Fatalf("redundant style overrides were not removed:\n%s", fixed)
 	}
 	if !strings.Contains(stdout.String(), "Applied fixes: 1 safe, 0 unsafe.") {
 		t.Fatalf("fix summary = %q", stdout.String())

@@ -70,3 +70,40 @@ func TestFontDirectoryDoesNotFallBackToSystemFonts(t *testing.T) {
 		t.Fatal("empty explicit font directory unexpectedly found a font")
 	}
 }
+
+func TestAnalyzeFontsUsesRendererStyleLookup(t *testing.T) {
+	fontDir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(fontDir, "regular.ttf"), goregular.TTF, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	checker, err := NewFontChecker(fontDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	doc := ass.Parse(`[V4+ Styles]
+Format: Name, Fontname, Fontsize, Bold, Italic
+Style: Main,Go,20,0,0
+Style: main,Definitely Missing,20,0,0
+Style: Default,Go,20,0,0
+[Events]
+Format: Layer, Start, End, Style, Text
+Dialogue: 0,0,1,Main,A
+Dialogue: 0,0,1,main,B
+Dialogue: 0,0,1,default,C
+`)
+	diagnostics, err := AnalyzeFonts(doc, checker)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var missing []Diagnostic
+	for _, diagnostic := range diagnostics {
+		if diagnostic.ID == IssueFontMissing {
+			missing = append(missing, diagnostic)
+		}
+	}
+	if len(missing) != 1 || !strings.Contains(missing[0].Detail, "Definitely Missing") {
+		t.Fatalf("font diagnostics = %#v", diagnostics)
+	}
+}

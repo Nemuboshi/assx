@@ -27,7 +27,8 @@ func TestRedundantStyleOverridesSafeFix(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if count != 1 || !strings.Contains(fixed, "Default,alpha beta\n") {
+	fixedDoc := ass.Parse(fixed)
+	if count != 1 || len(fixedDoc.Dialogues) != 1 || fixedDoc.Dialogues[0].Text != "alpha beta" {
 		t.Fatalf("fixed document (%d edits):\n%s", count, fixed)
 	}
 	if remaining := AnalyzeRedundantStyleOverrides(ass.Parse(fixed)); len(remaining) != 0 {
@@ -53,9 +54,9 @@ func TestRedundantStyleOverrideStateTracking(t *testing.T) {
 		{name: "scale assignments settle on style", text: `{\fscx110\fscx100}A`, want: true},
 		{name: "italic y scale and spacing settle on style", text: `{\i1\i0\fscy120\fscy100\fsp2\fsp0}A`, want: true},
 		{name: "Style-backed state differs at first text", text: `{\fnCourier New}A{\fnArial}B`},
-		{name: "Style-backed state changes in the middle", text: `{\fnArial}A{\fnCourier New}B{\fnArial}C`},
-		{name: "style reset is unsupported", text: `{\fnArial}A{\rOther}B`},
-		{name: "transforms are skipped", text: `{\fnArial}A{\t(0,500,\fs24)}B`},
+		{name: "safe prefix before state change", text: `{\fnArial}A{\fnCourier New}B{\fnArial}C`, want: true},
+		{name: "safe prefix before unresolved style reset", text: `{\fnArial}A{\rOther}B`, want: true},
+		{name: "safe prefix before transform", text: `{\fnArial}A{\t(0,500,\fs24)}B`, want: true},
 		{name: "rotation has no Style field", text: `{\frz0}A`},
 		{name: "encoding has no Style field", text: `{\fe1}A`},
 		{name: "font family comparison is exact", text: `{\fnarial}A`},
@@ -284,4 +285,28 @@ func fontOverrideDocument(text, extraStyle string) string {
 		"Style: Default, Arial, 20, 0, 0, 100, 100, 0\n" + extraStyle +
 		"[Events]\nFormat: Layer, Start, End, Style, Text\n" +
 		"Dialogue: 0, 0:00:00.00, 0:00:02.00, Default," + text + "\n"
+}
+
+func TestRedundantStyleOverridesFollowActiveResetStyle(t *testing.T) {
+	doc := parseStyleDefinitionsText(
+		"Name, Fontname, Fontsize",
+		"Style: Default,Arial,20\nStyle: Other,Courier New,24\n",
+		"Default",
+		`{\rOther\fs24}A{\r\fs20}B`,
+	)
+	diagnostics := AnalyzeRedundantStyleOverrides(doc)
+	if len(diagnostics) != 1 || diagnostics[0].ID != IssueRedundantStyleOverrides || len(diagnostics[0].Edits) != 2 {
+		t.Fatalf("diagnostics = %#v", diagnostics)
+	}
+	fixed, count, err := ApplyFixes(doc.Text, diagnostics, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 1 {
+		t.Fatalf("fix count = %d", count)
+	}
+	fixedDoc := ass.Parse(fixed)
+	if len(fixedDoc.Dialogues) != 1 || fixedDoc.Dialogues[0].Text != `{\rOther}A{\r}B` {
+		t.Fatalf("fixed dialogue = %#v", fixedDoc.Dialogues)
+	}
 }

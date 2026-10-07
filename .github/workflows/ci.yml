@@ -17,10 +17,88 @@ jobs:
         with:
           go-version: stable
       - name: Check formatting
-        run: test -z "$(gofmt -l ./cmd/assx ./internal/ass ./internal/lint)"
+        run: test -z "$(gofmt -l $(find ./cmd ./internal -type f -name '*.go'))"
       - name: Vet
         run: go vet ./...
       - name: Test
         run: go test ./...
       - name: Build
         run: go build ./cmd/assx
+
+  render-equivalence:
+    runs-on: ubuntu-latest
+    env:
+      LIBASS_COMMIT: f61db567e6593df3470e91594bcd4ad2d0473aff
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version: stable
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install libass build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y meson ninja-build pkg-config libfreetype6-dev libfribidi-dev libharfbuzz-dev
+      - name: Build assx
+        run: |
+          mkdir -p .ci
+          go build -o .ci/assx ./cmd/assx
+      - name: Build pinned libass
+        run: |
+          mkdir -p .ci/libass
+          git -C .ci/libass init
+          git -C .ci/libass remote add origin https://github.com/libass/libass.git
+          git -C .ci/libass fetch --depth 1 origin "$LIBASS_COMMIT"
+          git -C .ci/libass checkout --detach FETCH_HEAD
+          meson setup .ci/libass/build .ci/libass \
+            --buildtype=release \
+            -Ddefault_library=shared \
+            -Dfontconfig=disabled \
+            -Drequire-system-font-provider=false \
+            -Dlibunibreak=disabled \
+            -Dasm=disabled \
+            -Dtest=disabled \
+            -Dcompare=disabled \
+            -Dprofile=disabled \
+            -Dfuzz=disabled \
+            -Dcheckasm=disabled
+          meson compile -C .ci/libass/build
+          find .ci/libass/build -type f -name 'libass.so*' -print
+      - name: Test rendercheck
+        run: |
+          cargo fmt --manifest-path tools/rendercheck/Cargo.toml -- --check
+          cargo test --manifest-path tools/rendercheck/Cargo.toml
+      - name: Verify exact render equivalence
+        shell: bash
+        run: |
+          LIBASS_PATH="$(find .ci/libass/build -type f -name 'libass.so*' | head -n 1)"
+          test -n "$LIBASS_PATH"
+          export LIBASS_PATH
+          export ASSX_RENDERCHECK_FONTS="$PWD/.ci/libass/compare/test"
+
+          cargo run --quiet --manifest-path tools/rendercheck/Cargo.toml -- \
+            tools/rendercheck/fixtures/equivalent-before.ass \
+            tools/rendercheck/fixtures/equivalent-after.ass \
+            --width 640 --height 360 --every-frame 24000/1001
+
+          cp tools/rendercheck/fixtures/safe-fixes.ass .ci/safe-fixes-before.ass
+          cp tools/rendercheck/fixtures/safe-fixes.ass .ci/safe-fixes-after.ass
+          .ci/assx --fix .ci/safe-fixes-after.ass
+
+          cargo run --quiet --manifest-path tools/rendercheck/Cargo.toml -- \
+            .ci/safe-fixes-before.ass \
+            .ci/safe-fixes-after.ass \
+            --width 640 --height 360 --every-frame 24000/1001
+
+          if cargo run --quiet --manifest-path tools/rendercheck/Cargo.toml -- \
+            tools/rendercheck/fixtures/equivalent-before.ass \
+            tools/rendercheck/fixtures/different-after.ass \
+            --width 640 --height 360 --every-frame 24000/1001; then
+            echo "rendercheck failed to detect an intentional rendering difference"
+            exit 1
+          else
+            code=$?
+            if [ "$code" -ne 1 ]; then
+              exit "$code"
+            fi
+          fi
