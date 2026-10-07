@@ -164,6 +164,14 @@ func TestRunJSONStaysValidAndReportsUnknownTagsAsSuggestion(t *testing.T) {
 	}
 }
 
+func TestRenderHumanDoesNotCountUnknownSeverityAsSuggestion(t *testing.T) {
+	var stdout strings.Builder
+	renderHuman(&stdout, "sample.ass", []lint.Diagnostic{{ID: "ASS999", Severity: lint.Severity("future"), Title: "Unknown severity"}}, 0, "", false)
+	if !strings.Contains(stdout.String(), "Summary: 1 diagnostics (0 errors, 0 warnings, 0 suggestions).") {
+		t.Fatalf("summary = %q", stdout.String())
+	}
+}
+
 func TestRunPreservesUTF16EncodingWhenFixing(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "utf16.ass")
 	text := "[Script Info]\nYCbCr Matrix: None\nPlayResX: 640\nPlayResY: 480\nLayoutResX: 640\nLayoutResY: 480\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0,1,Default,,0,0,0,,{\\fs10\\fs20}text\n"
