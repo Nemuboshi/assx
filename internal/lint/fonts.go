@@ -13,6 +13,7 @@ import (
 	"unicode/utf8"
 
 	"assx/internal/ass"
+	"assx/internal/semantic"
 	"golang.org/x/image/font/sfnt"
 )
 
@@ -325,29 +326,28 @@ func styleDistance(face fontFace, context fontContext) int {
 
 // AnalyzeFonts reports missing font families and missing glyphs in dialogue text.
 func AnalyzeFonts(doc ass.Document, checker *FontChecker) ([]Diagnostic, error) {
-	styles := make(map[string]fontContext)
-	for _, field := range doc.StyleFields {
-		key := strings.ToLower(strings.TrimSpace(field.StyleName))
-		style := styles[key]
-		switch field.Name {
-		case "fontname":
-			style.family = strings.TrimSpace(field.Value)
-		case "bold":
-			style.bold = styleBoolean(field.Value)
-		case "italic":
-			style.italic = styleBoolean(field.Value)
+	styleDefinitions := semantic.StyleDefinitionsByName(doc.StyleFields)
+	styles := make(map[string]fontContext, len(styleDefinitions))
+	for name, fields := range styleDefinitions {
+		styles[name] = fontContext{
+			family: strings.TrimSpace(fields["fontname"]),
+			bold:   styleBoolean(fields["bold"]),
+			italic: styleBoolean(fields["italic"]),
 		}
-		styles[key] = style
 	}
 
 	var diagnostics []Diagnostic
 	for _, dialogue := range doc.Dialogues {
-		base := styles[strings.ToLower(strings.TrimSpace(dialogue.Style))]
+		base, baseKnown := styles[semantic.DialogueStyleLookupName(dialogue.Style)]
+		if !baseKnown {
+			continue
+		}
 		current, activeStyle := base, base
+		contextKnown := true
 		var usages []*fontUsage
 		usageByContext := make(map[fontContext]*fontUsage)
 		drawing := false
-		for _, token := range Lex(dialogue.Text) {
+		for _, token := range dialogue.ParsedText().Tokens() {
 			if token.Tag != nil {
 				tag := token.Tag
 				if tag.InTransition {
@@ -355,6 +355,9 @@ func AnalyzeFonts(doc ass.Document, checker *FontChecker) ([]Diagnostic, error) 
 				}
 				switch strings.ToLower(tag.Name) {
 				case "fn":
+					if !contextKnown {
+						break
+					}
 					name := strings.TrimSpace(strings.Join(tag.Args, ","))
 					if name == "" {
 						current.family = activeStyle.family
@@ -362,12 +365,18 @@ func AnalyzeFonts(doc ass.Document, checker *FontChecker) ([]Diagnostic, error) 
 						current.family = name
 					}
 				case "b":
+					if !contextKnown {
+						break
+					}
 					if len(tag.Args) > 0 {
 						if value, err := strconv.Atoi(strings.TrimSpace(tag.Args[0])); err == nil {
 							current.bold = value != 0
 						}
 					}
 				case "i":
+					if !contextKnown {
+						break
+					}
 					if len(tag.Args) > 0 {
 						if value, err := strconv.Atoi(strings.TrimSpace(tag.Args[0])); err == nil {
 							current.italic = value != 0
@@ -375,9 +384,12 @@ func AnalyzeFonts(doc ass.Document, checker *FontChecker) ([]Diagnostic, error) 
 					}
 				case "r":
 					activeStyle = base
-					if len(tag.Args) > 0 {
-						if style, ok := styles[strings.ToLower(strings.TrimSpace(tag.Args[0]))]; ok {
+					contextKnown = true
+					if len(tag.Args) > 0 && strings.TrimSpace(tag.Args[0]) != "" {
+						if style, ok := styles[strings.TrimSpace(tag.Args[0])]; ok {
 							activeStyle = style
+						} else {
+							contextKnown = false
 						}
 					}
 					current = activeStyle
@@ -390,7 +402,7 @@ func AnalyzeFonts(doc ass.Document, checker *FontChecker) ([]Diagnostic, error) 
 				}
 				continue
 			}
-			if drawing {
+			if drawing || !contextKnown {
 				continue
 			}
 			visible := fontVisibleText(token.Text)

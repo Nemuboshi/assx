@@ -2,3 +2,6 @@ ref/
 .pi/
 /assx
 /assx.exe
+/AGENTS.md
+/.ci/
+/tools/rendercheck/target/

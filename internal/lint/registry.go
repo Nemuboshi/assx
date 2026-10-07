@@ -18,6 +18,9 @@ const (
 	IssueFontMissing             = "ASS015"
 	IssueMissingGlyphs           = "ASS016"
 	IssueUndefinedStyle          = "ASS017"
+	IssueEmptyOverrideBlock      = "ASS018"
+	IssueOverrideJunk            = "ASS019"
+	IssueMalformedDrawing        = "ASS020"
 )
 
 type Severity string
@@ -59,7 +62,7 @@ var Rules = map[string]Rule{
 	IssueRendererDiff: {
 		ID: IssueRendererDiff, Severity: Warning, Title: "Renderer behavior differs",
 		Description: "This tag form can be parsed or rendered differently by libass and VSFilter.", Fix: "Choose an unambiguous form or verify the intended output in both renderers.",
-		Sources: []string{"https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L231", "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L425", "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L749", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2205", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2315"},
+		Sources: []string{"https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L231", "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L404-L423", "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L425", "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L729-L744", "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L749", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2205", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2315", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2352-L2382", "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2953-L2998"},
 	},
 	IssueFontComma: {
 		ID: IssueFontComma, Severity: Warning, Title: "Comma splits font name",
@@ -135,84 +138,22 @@ var Rules = map[string]Rule{
 		Description: "A dialogue or override tag references a style that is not defined in the script.",
 		Fix:         "Correct the style name or define the referenced style.",
 	},
+	IssueEmptyOverrideBlock: {
+		ID: IssueEmptyOverrideBlock, Severity: Suggestion, FixSafety: SafeFix, Title: "Empty override block",
+		Description: "An empty or whitespace-only override block has no effect on rendering.",
+		Fix:         "Remove the empty override block.",
+		Sources:     []string{"https://github.com/TypesettingTools/line0-Aegisub-Scripts/blob/master/l0.ASSWipe.moon#L45-L55", "https://github.com/TypesettingTools/Aegisub/blob/master/automation/include/cleantags.lua#L105-L106"},
+	},
+	IssueOverrideJunk: {
+		ID: IssueOverrideJunk, Severity: Suggestion, Title: "Junk in override block",
+		Description: "An override block contains non-tag data that is ignored while override tags are parsed.",
+		Fix:         "Review and remove the ignored data.",
+		Sources:     []string{"https://github.com/TypesettingTools/line0-Aegisub-Scripts/blob/master/l0.ASSWipe.moon#L53", "https://github.com/TypesettingTools/ASSFoundation/blob/master/l0/ASSFoundation/FoundationMethods.moon#L171-L176"},
+	},
+	IssueMalformedDrawing: {
+		ID: IssueMalformedDrawing, Severity: Warning, Title: "Malformed ASS drawing",
+		Description: "A drawing contains a command with missing, extra, or malformed coordinates.",
+		Fix:         "Correct the drawing command after reviewing renderer behavior.",
+		Sources:     []string{"https://github.com/libass/libass/blob/f61db56/libass/ass_drawing.c#L160-L240", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L789-L895", "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L869-L970"},
+	},
 }
-
-// Behavior describes how a tag competes for its state slot. The zero value is Assign.
-type Behavior uint8
-
-const (
-	Assign Behavior = iota
-	FirstWins
-	Accumulate
-	Transition
-	StyleReset
-)
-
-type ValueKind uint8
-
-const (
-	NoValue ValueKind = iota
-	IntegerValue
-	NumberValue
-	HexValue
-	BoldValue
-	FontNameValue
-	NumberListValue
-	RectValue
-)
-
-type TagSpec struct {
-	Slots           []string
-	Behavior        Behavior // Omitted means Assign; non-assign rules are explicit.
-	Value           ValueKind
-	Min             int
-	Max             int
-	Counts          []int
-	VSFilterModOnly bool
-}
-
-// TagSpecs is the registry for recognized override names and behavior.
-// VSFilterModOnly tags are recognized so they can be warned about, but their state is not modeled.
-// clip/iclip choose behavior by shape: rectangular clips assign, vector clips are first-wins.
-var TagSpecs = map[string]TagSpec{
-	"b": {Slots: []string{"bold"}, Value: BoldValue}, "i": {Slots: []string{"italic"}, Value: IntegerValue, Min: 0, Max: 1},
-	"u": {Slots: []string{"underline"}, Value: IntegerValue, Min: 0, Max: 1}, "s": {Slots: []string{"strikeout"}, Value: IntegerValue, Min: 0, Max: 1},
-	"fn": {Slots: []string{"fontname"}, Value: FontNameValue}, "fe": {Slots: []string{"charset"}, Value: NoValue},
-	"fs": {Slots: []string{"fontsize"}, Value: NumberValue}, "fscx": {Slots: []string{"scale_x"}, Value: NumberValue},
-	"fscy": {Slots: []string{"scale_y"}, Value: NumberValue}, "fsc": {Slots: []string{"scale_x", "scale_y"}, Value: NoValue},
-	"fsp": {Slots: []string{"spacing"}, Value: NumberValue}, "frx": {Slots: []string{"frx"}, Value: NumberValue},
-	"fry": {Slots: []string{"fry"}, Value: NumberValue}, "frz": {Slots: []string{"frz"}, Value: NumberValue}, "fr": {Slots: []string{"frz"}, Value: NumberValue},
-	"fax": {Slots: []string{"fax"}, Value: NumberValue}, "fay": {Slots: []string{"fay"}, Value: NumberValue},
-	"xbord": {Slots: []string{"border_x"}, Value: NumberValue}, "ybord": {Slots: []string{"border_y"}, Value: NumberValue},
-	"bord": {Slots: []string{"border_x", "border_y"}, Value: NumberValue}, "xshad": {Slots: []string{"shadow_x"}, Value: NumberValue},
-	"yshad": {Slots: []string{"shadow_y"}, Value: NumberValue}, "shad": {Slots: []string{"shadow_x", "shadow_y"}, Value: NumberValue},
-	"be": {Slots: []string{"be"}, Value: NumberValue}, "blur": {Slots: []string{"blur"}, Value: NumberValue},
-	"q": {Slots: []string{"wrap_style"}, Value: IntegerValue, Min: 0, Max: 3}, "p": {Slots: []string{"drawing_scale"}, Value: IntegerValue},
-	"pbo": {Slots: []string{"pbo"}, Value: NumberValue}, "c": {Slots: []string{"c1"}, Value: HexValue},
-	"1c": {Slots: []string{"c1"}, Value: HexValue}, "2c": {Slots: []string{"c2"}, Value: HexValue},
-	"3c": {Slots: []string{"c3"}, Value: HexValue}, "4c": {Slots: []string{"c4"}, Value: HexValue},
-	"1a": {Slots: []string{"a1"}, Value: HexValue}, "2a": {Slots: []string{"a2"}, Value: HexValue},
-	"3a": {Slots: []string{"a3"}, Value: HexValue}, "4a": {Slots: []string{"a4"}, Value: HexValue},
-	"alpha": {Slots: []string{"a1", "a2", "a3", "a4"}, Value: HexValue},
-	"an":    {Slots: []string{"alignment"}, Behavior: FirstWins, Value: IntegerValue, Min: 1, Max: 9},
-	"a":     {Slots: []string{"alignment"}, Behavior: FirstWins, Value: IntegerValue, Min: 1, Max: 11},
-	"pos":   {Slots: []string{"position"}, Behavior: FirstWins, Value: NumberListValue, Counts: []int{2}},
-	"move":  {Slots: []string{"position"}, Behavior: FirstWins, Value: NumberListValue, Counts: []int{4, 6}},
-	"org":   {Slots: []string{"origin"}, Behavior: FirstWins, Value: NumberListValue, Counts: []int{2}},
-	"fade":  {Slots: []string{"fade"}, Behavior: FirstWins, Value: NumberListValue, Counts: []int{2, 7}},
-	"fad":   {Slots: []string{"fade"}, Behavior: FirstWins, Value: NumberListValue, Counts: []int{2, 7}},
-	"clip":  {Value: RectValue, Counts: []int{1, 2, 4}}, "iclip": {Value: RectValue, Counts: []int{1, 2, 4}},
-	"r": {Behavior: StyleReset}, "t": {Behavior: Transition}, "k": {Behavior: Accumulate}, "K": {Behavior: Accumulate},
-	"kf": {Behavior: Accumulate}, "ko": {Behavior: Accumulate}, "kt": {Behavior: Accumulate},
-	"N": {}, "n": {}, "h": {},
-	"1img": {VSFilterModOnly: true}, "2img": {VSFilterModOnly: true}, "3img": {VSFilterModOnly: true}, "4img": {VSFilterModOnly: true},
-	"1vc": {VSFilterModOnly: true}, "2vc": {VSFilterModOnly: true}, "3vc": {VSFilterModOnly: true}, "4vc": {VSFilterModOnly: true},
-	"1va": {VSFilterModOnly: true}, "2va": {VSFilterModOnly: true}, "3va": {VSFilterModOnly: true}, "4va": {VSFilterModOnly: true},
-	"distort": {VSFilterModOnly: true}, "frs": {VSFilterModOnly: true}, "fsvp": {VSFilterModOnly: true}, "fshp": {VSFilterModOnly: true},
-	"jitter": {VSFilterModOnly: true}, "lua": {VSFilterModOnly: true}, "mover": {VSFilterModOnly: true}, "moves3": {VSFilterModOnly: true},
-	"moves4": {VSFilterModOnly: true}, "movevc": {VSFilterModOnly: true}, "rnds": {VSFilterModOnly: true}, "rndx": {VSFilterModOnly: true},
-	"rndy": {VSFilterModOnly: true}, "rndz": {VSFilterModOnly: true}, "rnd": {VSFilterModOnly: true}, "xblur": {VSFilterModOnly: true},
-	"yblur": {VSFilterModOnly: true}, "z": {VSFilterModOnly: true}, "ortho": {VSFilterModOnly: true}, "blend": {VSFilterModOnly: true},
-}
-
-var KeepOnStyleReset = map[string]bool{"wrap_style": true, "drawing_scale": true, "pbo": true, "clip_rect": true}

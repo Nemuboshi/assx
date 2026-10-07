@@ -2,19 +2,18 @@ package lint
 
 import (
 	"fmt"
+	"math"
 	"regexp"
 	"strconv"
 	"strings"
-	"unicode/utf8"
 
 	"assx/internal/ass"
+	"assx/internal/ass/spec"
+	"assx/internal/edit"
+	"assx/internal/semantic"
 )
 
-type TextEdit struct {
-	Start       int    `json:"start"`
-	End         int    `json:"end"`
-	Replacement string `json:"replacement"`
-}
+type TextEdit = edit.TextEdit
 
 type Diagnostic struct {
 	File        string     `json:"file"`
@@ -33,69 +32,179 @@ type Diagnostic struct {
 	Sources     []string   `json:"sources"`
 }
 
-type owner struct {
-	index int
-	start int
-}
-
-type machine struct {
-	line              int
-	textStart         int
-	position          int
-	drawing           bool
-	tagIndex          int
-	active            map[string]owner
-	state             map[string]stateValue
-	latched           map[string]int
-	allTags           []Tag
-	live              map[int]bool
-	candidates        map[int]pendingLint
-	diagnostics       []Diagnostic
-	hasVSFilterModTag bool
-}
-
-type pendingLint struct {
-	tag    Tag
-	detail string
-	always bool
-}
-
 var (
 	integerPrefix = regexp.MustCompile(`^\s*([+-]?\d+)`)
 	numberPrefix  = regexp.MustCompile(`^\s*([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)`)
 	hexPrefix     = regexp.MustCompile(`^\s*([+-]?[0-9a-fA-F]+)`)
 )
 
+type dialogueAnalyzer struct {
+	line              int
+	textStart         int
+	diagnostics       []Diagnostic
+	hasVSFilterModTag bool
+}
+
 func Analyze(dialogue ass.Dialogue) []Diagnostic {
-	m := machine{
-		line: dialogue.Line, textStart: dialogue.TextStart, active: map[string]owner{}, state: map[string]stateValue{}, latched: map[string]int{},
-		live: map[int]bool{}, candidates: map[int]pendingLint{},
-	}
-	for _, token := range Lex(dialogue.Text) {
-		if token.Tag == nil {
-			m.consumeText(token.Text)
-		} else {
-			m.consumeTag(*token.Tag)
+	tree := dialogue.ParsedText()
+	analyzer := dialogueAnalyzer{line: dialogue.Line, textStart: dialogue.TextStart}
+
+	for _, token := range tree.Tokens() {
+		if token.Tag != nil {
+			analyzer.consumeTag(*token.Tag)
 		}
 	}
-	for index, tag := range m.allTags {
-		pending, ok := m.candidates[index]
-		if !ok || (!pending.always && m.live[index]) {
-			continue
+
+	analyzer.diagnostics = append(analyzer.diagnostics, analyzeOverrideSyntax(dialogue, tree)...)
+	analyzer.diagnostics = append(analyzer.diagnostics, analyzeDrawings(dialogue, tree)...)
+
+	for _, effect := range semantic.EvaluateDialogue(tree) {
+		analyzer.add(IssueNoEffect, effect.Tag, noEffectDetail(effect))
+		analyzer.diagnostics[len(analyzer.diagnostics)-1].Edits = []TextEdit{
+			noEffectRemovalEdit(tree, effect.Tag, analyzer.textStart),
 		}
-		m.add(IssueNoEffect, pending.tag, pending.detail)
-		m.diagnostics[len(m.diagnostics)-1].Edits = []TextEdit{{
-			Start: m.textStart + tag.Start, End: m.textStart + tag.End,
+	}
+
+	analyzer.diagnostics = append(analyzer.diagnostics, analyzeRepeatedOpenBraces(dialogue)...)
+	if analyzer.hasVSFilterModTag {
+		for i := range analyzer.diagnostics {
+			analyzer.diagnostics[i].FixSafety = ""
+			analyzer.diagnostics[i].Edits = nil
+		}
+	}
+	return analyzer.diagnostics
+}
+
+func noEffectDetail(effect semantic.NoEffect) string {
+	switch effect.Reason {
+	case semantic.SameValue:
+		return "Assigns the value already active in every affected state slot."
+	case semantic.FirstWinsIgnored:
+		return fmt.Sprintf("Ignored because an earlier tag with index %d owns this first-wins slot.", effect.OwnerIndex)
+	case semantic.OverwrittenBeforeUse:
+		return "Overwritten before any dialogue text used it."
+	case semantic.ResetBeforeUse:
+		return "Reset before any dialogue text used it."
+	case semantic.TransitionNoEffect:
+		return "The transform cannot change tracked render state, and collision handling is already disabled."
+	default:
+		return "The override has no effect."
+	}
+}
+
+func (a *dialogueAnalyzer) add(id string, tag ass.Tag, detail string) {
+	rule := Rules[id]
+	a.diagnostics = append(a.diagnostics, Diagnostic{
+		ID: rule.ID, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
+		Fix: rule.Fix, FixSafety: rule.FixSafety, Line: a.line, Column: tag.Column, Tag: tag.Name,
+		Detail: detail, Sources: rule.Sources,
+	})
+}
+
+func (a *dialogueAnalyzer) consumeTag(tag ass.Tag) {
+	if tag.RepeatedSlashes > 0 {
+		a.add(IssueRepeatedSlash, tag, fmt.Sprintf("Found %d extra backslash(es) before the tag.", tag.RepeatedSlashes))
+		a.diagnostics[len(a.diagnostics)-1].Edits = []TextEdit{{
+			Start: a.textStart + tag.Start,
+			End:   a.textStart + tag.Start + tag.RepeatedSlashes,
 		}}
+		return
 	}
-	m.diagnostics = append(m.diagnostics, analyzeRepeatedOpenBraces(dialogue)...)
-	if m.hasVSFilterModTag {
-		for i := range m.diagnostics {
-			m.diagnostics[i].FixSafety = ""
-			m.diagnostics[i].Edits = nil
+
+	a.validate(tag)
+	tagSpec, known := spec.TagSpecs[tag.Name]
+	if !known {
+		a.add(IssueUnknownTag, tag, "Unknown override tag.")
+		return
+	}
+	if tag.Name == "N" || tag.Name == "n" || tag.Name == "h" {
+		a.add(IssueUnknownTag, tag, "This text escape is only valid in dialogue text, outside an override block.")
+		return
+	}
+	if tagSpec.VSFilterModOnly {
+		a.hasVSFilterModTag = true
+		a.add(IssueVSFilterModTag, tag, "This tag is specific to VSFilterMod and is not shared by libass and VSFilter. Automatic fixes are disabled for this dialogue.")
+	}
+}
+
+func (a *dialogueAnalyzer) validate(tag ass.Tag) {
+	tagSpec, known := spec.TagSpecs[tag.Name]
+	if !known {
+		return
+	}
+	if tagSpec.Counts != nil && !contains(tagSpec.Counts, len(tag.Args)) {
+		a.add(IssueArgumentCount, tag, fmt.Sprintf("Found %d arguments; expected %s.", len(tag.Args), countsText(tagSpec.Counts)))
+		return
+	}
+	if len(tag.Args) == 0 {
+		return
+	}
+
+	arg := tag.Args[0]
+	invalid := func(detail string) { a.add(IssueInvalidValue, tag, detail) }
+
+	switch tagSpec.Value {
+	case spec.IntegerValue:
+		value, ok := parseInteger(arg)
+		if !ok {
+			invalid(fmt.Sprintf("Expected an integer, found %q.", arg))
+		} else if (tagSpec.Min != 0 || tagSpec.Max != 0) && (value < tagSpec.Min || value > tagSpec.Max) {
+			invalid(fmt.Sprintf("Value %d is outside the accepted range %d..%d.", value, tagSpec.Min, tagSpec.Max))
+		}
+	case spec.NumberValue:
+		if !numberPrefix.MatchString(arg) {
+			invalid(fmt.Sprintf("Expected a number, found %q.", arg))
+		}
+		if tag.Name == "blur" {
+			if value, ok := parseNumber(arg); ok && value > 100 {
+				a.add(IssueRendererDiff, tag, "Values above 100 are clamped by libass but have no matching upper clamp in VSFilter.")
+			}
+		}
+	case spec.BoldValue:
+		value, ok := parseInteger(arg)
+		if !ok || (value != 0 && value != 1 && value < 100) {
+			invalid(fmt.Sprintf("Bold value %q must be 0, 1, or at least 100.", arg))
+		}
+	case spec.FontNameValue:
+		if tag.Paren && len(tag.Args) > 1 {
+			a.add(IssueFontComma, tag, "A comma inside parenthesized \\fn syntax separates arguments.")
+		}
+	case spec.HexValue:
+		value := arg
+		if !tag.Paren {
+			value = strings.Trim(value, "&H")
+		} else {
+			value = strings.TrimLeft(value, "&H")
+		}
+		if !hexPrefix.MatchString(value) {
+			invalid(fmt.Sprintf("Expected a hexadecimal value, found %q.", arg))
+		} else if tag.Paren && strings.HasPrefix(strings.ToUpper(arg), "&H") {
+			a.add(IssueRendererDiff, tag, "VSFilter and libass treat an &H prefix in parenthesized color/alpha arguments differently.")
+		}
+	case spec.NumberListValue:
+		for _, value := range tag.Args {
+			if !numberPrefix.MatchString(value) {
+				invalid(fmt.Sprintf("Expected numeric arguments; found %q.", value))
+				break
+			}
+		}
+	case spec.RectValue:
+		if len(tag.Args) == 4 {
+			rendererDiff := false
+			for _, value := range tag.Args {
+				if !numberPrefix.MatchString(value) {
+					invalid(fmt.Sprintf("Expected numeric rectangle arguments; found %q.", value))
+					break
+				}
+				if number, ok := parseNumber(value); ok && math.Trunc(number) != math.Trunc(number+0.5) {
+					rendererDiff = true
+				}
+			}
+			if rendererDiff {
+				a.add(IssueRendererDiff, tag, "Fractional rectangular clip coordinates can round differently: xy-VSFilter adds 0.5 before integer conversion, while libass and VSFilterMod consume integer values.")
+			}
 		}
 	}
-	return m.diagnostics
 }
 
 func analyzeRepeatedOpenBraces(dialogue ass.Dialogue) []Diagnostic {
@@ -140,235 +249,6 @@ func nextUnescapedOpenBrace(text string, start int) int {
 		}
 	}
 	return -1
-}
-
-func (m *machine) add(id string, tag Tag, detail string) {
-	rule := Rules[id]
-	m.diagnostics = append(m.diagnostics, Diagnostic{
-		ID: rule.ID, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
-		Fix: rule.Fix, FixSafety: rule.FixSafety, Line: m.line, Column: tag.Column, Tag: tag.Name,
-		Detail: detail, Sources: rule.Sources,
-	})
-}
-
-func (m *machine) consumeText(text string) {
-	if text == "" {
-		return
-	}
-	if m.drawing {
-		m.markActiveLive()
-		m.position++
-		return
-	}
-	for i := 0; i < len(text); {
-		if text[i] == '\\' && i+1 < len(text) && strings.ContainsRune("Nnh{}", rune(text[i+1])) {
-			m.markActiveLive()
-			m.position++
-			i += 2
-			continue
-		}
-		_, size := utf8.DecodeRuneInString(text[i:])
-		m.markActiveLive()
-		m.position++
-		i += size
-	}
-}
-
-func (m *machine) markActiveLive() {
-	for _, active := range m.active {
-		if active.index >= 0 {
-			m.live[active.index] = true
-		}
-	}
-}
-
-func (m *machine) consumeTag(tag Tag) {
-	index := m.tagIndex
-	m.tagIndex++
-	m.allTags = append(m.allTags, tag)
-	if tag.RepeatedSlashes > 0 {
-		m.add(IssueRepeatedSlash, tag, fmt.Sprintf("Found %d extra backslash(es) before the tag.", tag.RepeatedSlashes))
-		m.diagnostics[len(m.diagnostics)-1].Edits = []TextEdit{{
-			Start: m.textStart + tag.Start, End: m.textStart + tag.Start + tag.RepeatedSlashes,
-		}}
-		return
-	}
-	m.validate(tag)
-	spec, known := TagSpecs[tag.Name]
-	if !known {
-		m.add(IssueUnknownTag, tag, "Unknown override tag.")
-		return
-	}
-	if tag.Name == "N" || tag.Name == "n" || tag.Name == "h" {
-		m.add(IssueUnknownTag, tag, "This text escape is only valid in dialogue text, outside an override block.")
-		return
-	}
-	if spec.VSFilterModOnly {
-		m.hasVSFilterModTag = true
-		m.add(IssueVSFilterModTag, tag, "This tag is specific to VSFilterMod and is not shared by libass and VSFilter. Automatic fixes are disabled for this dialogue.")
-		return
-	}
-	if spec.Counts != nil && !contains(spec.Counts, len(tag.Args)) {
-		return
-	}
-	if tag.InTransition {
-		return
-	}
-	if spec.Behavior == StyleReset {
-		m.resetStyle()
-		return
-	}
-	if spec.Behavior == Transition || spec.Behavior == Accumulate {
-		return
-	}
-
-	slots, behavior := spec.Slots, spec.Behavior
-	if tag.Name == "clip" || tag.Name == "iclip" {
-		if len(tag.Args) == 4 {
-			slots, behavior = []string{"clip_rect"}, Assign
-		} else {
-			slots, behavior = []string{"clip_vector"}, FirstWins
-		}
-	}
-	if relativeFontSize(tag) {
-		m.state["fontsize"] = stateValue{}
-		return
-	}
-	values, valuesKnown := canonicalTagState(tag, spec, slots)
-	sameValue := behavior == Assign && valuesKnown && sameSlotValues(m.state, slots, values)
-	if sameValue {
-		m.markCandidate(index, tag, "Assigns the value already active in every affected state slot.", true)
-		return
-	}
-	var assignedSlots, assignedValues []string
-	for slotIndex, slot := range slots {
-		if behavior == FirstWins {
-			if first, exists := m.latched[slot]; exists {
-				m.markCandidate(index, tag, fmt.Sprintf("Ignored because an earlier tag with index %d owns this first-wins slot.", first), false)
-				continue
-			}
-			m.latched[slot] = index
-		}
-		if previous, exists := m.active[slot]; exists && previous.index >= 0 && previous.start == m.position {
-			m.markCandidate(previous.index, m.tagAt(previous.index), "Overwritten before any dialogue text used it.", false)
-		}
-		m.active[slot] = owner{index: index, start: m.position}
-		assignedSlots = append(assignedSlots, slot)
-		if valuesKnown {
-			assignedValues = append(assignedValues, values[slotIndex])
-		}
-	}
-	setSlotValues(m.state, assignedSlots, assignedValues, valuesKnown)
-	for _, slot := range assignedSlots {
-		if slot == "drawing_scale" {
-			value := 0
-			if valuesKnown {
-				value, _ = parseInteger(tag.Args[0])
-			}
-			m.drawing = value > 0
-		}
-	}
-}
-
-func (m *machine) markCandidate(index int, tag Tag, detail string, always bool) {
-	if previous, exists := m.candidates[index]; exists {
-		always = always || previous.always
-	}
-	m.candidates[index] = pendingLint{tag: tag, detail: detail, always: always}
-}
-
-func (m *machine) tagAt(index int) Tag {
-	if index >= 0 && index < len(m.allTags) {
-		return m.allTags[index]
-	}
-	return Tag{}
-}
-
-func (m *machine) resetStyle() {
-	for slot, previous := range m.active {
-		if KeepOnStyleReset[slot] {
-			continue
-		}
-		m.state[slot] = stateValue{}
-		if _, firstWins := m.latched[slot]; firstWins {
-			continue
-		}
-		if previous.index >= 0 && previous.start == m.position {
-			m.markCandidate(previous.index, m.tagAt(previous.index), "Reset before any dialogue text used it.", false)
-		}
-		m.active[slot] = owner{index: -1, start: m.position}
-	}
-}
-
-func (m *machine) validate(tag Tag) {
-	spec, known := TagSpecs[tag.Name]
-	if !known {
-		return
-	}
-	if spec.Counts != nil && !contains(spec.Counts, len(tag.Args)) {
-		m.add(IssueArgumentCount, tag, fmt.Sprintf("Found %d arguments; expected %s.", len(tag.Args), countsText(spec.Counts)))
-		return
-	}
-	if len(tag.Args) == 0 {
-		return
-	}
-	arg := tag.Args[0]
-	invalid := func(detail string) { m.add(IssueInvalidValue, tag, detail) }
-	switch spec.Value {
-	case IntegerValue:
-		value, ok := parseInteger(arg)
-		if !ok {
-			invalid(fmt.Sprintf("Expected an integer, found %q.", arg))
-		} else if (spec.Min != 0 || spec.Max != 0) && (value < spec.Min || value > spec.Max) {
-			invalid(fmt.Sprintf("Value %d is outside the accepted range %d..%d.", value, spec.Min, spec.Max))
-		}
-	case NumberValue:
-		if !numberPrefix.MatchString(arg) {
-			invalid(fmt.Sprintf("Expected a number, found %q.", arg))
-		}
-		if tag.Name == "blur" {
-			if value, ok := parseNumber(arg); ok && value > 100 {
-				m.add(IssueRendererDiff, tag, "Values above 100 are clamped by libass but have no matching upper clamp in VSFilter.")
-			}
-		}
-	case BoldValue:
-		value, ok := parseInteger(arg)
-		if !ok || (value != 0 && value != 1 && value < 100) {
-			invalid(fmt.Sprintf("Bold value %q must be 0, 1, or at least 100.", arg))
-		}
-	case FontNameValue:
-		if tag.Paren && len(tag.Args) > 1 {
-			m.add(IssueFontComma, tag, "A comma inside parenthesized \\fn syntax separates arguments.")
-		}
-	case HexValue:
-		value := arg
-		if !tag.Paren {
-			value = strings.Trim(value, "&H")
-		} else {
-			value = strings.TrimLeft(value, "&H")
-		}
-		if !hexPrefix.MatchString(value) {
-			invalid(fmt.Sprintf("Expected a hexadecimal value, found %q.", arg))
-		} else if tag.Paren && strings.HasPrefix(strings.ToUpper(arg), "&H") {
-			m.add(IssueRendererDiff, tag, "VSFilter and libass treat an &H prefix in parenthesized color/alpha arguments differently.")
-		}
-	case NumberListValue:
-		for _, value := range tag.Args {
-			if !numberPrefix.MatchString(value) {
-				invalid(fmt.Sprintf("Expected numeric arguments; found %q.", value))
-				break
-			}
-		}
-	case RectValue:
-		if len(tag.Args) == 4 {
-			for _, value := range tag.Args {
-				if !numberPrefix.MatchString(value) {
-					invalid(fmt.Sprintf("Expected numeric rectangle arguments; found %q.", value))
-					break
-				}
-			}
-		}
-	}
 }
 
 func contains(values []int, want int) bool {

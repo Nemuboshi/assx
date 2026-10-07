@@ -14,6 +14,14 @@ type Dialogue struct {
 	StyleColumn int
 	Line        int
 	TextStart   int
+	Syntax      DialogueText
+}
+
+func (d Dialogue) ParsedText() DialogueText {
+	if d.Syntax.Source == d.Text && (d.Text == "" || d.Syntax.Nodes != nil) {
+		return d.Syntax
+	}
+	return ParseDialogueText(d.Text)
 }
 
 type HeaderField struct {
@@ -189,7 +197,11 @@ func Parse(text string) Document {
 						}
 					}
 					textStart := bodyStart + separator + 1
-					doc.Dialogues = append(doc.Dialogues, Dialogue{Text: body[separator+1:], Style: style, StyleColumn: styleFieldColumn, Line: line, TextStart: offset + textStart})
+					dialogueText := body[separator+1:]
+					doc.Dialogues = append(doc.Dialogues, Dialogue{
+						Text: dialogueText, Style: style, StyleColumn: styleFieldColumn,
+						Line: line, TextStart: offset + textStart, Syntax: ParseDialogueText(dialogueText),
+					})
 				}
 			}
 		}

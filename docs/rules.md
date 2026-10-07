@@ -26,9 +26,9 @@ References: libass [alignment](https://github.com/libass/libass/blob/f61db56/lib
 
 ## ASS003 — Renderer behavior differs
 
-Parenthesized `&H` color/alpha values and `blur` values above 100 can behave differently between libass and VSFilter. Choose an unambiguous form or inspect the result in both renderers.
+Parenthesized `&H` color/alpha values, `blur` values above 100, and some fractional rectangular `\clip`/`\iclip` coordinates can behave differently between renderers. For rectangular clips, libass and VSFilterMod consume integer coordinates while xy-VSFilter adds `0.5` before integer conversion. Choose an unambiguous form or inspect the result in the target renderers.
 
-References: libass [hex conversion](https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L231), [blur clamping](https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L425), and [color/alpha tags](https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L749); VSFilter [color/alpha parsing](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2205) and [blur](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2315).
+References: libass [hex conversion](https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L231), [rectangular `iclip`](https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L404-L423), [blur clamping](https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L425), [rectangular `clip`](https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L729-L744), and [color/alpha tags](https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L749); xy-VSFilter [color/alpha parsing](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2205), [blur](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2315), and [rectangular clips](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2352-L2382); VSFilterMod [rectangular clips](https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2953-L2998).
 
 ## ASS004 — Comma splits font name
 
@@ -44,9 +44,9 @@ References: pinned VSFilterMod [tag handlers](https://github.com/AmusementClub/V
 
 ## ASS006 — Override has no effect
 
-An override is replaced or reset before it affects dialogue text, repeats the known value already active in every affected state slot, or loses a first-wins slot to an earlier tag. Numeric forms are compared by renderer-consumed value, and aliases share their semantic slots. Relative font-size operations and transform contents are not treated as absolute assignments. Remove the redundant tag or move it to the intended text boundary.
+An override is replaced or reset before it affects dialogue text, repeats the known value already active in every affected state slot, or loses a first-wins slot to an earlier tag. Numeric forms are compared by renderer-consumed value, and aliases share their semantic slots. Relative font-size operations are not treated as absolute assignments. A `\t(...)` transform is only reported when its modeled targets cannot change the known render state and collision participation is already disabled by an earlier positioning, origin, or transform operation. Empty or same-value transforms on ordinary unpositioned lines are preserved because the transform itself disables collision layout. A transform that can change state invalidates later same-value proofs until the state is known again.
 
-References: libass [first-wins handling](https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584) and [style reset](https://github.com/libass/libass/blob/f61db56/libass/ass_render.c#L1075); VSFilter [alignment](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2301), [fade](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2396), [position/origin](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2575), and [style reset](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2643).
+References: libass [first-wins handling](https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584), [`pos` collision handling](https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L608-L618), [`org` and `t` collision handling](https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L655-L704), and [style reset](https://github.com/libass/libass/blob/f61db56/libass/ass_render.c#L1075); xy-VSFilter [`t` animation handling](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2670-L2700) and [collision allocation](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L3329-L3330); VSFilterMod [collision allocation](https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L4531-L4532).
 
 ## ASS007 — Unknown or misplaced override tag
 
@@ -108,6 +108,24 @@ The selected font family exists, but does not contain glyphs for one or more cha
 A Dialogue `Style` field must resolve to a style defined in the script. Dialogue style lookup removes leading `*` characters and treats every case variation of `Default` as `Default`; other style names are case-sensitive. A named `\rStyleName` reset uses exact style-name lookup, and a bare `\r` resets to the Dialogue's base style without naming another style. Both reference forms use this warning and have no automatic fix because assx cannot determine whether to correct the name, add a style, or change the reference.
 
 References: libass [Dialogue style lookup](https://github.com/libass/libass/blob/f61db56/libass/ass_utils.c#L253-L272) and [strict `\r` lookup](https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L261-L272), [named and bare `\r` handling](https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L805-L811); VSFilter [Dialogue style normalization](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L1478-L1480), [unknown Dialogue style lookup](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L2222-L2250), and [named `\r` lookup](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2643-L2647).
+
+## ASS018 — Empty override block
+
+An empty or whitespace-only override block such as `{}` or `{   }` has no rendering effect. The AST distinguishes these blocks from ordinary brace comments. The SafeFix removes the whole empty block.
+
+Community references: ASSWipe clean level 1 and Aegisub Clean Tags both remove empty tag sections.
+
+## ASS019 — Junk in override block
+
+An override block can contain raw data that is not consumed as an override tag. Pure brace comments such as `{comment}` are not reported. Mixed blocks such as `{\fs20 junk \bord2}` can report the ignored tail or raw item. This rule has no automatic fix until the consumed source range is proven equivalent across the supported renderers.
+
+Community references include ASSWipe's junk cleanup and ASSFoundation's separate Unknown/Junk representation.
+
+## ASS020 — Malformed ASS drawing
+
+Drawing mode is parsed into commands, coordinates, and source spans. The rule reports known drawing commands with invalid coordinate arity and unknown drawing data. It does not automatically repair drawings because broken-drawing recovery has renderer-specific edge cases.
+
+The drawing AST models `m`, `n`, `l`, `b`, `s`, `p`, and `c`, and preserves drawing state across intervening override blocks. Community references include ASSWipe drawing repair and ASSFoundation's drawing parser.
 
 ## Fixes
 
