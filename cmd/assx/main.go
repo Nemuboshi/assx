@@ -310,7 +310,7 @@ func renderHuman(writer io.Writer, path string, diagnostics []lint.Diagnostic, e
 			errors++
 		case lint.Warning:
 			warnings++
-		default:
+		case lint.Suggestion:
 			suggestions++
 		}
 	}
