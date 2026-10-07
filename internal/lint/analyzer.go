@@ -238,6 +238,7 @@ func (m *machine) consumeTag(tag Tag) {
 	sameValue := behavior == Assign && valuesKnown && sameSlotValues(m.state, slots, values)
 	if sameValue {
 		m.markCandidate(index, tag, "Assigns the value already active in every affected state slot.", true)
+		return
 	}
 	var assignedSlots, assignedValues []string
 	for slotIndex, slot := range slots {

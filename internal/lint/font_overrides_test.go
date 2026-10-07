@@ -157,6 +157,47 @@ func TestRedundantStyleOverridesDoNotModelUnsupportedProperties(t *testing.T) {
 	}
 }
 
+func TestSameValueAssignmentsKeepPreviousEffectiveOwner(t *testing.T) {
+	cases := []struct {
+		name   string
+		format string
+		style  string
+		text   string
+		want   string
+	}{
+		{
+			name: "font size", format: "Name, Fontsize", style: "Default,30",
+			text: `{\fs20\fs20}A`, want: `Default,{\fs20}A`,
+		},
+		{
+			name: "multi-slot border", format: "Name, Outline", style: "Default,3",
+			text: `{\xbord2\ybord2\bord2}A`, want: `Default,{\xbord2\ybord2}A`,
+		},
+		{
+			name: "overwritten before use", format: "Name, Fontsize", style: "Default,30",
+			text: `{\fs10\fs20}A`, want: `Default,{\fs20}A`,
+		},
+	}
+	for _, test := range cases {
+		t.Run(test.name, func(t *testing.T) {
+			doc := parseStyleOverrideText(test.format, test.style, test.text)
+			diagnostics := AnalyzeDocument(doc)
+			if len(diagnostics) != 1 || diagnostics[0].ID != IssueNoEffect || diagnostics[0].FixSafety != SafeFix {
+				t.Fatalf("diagnostics = %#v", diagnostics)
+			}
+			fixed, count, err := ApplyFixes(doc.Text, diagnostics, false)
+			if err != nil || count != 1 || !strings.Contains(fixed, test.want) {
+				t.Fatalf("safe fix = (%q, %d, %v), want to preserve %q", fixed, count, err, test.want)
+			}
+			for _, remaining := range AnalyzeDocument(ass.Parse(fixed)) {
+				if remaining.ID == IssueNoEffect {
+					t.Fatalf("fixed dialogue still has ASS006: %#v", remaining)
+				}
+			}
+		})
+	}
+}
+
 func TestRedundantFontFixPreservesOtherTags(t *testing.T) {
 	doc := parseFontOverrideText(`{\c&H00FF00&\fnCourier New\fnArial}A{\fnArial}B`)
 	diagnostics := AnalyzeDocument(doc)
