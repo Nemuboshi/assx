@@ -214,12 +214,29 @@ func parseStyleInteger(raw string) (int, bool) {
 	return value, err == nil
 }
 
-func StyleTagState(tag ass.Tag, tagSpec spec.TagSpec, slots []string, base map[string]StateValue) ([]string, bool) {
+func StyleTagState(tag ass.Tag, tagSpec spec.TagSpec, slots []string, base, original map[string]StateValue) ([]string, bool) {
 	name := strings.ToLower(tag.Name)
 	resetToStyle := false
 	switch name {
 	case "fn":
-		resetToStyle = len(tag.Args) == 0 || (!tag.Paren && len(tag.Args) == 1 && strings.TrimSpace(tag.Args[0]) == "0")
+		raw, known := tag.RawArgument()
+		if !known {
+			return nil, false
+		}
+		if tag.Paren {
+			// Parenthesized arguments drop leading and trailing spaces.
+			raw = strings.Trim(raw, " \t\r\n\v\f")
+		} else {
+			// libass (rskip_spaces) and VSFilter trim trailing spaces, so only
+			// leading spaces survive and select the literal family "0".
+			raw = strings.TrimRight(raw, " \t\r\n\v\f")
+		}
+		switch {
+		case raw == "", raw == "0":
+			resetToStyle = true
+		case strings.TrimLeft(raw, " \t\r\n\v\f") == "0":
+			return []string{"0"}, true
+		}
 	case "fs":
 		resetToStyle = len(tag.Args) == 0
 		if len(tag.Args) == 1 && !RelativeFontSize(tag) {
@@ -236,14 +253,31 @@ func StyleTagState(tag ass.Tag, tagSpec spec.TagSpec, slots []string, base map[s
 		} else {
 			return nil, false
 		}
-	case "fscx", "fscy", "fsp", "b", "i":
+	case "b", "i":
+		raw, known := tag.RawArgument()
+		if !known {
+			return nil, false
+		}
+		// Both renderers skip surrounding whitespace, and an empty argument
+		// restores the Style value.
+		raw = strings.Trim(raw, " \t\r\n\v\f")
+		value, known := tag.IntegerArgument()
+		if !known {
+			return nil, false
+		}
+		resetToStyle = raw == "" || (value != 0 && value != 1 && (name == "i" || value < 100))
+		if !resetToStyle {
+			tag.Args = []string{strconv.FormatInt(int64(value), 10)}
+		}
+	case "fscx", "fscy", "fsp":
 		resetToStyle = len(tag.Args) == 0
 	}
 	if resetToStyle {
 		values := make([]string, len(slots))
 		for i, slot := range slots {
 			value := base[slot]
-			if !value.Known {
+			// Named resets change libass's defaults, while VSFilter retains the Dialogue defaults.
+			if !value.Known || value != original[slot] {
 				return nil, false
 			}
 			values[i] = value.Value

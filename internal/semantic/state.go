@@ -4,6 +4,7 @@ import (
 	"math"
 	"strconv"
 	"strings"
+	"unicode"
 
 	"assx/internal/ass"
 	"assx/internal/ass/spec"
@@ -33,6 +34,14 @@ func CanonicalTagState(tag ass.Tag, tagSpec spec.TagSpec, slots []string) ([]str
 		if len(tag.Args) != 1 {
 			return nil, false
 		}
+		// Renderers only skip ASCII spaces and tabs, but the parser trims Unicode
+		// whitespace too, so a form like `\i\u30001` would otherwise read as "1"
+		// while both renderers read zero.
+		if source, known := tag.RawArgument(); !known || strings.ContainsFunc(source, func(r rune) bool {
+			return r != ' ' && r != '\t' && unicode.IsSpace(r)
+		}) {
+			return nil, false
+		}
 		raw := strings.TrimSpace(tag.Args[0])
 		switch tagSpec.Value {
 		case spec.IntegerValue:
@@ -44,8 +53,11 @@ func CanonicalTagState(tag ass.Tag, tagSpec spec.TagSpec, slots []string) ([]str
 					return nil, false
 				}
 			}
-			if tag.Name == "fscx" || tag.Name == "fscy" {
+			if tag.Name == "fscx" || tag.Name == "fscy" || tag.Name == "shad" {
 				if number, parsed := ParseFloat(raw); parsed && number < 0 {
+					if tag.Name == "shad" && tag.InTransition {
+						return nil, false
+					}
 					raw = "0"
 				}
 			}
@@ -57,6 +69,10 @@ func CanonicalTagState(tag ass.Tag, tagSpec spec.TagSpec, slots []string) ([]str
 				value, ok = raw, true
 			}
 		case spec.HexValue:
+			// Prefix handling is shared only for concatenated uppercase &H syntax.
+			if len(raw) >= 2 && strings.EqualFold(raw[:2], "&H") && (tag.Paren || raw[:2] != "&H") {
+				return nil, false
+			}
 			parsed, valid := ParseHex(raw)
 			if valid {
 				values := make([]string, len(slots))

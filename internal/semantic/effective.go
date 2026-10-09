@@ -61,6 +61,11 @@ func EvaluateDialogue(tree ass.DialogueText) []NoEffect {
 			engine.consumeText(token.Text)
 			return true
 		}
+		if _, known := spec.TagSpecs[token.Tag.Name]; !known && token.Tag.RepeatedSlashes == 0 {
+			// Renderers may recognize a prefix we do not model.
+			engine.markActiveLive()
+			return false
+		}
 		engine.consumeTag(token.Tag)
 		return true
 	})

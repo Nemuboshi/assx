@@ -13,13 +13,17 @@ import (
 // AnalyzeRedundantStyleOverrides checks Style-backed override state for each dialogue.
 func AnalyzeRedundantStyleOverrides(doc ass.Document) []Diagnostic {
 	styles := semantic.StyleDefinitionsByName(doc.StyleFields)
+	styleStates := make(map[string]semantic.StyleState, len(styles))
+	for name, fields := range styles {
+		styleStates[name] = semantic.CanonicalStyleState(fields)
+	}
 	var diagnostics []Diagnostic
 	for _, dialogue := range doc.Dialogues {
 		originalName := semantic.DialogueStyleLookupName(dialogue.Style)
 		if _, ok := styles[originalName]; !ok {
 			continue
 		}
-		diagnostic, ok := analyzeRedundantStyleDialogue(dialogue, originalName, styles)
+		diagnostic, ok := analyzeRedundantStyleDialogue(dialogue, originalName, styleStates)
 		if ok {
 			diagnostics = append(diagnostics, diagnostic)
 		}
@@ -27,10 +31,19 @@ func AnalyzeRedundantStyleOverrides(doc ass.Document) []Diagnostic {
 	return diagnostics
 }
 
-func analyzeRedundantStyleDialogue(dialogue ass.Dialogue, originalStyle string, styles map[string]map[string]string) (Diagnostic, bool) {
-	styleStates := make(map[string]semantic.StyleState, len(styles))
-	for name, fields := range styles {
-		styleStates[name] = semantic.CanonicalStyleState(fields)
+func analyzeRedundantStyleDialogue(dialogue ass.Dialogue, originalStyle string, styleStates map[string]semantic.StyleState) (Diagnostic, bool) {
+	tree := dialogue.ParsedText()
+	hasTags, hasVSFilterModTag := false, false
+	tree.WalkTokens(func(token ass.TokenView) bool {
+		hasTags = hasTags || token.HasTag
+		if token.HasTag && spec.TagSpecs[token.Tag.Name].VSFilterModOnly {
+			hasVSFilterModTag = true
+			return false
+		}
+		return true
+	})
+	if hasVSFilterModTag || !hasTags {
+		return Diagnostic{}, false
 	}
 	activeBase, ok := styleStates[originalStyle]
 	if !ok {
@@ -38,7 +51,6 @@ func analyzeRedundantStyleDialogue(dialogue ass.Dialogue, originalStyle string, 
 	}
 	state := maps.Clone(activeBase.Values)
 
-	tree := dialogue.ParsedText()
 	var candidates, runTags []ass.Tag
 	runStart := make(map[string]semantic.StateValue)
 	runTouched := make(map[string]bool)
@@ -114,7 +126,7 @@ func analyzeRedundantStyleDialogue(dialogue ass.Dialogue, originalStyle string, 
 			return false
 		}
 
-		values, valueOK := semantic.StyleTagState(tag, tagSpec, slots, activeBase.Values)
+		values, valueOK := semantic.StyleTagState(tag, tagSpec, slots, activeBase.Values, styleStates[originalStyle].Values)
 		if !valueOK {
 			flushRun(false)
 			return false
@@ -141,8 +153,10 @@ func analyzeRedundantStyleDialogue(dialogue ass.Dialogue, originalStyle string, 
 		return Diagnostic{}, false
 	}
 	first := candidates[0]
+	rule := Rules[IssueRedundantStyleOverrides]
 	return Diagnostic{
-		ID: IssueRedundantStyleOverrides, Severity: Suggestion, FixSafety: SafeFix,
+		ID: rule.ID, Severity: rule.Severity, FixSafety: rule.FixSafety,
+		Title: rule.Title, Description: rule.Description, Fix: rule.Fix, Sources: rule.Sources,
 		Line: dialogue.Line, Column: first.Column, Tag: first.Name,
 		Detail: "The override tags leave the active Style properties unchanged across dialogue text.",
 		Edits:  edits,

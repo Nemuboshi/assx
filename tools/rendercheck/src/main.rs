@@ -394,36 +394,29 @@ fn parse_events(source: &str) -> Result<Vec<Event>, String> {
 }
 
 fn parse_ass_time(raw: &str) -> Result<i64, String> {
-    let parts: Vec<&str> = raw.trim().split(':').collect();
+    let parts: Vec<&str> = raw
+        .trim_matches(|c: char| c.is_ascii_whitespace())
+        .split(':')
+        .collect();
     if parts.len() != 3 {
         return Err(format!("invalid ASS timestamp: {raw:?}"));
     }
 
-    let hours: i64 = parts[0]
-        .parse()
-        .map_err(|_| format!("invalid ASS timestamp: {raw:?}"))?;
-    let minutes: i64 = parts[1]
-        .parse()
-        .map_err(|_| format!("invalid ASS timestamp: {raw:?}"))?;
-
-    let (seconds_raw, fraction_raw) = parts[2].split_once('.').unwrap_or((parts[2], ""));
-    let seconds: i64 = seconds_raw
-        .parse()
-        .map_err(|_| format!("invalid ASS timestamp: {raw:?}"))?;
-
-    let mut fraction = fraction_raw.chars().take(3).collect::<String>();
-    while fraction.len() < 3 {
-        fraction.push('0');
+    let (seconds_raw, fraction_raw) = parts[2]
+        .split_once('.')
+        .ok_or_else(|| format!("invalid ASS timestamp: {raw:?}"))?;
+    // libass ass.c string2timecode reads four int32 values; the last counts centiseconds.
+    let components = [parts[0], parts[1], seconds_raw, fraction_raw];
+    let mut values = [0i64; 4];
+    for (value, component) in values.iter_mut().zip(components) {
+        *value = component
+            .trim_start_matches(|c: char| c.is_ascii_whitespace())
+            .parse::<i32>()
+            .map(i64::from)
+            .map_err(|_| format!("invalid ASS timestamp: {raw:?}"))?;
     }
-    let millis = if fraction.is_empty() {
-        0
-    } else {
-        fraction
-            .parse::<i64>()
-            .map_err(|_| format!("invalid ASS timestamp: {raw:?}"))?
-    };
-
-    Ok(((hours * 60 + minutes) * 60 + seconds) * 1000 + millis)
+    let [hours, minutes, seconds, centiseconds] = values;
+    Ok(((hours * 60 + minutes) * 60 + seconds) * 1000 + centiseconds * 10)
 }
 fn collect_critical_times(events: &[Event]) -> BTreeSet<i64> {
     let transform = Regex::new(r"\\t\(\s*(\d+(?:\.\d+)?)\s*,\s*(\d+(?:\.\d+)?)\s*,").unwrap();
@@ -844,8 +837,37 @@ mod tests {
     #[test]
     fn parses_ass_time_without_float_rounding() {
         assert_eq!(parse_ass_time("0:00:01.23").unwrap(), 1230);
-        assert_eq!(parse_ass_time("1:02:03.004").unwrap(), 3_723_004);
-        assert_eq!(parse_ass_time("0:00:00.5").unwrap(), 500);
+        assert_eq!(parse_ass_time("1:02:03.004").unwrap(), 3_723_040);
+        assert_eq!(parse_ass_time("0:00:00.5").unwrap(), 50);
+        assert_eq!(parse_ass_time("0:00:00.1234").unwrap(), 12_340);
+        assert_eq!(parse_ass_time("0:00:01.-5").unwrap(), 950);
+    }
+
+    #[test]
+    fn rejects_unsupported_timestamp_forms() {
+        for raw in [
+            "0:00:00",
+            "0:00:00.",
+            "0:00:00.12junk",
+            "0:00:00.123x",
+            "2147483648:00:00.00",
+            "0:00:00.2147483648",
+            "0:00:00.12.34",
+            "0:\u{3000}00:00.12",
+        ] {
+            assert!(parse_ass_time(raw).is_err(), "accepted {raw:?}");
+        }
+    }
+
+    #[test]
+    fn samples_the_renderer_interval_for_short_centisecond_values() {
+        let source = "[Events]\nFormat: Layer, Start, End, Style, Text\nDialogue: 0,0:00:00.5,0:00:00.9,Default,A\n";
+        let events = parse_events(source).unwrap();
+        assert_eq!((events[0].start_ms, events[0].end_ms), (50, 90));
+        let mut times = collect_critical_times(&events);
+        add_frame_times(&mut times, &events, (25, 1));
+        assert!(times.contains(&60));
+        assert!(times.iter().all(|t| (50..90).contains(t)));
     }
 
     #[test]

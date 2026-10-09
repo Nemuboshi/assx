@@ -156,9 +156,9 @@ func Parse(text string) Document {
 			section = strings.ToLower(trimmed[1 : len(trimmed)-1])
 			styleFormat = nil
 			if section == "v4+ styles" {
-				styleFormat = splitFormat("Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding")
+				styleFormat = ParseFormat("Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding")
 			} else if section == "v4 styles" {
-				styleFormat = splitFormat("Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, TertiaryColour, BackColour, Bold, Italic, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, AlphaLevel, Encoding")
+				styleFormat = ParseFormat("Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, TertiaryColour, BackColour, Bold, Italic, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, AlphaLevel, Encoding")
 			}
 			if section == "script info" && doc.ScriptInfoLine == 0 {
 				doc.ScriptInfoLine = line
@@ -170,7 +170,7 @@ func Parse(text string) Document {
 		if section == "v4+ styles" || section == "v4 styles" || section == "v4++ styles" {
 			lower := strings.ToLower(trimmed)
 			if strings.HasPrefix(lower, "format:") {
-				styleFormat = splitFormat(trimmed[strings.IndexByte(trimmed, ':')+1:])
+				styleFormat = ParseFormat(trimmed[strings.IndexByte(trimmed, ':')+1:])
 			} else if strings.HasPrefix(lower, "style:") && len(styleFormat) > 0 {
 				doc.StyleFields = append(doc.StyleFields, parseStyleFields(content, offset, line, styleFormat)...)
 			}
@@ -183,7 +183,7 @@ func Parse(text string) Document {
 				leading := len(valueRaw) - len(strings.TrimLeft(valueRaw, " \t"))
 				value := strings.TrimSpace(valueRaw)
 				valueStart := offset + colon + 1 + leading
-				valueEnd := offset + colon + 1 + len(strings.TrimRight(valueRaw, " \t"))
+				valueEnd := max(valueStart, offset+colon+1+len(strings.TrimRight(valueRaw, " \t")))
 				if _, exists := doc.Headers[name]; !exists {
 					doc.Headers[name] = HeaderField{Value: value, Line: line, ValueStart: valueStart, ValueEnd: valueEnd}
 				}
@@ -192,7 +192,7 @@ func Parse(text string) Document {
 		if section == "events" {
 			lower := strings.ToLower(trimmed)
 			if strings.HasPrefix(lower, "format:") {
-				doc.EventFormat = splitFormat(trimmed[strings.IndexByte(trimmed, ':')+1:])
+				doc.EventFormat = ParseFormat(trimmed[strings.IndexByte(trimmed, ':')+1:])
 			} else if strings.HasPrefix(lower, "dialogue:") {
 				format := doc.EventFormat
 				if len(format) == 0 {
@@ -219,7 +219,7 @@ func Parse(text string) Document {
 
 // standardEventFormat mirrors libass ass_event_format (ass.c:49-50), used
 // when an Events section has no Format line.
-var standardEventFormat = splitFormat("Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text")
+var standardEventFormat = ParseFormat("Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text")
 
 // HasFormatName reports whether a Format list contains the lowercased field
 // name.
@@ -287,7 +287,8 @@ func parseEventLine(body string, bodyOffset, lineOffset, line int, format []stri
 	return dialogue
 }
 
-func splitFormat(format string) []string {
+// ParseFormat returns the normalized field names in a Style or Events Format line.
+func ParseFormat(format string) []string {
 	columns := strings.Split(format, ",")
 	for i := range columns {
 		columns[i] = strings.ToLower(strings.TrimSpace(columns[i]))

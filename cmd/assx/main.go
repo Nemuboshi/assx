@@ -55,7 +55,17 @@ func run(args []string, stdout, stderr io.Writer) int {
 	started := time.Now()
 	progress := startScanProgress(stderr, path, *format == "pretty")
 	defer progress.stop()
-	original, err := os.ReadFile(path)
+	readPath := path
+	if *fix || *unsafeFix {
+		resolved, err := filepath.EvalSymlinks(path)
+		if err != nil {
+			progress.stop()
+			fmt.Fprintln(stderr, err)
+			return 2
+		}
+		readPath = resolved
+	}
+	original, err := os.ReadFile(readPath)
 	if err != nil {
 		progress.stop()
 		fmt.Fprintln(stderr, err)
@@ -115,13 +125,13 @@ func run(args []string, stdout, stderr io.Writer) int {
 				fmt.Fprintln(stderr, "Refusing to modify a file that cannot be losslessly round-tripped.")
 				return 2
 			}
-			info, err := os.Stat(path)
+			info, err := os.Stat(readPath)
 			if err != nil {
 				progress.stop()
 				fmt.Fprintln(stderr, err)
 				return 2
 			}
-			if err := writeAtomically(path, source.Encode(fixedText), info.Mode().Perm()); err != nil {
+			if err := writeAtomically(readPath, source.Encode(fixedText), info.Mode().Perm()); err != nil {
 				progress.stop()
 				fmt.Fprintln(stderr, err)
 				return 2

@@ -19,6 +19,8 @@ cargo run --manifest-path tools/rendercheck/Cargo.toml -- \
 
 The tool also samples event boundaries and timing points from `\t`, `\move`, `\fad`, `\fade`, and karaoke tags.
 
+Event timestamps follow libass's integer centisecond convention: `0:00:00.5` means 50 ms and `0:00:00.1234` means 12,340 ms. Unsupported timestamp syntax and values outside signed 32-bit components produce an error instead of being rounded or truncated. CI checks the short `.5`–`.9` interval with files that must render differently.
+
 Exit codes:
 
 - `0`: all sampled RGBA frames are exactly equal
