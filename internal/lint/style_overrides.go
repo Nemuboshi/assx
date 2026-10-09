@@ -65,19 +65,19 @@ func analyzeRedundantStyleDialogue(dialogue ass.Dialogue, originalStyle string, 
 		runTouched = make(map[string]bool)
 	}
 
-	for _, token := range tree.Tokens() {
-		if token.Tag == nil {
+	tree.WalkTokens(func(token ass.TokenView) bool {
+		if !token.HasTag {
 			if token.Text != "" {
 				flushRun(true)
 			}
-			continue
+			return true
 		}
 
-		tag := *token.Tag
+		tag := token.Tag
 		tagSpec, known := spec.TagSpecs[tag.Name]
 		if !known || tagSpec.VSFilterModOnly || tag.InTransition || tag.RepeatedSlashes > 0 {
 			flushRun(false)
-			break
+			return false
 		}
 
 		if tagSpec.Behavior == spec.StyleReset {
@@ -88,16 +88,16 @@ func analyzeRedundantStyleDialogue(dialogue ass.Dialogue, originalStyle string, 
 			}
 			nextBase, exists := styleStates[target]
 			if !exists {
-				break
+				return false
 			}
 			activeBase = nextBase
 			state = maps.Clone(activeBase.Values)
-			continue
+			return true
 		}
 
 		if !semantic.SafeIndependentStyleTag(tag) {
 			flushRun(false)
-			break
+			return false
 		}
 
 		var slots []string
@@ -107,17 +107,17 @@ func analyzeRedundantStyleDialogue(dialogue ass.Dialogue, originalStyle string, 
 			}
 		}
 		if len(slots) == 0 {
-			continue
+			return true
 		}
 		if len(slots) != len(tagSpec.Slots) {
 			flushRun(false)
-			break
+			return false
 		}
 
 		values, valueOK := semantic.StyleTagState(tag, tagSpec, slots, activeBase.Values)
 		if !valueOK {
 			flushRun(false)
-			break
+			return false
 		}
 		for _, slot := range slots {
 			if !runTouched[slot] {
@@ -129,7 +129,8 @@ func analyzeRedundantStyleDialogue(dialogue ass.Dialogue, originalStyle string, 
 		for i, slot := range slots {
 			state[slot] = semantic.KnownValue(values[i])
 		}
-	}
+		return true
+	})
 	flushRun(false)
 
 	if len(candidates) == 0 {
@@ -160,13 +161,14 @@ func redundantStyleEdits(dialogue ass.Dialogue, tree ass.DialogueText, styleTags
 		if node.Kind != ass.OverrideNode || block == nil {
 			continue
 		}
-		var tags []ass.Tag
-		for _, tag := range block.Tags() {
-			if candidate[[2]int{tag.Start, tag.End}] {
-				tags = append(tags, tag)
+		hasCandidate := false
+		for _, item := range block.Items {
+			if item.Tag != nil && candidate[[2]int{item.Tag.Start, item.Tag.End}] {
+				hasCandidate = true
+				break
 			}
 		}
-		if len(tags) == 0 {
+		if !hasCandidate {
 			continue
 		}
 		if blockContainsOnlyCandidateTags(block, candidate) {
@@ -176,11 +178,13 @@ func redundantStyleEdits(dialogue ass.Dialogue, tree ass.DialogueText, styleTags
 			})
 			continue
 		}
-		for _, tag := range tags {
-			edits = append(edits, TextEdit{
-				Start: dialogue.TextStart + tag.Start,
-				End:   dialogue.TextStart + tag.End,
-			})
+		for _, item := range block.Items {
+			if item.Tag != nil && candidate[[2]int{item.Tag.Start, item.Tag.End}] {
+				edits = append(edits, TextEdit{
+					Start: dialogue.TextStart + item.Tag.Start,
+					End:   dialogue.TextStart + item.Tag.End,
+				})
+			}
 		}
 	}
 	sort.Slice(edits, func(i, j int) bool { return edits[i].Start < edits[j].Start })

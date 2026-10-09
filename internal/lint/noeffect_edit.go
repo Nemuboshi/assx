@@ -8,11 +8,28 @@ func noEffectRemovalEdit(tree ass.DialogueText, tag ass.Tag, textStart int) Text
 		if node.Kind != ass.OverrideNode || node.Block == nil {
 			continue
 		}
-		tags := node.Block.Tags()
-		if len(tags) != 1 || tags[0].Start != tag.Start || tags[0].End != tag.End {
+		matchCount := 0
+		onlyCandidate := true
+		for _, item := range node.Block.Items {
+			if item.Tag != nil {
+				matchCount++
+				if item.Tag.Start != tag.Start || item.Tag.End != tag.End {
+					onlyCandidate = false
+				}
+				continue
+			}
+			for _, b := range item.Raw {
+				switch b {
+				case ' ', '\t', '\r', '\n', '\f', '\v':
+				default:
+					onlyCandidate = false
+				}
+			}
+		}
+		if matchCount != 1 {
 			continue
 		}
-		if blockContainsOnlyCandidateTags(node.Block, map[[2]int]bool{[2]int{tag.Start, tag.End}: true}) {
+		if onlyCandidate {
 			return TextEdit{Start: textStart + node.Block.Start, End: textStart + node.Block.End}
 		}
 	}

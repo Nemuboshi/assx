@@ -74,11 +74,12 @@ func Analyze(dialogue ass.Dialogue) []Diagnostic {
 	tree := dialogue.ParsedText()
 	analyzer := dialogueAnalyzer{line: dialogue.Line, textStart: dialogue.TextStart}
 
-	for _, token := range tree.Tokens() {
-		if token.Tag != nil {
-			analyzer.consumeTag(*token.Tag)
+	tree.WalkTokens(func(token ass.TokenView) bool {
+		if token.HasTag {
+			analyzer.consumeTag(token.Tag)
 		}
-	}
+		return true
+	})
 
 	analyzer.diagnostics = append(analyzer.diagnostics, analyzeOverrideSyntax(dialogue, tree)...)
 	analyzer.diagnostics = append(analyzer.diagnostics, analyzeDrawings(dialogue, tree)...)

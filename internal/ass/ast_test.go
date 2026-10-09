@@ -1,6 +1,7 @@
 package ass
 
 import (
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -35,6 +36,31 @@ func TestDeeplyNestedTransformsUseExplicitFrames(t *testing.T) {
 	tokens := ParseDialogueText(text).Tokens()
 	if len(tokens) != depth+1 {
 		t.Fatalf("got %d flattened tags, want %d", len(tokens), depth+1)
+	}
+}
+
+func TestWalkTokensMatchesTokensAndStopsEarly(t *testing.T) {
+	tree := ParseDialogueText(`a{\fs20\t(0,500,\blur1)}b{\\bord2}c`)
+	var walked []Token
+	tree.WalkTokens(func(view TokenView) bool {
+		if view.HasTag {
+			tag := view.Tag
+			walked = append(walked, Token{Tag: &tag})
+		} else {
+			walked = append(walked, Token{Text: view.Text, Start: view.Start})
+		}
+		return true
+	})
+	if !reflect.DeepEqual(walked, tree.Tokens()) {
+		t.Fatalf("visitor tokens = %#v, materialized tokens = %#v", walked, tree.Tokens())
+	}
+	visited := 0
+	tree.WalkTokens(func(TokenView) bool {
+		visited++
+		return false
+	})
+	if visited != 1 {
+		t.Fatalf("early-stop visitor called %d times, want 1", visited)
 	}
 }
 
