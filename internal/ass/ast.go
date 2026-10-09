@@ -294,34 +294,35 @@ func parseTag(block string, base, tagStart, slashStart int, inTransition bool) (
 	paren := k < len(block) && block[k] == '('
 	if paren {
 		k++
-		for {
-			for k < len(block) && isSpace(block[k]) {
-				k++
-			}
-			start := k
-			for k < len(block) && block[k] != ',' && block[k] != '\\' && block[k] != ')' {
-				k++
-			}
-			if k < len(block) && block[k] == ',' {
-				args = append(args, strings.TrimSpace(block[start:k]))
-				k++
-				continue
-			}
-			if k < len(block) && block[k] == '\\' {
-				if close := strings.IndexByte(block[k:], ')'); close >= 0 {
-					k += close
-				} else {
-					k = len(block)
+		argStart := k
+		depth := 0
+		for k < len(block) {
+			switch block[k] {
+			case '(':
+				depth++
+			case ')':
+				if depth == 0 {
+					if k > argStart || len(args) > 0 {
+						args = append(args, strings.TrimSpace(block[argStart:k]))
+					}
+					k++
+					goto argsDone
+				}
+				depth--
+			case ',':
+				if depth == 0 {
+					args = append(args, strings.TrimSpace(block[argStart:k]))
+					k++
+					argStart = k
+					continue
 				}
 			}
-			if k > start || len(args) > 0 {
-				args = append(args, strings.TrimSpace(block[start:k]))
-			}
-			if k < len(block) && block[k] == ')' {
-				k++
-			}
-			break
+			k++
 		}
+		if k > argStart || len(args) > 0 {
+			args = append(args, strings.TrimSpace(block[argStart:k]))
+		}
+	argsDone:
 	} else if rest := strings.TrimSpace(head[len(name):]); rest != "" {
 		args = []string{rest}
 	}

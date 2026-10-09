@@ -227,6 +227,15 @@ func StyleTagState(tag ass.Tag, tagSpec spec.TagSpec, slots []string, base map[s
 				resetToStyle = true
 			}
 		}
+	case "fsc":
+		// libass and xy-VSFilter reset both scales to the Style values and
+		// ignore arguments; only VSFilterMod consumes \fsc(value), so the
+		// argument form is not a provable style-backed assignment.
+		if len(tag.Args) == 0 {
+			resetToStyle = true
+		} else {
+			return nil, false
+		}
 	case "fscx", "fscy", "fsp", "b", "i":
 		resetToStyle = len(tag.Args) == 0
 	}

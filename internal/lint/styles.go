@@ -1,7 +1,9 @@
 package lint
 
 import (
+	"fmt"
 	"math"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -19,6 +21,20 @@ var floatStyleFields = map[string]bool{
 	"fontsize": true, "scalex": true, "scaley": true, "spacing": true,
 	"angle": true, "outline": true, "shadow": true,
 }
+
+// colourFields are the colour style fields consumed by ASS/SSA style rows.
+var colourFields = map[string]bool{
+	"primarycolour": true, "secondarycolour": true,
+	"outlinecolour": true, "backcolour": true, "tertiarycolour": true,
+}
+
+// libass parse_int_header reads hex after an "&h" or "0x" prefix, else
+// decimal; a value with no digit in the selected base silently becomes 0.
+// xy-VSFilter GetInt throws on the same input and can abort the style line.
+var (
+	styleColourHexPrefixDigit = regexp.MustCompile(`(?i)^(?:&h|0x)[0-9a-f]`)
+	styleColourDecimalDigit   = regexp.MustCompile(`^[+-]?[0-9]`)
+)
 
 func AnalyzeStyles(doc ass.Document) []Diagnostic {
 	var out []Diagnostic
@@ -41,6 +57,19 @@ func AnalyzeStyles(doc ass.Document) []Diagnostic {
 			}
 			continue
 		}
+		if colourFields[field.Name] {
+			value := strings.TrimSpace(field.Value)
+			if styleColourMalformed(value) {
+				diagnostic := styleDiagnostic(IssueMalformedStyleColour, field, fieldName, "")
+				if value == "" {
+					diagnostic.Detail = "The colour field is empty."
+				} else {
+					diagnostic.Detail = fmt.Sprintf("Value %q has no digit in its selected base.", value)
+				}
+				out = append(out, diagnostic)
+			}
+			continue
+		}
 		if !floatStyleFields[field.Name] {
 			continue
 		}
@@ -60,6 +89,16 @@ func AnalyzeStyles(doc ass.Document) []Diagnostic {
 		}
 	}
 	return out
+}
+
+func styleColourMalformed(value string) bool {
+	if value == "" {
+		return true
+	}
+	if strings.HasPrefix(strings.ToLower(value), "&h") || strings.HasPrefix(strings.ToLower(value), "0x") {
+		return !styleColourHexPrefixDigit.MatchString(value)
+	}
+	return !styleColourDecimalDigit.MatchString(value)
 }
 
 func styleDiagnostic(id string, field ass.StyleField, name, replacement string) Diagnostic {

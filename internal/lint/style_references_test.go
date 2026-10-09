@@ -75,9 +75,9 @@ func TestDialogueAndResetReferencesShareUndefinedStyleRule(t *testing.T) {
 }
 
 func TestUndefinedDialogueStylePointsToStyleField(t *testing.T) {
-	line := "Dialogue: 0,0,1,  Missing  ,text"
+	line := "Dialogue: 0,0:00:00.00,0:00:01.00,  Missing  ,,,0,0,0,,text"
 	doc := ass.Parse("[V4+ Styles]\nFormat: Name, Fontname, Fontsize\nStyle: Default,Arial,20\n" +
-		"[Events]\nFormat: Layer, Start, End, Style, Text\n" + line + "\n")
+		"[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n" + line + "\n")
 	diagnostics := undefinedStyleFindings(doc)
 	if len(diagnostics) != 1 {
 		t.Fatalf("diagnostics = %#v", diagnostics)
@@ -90,8 +90,8 @@ func TestUndefinedDialogueStylePointsToStyleField(t *testing.T) {
 
 func styleReferenceDocument(styles, dialogueStyle, text string) ass.Document {
 	return ass.Parse("[V4+ Styles]\nFormat: Name, Fontname, Fontsize\n" + styles +
-		"[Events]\nFormat: Layer, Start, End, Style, Text\n" +
-		"Dialogue: 0,0,1," + dialogueStyle + "," + text + "\n")
+		"[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n" +
+		"Dialogue: 0,0:00:00.00,0:00:01.00," + dialogueStyle + ",,0,0,0,," + text + "\n")
 }
 
 func undefinedStyleFindings(doc ass.Document) []Diagnostic {

@@ -136,7 +136,7 @@ func TestRedundantStyleOverrideRestorationAndOverlap(t *testing.T) {
 		t.Fatalf("redundant sequence diagnostics = %#v", diagnostics)
 	}
 	fixed, count, err := ApplyFixes(doc.Text, diagnostics, false)
-	if err != nil || count != 1 || !strings.Contains(fixed, "Default,A\n") {
+	if err != nil || count != 1 || !strings.Contains(fixed, "Default,,0,0,0,,A\n") {
 		t.Fatalf("sequence fix = (%q, %d, %v)", fixed, count, err)
 	}
 
@@ -168,15 +168,15 @@ func TestSameValueAssignmentsKeepPreviousEffectiveOwner(t *testing.T) {
 	}{
 		{
 			name: "font size", format: "Name, Fontsize", style: "Default,30",
-			text: `{\fs20\fs20}A`, want: `Default,{\fs20}A`,
+			text: `{\fs20\fs20}A`, want: `Default,,0,0,0,,{\fs20}A`,
 		},
 		{
 			name: "multi-slot border", format: "Name, Outline", style: "Default,3",
-			text: `{\xbord2\ybord2\bord2}A`, want: `Default,{\xbord2\ybord2}A`,
+			text: `{\xbord2\ybord2\bord2}A`, want: `Default,,0,0,0,,{\xbord2\ybord2}A`,
 		},
 		{
 			name: "overwritten before use", format: "Name, Fontsize", style: "Default,30",
-			text: `{\fs10\fs20}A`, want: `Default,{\fs20}A`,
+			text: `{\fs10\fs20}A`, want: `Default,,0,0,0,,{\fs20}A`,
 		},
 	}
 	for _, test := range cases {
@@ -209,7 +209,7 @@ func TestRedundantStyleFixPreservesOtherTags(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if count != 1 || !strings.Contains(fixed, `Dialogue: 0, 0:00:00.00, 0:00:02.00, Default,{\c&H00FF00&}AB`) {
+	if count != 1 || !strings.Contains(fixed, `Dialogue: 0, 0:00:00.00, 0:00:02.00, Default,,0,0,0,,{\c&H00FF00&}AB`) {
 		t.Fatalf("other formatting tag was not preserved (%d fixes):\n%s", count, fixed)
 	}
 }
@@ -275,16 +275,16 @@ func parseStyleOverrideText(format, style, text string) ass.Document {
 func parseStyleDefinitionsText(format, definitions, dialogueStyle, text string) ass.Document {
 	return ass.Parse("[Script Info]\nPlayResX: 640\nPlayResY: 480\nYCbCr Matrix: None\nLayoutResX: 640\nLayoutResY: 480\n" +
 		"[V4+ Styles]\nFormat: " + format + "\n" + definitions +
-		"[Events]\nFormat: Layer, Start, End, Style, Text\n" +
-		"Dialogue: 0, 0:00:00.00, 0:00:02.00, " + dialogueStyle + "," + text + "\n")
+		"[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n" +
+		"Dialogue: 0, 0:00:00.00, 0:00:02.00, " + dialogueStyle + ",,0,0,0,," + text + "\n")
 }
 
 func fontOverrideDocument(text, extraStyle string) string {
 	return "[Script Info]\nPlayResX: 640\nPlayResY: 480\nYCbCr Matrix: None\nLayoutResX: 640\nLayoutResY: 480\n" +
 		"[V4+ Styles]\nFormat: Name, Fontname, Fontsize, Bold, Italic, ScaleX, ScaleY, Spacing\n" +
 		"Style: Default, Arial, 20, 0, 0, 100, 100, 0\n" + extraStyle +
-		"[Events]\nFormat: Layer, Start, End, Style, Text\n" +
-		"Dialogue: 0, 0:00:00.00, 0:00:02.00, Default," + text + "\n"
+		"[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n" +
+		"Dialogue: 0, 0:00:00.00, 0:00:02.00, Default,,0,0,0,," + text + "\n"
 }
 
 func TestRedundantStyleOverridesFollowActiveResetStyle(t *testing.T) {

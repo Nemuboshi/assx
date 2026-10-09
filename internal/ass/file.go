@@ -8,13 +8,40 @@ import (
 	"unicode/utf16"
 )
 
+// EventField keeps one Format-named event field with its raw source span.
+// Value is the exact source text between separators; span offsets are byte
+// offsets into Document.Text, so fixes and diagnostics keep raw data.
+type EventField struct {
+	Name  string // lowercased Format name
+	Value string
+	Start int
+	End   int
+}
+
 type Dialogue struct {
 	Text        string
 	Style       string
 	StyleColumn int
 	Line        int
+	LineStart   int
 	TextStart   int
 	Syntax      DialogueText
+	Fields      []EventField
+	// MissingFields marks a line that ran out of values before the Format
+	// names did. libass discards such events (process_event_tail breaks on a
+	// null token and returns failure), and xy-VSFilter throws in NextInt and
+	// rejects the whole line.
+	MissingFields bool
+}
+
+// Field returns the first event field whose Format name is name.
+func (d Dialogue) Field(name string) (EventField, bool) {
+	for _, field := range d.Fields {
+		if field.Name == name {
+			return field, true
+		}
+	}
+	return EventField{}, false
 }
 
 func (d Dialogue) ParsedText() DialogueText {
@@ -41,11 +68,22 @@ type StyleField struct {
 	ValueColumn int
 }
 
+// RawLine keeps one physical line with its byte offset and the section it
+// appeared in, so document-level checks can reason about syntax libass drops.
+type RawLine struct {
+	Line    int
+	Offset  int
+	Content string
+	Section string
+}
+
 type Document struct {
 	Text             string
 	Dialogues        []Dialogue
 	StyleFields      []StyleField
 	Headers          map[string]HeaderField
+	Lines            []RawLine
+	EventFormat      []string
 	ScriptInfoLine   int
 	ScriptInfoInsert int
 	Newline          string
@@ -102,7 +140,7 @@ func Parse(text string) Document {
 	if strings.Contains(text, "\r\n") {
 		doc.Newline = "\r\n"
 	}
-	section, textColumn, styleColumn := "", 9, 3
+	section := ""
 	var styleFormat []string
 	offset, line := 0, 0
 	for _, chunk := range strings.SplitAfter(text, "\n") {
@@ -112,6 +150,7 @@ func Parse(text string) Document {
 		line++
 		raw := strings.TrimSuffix(chunk, "\n")
 		content := strings.TrimSuffix(raw, "\r")
+		doc.Lines = append(doc.Lines, RawLine{Line: line, Offset: offset, Content: content, Section: section})
 		trimmed := strings.TrimSpace(content)
 		if strings.HasPrefix(trimmed, "[") && strings.HasSuffix(trimmed, "]") {
 			section = strings.ToLower(trimmed[1 : len(trimmed)-1])
@@ -153,57 +192,99 @@ func Parse(text string) Document {
 		if section == "events" {
 			lower := strings.ToLower(trimmed)
 			if strings.HasPrefix(lower, "format:") {
-				columns := strings.Split(strings.TrimSpace(trimmed[len("Format:"):]), ",")
-				for i, column := range columns {
-					name := strings.TrimSpace(column)
-					if strings.EqualFold(name, "Text") {
-						textColumn = i
-					}
-					if strings.EqualFold(name, "Style") {
-						styleColumn = i
-					}
-				}
+				doc.EventFormat = splitFormat(trimmed[strings.IndexByte(trimmed, ':')+1:])
 			} else if strings.HasPrefix(lower, "dialogue:") {
-				prefix := strings.Index(strings.ToLower(content), "dialogue:")
-				bodyStart := prefix + len("Dialogue:")
-				body := strings.TrimLeft(content[bodyStart:], " \t")
-				bodyStart = len(content) - len(body)
-				separator := -1
-				for i := 0; i < textColumn; i++ {
-					next := strings.IndexByte(body[separator+1:], ',')
-					if next < 0 {
-						separator = -1
-						break
-					}
-					separator += next + 1
+				format := doc.EventFormat
+				if len(format) == 0 {
+					// libass substitutes the standard v4+ event format
+					// (ass.c event_format_fallback) when no Format line was
+					// read yet.
+					format = standardEventFormat
 				}
-				if separator >= 0 {
-					style := ""
-					styleFieldColumn := 0
-					if styleColumn < textColumn {
-						fields := strings.Split(body[:separator], ",")
-						if styleColumn < len(fields) {
-							raw := fields[styleColumn]
-							style = strings.TrimSpace(raw)
-							styleOffset := bodyStart
-							for _, field := range fields[:styleColumn] {
-								styleOffset += len(field) + 1
-							}
-							styleFieldColumn = styleOffset + len(raw) - len(strings.TrimLeft(raw, " \t")) + 1
-						}
-					}
-					textStart := bodyStart + separator + 1
-					dialogueText := body[separator+1:]
-					doc.Dialogues = append(doc.Dialogues, Dialogue{
-						Text: dialogueText, Style: style, StyleColumn: styleFieldColumn,
-						Line: line, TextStart: offset + textStart, Syntax: ParseDialogueText(dialogueText),
-					})
+				// A Format line without a Text name silently drops every
+				// event in libass; the Format line itself gets flagged.
+				if hasFormatName(format, "text") {
+					prefix := strings.Index(strings.ToLower(content), "dialogue:")
+					bodyStart := prefix + len("Dialogue:")
+					body := strings.TrimLeft(content[bodyStart:], " \t")
+					bodyStart = len(content) - len(body)
+					doc.Dialogues = append(doc.Dialogues, parseEventLine(body, offset+bodyStart, offset, line, format))
 				}
 			}
 		}
 		offset += len(chunk)
 	}
 	return doc
+}
+
+// standardEventFormat mirrors libass ass_event_format (ass.c:49-50), used
+// when an Events section has no Format line.
+var standardEventFormat = splitFormat("Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text")
+
+// HasFormatName reports whether a Format list contains the lowercased field
+// name.
+func HasFormatName(format []string, name string) bool {
+	return hasFormatName(format, name)
+}
+
+func hasFormatName(format []string, name string) bool {
+	for _, field := range format {
+		if field == name {
+			return true
+		}
+	}
+	return false
+}
+
+// parseEventLine maps each Format name onto the Dialogue body and keeps the
+// raw span of every field. libass reads cells by Format name and discards the
+// event when the line runs out before the names do (ass.c next_token returns
+// NULL at end-of-string, process_event_tail then breaks and frees the event);
+// xy-VSFilter reads the same cells at fixed positions and throws in NextInt
+// on a missing integer cell (STS.cpp:1284-1301). "Text" consumes the whole
+// remainder, like both renderers.
+func parseEventLine(body string, bodyOffset, lineOffset, line int, format []string) Dialogue {
+	dialogue := Dialogue{Line: line, LineStart: lineOffset}
+	missingAt := -1
+	cursor := 0
+	for i, name := range format {
+		if missingAt < 0 && (cursor > len(body) || (cursor == len(body) && !strings.HasSuffix(body, ","))) {
+			// libass next_token returns NULL at end-of-string for every
+			// remaining name, including Text, and the event is discarded.
+			missingAt = i
+		}
+		if missingAt >= 0 && !(name == "text" && cursor == len(body)+1) {
+			dialogue.Fields = append(dialogue.Fields, EventField{Name: name, Start: bodyOffset + len(body), End: bodyOffset + len(body)})
+			continue
+		}
+		if name == "text" {
+			value := ""
+			if cursor < len(body) {
+				value = body[cursor:]
+			}
+			field := EventField{Name: name, Value: value, Start: bodyOffset + cursor, End: bodyOffset + len(body)}
+			dialogue.Text = value
+			dialogue.TextStart = bodyOffset + cursor
+			dialogue.Syntax = ParseDialogueText(dialogue.Text)
+			dialogue.Fields = append(dialogue.Fields, field)
+			break
+		}
+		end := len(body)
+		if comma := strings.IndexByte(body[cursor:], ','); comma >= 0 {
+			end = cursor + comma
+		}
+		value := body[cursor:end]
+		field := EventField{Name: name, Value: value, Start: bodyOffset + cursor, End: bodyOffset + end}
+		if name == "style" {
+			dialogue.Style = strings.TrimSpace(value)
+			leading := len(value) - len(strings.TrimLeft(value, " \t"))
+			dialogue.StyleColumn = field.Start - lineOffset + leading + 1
+		}
+		dialogue.Fields = append(dialogue.Fields, field)
+		cursor = end + 1
+	}
+	dialogue.MissingFields = missingAt >= 0
+	return dialogue
 }
 
 func splitFormat(format string) []string {

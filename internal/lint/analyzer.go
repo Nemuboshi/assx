@@ -39,6 +39,30 @@ var (
 	hexPrefix     = regexp.MustCompile(`^\s*([+-]?[0-9a-fA-F]+)`)
 )
 
+func analyzeUnterminatedBlocks(dialogue ass.Dialogue) []Diagnostic {
+	text := dialogue.Text
+	var diagnostics []Diagnostic
+	for offset := 0; offset < len(text); {
+		open := nextUnescapedOpenBrace(text, offset)
+		if open < 0 {
+			break
+		}
+		close := strings.IndexByte(text[open+1:], '}')
+		if close < 0 {
+			rule := Rules[IssueUnterminatedBlock]
+			diagnostics = append(diagnostics, Diagnostic{
+				ID: rule.ID, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
+				Fix: rule.Fix, Line: dialogue.Line, Column: open + 1,
+				Detail:  fmt.Sprintf("No closing brace follows the '{' at column %d; the rest of the line renders as literal text.", open+1),
+				Sources: rule.Sources,
+			})
+			break
+		}
+		offset = open + 1 + close + 1
+	}
+	return diagnostics
+}
+
 type dialogueAnalyzer struct {
 	line              int
 	textStart         int
@@ -58,6 +82,7 @@ func Analyze(dialogue ass.Dialogue) []Diagnostic {
 
 	analyzer.diagnostics = append(analyzer.diagnostics, analyzeOverrideSyntax(dialogue, tree)...)
 	analyzer.diagnostics = append(analyzer.diagnostics, analyzeDrawings(dialogue, tree)...)
+	analyzer.diagnostics = append(analyzer.diagnostics, analyzeUnterminatedBlocks(dialogue)...)
 
 	for _, effect := range semantic.EvaluateDialogue(tree) {
 		analyzer.add(IssueNoEffect, effect.Tag, noEffectDetail(effect))
@@ -133,6 +158,9 @@ func (a *dialogueAnalyzer) validate(tag ass.Tag) {
 	if !known {
 		return
 	}
+	if tag.Paren && len(tag.Args) == 0 {
+		return // Empty parenthesized expressions are ignored by the renderers.
+	}
 	if tagSpec.Counts != nil && !slices.Contains(tagSpec.Counts, len(tag.Args)) {
 		a.add(IssueArgumentCount, tag, fmt.Sprintf("Found %d arguments; expected %s.", len(tag.Args), countsText(tagSpec.Counts)))
 		return
@@ -151,6 +179,8 @@ func (a *dialogueAnalyzer) validate(tag ass.Tag) {
 			invalid(fmt.Sprintf("Expected an integer, found %q.", arg))
 		} else if (tagSpec.Min != 0 || tagSpec.Max != 0) && (value < tagSpec.Min || value > tagSpec.Max) {
 			invalid(fmt.Sprintf("Value %d is outside the accepted range %d..%d.", value, tagSpec.Min, tagSpec.Max))
+		} else if tag.Name == "a" && (value == 4 || value == 8) {
+			a.add(IssueRendererDiff, tag, fmt.Sprintf("libass treats \\a%d as middle-center like \\a5; xy-VSFilter and VSFilterMod bit-map it to a different alignment.", value))
 		}
 	case spec.NumberValue:
 		if !numberPrefix.MatchString(arg) {

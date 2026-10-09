@@ -26,17 +26,6 @@ func CanonicalTagState(tag ass.Tag, tagSpec spec.TagSpec, slots []string) ([]str
 	if len(slots) == 0 {
 		return nil, false
 	}
-	if tag.Name == "fsc" {
-		value, ok := CanonicalNumber("100")
-		if !ok {
-			return nil, false
-		}
-		values := make([]string, len(slots))
-		for i := range values {
-			values[i] = value
-		}
-		return values, true
-	}
 	var value string
 	var ok bool
 	switch tagSpec.Value {
