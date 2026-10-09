@@ -16,7 +16,7 @@ import (
 
 func TestRunSafeFixAndConciseSummary(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "safe.ass")
-	input := "[Script Info]\nPlayResX: 640\nPlayResY: 480\nYCbCr Matrix: None\nLayoutResX: 640\nLayoutResY: 480\n[V4+ Styles]\nFormat: Name, MarginL\nStyle: Default, 12.75\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0,1,Default,,0,0,0,,{\\fs10\\fs20}text\n"
+	input := "[Script Info]\nPlayResX: 640\nPlayResY: 480\nYCbCr Matrix: None\nLayoutResX: 640\nLayoutResY: 480\n[V4+ Styles]\nFormat: Name, MarginL\nStyle: Default, 12.75\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{\\fs10\\fs20}text\n"
 	if err := os.WriteFile(path, []byte(input), 0o600); err != nil {
 		t.Fatal(err)
 	}
@@ -57,7 +57,7 @@ func TestRunRedundantStyleOverridesSafeFix(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if strings.Contains(string(fixed), `\fn`) || !strings.Contains(string(fixed), "Default,alpha beta") {
+	if strings.Contains(string(fixed), `\fn`) || !strings.Contains(string(fixed), "Default,,0,0,0,,alpha beta") {
 		t.Fatalf("redundant style overrides were not removed:\n%s", fixed)
 	}
 	if !strings.Contains(stdout.String(), "Applied fixes: 1 safe, 0 unsafe.") {
@@ -69,8 +69,8 @@ func TestRunVSFilterModTagWarningDisablesFixes(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "vsfiltermod.ass")
 	input := "[Script Info]\nPlayResX: 640\nPlayResY: 480\nYCbCr Matrix: None\nLayoutResX: 640\nLayoutResY: 480\n" +
 		"[V4+ Styles]\nFormat: Name, Fontname, Fontsize\nStyle: Default, Arial, 20\n" +
-		"[Events]\nFormat: Layer, Start, End, Style, Text\n" +
-		"Dialogue: 0, 0:00:00.00, 0:00:02.00, Default,{\\fs21\\fs20\\distort(1)}x\n"
+		"[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n" +
+		"Dialogue: 0, 0:00:00.00, 0:00:02.00, Default,,0,0,0,,{\\fs21\\fs20\\distort(1)}x\n"
 	if err := os.WriteFile(path, []byte(input), 0o600); err != nil {
 		t.Fatal(err)
 	}
@@ -105,7 +105,7 @@ func TestRunVSFilterModTagWarningDisablesFixes(t *testing.T) {
 
 func TestRunUnsafeFixIsOptInAndPreservesExitStatus(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "unsafe.ass")
-	input := "[Script Info]\nPlayResX: 1920\nPlayResY: 1080\nYCbCr Matrix: TV.601\n[V4+ Styles]\nFormat: Name, Fontname, Fontsize\nStyle: Default, Arial, 20\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0,1,Default,,0,0,0,,text\n"
+	input := "[Script Info]\nPlayResX: 1920\nPlayResY: 1080\nYCbCr Matrix: TV.601\n[V4+ Styles]\nFormat: Name, Fontname, Fontsize\nStyle: Default, Arial, 20\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,text\n"
 	if err := os.WriteFile(path, []byte(input), 0o600); err != nil {
 		t.Fatal(err)
 	}
@@ -136,7 +136,7 @@ func TestRunUnsafeFixIsOptInAndPreservesExitStatus(t *testing.T) {
 
 func TestRunJSONStaysValidAndReportsUnknownTagsAsSuggestion(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "unknown.ass")
-	input := "[Script Info]\nYCbCr Matrix: None\nPlayResX: 640\nPlayResY: 480\nLayoutResX: 640\nLayoutResY: 480\n[V4+ Styles]\nFormat: Name, Fontname, Fontsize\nStyle: Default, Arial, 20\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0,1,Default,,0,0,0,,{\\unknownTag}text\n"
+	input := "[Script Info]\nYCbCr Matrix: None\nPlayResX: 640\nPlayResY: 480\nLayoutResX: 640\nLayoutResY: 480\n[V4+ Styles]\nFormat: Name, Fontname, Fontsize\nStyle: Default, Arial, 20\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{\\unknownTag}text\n"
 	if err := os.WriteFile(path, []byte(input), 0o600); err != nil {
 		t.Fatal(err)
 	}
@@ -174,7 +174,7 @@ func TestRenderHumanDoesNotCountUnknownSeverityAsSuggestion(t *testing.T) {
 
 func TestRunPreservesUTF16EncodingWhenFixing(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "utf16.ass")
-	text := "[Script Info]\nYCbCr Matrix: None\nPlayResX: 640\nPlayResY: 480\nLayoutResX: 640\nLayoutResY: 480\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0,1,Default,,0,0,0,,{\\fs10\\fs20}text\n"
+	text := "[Script Info]\nYCbCr Matrix: None\nPlayResX: 640\nPlayResY: 480\nLayoutResX: 640\nLayoutResY: 480\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{\\fs10\\fs20}text\n"
 	words := utf16.Encode([]rune(text))
 	raw := []byte{0xff, 0xfe}
 	for _, word := range words {
@@ -278,7 +278,7 @@ func TestRunFontChecksAreOptionalAndNotAutoFixed(t *testing.T) {
 
 func TestRunErrorKeepsErrorExitStatus(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "error.ass")
-	input := "[Script Info]\nYCbCr Matrix: None\nPlayResX: 640\nPlayResY: 480\nLayoutResX: 640\nLayoutResY: 480\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0,1,Default,,0,0,0,,{\\fade(1)}text\n"
+	input := "[Script Info]\nYCbCr Matrix: None\nPlayResX: 640\nPlayResY: 480\nLayoutResX: 640\nLayoutResY: 480\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{\\fade(1)}text\n"
 	if err := os.WriteFile(path, []byte(input), 0o600); err != nil {
 		t.Fatal(err)
 	}

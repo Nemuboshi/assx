@@ -87,10 +87,10 @@ Style: Main,Go,20,0,0
 Style: main,Definitely Missing,20,0,0
 Style: Default,Go,20,0,0
 [Events]
-Format: Layer, Start, End, Style, Text
-Dialogue: 0,0,1,Main,A
-Dialogue: 0,0,1,main,B
-Dialogue: 0,0,1,default,C
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.00,0:00:01.00,Main,,0,0,0,,A
+Dialogue: 0,0:00:01.00,0:00:02.00,main,,0,0,0,,B
+Dialogue: 0,0:00:02.00,0:00:03.00,default,,0,0,0,,C
 `)
 	diagnostics, err := AnalyzeFonts(doc, checker)
 	if err != nil {

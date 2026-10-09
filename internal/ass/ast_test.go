@@ -1,6 +1,33 @@
 package ass
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
+
+func TestNestedParenthesesInTransformAndEmptyClip(t *testing.T) {
+	text := `prefix{\t(18,3438,\clip())\alpha&H00&}suffix`
+	tree := ParseDialogueText(text)
+	tags := tree.Tokens()
+	var transform, clip *Tag
+	for _, token := range tags {
+		if token.Tag == nil {
+			continue
+		}
+		if token.Tag.Name == "t" {
+			transform = token.Tag
+		}
+		if token.Tag.Name == "clip" {
+			clip = token.Tag
+		}
+	}
+	if transform == nil || len(transform.Children) != 1 || transform.Children[0].Name != "clip" {
+		t.Fatalf("transform = %#v", transform)
+	}
+	if clip == nil || len(clip.Args) != 0 || text[clip.End:strings.Index(text, `\alpha`)] != ")" {
+		t.Fatalf("clip = %#v; parser did not consume only its own parentheses", clip)
+	}
+}
 
 func TestDialogueTokensMarkTransitionTagsAndSourceSpans(t *testing.T) {
 	text := `pre{\blur6\t(0,650,0.1,\blur0.6)}post`

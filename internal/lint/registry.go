@@ -21,6 +21,16 @@ const (
 	IssueEmptyOverrideBlock      = "ASS018"
 	IssueOverrideJunk            = "ASS019"
 	IssueMalformedDrawing        = "ASS020"
+	IssueUnterminatedBlock       = "ASS021"
+	IssueMalformedStyleColour    = "ASS022"
+	IssueKeywordCase             = "ASS023"
+	IssueEventFormat             = "ASS024"
+	IssueShortEvent              = "ASS025"
+	IssueTimecode                = "ASS026"
+	IssueEventDuration           = "ASS027"
+	IssueEventLayer              = "ASS028"
+	IssueEffectField             = "ASS029"
+	IssueKaraoke                 = "ASS030"
 )
 
 type Severity string
@@ -62,7 +72,7 @@ var Rules = map[string]Rule{
 	IssueRendererDiff: {
 		ID: IssueRendererDiff, Severity: Warning, Title: "Renderer behavior differs",
 		Description: "This tag form can be parsed or rendered differently by libass and VSFilter.", Fix: "Choose an unambiguous form or verify the intended output in both renderers.",
-		Sources: []string{"https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L231", "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L404-L423", "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L425", "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L729-L744", "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L749", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2205", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2315", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2352-L2382", "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2953-L2998"},
+		Sources: []string{"https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L231", "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L404-L423", "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L425", "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L595-L604", "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L729-L744", "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L749", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2205", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2308-L2313", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2315", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2352-L2382", "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2909-L2914", "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2953-L2998"},
 	},
 	IssueFontComma: {
 		ID: IssueFontComma, Severity: Warning, Title: "Comma splits font name",
@@ -155,5 +165,65 @@ var Rules = map[string]Rule{
 		Description: "A drawing contains a command with missing, extra, or malformed coordinates.",
 		Fix:         "Correct the drawing command after reviewing renderer behavior.",
 		Sources:     []string{"https://github.com/libass/libass/blob/f61db56/libass/ass_drawing.c#L160-L240", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L789-L895", "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L869-L970"},
+	},
+	IssueUnterminatedBlock: {
+		ID: IssueUnterminatedBlock, Severity: Warning, Title: "Unterminated override block",
+		Description: "An opening brace has no closing brace, so libass and VSFilter render the remainder of the line as literal text and apply no tags from it.",
+		Fix:         "Add the closing brace or remove the opening brace.",
+		Sources:     []string{"https://github.com/libass/libass/blob/f61db56/libass/ass_render.c#L2063-L2066", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2952-L2958"},
+	},
+	IssueMalformedStyleColour: {
+		ID: IssueMalformedStyleColour, Severity: Error, Title: "Malformed style colour",
+		Description: "A Style colour field has no valid leading digit for its base. libass silently uses opaque black, while VSFilter rejects the line and may reload the file with another subtitle parser.",
+		Fix:         "Write the colour as &HAABBGGRR& hexadecimal digits.",
+		Sources:     []string{"https://github.com/libass/libass/blob/f61db56/libass/ass.c#L338-L342", "https://github.com/libass/libass/blob/f61db56/libass/ass.c#L292-L321", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L1237-L1252", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L1553-L1557", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L2775-L2790"},
+	},
+	IssueKeywordCase: {
+		ID: IssueKeywordCase, Severity: Warning, Title: "Keyword case is libass-incompatible",
+		Description: "The line keyword is not in the form libass matches case-sensitively. VSFilter lowercases keywords first, so the line may be honored there while libass silently ignores it.",
+		Fix:         "Use the canonical keyword spelling (for example Dialogue:, Style:, Format:, PlayResX:).",
+		Sources:     []string{"https://github.com/libass/libass/blob/f61db56/libass/ass.c#L824-L846", "https://github.com/libass/libass/blob/f61db56/libass/ass.c#L880-L918", "https://github.com/libass/libass/blob/f61db56/libass/ass.c#L1015-L1047", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L1440-L1445"},
+	},
+	IssueEventFormat: {
+		ID: IssueEventFormat, Severity: Warning, Title: "Custom event Format line",
+		Description: "The Events Format line is not the standard v4+ or SSA order. libass reads event fields by name from this line while VSFilter ignores it and uses fixed positions, so fields beyond the first difference are assigned differently.",
+		Fix:         "Use the standard order, or verify each field in both renderers.",
+		Sources:     []string{"https://github.com/libass/libass/blob/f61db56/libass/ass.c#L49-L58", "https://github.com/libass/libass/blob/f61db56/libass/ass.c#L481-L524", "https://github.com/libass/libass/blob/f61db56/libass/ass.c#L995-L1010", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L1455-L1472"},
+	},
+	IssueShortEvent: {
+		ID: IssueShortEvent, Severity: Error, Title: "Event line has fewer fields than Format declares",
+		Description: "A Dialogue line ends before every Format field has a value. libass discards the event silently, and VSFilter throws at the missing cell and rejects the line.",
+		Fix:         "Add the missing fields so the line has a value for every Format name.",
+		Sources:     []string{"https://github.com/libass/libass/blob/f61db56/libass/ass.c#L455-L472", "https://github.com/libass/libass/blob/f61db56/libass/ass.c#L1037-L1045", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L1284-L1301", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L1491-L1495"},
+	},
+	IssueTimecode: {
+		ID: IssueTimecode, Severity: Error, Title: "Malformed event timecode",
+		Description: "A Start or End field is not H:MM:SS.CS. libass reads such a time as 0:00:00.00, and VSFilter stops at the unexpected separator, desynchronizing later fields and discarding the event.",
+		Fix:         "Write the timecode with three colon-separated groups and a two-digit centisecond part after the dot.",
+		Sources:     []string{"https://github.com/libass/libass/blob/f61db56/libass/ass.c#L249-L260", "https://github.com/libass/libass/blob/f61db56/libass/ass.c#L436-L438", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L1284-L1301", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L1457-L1464"},
+	},
+	IssueEventDuration: {
+		ID: IssueEventDuration, Severity: Warning, Title: "Zero or negative event duration",
+		Description: "End is not later than Start. libass keeps an event that never matches a frame, and VSFilter drops entries whose start is after their end while parsing.",
+		Fix:         "Set End later than Start.",
+		Sources:     []string{"https://github.com/libass/libass/blob/f61db56/libass/ass.c#L515", "https://github.com/libass/libass/blob/f61db56/libass/ass_render.c#L3384-L3386", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L2065", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L2173"},
+	},
+	IssueEventLayer: {
+		ID: IssueEventLayer, Severity: Error, Title: "Layer is not an integer",
+		Description: "The Layer field has no valid leading integer. libass silently uses layer 0, and VSFilter throws in NextInt and rejects the whole line.",
+		Fix:         "Write Layer as a plain decimal or &H/0x hexadecimal integer.",
+		Sources:     []string{"https://github.com/libass/libass/blob/f61db56/libass/ass.c#L292-L337", "https://github.com/libass/libass/blob/f61db56/libass/ass.c#L516-L518", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L1284-L1305", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L1456"},
+	},
+	IssueEffectField: {
+		ID: IssueEffectField, Severity: Warning, Title: "Effect field is not honored",
+		Description: "Only Banner;, Scroll up;, and Scroll down; (followed by their parameters) change rendering. libass matches these prefixes case-sensitively while VSFilter compares case-insensitively, and any other content is a silent no-op.",
+		Fix:         "Use the canonical effect spelling with the parameters it requires, or leave the field empty.",
+		Sources:     []string{"https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L923-L997", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L1940-L1988", "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2113-L2164"},
+	},
+	IssueKaraoke: {
+		ID: IssueKaraoke, Severity: Warning, Title: "Karaoke timing exceeds the event",
+		Description: "The summed \\k, \\K, \\kf, and \\ko durations run past the event end, so the last syllables never reach their highlight window.",
+		Fix:         "Reduce syllable durations, rebalance them across the line, or extend the event duration.",
+		Sources:     []string{"https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L845-L868", "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L1025-L1080", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2537-L2573", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2944-L2945"},
 	},
 }

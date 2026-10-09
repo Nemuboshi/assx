@@ -7,7 +7,7 @@ import (
 )
 
 func TestEmptyOverrideBlockAndOverrideJunk(t *testing.T) {
-	doc := ass.Parse("[Events]\nFormat: Layer, Start, End, Style, Text\nDialogue: 0,0,1,Default,{}A{   }B{comment}C{\\fs20 junk \\bord2}D\n")
+	doc := ass.Parse("[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{}A{   }B{comment}C{\\fs20 junk \\bord2}D\n")
 	diagnostics := AnalyzeDocument(doc)
 
 	var empty, junk int
