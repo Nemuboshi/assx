@@ -173,23 +173,29 @@ func (block OverrideBlock) HasTags() bool {
 }
 
 func appendFlatTagTokens(tokens *[]Token, tag Tag) {
-	if tag.RepeatedSlashes > 0 {
-		start := tag.SlashStart
-		extra := Tag{
-			Column:          start + 1,
-			Start:           start,
-			End:             tag.Start,
-			InTransition:    tag.InTransition,
-			RepeatedSlashes: tag.RepeatedSlashes,
-			SlashStart:      start,
+	stack := []Tag{tag}
+	for len(stack) > 0 {
+		last := len(stack) - 1
+		current := stack[last]
+		stack = stack[:last]
+		if current.RepeatedSlashes > 0 {
+			start := current.SlashStart
+			extra := Tag{
+				Column:          start + 1,
+				Start:           start,
+				End:             current.Start,
+				InTransition:    current.InTransition,
+				RepeatedSlashes: current.RepeatedSlashes,
+				SlashStart:      start,
+			}
+			*tokens = append(*tokens, Token{Tag: &extra})
 		}
-		*tokens = append(*tokens, Token{Tag: &extra})
-	}
-	copyTag := tag
-	copyTag.RepeatedSlashes = 0
-	*tokens = append(*tokens, Token{Tag: &copyTag})
-	for _, child := range tag.Children {
-		appendFlatTagTokens(tokens, child)
+		copyTag := current
+		copyTag.RepeatedSlashes = 0
+		*tokens = append(*tokens, Token{Tag: &copyTag})
+		for i := len(current.Children) - 1; i >= 0; i-- {
+			stack = append(stack, current.Children[i])
+		}
 	}
 }
 
@@ -254,17 +260,97 @@ func appendRawItem(items []BlockItem, raw string, start int) []BlockItem {
 	})
 }
 
+type tagParseFrame struct {
+	tag      Tag
+	start    int
+	argStart int
+	depth    int
+	args     []string
+	children []Tag
+}
+
 func parseTag(block string, base, tagStart, slashStart int, inTransition bool) (Tag, int, bool) {
+	frame, pos, ok, complete := beginTagParse(block, base, tagStart, slashStart, inTransition)
+	if !ok {
+		return Tag{}, pos, false
+	}
+	if complete {
+		return frame.tag, pos, true
+	}
+
+	stack := []tagParseFrame{frame}
+	for len(stack) > 0 {
+		index := len(stack) - 1
+		current := &stack[index]
+		if pos >= len(block) {
+			current.tag = finishTagParse(block, base, *current, pos, pos)
+			stack = stack[:index]
+			if len(stack) == 0 {
+				return current.tag, pos, true
+			}
+			stack[len(stack)-1].children = append(stack[len(stack)-1].children, current.tag)
+			continue
+		}
+
+		if current.tag.Name == "t" && current.depth == 0 && block[pos] == '\\' {
+			runEnd := repeatedSlashEnd(block, pos)
+			child, next, childOK, childComplete := beginTagParse(block, base, runEnd-1, pos, true)
+			if !childOK {
+				pos = max(runEnd, next)
+				continue
+			}
+			if childComplete {
+				current.children = append(current.children, child.tag)
+				pos = next
+				continue
+			}
+			stack = append(stack, child)
+			pos = next
+			continue
+		}
+
+		switch block[pos] {
+		case '(':
+			current.depth++
+			pos++
+		case ')':
+			if current.depth > 0 {
+				current.depth--
+				pos++
+				continue
+			}
+			current.tag = finishTagParse(block, base, *current, pos+1, pos)
+			stack = stack[:index]
+			pos++
+			if len(stack) == 0 {
+				return current.tag, pos, true
+			}
+			stack[len(stack)-1].children = append(stack[len(stack)-1].children, current.tag)
+		case ',':
+			if current.depth == 0 {
+				current.args = append(current.args, strings.TrimSpace(block[current.argStart:pos]))
+				current.argStart = pos + 1
+				current.children = nil
+			}
+			pos++
+		default:
+			pos++
+		}
+	}
+	return Tag{}, pos, false
+}
+
+func beginTagParse(block string, base, tagStart, slashStart int, inTransition bool) (tagParseFrame, int, bool, bool) {
 	j := tagStart + 1
 	for j < len(block) && isSpace(block[j]) {
 		j++
 	}
 	k := j
-	for k < len(block) && block[k] != '(' && block[k] != '\\' {
+	for k < len(block) && block[k] != '(' && block[k] != '\\' && !(inTransition && block[k] == ')') {
 		k++
 	}
 	if k == j {
-		return Tag{}, j, false
+		return tagParseFrame{}, j, false, false
 	}
 
 	head := strings.TrimSpace(block[j:k])
@@ -276,74 +362,51 @@ func parseTag(block string, base, tagStart, slashStart int, inTransition bool) (
 		}
 	}
 	if name == "" {
-		name = head
-		if len(name) > 12 {
-			name = name[:12]
+		if len(head) > 12 {
+			head = head[:12]
 		}
-		return Tag{
-			Name: name, Column: base + j + 1,
+		tag := Tag{
+			Name: head, Column: base + j + 1,
 			Start: base + tagStart, End: base + k,
-			SlashStart:      base + slashStart,
-			RepeatedSlashes: tagStart - slashStart,
-			InTransition:    inTransition,
-			Raw:             block[tagStart:k],
-		}, k, true
+			SlashStart: base + slashStart, RepeatedSlashes: tagStart - slashStart,
+			InTransition: inTransition, Raw: block[tagStart:k],
+		}
+		return tagParseFrame{tag: tag}, k, true, true
 	}
 
-	var args []string
-	paren := k < len(block) && block[k] == '('
-	if paren {
-		k++
-		argStart := k
-		depth := 0
-		for k < len(block) {
-			switch block[k] {
-			case '(':
-				depth++
-			case ')':
-				if depth == 0 {
-					if k > argStart || len(args) > 0 {
-						args = append(args, strings.TrimSpace(block[argStart:k]))
-					}
-					k++
-					goto argsDone
-				}
-				depth--
-			case ',':
-				if depth == 0 {
-					args = append(args, strings.TrimSpace(block[argStart:k]))
-					k++
-					argStart = k
-					continue
-				}
-			}
-			k++
-		}
-		if k > argStart || len(args) > 0 {
-			args = append(args, strings.TrimSpace(block[argStart:k]))
-		}
-	argsDone:
-	} else if rest := strings.TrimSpace(head[len(name):]); rest != "" {
-		args = []string{rest}
+	frame := tagParseFrame{
+		tag: Tag{
+			Name: name, Column: base + j + 1,
+			Paren:      k < len(block) && block[k] == '(',
+			Start:      base + tagStart,
+			SlashStart: base + slashStart, RepeatedSlashes: tagStart - slashStart,
+			InTransition: inTransition,
+		},
+		start: tagStart,
 	}
+	if !frame.tag.Paren {
+		if rest := strings.TrimSpace(head[len(name):]); rest != "" {
+			frame.tag.Args = []string{rest}
+		}
+		frame.tag.End = base + k
+		frame.tag.Raw = block[tagStart:k]
+		return frame, k, true, true
+	}
+	frame.argStart = k + 1
+	return frame, k + 1, true, false
+}
 
-	tag := Tag{
-		Name: name, Args: args, Column: base + j + 1, Paren: paren,
-		InTransition: inTransition, Start: base + tagStart, End: base + k,
-		SlashStart: base + slashStart, RepeatedSlashes: tagStart - slashStart,
-		Raw: block[tagStart:k],
+func finishTagParse(block string, base int, frame tagParseFrame, end, argEnd int) Tag {
+	if argEnd > frame.argStart || len(frame.args) > 0 {
+		frame.args = append(frame.args, strings.TrimSpace(block[frame.argStart:argEnd]))
 	}
-	if tag.Name == "t" && len(args) > 0 {
-		argumentStart := strings.LastIndex(block[:k], args[len(args)-1])
-		if argumentStart >= 0 {
-			for _, item := range parseBlockItems(args[len(args)-1], base+argumentStart, true) {
-				if item.Tag != nil {
-					tag.Children = append(tag.Children, *item.Tag)
-				}
-			}
-		}
+	frame.tag.Args = frame.args
+	if frame.tag.Name == "t" {
+		frame.tag.Children = frame.children
 	}
-	return tag, k, true
+	frame.tag.End = base + end
+	frame.tag.Raw = block[frame.start:end]
+	return frame.tag
 }
 
 func recognizedTagPrefix(name, value string) bool {
