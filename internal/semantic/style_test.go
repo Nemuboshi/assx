@@ -14,15 +14,15 @@ func TestFscResetsToStyleScaleValues(t *testing.T) {
 		"scale_x": KnownValue("150"),
 		"scale_y": KnownValue("150"),
 	}
-	values, ok := StyleTagState(ass.Tag{Name: "fsc"}, tagSpec, slots, base)
+	values, ok := StyleTagState(ass.Tag{Name: "fsc"}, tagSpec, slots, base, base)
 	if !ok || values[0] != "150" || values[1] != "150" {
 		t.Fatalf("bare fsc = (%v, %t), want style scale values", values, ok)
 	}
-	if _, ok := StyleTagState(ass.Tag{Name: "fsc", Args: []string{"100"}}, tagSpec, slots, base); ok {
+	if _, ok := StyleTagState(ass.Tag{Name: "fsc", Args: []string{"100"}}, tagSpec, slots, base, base); ok {
 		t.Fatal("fsc with an argument must not model a style-backed assignment (VSFilterMod consumes it)")
 	}
 	incomplete := map[string]StateValue{"scale_x": KnownValue("150")}
-	if _, ok := StyleTagState(ass.Tag{Name: "fsc"}, tagSpec, slots, incomplete); ok {
+	if _, ok := StyleTagState(ass.Tag{Name: "fsc"}, tagSpec, slots, incomplete, base); ok {
 		t.Fatal("fsc must bail when a style scale slot is unknown")
 	}
 	if values, ok := CanonicalTagState(ass.Tag{Name: "fsc"}, tagSpec, slots); ok {

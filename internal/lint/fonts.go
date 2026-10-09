@@ -7,12 +7,11 @@ import (
 	"path/filepath"
 	"runtime"
 	"sort"
-	"strconv"
 	"strings"
-	"unicode"
 	"unicode/utf8"
 
 	"assx/internal/ass"
+	"assx/internal/ass/spec"
 	"assx/internal/semantic"
 	"golang.org/x/image/font/sfnt"
 )
@@ -35,6 +34,11 @@ type fontContext struct {
 	family string
 	bold   bool
 	italic bool
+}
+
+type fontStyle struct {
+	fontContext
+	values map[string]semantic.StateValue
 }
 
 type fontUsage struct {
@@ -220,18 +224,7 @@ func fontName(font *sfnt.Font, buf *sfnt.Buffer, ids ...sfnt.NameID) string {
 }
 
 func normalizeFontFamily(name string) string {
-	tokens := strings.FieldsFunc(strings.ToLower(name), func(r rune) bool {
-		return !unicode.IsLetter(r) && !unicode.IsDigit(r)
-	})
-	var normalized strings.Builder
-	for _, part := range tokens {
-		switch part {
-		case "sc", "tc", "cn", "jp", "j", "kr", "k", "tw", "hk":
-			continue
-		}
-		normalized.WriteString(part)
-	}
-	return normalized.String()
+	return strings.ToLower(strings.TrimSpace(name))
 }
 
 func (c *FontChecker) missingRunes(context fontContext, text string) ([]rune, bool, error) {
@@ -314,13 +307,20 @@ func styleDistance(face fontFace, context fontContext) int {
 // AnalyzeFonts reports missing font families and missing glyphs in dialogue text.
 func AnalyzeFonts(doc ass.Document, checker *FontChecker) ([]Diagnostic, error) {
 	styleDefinitions := semantic.StyleDefinitionsByName(doc.StyleFields)
-	styles := make(map[string]fontContext, len(styleDefinitions))
+	styles := make(map[string]fontStyle, len(styleDefinitions))
 	for name, fields := range styleDefinitions {
-		styles[name] = fontContext{
+		context := fontContext{
 			family: strings.TrimSpace(fields["fontname"]),
 			bold:   styleBoolean(fields["bold"]),
 			italic: styleBoolean(fields["italic"]),
 		}
+		values := semantic.CanonicalStyleState(fields).Values
+		for _, property := range []string{"bold", "italic"} {
+			if _, exists := fields[property]; !exists {
+				values[property] = semantic.KnownValue("0")
+			}
+		}
+		styles[name] = fontStyle{fontContext: context, values: values}
 	}
 
 	var diagnostics []Diagnostic
@@ -329,7 +329,7 @@ func AnalyzeFonts(doc ass.Document, checker *FontChecker) ([]Diagnostic, error) 
 		if !baseKnown {
 			continue
 		}
-		current, activeStyle := base, base
+		current, activeStyle := base.fontContext, base
 		contextKnown := true
 		var usages []*fontUsage
 		usageByContext := make(map[fontContext]*fontUsage)
@@ -340,34 +340,24 @@ func AnalyzeFonts(doc ass.Document, checker *FontChecker) ([]Diagnostic, error) 
 				if tag.InTransition {
 					return true
 				}
-				switch strings.ToLower(tag.Name) {
-				case "fn":
+				switch tag.Name {
+				case "fn", "b", "i":
 					if !contextKnown {
 						break
 					}
-					name := strings.TrimSpace(strings.Join(tag.Args, ","))
-					if name == "" {
-						current.family = activeStyle.family
-					} else {
-						current.family = name
-					}
-				case "b":
-					if !contextKnown {
+					tagSpec := spec.TagSpecs[tag.Name]
+					values, known := semantic.StyleTagState(tag, tagSpec, tagSpec.Slots, activeStyle.values, base.values)
+					if !known {
+						contextKnown = false
 						break
 					}
-					if len(tag.Args) > 0 {
-						if value, err := strconv.Atoi(strings.TrimSpace(tag.Args[0])); err == nil {
-							current.bold = value != 0
-						}
-					}
-				case "i":
-					if !contextKnown {
-						break
-					}
-					if len(tag.Args) > 0 {
-						if value, err := strconv.Atoi(strings.TrimSpace(tag.Args[0])); err == nil {
-							current.italic = value != 0
-						}
+					switch tag.Name {
+					case "fn":
+						current.family = values[0]
+					case "b":
+						current.bold = styleBoolean(values[0])
+					case "i":
+						current.italic = styleBoolean(values[0])
 					}
 				case "r":
 					activeStyle = base
@@ -379,12 +369,10 @@ func AnalyzeFonts(doc ass.Document, checker *FontChecker) ([]Diagnostic, error) 
 							contextKnown = false
 						}
 					}
-					current = activeStyle
+					current = activeStyle.fontContext
 				case "p":
-					if len(tag.Args) > 0 {
-						if value, err := strconv.Atoi(strings.TrimSpace(tag.Args[0])); err == nil {
-							drawing = value > 0
-						}
+					if value, known := tag.IntegerArgument(); known {
+						drawing = value > 0
 					}
 				}
 				return true

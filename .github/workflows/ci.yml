@@ -90,15 +90,18 @@ jobs:
             .ci/safe-fixes-after.ass \
             --width 640 --height 360 --every-frame 24000/1001
 
-          if cargo run --quiet --manifest-path tools/rendercheck/Cargo.toml -- \
-            tools/rendercheck/fixtures/equivalent-before.ass \
-            tools/rendercheck/fixtures/different-after.ass \
-            --width 640 --height 360 --every-frame 24000/1001; then
-            echo "rendercheck failed to detect an intentional rendering difference"
-            exit 1
-          else
-            code=$?
-            if [ "$code" -ne 1 ]; then
-              exit "$code"
+          for pair in 'equivalent-before.ass different-after.ass' 'timecode-before.ass timecode-after.ass'; do
+            read -r before after <<< "$pair"
+            if cargo run --quiet --manifest-path tools/rendercheck/Cargo.toml -- \
+              "tools/rendercheck/fixtures/$before" \
+              "tools/rendercheck/fixtures/$after" \
+              --width 640 --height 360 --every-frame 24000/1001; then
+              echo "rendercheck failed to detect an intentional rendering difference: $pair"
+              exit 1
+            else
+              code=$?
+              if [ "$code" -ne 1 ]; then
+                exit "$code"
+              fi
             fi
-          fi
+          done

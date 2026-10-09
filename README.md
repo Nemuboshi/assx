@@ -8,7 +8,7 @@ assx [--format pretty|plain|json] [--fix] [--unsafe-fix] [--check-fonts] [--font
 
 - `file.ass`: the ASS file to check.
 - `--format pretty|plain|json`: choose output format; defaults to `pretty`. Pretty output uses color in a terminal and shows a scan spinner when stderr is interactive. `plain` disables color and the spinner; `json` emits machine-readable diagnostics.
-- `--fix`: apply safe fixes.
+- `--fix`: apply safe fixes. If the input is a symbolic link, update its target and preserve the link.
 - `--unsafe-fix`: apply safe and unsafe fixes.
 - `--check-fonts`: check whether used font families are available and contain dialogue characters. Disabled by default.
 - `--font-dir DIR`: recursively scan this folder for fonts instead of searching system font folders. Used with `--check-fonts`.

@@ -31,10 +31,7 @@ var eventTimeShape = regexp.MustCompile(`^[+-]?\d+:[+-]?\d+:[+-]?\d+\.[+-]?\d+$`
 // AnalyzeEventFields checks the Events Format line and every parsed event
 // field against what libass and VSFilter actually do with it.
 func AnalyzeEventFields(doc ass.Document) []Diagnostic {
-	var diagnostics []Diagnostic
-	if finding := eventFormatFinding(doc); finding != nil {
-		diagnostics = append(diagnostics, *finding)
-	}
+	diagnostics := eventFormatFindings(doc)
 	for _, dialogue := range doc.Dialogues {
 		if dialogue.MissingFields {
 			rule := Rules[IssueShortEvent]
@@ -61,30 +58,32 @@ func AnalyzeEventFields(doc ass.Document) []Diagnostic {
 	return diagnostics
 }
 
-func eventFormatFinding(doc ass.Document) *Diagnostic {
-	format := doc.EventFormat
-	if len(format) == 0 || formatMatches(format, assEventFormat) || formatMatches(format, ssaEventFormat) {
-		return nil
-	}
-	detail := "libass reads each event field by the Format name while VSFilter reads fixed positions, so this order mis-assigns fields in one of the engines."
-	if !ass.HasFormatName(format, "text") {
-		detail = "The Format line has no Text field, so libass silently discards every following Dialogue line."
-	}
+func eventFormatFindings(doc ass.Document) []Diagnostic {
+	var diagnostics []Diagnostic
 	rule := Rules[IssueEventFormat]
 	for _, raw := range doc.Lines {
 		if raw.Section != "events" {
 			continue
 		}
 		trimmed := strings.TrimLeft(raw.Content, " \t")
-		if strings.HasPrefix(strings.ToLower(trimmed), "format:") {
-			return &Diagnostic{
-				ID: rule.ID, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
-				Fix: rule.Fix, Line: raw.Line, Column: len(raw.Content) - len(trimmed) + 1, Field: "Format",
-				Detail: detail, Sources: rule.Sources,
-			}
+		if !strings.HasPrefix(strings.ToLower(trimmed), "format:") {
+			continue
 		}
+		format := ass.ParseFormat(trimmed[len("Format:"):])
+		if formatMatches(format, assEventFormat) || formatMatches(format, ssaEventFormat) {
+			continue
+		}
+		detail := "libass reads each event field by the Format name while VSFilter reads fixed positions, so this order mis-assigns fields in one of the engines."
+		if !ass.HasFormatName(format, "text") {
+			detail = "The Format line has no Text field, so libass silently discards every following Dialogue line."
+		}
+		diagnostics = append(diagnostics, Diagnostic{
+			ID: rule.ID, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
+			Fix: rule.Fix, Line: raw.Line, Column: len(raw.Content) - len(trimmed) + 1, Field: "Format",
+			Detail: detail, Sources: rule.Sources,
+		})
 	}
-	return nil
+	return diagnostics
 }
 
 func formatMatches(format, canonical []string) bool {

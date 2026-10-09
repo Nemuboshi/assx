@@ -2,6 +2,7 @@ package ass
 
 import (
 	"sort"
+	"strconv"
 	"strings"
 
 	"assx/internal/ass/spec"
@@ -69,6 +70,58 @@ type Tag struct {
 	SlashStart      int      `json:"-"`
 	Children        []Tag    `json:"-"`
 	Raw             string   `json:"-"`
+}
+
+// RawArgument returns the argument text as written, including whitespace that
+// can change a renderer's reset behavior.
+func (tag Tag) RawArgument() (string, bool) {
+	if len(tag.Args) > 1 {
+		return "", false
+	}
+	if tag.Raw == "" {
+		if len(tag.Args) == 0 {
+			return "", true
+		}
+		return tag.Args[0], true
+	}
+	raw := strings.TrimLeft(strings.TrimPrefix(tag.Raw, "\\"), " \t")
+	if !strings.HasPrefix(raw, tag.Name) {
+		return "", false
+	}
+	raw = raw[len(tag.Name):]
+	if tag.Paren {
+		if len(raw) < 2 || raw[0] != '(' || raw[len(raw)-1] != ')' {
+			return "", false
+		}
+		raw = raw[1 : len(raw)-1]
+	}
+	return raw, true
+}
+
+// IntegerArgument reads the leading signed decimal integer consumed by renderers.
+// Overflow is unknown because libass and Windows integer conversion differ.
+func (tag Tag) IntegerArgument() (int32, bool) {
+	raw, known := tag.RawArgument()
+	if !known {
+		return 0, false
+	}
+	raw = strings.TrimLeft(raw, " \t\r\n\v\f")
+	if len(raw) > 0 && raw[0] >= 0x80 {
+		return 0, false
+	}
+	end := 0
+	if len(raw) > 0 && (raw[0] == '+' || raw[0] == '-') {
+		end++
+	}
+	start := end
+	for end < len(raw) && raw[end] >= '0' && raw[end] <= '9' {
+		end++
+	}
+	if end == start {
+		return 0, true
+	}
+	value, err := strconv.ParseInt(raw[:end], 10, 32)
+	return int32(value), err == nil
 }
 
 type Token struct {

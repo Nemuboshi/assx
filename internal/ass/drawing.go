@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
-	"strings"
 )
 
 type DrawingFragment struct {
@@ -57,11 +56,11 @@ func (tree DialogueText) Drawings() []Drawing {
 	tree.WalkTokens(func(token TokenView) bool {
 		if token.HasTag {
 			tag := token.Tag
-			if tag.InTransition || tag.Name != "p" || len(tag.Args) == 0 {
+			if tag.InTransition || tag.Name != "p" {
 				return true
 			}
-			value, err := strconv.Atoi(strings.TrimSpace(tag.Args[0]))
-			if err != nil {
+			value, known := tag.IntegerArgument()
+			if !known {
 				return true
 			}
 			next := value > 0
