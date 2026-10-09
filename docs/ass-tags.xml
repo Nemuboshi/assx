@@ -21,6 +21,10 @@
   A SafeFix may rest only on V rows covering every renderer the fix targets
   (AGENTS.md SafeFix rule).
 
+  "patch mNNN" / "vpatch vNNN" are VSFilterMod's internal ids for its private
+  extensions, from its own source comments (e.g. "patch m002. Z-coord",
+  src/subtitles/STS.h:237). They are not ASS specification terms.
+
   A tag element without scen rows is a stub: it is assumed to match every
   scenario default below, unverified (tag status="S").
 -->
@@ -579,9 +583,9 @@
         <p i="2" name="y" kind="coord" range="any; no clamp"/>
       </sig>
       <sig n="3" form="paren" renderer="vsm">
-        <p i="1" name="x" kind="coord" range="patch m002 Z-coord"/>
+        <p i="1" name="x" kind="coord" range="screen x"/>
         <p i="2" name="y" kind="coord" range="screen y"/>
-        <p i="3" name="z" kind="number" range="multiplied by 80 into mod_z"/>
+        <p i="3" name="z" kind="number" range="VSFilterMod-only depth: stored as style.mod_z = z*80 (RTS.cpp:3539), assigned as every glyph point's z (611-612), then used by the frx/fry rotation and the perspective divide (640-653). Effect is only visible with a 3D rotation; libass and xy reject the 3-arg form entirely."/>
       </sig>
     </params>
     <scen id="arg-count" status="V" base="ignored" vsfilter="ignored" vsfiltermod="supported"
