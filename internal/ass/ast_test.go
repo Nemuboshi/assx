@@ -29,6 +29,15 @@ func TestNestedParenthesesInTransformAndEmptyClip(t *testing.T) {
 	}
 }
 
+func TestDeeplyNestedTransformsUseExplicitFrames(t *testing.T) {
+	const depth = 10000
+	text := "{" + strings.Repeat(`\t(0,1,`, depth) + `\fscx100` + strings.Repeat(")", depth) + "}"
+	tokens := ParseDialogueText(text).Tokens()
+	if len(tokens) != depth+1 {
+		t.Fatalf("got %d flattened tags, want %d", len(tokens), depth+1)
+	}
+}
+
 func TestDialogueTokensMarkTransitionTagsAndSourceSpans(t *testing.T) {
 	text := `pre{\blur6\t(0,650,0.1,\blur0.6)}post`
 	tree := ParseDialogueText(text)
