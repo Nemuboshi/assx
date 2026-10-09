@@ -5,3 +5,5 @@ ref/
 /AGENTS.md
 /.ci/
 /tools/rendercheck/target/
+/docs/ass-tags.html
+/docs/todo.md
