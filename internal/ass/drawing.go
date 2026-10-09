@@ -54,29 +54,30 @@ func (tree DialogueText) Drawings() []Drawing {
 		fragments = nil
 	}
 
-	for _, token := range tree.Tokens() {
-		if token.Tag != nil {
+	tree.WalkTokens(func(token TokenView) bool {
+		if token.HasTag {
 			tag := token.Tag
 			if tag.InTransition || tag.Name != "p" || len(tag.Args) == 0 {
-				continue
+				return true
 			}
 			value, err := strconv.Atoi(strings.TrimSpace(tag.Args[0]))
 			if err != nil {
-				continue
+				return true
 			}
 			next := value > 0
 			if drawing && !next {
 				flush()
 			}
 			drawing = next
-			continue
+			return true
 		}
 		if drawing && token.Text != "" {
 			fragments = append(fragments, DrawingFragment{
 				Text: token.Text, Start: token.Start, End: token.Start + len(token.Text),
 			})
 		}
-	}
+		return true
+	})
 	if drawing {
 		flush()
 	}

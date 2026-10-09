@@ -334,11 +334,11 @@ func AnalyzeFonts(doc ass.Document, checker *FontChecker) ([]Diagnostic, error) 
 		var usages []*fontUsage
 		usageByContext := make(map[fontContext]*fontUsage)
 		drawing := false
-		for _, token := range dialogue.ParsedText().Tokens() {
-			if token.Tag != nil {
+		dialogue.ParsedText().WalkTokens(func(token ass.TokenView) bool {
+			if token.HasTag {
 				tag := token.Tag
 				if tag.InTransition {
-					continue
+					return true
 				}
 				switch strings.ToLower(tag.Name) {
 				case "fn":
@@ -387,14 +387,14 @@ func AnalyzeFonts(doc ass.Document, checker *FontChecker) ([]Diagnostic, error) 
 						}
 					}
 				}
-				continue
+				return true
 			}
 			if drawing || !contextKnown {
-				continue
+				return true
 			}
 			visible := fontVisibleText(token.Text)
 			if visible == "" {
-				continue
+				return true
 			}
 			usage := usageByContext[current]
 			if usage == nil {
@@ -403,7 +403,8 @@ func AnalyzeFonts(doc ass.Document, checker *FontChecker) ([]Diagnostic, error) 
 				usages = append(usages, usage)
 			}
 			usage.text.WriteString(visible)
-		}
+			return true
+		})
 
 		for _, usage := range usages {
 			missing, found, err := checker.missingRunes(usage.context, usage.text.String())

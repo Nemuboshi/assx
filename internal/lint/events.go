@@ -206,17 +206,20 @@ func karaokeCursor(tree ass.DialogueText) (int64, bool) {
 	const defaultSyllable = 1000
 	var cursor int64
 	sawKaraoke := false
-	for _, token := range tree.Tokens() {
-		if token.Tag == nil {
-			continue
+	modeled := true
+	tree.WalkTokens(func(token ass.TokenView) bool {
+		if !token.HasTag {
+			return true
 		}
 		tag := token.Tag
 		switch tag.Name {
 		case "kt":
-			return 0, false
+			modeled = false
+			return false
 		case "k", "K", "kf", "ko":
 			if tag.InTransition {
-				return 0, false
+				modeled = false
+				return false
 			}
 			sawKaraoke = true
 			duration := int64(defaultSyllable)
@@ -225,16 +228,19 @@ func karaokeCursor(tree ass.DialogueText) (int64, bool) {
 			case 1:
 				value, ok := parseNumber(tag.Args[0])
 				if !ok || value < 0 || value > float64(int64(^uint64(0)>>1)/10) {
-					return 0, false
+					modeled = false
+					return false
 				}
 				duration = int64(value) * 10
 			default:
-				return 0, false
+				modeled = false
+				return false
 			}
 			cursor += duration
 		}
-	}
-	if !sawKaraoke {
+		return true
+	})
+	if !modeled || !sawKaraoke {
 		return 0, false
 	}
 	return cursor, true

@@ -77,6 +77,16 @@ type Token struct {
 	Start int
 }
 
+// TokenView is a value passed synchronously to DialogueText.WalkTokens.
+// Tag is meaningful when HasTag is true; its argument and child slices are
+// borrowed from the tree and must not be mutated or retained by the callback.
+type TokenView struct {
+	Text   string
+	Tag    Tag
+	HasTag bool
+	Start  int
+}
+
 var tagNames []string
 
 func init() {
@@ -132,11 +142,27 @@ func ParseDialogueText(text string) DialogueText {
 
 func (tree DialogueText) Tokens() []Token {
 	var tokens []Token
+	tree.WalkTokens(func(view TokenView) bool {
+		if view.HasTag {
+			tag := view.Tag
+			tokens = append(tokens, Token{Tag: &tag})
+		} else {
+			tokens = append(tokens, Token{Text: view.Text, Start: view.Start})
+		}
+		return true
+	})
+	return tokens
+}
+
+// WalkTokens emits text and tags in source order without materializing a
+// flattened token slice. Returning false stops the traversal early.
+func (tree DialogueText) WalkTokens(visit func(TokenView) bool) {
+	stack := make([]*Tag, 0, 8)
 	for _, node := range tree.Nodes {
 		switch node.Kind {
 		case TextNode:
-			if node.Text != "" {
-				tokens = append(tokens, Token{Text: node.Text, Start: node.Start})
+			if node.Text != "" && !visit(TokenView{Text: node.Text, Start: node.Start}) {
+				return
 			}
 		case OverrideNode:
 			if node.Block == nil {
@@ -146,11 +172,38 @@ func (tree DialogueText) Tokens() []Token {
 				if item.Tag == nil {
 					continue
 				}
-				appendFlatTagTokens(&tokens, *item.Tag)
+				stack = append(stack[:0], item.Tag)
+				for len(stack) > 0 {
+					last := len(stack) - 1
+					current := stack[last]
+					stack = stack[:last]
+					if current.RepeatedSlashes > 0 {
+						extra := Tag{
+							Column:          current.SlashStart + 1,
+							Start:           current.SlashStart,
+							End:             current.Start,
+							InTransition:    current.InTransition,
+							RepeatedSlashes: current.RepeatedSlashes,
+							SlashStart:      current.SlashStart,
+						}
+						if !visit(TokenView{Tag: extra, HasTag: true}) {
+							return
+						}
+						normalized := *current
+						normalized.RepeatedSlashes = 0
+						if !visit(TokenView{Tag: normalized, HasTag: true}) {
+							return
+						}
+					} else if !visit(TokenView{Tag: *current, HasTag: true}) {
+						return
+					}
+					for i := len(current.Children) - 1; i >= 0; i-- {
+						stack = append(stack, &current.Children[i])
+					}
+				}
 			}
 		}
 	}
-	return tokens
 }
 
 func (block OverrideBlock) Tags() []Tag {
@@ -170,33 +223,6 @@ func (block OverrideBlock) HasTags() bool {
 		}
 	}
 	return false
-}
-
-func appendFlatTagTokens(tokens *[]Token, tag Tag) {
-	stack := []Tag{tag}
-	for len(stack) > 0 {
-		last := len(stack) - 1
-		current := stack[last]
-		stack = stack[:last]
-		if current.RepeatedSlashes > 0 {
-			start := current.SlashStart
-			extra := Tag{
-				Column:          start + 1,
-				Start:           start,
-				End:             current.Start,
-				InTransition:    current.InTransition,
-				RepeatedSlashes: current.RepeatedSlashes,
-				SlashStart:      start,
-			}
-			*tokens = append(*tokens, Token{Tag: &extra})
-		}
-		copyTag := current
-		copyTag.RepeatedSlashes = 0
-		*tokens = append(*tokens, Token{Tag: &copyTag})
-		for i := len(current.Children) - 1; i >= 0; i-- {
-			stack = append(stack, current.Children[i])
-		}
-	}
 }
 
 func parseOverrideBlock(text string, open, close int) OverrideBlock {

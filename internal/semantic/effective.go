@@ -56,13 +56,14 @@ func EvaluateDialogue(tree ass.DialogueText) []NoEffect {
 		candidates: make(map[int]noEffectCandidate),
 	}
 
-	for _, token := range tree.Tokens() {
-		if token.Tag == nil {
+	tree.WalkTokens(func(token ass.TokenView) bool {
+		if !token.HasTag {
 			engine.consumeText(token.Text)
-			continue
+			return true
 		}
-		engine.consumeTag(*token.Tag)
-	}
+		engine.consumeTag(token.Tag)
+		return true
+	})
 
 	var out []NoEffect
 	for index := range engine.allTags {

@@ -18,19 +18,20 @@ func analyzeUndefinedStyleReferences(doc ass.Document) []Diagnostic {
 				fmt.Sprintf("Dialogue references undefined style %q.", name),
 			))
 		}
-		for _, token := range dialogue.ParsedText().Tokens() {
-			if token.Tag == nil || token.Tag.Name != "r" || len(token.Tag.Args) == 0 {
-				continue
+		dialogue.ParsedText().WalkTokens(func(token ass.TokenView) bool {
+			if !token.HasTag || token.Tag.Name != "r" || len(token.Tag.Args) == 0 {
+				return true
 			}
 			name := strings.TrimSpace(strings.Join(token.Tag.Args, ","))
 			if name == "" || semantic.ResolveResetStyleReference(name, styles) {
-				continue
+				return true
 			}
 			diagnostics = append(diagnostics, undefinedStyleDiagnostic(
 				dialogue.Line, token.Tag.Column, token.Tag.Name, "",
 				fmt.Sprintf("Override tag references undefined style %q.", name),
 			))
-		}
+			return true
+		})
 	}
 	return diagnostics
 }
