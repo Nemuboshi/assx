@@ -185,8 +185,18 @@ func FuzzConcreteDocumentLineCoverage(f *testing.F) {
 		document := ParseConcreteDocument(source)
 		cursor := 0
 		for _, line := range document.Lines {
-			if line.Span.Start != cursor || line.Raw != source[cursor:line.Span.End] {
+			if line.Span.Start != cursor || line.Raw != source[cursor:line.Span.End] ||
+				line.Content != source[line.ContentSpan.Start:line.ContentSpan.End] ||
+				line.Terminator != source[line.ContentSpan.End:line.Span.End] {
 				t.Fatalf("invalid line span: %#v", line)
+			}
+			if strings.ContainsAny(line.Content, "\r\n") {
+				t.Fatalf("physical newline retained in line content: %#v", line)
+			}
+			switch line.Terminator {
+			case "", "\r", "\n", "\r\n":
+			default:
+				t.Fatalf("invalid physical line terminator: %#v", line)
 			}
 			cursor = line.Span.End
 		}

@@ -143,7 +143,7 @@ func Parse(text string) Document {
 	section := ""
 	var styleFormat []string
 	line := 0
-	walkConcreteLines(text, func(offset, end, contentEnd int) {
+	walkLegacyLines(text, func(offset, end, contentEnd int) {
 		line++
 		chunk := text[offset:end]
 		content := text[offset:contentEnd]

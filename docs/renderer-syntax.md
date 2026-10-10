@@ -61,10 +61,21 @@ count and optional tail-consuming field, so the syntax layer does not bake
 in libass/xy-VSFilter/VSFilterMod field acceptance or `Text` semantics.
 Missing slots remain distinguishable from delimited empty slots.
 
-Both document parsing and the historical `Parse` now share the same
-allocation-free physical line scanner. The default parser retains its current
-Format mapping and diagnostic semantics. Renderer-specific field acceptance
-belongs in the later profile resolver, not in `ConcreteDocument`.
+Both document parsing and the historical `Parse` share one allocation-free
+physical-line scanner with **explicit framing policies**. The neutral CST
+recognizes standalone CR, LF and CRLF as distinct source-preserving line
+terminators, including in mixed-line-ending files. The historical default
+`Parse` deliberately keeps its LF-delimited behavior (including its existing
+handling of CR before LF or at EOF), so enabling richer syntax does not
+silently alter existing line numbers, Format mapping, diagnostics or edits.
+The legacy line policy can be reconsidered in a later explicitly tested
+behavior-change PR. Renderer-specific field acceptance belongs in the later
+profile resolver, not in `ConcreteDocument`.
+
+Field partitioning preserves the distinction between an **absent** cell and
+an **explicitly delimited empty** cell, including a tail-consuming Text field.
+Presence requires source content or a delimiter directly preceding an empty
+cell; a missing terminal field is never manufactured by the tail policy.
 
 ### Coordinates and encoding
 
