@@ -13,6 +13,11 @@ import (
 
 type xmlMatrix struct {
 	Meta struct {
+		Pins []struct {
+			Renderer string `xml:"renderer,attr"`
+			Commit   string `xml:"commit,attr"`
+			Path     string `xml:"path,attr"`
+		} `xml:"pin"`
 		Scenarios []struct {
 			ID      string `xml:"id,attr"`
 			Default string `xml:"default,attr"`
@@ -33,6 +38,7 @@ type xmlMatrix struct {
 		Scens  []struct {
 			ID          string `xml:"id,attr"`
 			Status      string `xml:"status,attr"`
+			Verified    string `xml:"verified,attr"`
 			Base        string `xml:"base,attr"`
 			VSFilter    string `xml:"vsfilter,attr"`
 			VSFilterMod string `xml:"vsfiltermod,attr"`
@@ -258,7 +264,8 @@ func checkParams(t *testing.T, kinds map[string]bool, checkCite func(where, cite
 }
 
 type xmlParams struct {
-	Status string   `xml:"status,attr"`
-	Cite   string   `xml:"cite,attr"`
-	Sigs   []xmlSig `xml:"sig"`
+	Verified string   `xml:"verified,attr"`
+	Status   string   `xml:"status,attr"`
+	Cite     string   `xml:"cite,attr"`
+	Sigs     []xmlSig `xml:"sig"`
 }
