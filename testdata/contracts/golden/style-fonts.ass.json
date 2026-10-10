@@ -1777,7 +1777,7 @@
         "suggested_fix": "Remove the redundant override tags.",
         "fix_safety": "safe",
         "fix_proof": {
-          "id": "4bfa42c3bd03b0551e4b998669581dfdf4ec06ea5e9673216fc9a1a7e9bf9c1f",
+          "id": "06a54bfb58b6d7ac4d336cf4668c9d76a245495b91fa721e2fa321e90e1d75e4",
           "source_sha256": "7c5425d6cf69b7215c1b6e258ee742a0d9d2a04b735613d6feb14b3356607dfa",
           "edited_sha256": "0b9cfc6ed431341aba4ed5db0bedef5bda80ba12af1bc0bcc827e57845fd7805",
           "source_edits": [
@@ -2497,7 +2497,7 @@
         "description": "An override is replaced, reset, or ignored before it affects dialogue text, or repeats the value already active in every affected state slot.",
         "suggested_fix": "Remove it or move it to the intended text boundary.",
         "fix_safety": "safe",
-        "fix_proof_ref": "4bfa42c3bd03b0551e4b998669581dfdf4ec06ea5e9673216fc9a1a7e9bf9c1f",
+        "fix_proof_ref": "06a54bfb58b6d7ac4d336cf4668c9d76a245495b91fa721e2fa321e90e1d75e4",
         "edits": [
           {
             "start": 682,
@@ -2535,7 +2535,7 @@
         "suggested_fix": "Remove the redundant override tags.",
         "fix_safety": "safe",
         "fix_proof": {
-          "id": "4bfa42c3bd03b0551e4b998669581dfdf4ec06ea5e9673216fc9a1a7e9bf9c1f",
+          "id": "06a54bfb58b6d7ac4d336cf4668c9d76a245495b91fa721e2fa321e90e1d75e4",
           "source_sha256": "7c5425d6cf69b7215c1b6e258ee742a0d9d2a04b735613d6feb14b3356607dfa",
           "edited_sha256": "0b9cfc6ed431341aba4ed5db0bedef5bda80ba12af1bc0bcc827e57845fd7805",
           "source_edits": [
@@ -3267,7 +3267,7 @@
         "description": "An override is replaced, reset, or ignored before it affects dialogue text, or repeats the value already active in every affected state slot.",
         "suggested_fix": "Remove it or move it to the intended text boundary.",
         "fix_safety": "safe",
-        "fix_proof_ref": "4bfa42c3bd03b0551e4b998669581dfdf4ec06ea5e9673216fc9a1a7e9bf9c1f",
+        "fix_proof_ref": "06a54bfb58b6d7ac4d336cf4668c9d76a245495b91fa721e2fa321e90e1d75e4",
         "edits": [
           {
             "start": 682,

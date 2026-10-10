@@ -70,8 +70,14 @@ func TestMatrixAndLayoutHeaderBoundaries(t *testing.T) {
 }
 
 func TestCountFixesSeparatesApplicableFromUnfixable(t *testing.T) {
+	proof := &FixProof{}
+	var err error
+	proof.ID, err = hashJSON(*proof)
+	if err != nil {
+		t.Fatal(err)
+	}
 	diagnostics := []Diagnostic{
-		{FixSafety: SafeFix, FixProof: &FixProof{}, Edits: []TextEdit{{Start: 0, End: 0}}},
+		{FixSafety: SafeFix, FixProof: proof, Edits: []TextEdit{{Start: 0, End: 0}}},
 		{FixSafety: UnsafeFix, Edits: []TextEdit{{Start: 0, End: 0}}},
 		{FixSafety: UnsafeFix},
 		{},

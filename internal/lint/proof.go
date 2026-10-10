@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"reflect"
 	"slices"
+	"sort"
 	"strings"
 
 	"assx/internal/ass"
@@ -108,14 +109,13 @@ func featureName(feature renderer.Feature) string {
 func proveSafeFixes(doc ass.Document, diagnostics []Diagnostic, profiles []renderer.Profile) []Diagnostic {
 	var candidates []int
 	var selected []FixEditProof
-	for i := range diagnostics {
-		diagnostic := &diagnostics[i]
+	for i, diagnostic := range diagnostics {
 		if diagnostic.FixSafety != SafeFix {
 			continue
 		}
 		if len(diagnostic.Edits) == 0 {
-			diagnostic.FixSafety = ""
-			diagnostic.FixProof = nil
+			diagnostics[i].FixSafety = ""
+			diagnostics[i].FixProof = nil
 			continue
 		}
 		candidates = append(candidates, i)
@@ -126,35 +126,68 @@ func proveSafeFixes(doc ass.Document, diagnostics []Diagnostic, profiles []rende
 	if len(candidates) == 0 {
 		return diagnostics
 	}
-	if proof, err := buildFixProof(doc.Text, selected, profiles); err == nil {
+	validEdits := fixEditIndex(diagnostics)
+	proofDoc := proofDocument(doc.Text, selected)
+	if proof, err := buildFixProofWithDocument(doc.Text, proofDoc, selected, profiles, validEdits); err == nil {
 		attachProofReferences(diagnostics, candidates, proof)
 		return diagnostics
 	}
 
-	selected = nil
-	var approved []int
-	var latestProof *FixProof
-	for _, index := range candidates {
-		diagnostic := &diagnostics[index]
-		trial := slices.Clone(selected)
-		for _, sourceEdit := range diagnostic.Edits {
-			trial = append(trial, FixEditProof{ID: diagnostic.ID, Edit: sourceEdit})
-		}
-		proof, err := buildFixProof(doc.Text, trial, profiles)
-		if err != nil {
-			diagnostic.FixSafety = ""
-			diagnostic.Edits = nil
-			diagnostic.FixProof = nil
+	// shortcut: stop after 64 proof builds; raise the cap if measured workloads leave valid SafeFix edits unproved.
+	const maxProofAttempts = 64
+	queue := make([][]int, 0, 2)
+	if len(candidates) > 1 {
+		queue = append(queue, candidates[:len(candidates)/2], candidates[len(candidates)/2:])
+	}
+	for attempts := 1; len(queue) > 0 && attempts < maxProofAttempts; attempts++ {
+		indexes := queue[0]
+		queue = queue[1:]
+		if len(indexes) == 0 {
 			continue
 		}
-		selected = trial
-		approved = append(approved, index)
-		latestProof = proof
+		edits := fixEditsForDiagnostics(diagnostics, indexes)
+		proof, err := buildFixProofWithDocument(doc.Text, proofDoc, edits, profiles, validEdits)
+		if err == nil {
+			attachProofReferences(diagnostics, indexes, proof)
+			continue
+		}
+		if len(indexes) > 1 {
+			middle := len(indexes) / 2
+			queue = append(queue, indexes[:middle], indexes[middle:])
+		}
 	}
-	if latestProof != nil {
-		attachProofReferences(diagnostics, approved, latestProof)
+	for _, index := range candidates {
+		if diagnostics[index].FixProof == nil {
+			diagnostics[index].FixSafety = ""
+			diagnostics[index].Edits = nil
+			diagnostics[index].FixProof = nil
+			diagnostics[index].FixProofRef = ""
+		}
 	}
 	return diagnostics
+}
+
+func fixEditsForDiagnostics(diagnostics []Diagnostic, indexes []int) []FixEditProof {
+	var edits []FixEditProof
+	for _, index := range indexes {
+		for _, sourceEdit := range diagnostics[index].Edits {
+			edits = append(edits, FixEditProof{ID: diagnostics[index].ID, Edit: sourceEdit})
+		}
+	}
+	return edits
+}
+
+func fixEditIndex(diagnostics []Diagnostic) map[FixEditProof]struct{} {
+	valid := make(map[FixEditProof]struct{})
+	for _, diagnostic := range diagnostics {
+		if diagnostic.FixSafety != SafeFix {
+			continue
+		}
+		for _, sourceEdit := range diagnostic.Edits {
+			valid[FixEditProof{ID: diagnostic.ID, Edit: sourceEdit}] = struct{}{}
+		}
+	}
+	return valid
 }
 
 func attachProofReferences(diagnostics []Diagnostic, indexes []int, proof *FixProof) {
@@ -168,12 +201,24 @@ func attachProofReferences(diagnostics []Diagnostic, indexes []int, proof *FixPr
 }
 
 func buildFixProof(source string, edits []FixEditProof, profiles []renderer.Profile) (*FixProof, error) {
+	doc := proofDocument(source, edits)
+	return buildFixProofWithEditIndex(source, edits, profiles, fixEditIndex(analyzeDocumentUnproved(doc)))
+}
+
+func buildFixProofWithEditIndex(source string, edits []FixEditProof, profiles []renderer.Profile, validEdits map[FixEditProof]struct{}) (*FixProof, error) {
+	return buildFixProofWithDocument(source, proofDocument(source, edits), edits, profiles, validEdits)
+}
+
+func buildFixProofWithDocument(source string, beforeDoc ass.Document, edits []FixEditProof, profiles []renderer.Profile, validEdits map[FixEditProof]struct{}) (*FixProof, error) {
 	if len(profiles) == 0 {
 		return nil, fmt.Errorf("SafeFix proof has no renderer targets")
 	}
 	for _, sourceEdit := range edits {
 		if !supportedProofRule(sourceEdit.ID) {
 			return nil, fmt.Errorf("rule %s has no renderer proof", sourceEdit.ID)
+		}
+		if _, ok := validEdits[sourceEdit]; !ok {
+			return nil, fmt.Errorf("rule %s edit does not match a current lint finding", sourceEdit.ID)
 		}
 	}
 	targets := fixTargets(profiles)
@@ -191,7 +236,16 @@ func buildFixProof(source string, edits []FixEditProof, profiles []renderer.Prof
 	if err != nil {
 		return nil, err
 	}
-	beforeDoc, afterDoc := proofDocument(source, edits), proofDocument(changed, edits)
+	var afterDoc ass.Document
+	if hasStyleFieldEdits(edits) {
+		afterDoc = proofDocument(changed, edits)
+	} else {
+		afterDoc, err = editedDialogueDocument(beforeDoc, changed, edits)
+		if err != nil {
+			return nil, err
+		}
+		afterDoc.Text = changed
+	}
 	if len(beforeDoc.Dialogues) != len(afterDoc.Dialogues) || !reflect.DeepEqual(beforeDoc.EventFormat, afterDoc.EventFormat) {
 		return nil, fmt.Errorf("edit changed document event parsing")
 	}
@@ -231,14 +285,17 @@ func buildFixProof(source string, edits []FixEditProof, profiles []renderer.Prof
 			"Use libass rendercheck for pixel regression fixtures; use pinned-source and trace evidence for xy-VSFilter.",
 		},
 	}
+	byDialogue := dialogueEditsByIndex(beforeDoc, edits)
+	affected := affectedDialogues(beforeDoc, edits, byDialogue)
 	for _, profile := range profiles {
 		target := FixTargetProof{Target: FixTarget{
 			Renderer: profile.Kind().String(), Version: profile.Version(),
 			Capabilities: proofCapabilities(profile.Kind(), profile.Build()),
 		}}
-		for _, dialogueIndex := range affectedDialogues(beforeDoc, edits) {
+		for _, dialogueIndex := range affected {
 			beforeDialogue := beforeDoc.Dialogues[dialogueIndex]
 			afterDialogue := afterDoc.Dialogues[dialogueIndex]
+			dialogueEdits := byDialogue[dialogueIndex]
 			var comparison semantic.ProofComparison
 			if syntaxOnly {
 				comparison = semantic.CompareSyntaxProof(
@@ -252,7 +309,7 @@ func buildFixProof(source string, edits []FixEditProof, profiles []renderer.Prof
 					ass.ParseConcreteDialogue(afterDialogue.Text),
 					profile,
 					semantic.EvaluationOptions{Styles: stylesBefore, DialogueStyle: beforeDialogue.Style},
-					removedRanges(beforeDialogue, edits),
+					removedRanges(beforeDialogue, dialogueEdits),
 				)
 			}
 			if !comparison.Equivalent {
@@ -266,7 +323,7 @@ func buildFixProof(source string, edits []FixEditProof, profiles []renderer.Prof
 			if err != nil {
 				return nil, err
 			}
-			ranges := dialogueRanges(beforeDialogue, edits)
+			ranges := dialogueRanges(beforeDialogue, dialogueEdits)
 			target.Dialogues = append(target.Dialogues, ProofDialogue{
 				Line:              beforeDialogue.Line,
 				BeforeTraceSHA256: beforeHash, AfterTraceSHA256: afterHash,
@@ -277,13 +334,8 @@ func buildFixProof(source string, edits []FixEditProof, profiles []renderer.Prof
 		target.StyleFields = slices.Clone(styleEvidence)
 		proof.Interpretations = append(proof.Interpretations, target)
 	}
-	identity := struct {
-		SourceSHA256    string           `json:"source_sha256"`
-		EditedSHA256    string           `json:"edited_sha256"`
-		SourceEdits     []FixEditProof   `json:"source_edits"`
-		Targets         []FixTarget      `json:"targets"`
-		Interpretations []FixTargetProof `json:"interpretations"`
-	}{proof.SourceSHA256, proof.EditedSHA256, proof.SourceEdits, proof.Targets, proof.Interpretations}
+	identity := *proof
+	identity.ID = ""
 	proof.ID, err = hashJSON(identity)
 	if err != nil {
 		return nil, err
@@ -395,7 +447,87 @@ func styleFieldEdited(field ass.StyleField, edits []FixEditProof, id string) boo
 	return false
 }
 
-func affectedDialogues(doc ass.Document, edits []FixEditProof) []int {
+func hasStyleFieldEdits(edits []FixEditProof) bool {
+	for _, candidate := range edits {
+		if candidate.ID == IssueStyleInteger {
+			return true
+		}
+	}
+	return false
+}
+
+func editedDialogueDocument(before ass.Document, changed string, edits []FixEditProof) (ass.Document, error) {
+	byDialogue := dialogueEditsByIndex(before, edits)
+	var mapped int
+	for _, dialogueEdits := range byDialogue {
+		mapped += len(dialogueEdits)
+	}
+	if mapped != len(edits) {
+		return ass.Document{}, fmt.Errorf("edit is outside a dialogue text field")
+	}
+
+	// Text-column edits keep event fields intact; renderer semantics reparse each edited dialogue.
+	after := before
+	after.Dialogues = slices.Clone(before.Dialogues)
+	var offsetDelta int
+	for i := range before.Dialogues {
+		original := before.Dialogues[i]
+		afterStart := original.TextStart + offsetDelta
+		after.Dialogues[i].TextStart = afterStart
+		dialogueEdits := byDialogue[i]
+		if len(dialogueEdits) == 0 {
+			if afterStart < 0 || afterStart+len(original.Text) > len(changed) || changed[afterStart:afterStart+len(original.Text)] != original.Text {
+				return ass.Document{}, fmt.Errorf("unchanged dialogue text does not match the edited source")
+			}
+			continue
+		}
+		localEdits := make([]edit.TextEdit, 0, len(dialogueEdits))
+		for _, candidate := range dialogueEdits {
+			localEdits = append(localEdits, edit.TextEdit{
+				Start:       candidate.Edit.Start - original.TextStart,
+				End:         candidate.Edit.End - original.TextStart,
+				Replacement: candidate.Edit.Replacement,
+			})
+		}
+		fixedText, err := edit.Apply(original.Text, localEdits)
+		if err != nil {
+			return ass.Document{}, err
+		}
+		if afterStart < 0 || afterStart+len(fixedText) > len(changed) || changed[afterStart:afterStart+len(fixedText)] != fixedText {
+			return ass.Document{}, fmt.Errorf("edited dialogue text does not match the edited source")
+		}
+		after.Dialogues[i].Text = fixedText
+		after.Dialogues[i].Fields = slices.Clone(original.Fields)
+		for fieldIndex := range after.Dialogues[i].Fields {
+			if after.Dialogues[i].Fields[fieldIndex].Name == "text" {
+				after.Dialogues[i].Fields[fieldIndex].Value = fixedText
+			}
+		}
+		offsetDelta += len(fixedText) - len(original.Text)
+	}
+	return after, nil
+}
+
+func dialogueEditsByIndex(doc ass.Document, edits []FixEditProof) map[int][]FixEditProof {
+	byDialogue := make(map[int][]FixEditProof)
+	for _, candidate := range edits {
+		index := sort.Search(len(doc.Dialogues), func(i int) bool {
+			dialogue := doc.Dialogues[i]
+			return dialogue.TextStart+len(dialogue.Text) > candidate.Edit.Start
+		})
+		if index == len(doc.Dialogues) {
+			continue
+		}
+		dialogue := doc.Dialogues[index]
+		if candidate.Edit.Start < dialogue.TextStart || candidate.Edit.End > dialogue.TextStart+len(dialogue.Text) {
+			continue
+		}
+		byDialogue[index] = append(byDialogue[index], candidate)
+	}
+	return byDialogue
+}
+
+func affectedDialogues(doc ass.Document, edits []FixEditProof, byDialogue map[int][]FixEditProof) []int {
 	styleChanged := false
 	for _, candidate := range edits {
 		if candidate.ID != IssueStyleInteger {
@@ -409,22 +541,12 @@ func affectedDialogues(doc ass.Document, edits []FixEditProof) []int {
 		}
 	}
 	var out []int
-	for i, dialogue := range doc.Dialogues {
-		if styleChanged || dialogueAffected(dialogue, edits) {
+	for i := range doc.Dialogues {
+		if styleChanged || len(byDialogue[i]) != 0 {
 			out = append(out, i)
 		}
 	}
 	return out
-}
-
-func dialogueAffected(dialogue ass.Dialogue, edits []FixEditProof) bool {
-	start, end := dialogue.TextStart, dialogue.TextStart+len(dialogue.Text)
-	for _, candidate := range edits {
-		if candidate.Edit.Start < end && start < candidate.Edit.End {
-			return true
-		}
-	}
-	return false
 }
 
 func removedRanges(dialogue ass.Dialogue, edits []FixEditProof) []ass.ConcreteSpan {
@@ -605,23 +727,57 @@ func sameFixTargets(a, b []FixTarget) bool {
 	return reflect.DeepEqual(a, b)
 }
 
-func verifyFixProofs(source string, selected []FixEditProof, proof *FixProof) error {
-	if proof == nil || proof.SourceSHA256 != hashSource(source) {
+func sameFixEditSet(a, b []FixEditProof) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	counts := make(map[FixEditProof]int, len(a))
+	for _, candidate := range a {
+		counts[candidate]++
+	}
+	for _, candidate := range b {
+		if counts[candidate] == 0 {
+			return false
+		}
+		counts[candidate]--
+	}
+	return true
+}
+
+func proofIdentityMatches(proof *FixProof) bool {
+	if proof == nil || proof.ID == "" {
+		return false
+	}
+	identity := *proof
+	identity.ID = ""
+	id, err := hashJSON(identity)
+	return err == nil && id == proof.ID
+}
+
+func verifyFixProofs(source string, beforeDoc ass.Document, selected []FixEditProof, proof *FixProof, validEdits map[FixEditProof]struct{}) error {
+	if proof == nil || proof.ID == "" || proof.SourceSHA256 != hashSource(source) {
 		return fmt.Errorf("SafeFix proof does not match the current source")
+	}
+	if !sameFixEditSet(selected, proof.SourceEdits) {
+		return fmt.Errorf("selected SafeFix edits do not match the proof")
 	}
 	if !sameFixTargets(proof.Targets, fixTargets(defaultFixTargets())) {
 		return fmt.Errorf("default SafeFix application requires libass and xy-VSFilter proofs")
+	}
+	if !proofIdentityMatches(proof) {
+		return fmt.Errorf("SafeFix proof identity does not match its evidence")
 	}
 	profiles, err := profilesFromProof(proof.Targets)
 	if err != nil {
 		return err
 	}
-	verified, err := buildFixProof(source, selected, profiles)
+	verified, err := buildFixProofWithDocument(source, beforeDoc, proof.SourceEdits, profiles, validEdits)
 	if err != nil {
 		return err
 	}
-	if verified.EditedSHA256 == "" || len(verified.Targets) == 0 || !sameFixTargets(verified.Targets, proof.Targets) {
-		return fmt.Errorf("SafeFix proof does not cover the selected edits")
+	if verified.ID != proof.ID || verified.EditedSHA256 != proof.EditedSHA256 ||
+		!reflect.DeepEqual(verified.SourceEdits, proof.SourceEdits) || !sameFixTargets(verified.Targets, proof.Targets) {
+		return fmt.Errorf("SafeFix proof identity does not match the recomputed evidence")
 	}
 	return nil
 }

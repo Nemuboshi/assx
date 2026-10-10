@@ -63,7 +63,9 @@ version, build capability, source edit range, source hash, edited hash, and
 interpretation trace hash. It stores one full proof for an edit group and links
 each remaining diagnostic with `fix_proof_ref`. It also stores the
 interpretations next to the edits, including dispatch, signature citation,
-state, and source provenance.
+state, and source provenance. The proof ID hashes every proof field, including
+that audit metadata. `--fix` checks the submitted ID and edited-source hash,
+then rebuilds the evidence from the current source and complete edit group.
 
 `--fix` rechecks the proof against the current file and the selected edits. The
 default scope contains pinned libass and xy-VSFilter profiles. A proof for
