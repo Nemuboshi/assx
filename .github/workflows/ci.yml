@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions/setup-go@v6
         with:
-          go-version: stable
+          go-version-file: go.mod
       - name: Check formatting
         run: test -z "$(gofmt -l $(find ./cmd ./internal -type f -name '*.go'))"
       - name: Vet
@@ -40,7 +40,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: actions/setup-go@v6
         with:
-          go-version: stable
+          go-version-file: go.mod
       - uses: dtolnay/rust-toolchain@stable
       - name: Install libass build dependencies
         run: |
