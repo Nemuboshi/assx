@@ -54,7 +54,10 @@ findings; the default JSON shape, rule IDs, severities, ordering policy, and
 exit-code policy remain unchanged. A single-profile analysis **never supplies
 SafeFix edits or an edit safety classification**, including on shared
 document checks and the existing ASS006/ASS013/font APIs. All-target
-equivalence and compatibility are P08 and P07 respectively.
+equivalence is P08. Differential compatibility is provided separately by the
+[P07 comparison APIs](renderer-compatibility.md). Those APIs use ASS003 for
+proven differences and ASS031 for unresolved compatibility observations;
+invocation validity remains the responsibility of the APIs described here.
 
 ## Regression and performance
 
