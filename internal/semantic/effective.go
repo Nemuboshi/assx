@@ -20,9 +20,10 @@ const (
 )
 
 type NoEffect struct {
-	Tag        ass.Tag
-	Reason     NoEffectReason
-	OwnerIndex int
+	Tag          ass.Tag
+	Reason       NoEffectReason
+	OwnerIndex   int
+	ProofRevoked bool // An unmodeled operation invalidated the SafeFix proof.
 }
 
 // TagEvent describes the state transition performed by one source tag.
@@ -178,6 +179,7 @@ func Evaluate(tree ass.DialogueText, options EvaluationOptions) Evaluation {
 		}
 		out = append(out, NoEffect{
 			Tag: candidate.tag, Reason: candidate.reason, OwnerIndex: candidate.ownerIndex,
+			ProofRevoked: m.proofsDisabled,
 		})
 	}
 	return Evaluation{NoEffects: out}
@@ -227,18 +229,33 @@ func (m *evaluator) consumeTag(tag ass.Tag) TagEvent {
 		// any later fix on the strength of the previous state.
 		m.markActiveLive()
 		m.invalidateAll()
-		m.proofsDisabled = true
+		m.revokeProofs()
 		event.Barrier = true
 		return event
 	}
 	if tagSpec.Counts != nil && !slices.Contains(tagSpec.Counts, len(tag.Args)) {
 		m.invalidate(tagSpec.Slots)
-		m.proofsDisabled = true
+		m.revokeProofs()
 		event.Barrier = true
 		return event
 	}
 	if tag.InTransition {
-		return event // The parent transform has already handled its children.
+		// The parent transform evaluates supported targets. Validate child
+		// syntax separately so malformed known tags cannot bypass the proof
+		// fence merely because they appear inside \\t(...).
+		slots := tagSpec.Slots
+		unknown := tagSpec.Behavior != spec.Assign || RelativeFontSize(tag)
+		if tag.Name == "clip" || tag.Name == "iclip" {
+			unknown = true // Vector and rectangular clips have shape-specific semantics.
+		} else if len(slots) != 0 && !unknown {
+			_, modeled := CanonicalTagState(tag, tagSpec, slots)
+			unknown = !modeled
+		}
+		if unknown {
+			m.revokeProofs()
+			event.Barrier = true
+		}
+		return event
 	}
 
 	event.Policy = tagSpec.Behavior
@@ -282,6 +299,7 @@ func (m *evaluator) consumeTag(tag ass.Tag) TagEvent {
 
 	if RelativeFontSize(tag) {
 		m.invalidate([]string{"fontsize"})
+		m.revokeProofs()
 		m.fillValues(&event.After, slots)
 		event.Barrier = true
 		return event
@@ -308,6 +326,12 @@ func (m *evaluator) consumeTag(tag ass.Tag) TagEvent {
 		}
 	}
 	event.Known = valuesKnown
+	if !valuesKnown {
+		// Renderer-dependent or malformed assignments cannot justify
+		// removing previously tracked tags, even before this boundary.
+		m.revokeProofs()
+		event.Barrier = true
+	}
 	if behavior == spec.Assign && valuesKnown && m.sameSlotValues(slots, values) {
 		if !m.proofsDisabled {
 			m.markCandidate(index, tag, SameValue, -1, true)
@@ -463,6 +487,15 @@ func safeTransformStateTag(name string) bool {
 	default:
 		return false
 	}
+}
+
+// revokeProofs is a dialogue-wide fence: no prior or subsequent no-effect
+// candidate can be guaranteed across all supported renderers after an
+// unmodeled operation. Existing candidates remain reportable as diagnostics,
+// but carry ProofRevoked so lint cannot emit SafeFix edits from them.
+// State invalidation remains a separate concern.
+func (m *evaluator) revokeProofs() {
+	m.proofsDisabled = true
 }
 
 func (m *evaluator) markCandidate(index int, tag ass.Tag, reason NoEffectReason, ownerIndex int, always bool) {

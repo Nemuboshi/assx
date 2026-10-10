@@ -83,7 +83,13 @@ func analyzeWithEffects(dialogue ass.Dialogue, effects []semantic.NoEffect) []Di
 
 	for _, effect := range effects {
 		analyzer.add(IssueNoEffect, effect.Tag, noEffectDetail(effect))
-		analyzer.diagnostics[len(analyzer.diagnostics)-1].Edits = []TextEdit{
+		finding := &analyzer.diagnostics[len(analyzer.diagnostics)-1]
+		if effect.ProofRevoked {
+			finding.FixSafety = ""
+			finding.Detail += " A later unmodeled operation prevents proving this fix safe across renderers."
+			continue
+		}
+		finding.Edits = []TextEdit{
 			noEffectRemovalEdit(tree, effect.Tag, analyzer.textStart),
 		}
 	}
