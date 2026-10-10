@@ -59,6 +59,7 @@ type xmlSig struct {
 	Status   string `xml:"status,attr"`
 	Verified string `xml:"verified,attr"`
 	Inferred string `xml:"inferred,attr"`
+	Requires string `xml:"requires,attr"`
 	Cite     string `xml:"cite,attr"`
 	Params   []struct {
 		I     string `xml:"i,attr"`
@@ -220,6 +221,9 @@ func checkParams(t *testing.T, kinds map[string]bool, checkCite func(where, cite
 		t.Errorf("tag %q params: status %q must be V or S", tagName, params.Status)
 	}
 	checkCite("tag "+tagName+" params", params.Cite)
+	if err := validateExhaustiveEvidence(params); err != nil {
+		t.Errorf("tag %q: %v", tagName, err)
+	}
 
 	seenSig := make(map[string]bool)
 	for _, sig := range params.Sigs {
@@ -266,8 +270,10 @@ func checkParams(t *testing.T, kinds map[string]bool, checkCite func(where, cite
 }
 
 type xmlParams struct {
-	Verified string   `xml:"verified,attr"`
-	Status   string   `xml:"status,attr"`
-	Cite     string   `xml:"cite,attr"`
-	Sigs     []xmlSig `xml:"sig"`
+	Verified       string   `xml:"verified,attr"`
+	Exhaustive     string   `xml:"exhaustive,attr"`
+	ExhaustiveCite string   `xml:"exhaustive-cite,attr"`
+	Status         string   `xml:"status,attr"`
+	Cite           string   `xml:"cite,attr"`
+	Sigs           []xmlSig `xml:"sig"`
 }

@@ -65,6 +65,15 @@ func validateSignatureEvidence(sig xmlSig, parentVerified string) error {
 		return fmt.Errorf("applicability %q must equal verified %q plus inferred %q",
 			sig.Renderer, sig.Verified, sig.Inferred)
 	}
+	switch sig.Requires {
+	case "":
+	case "_VSMOD", "_VSMOD _LUA":
+		if !slices.Equal(applies, []string{"vsm"}) {
+			return fmt.Errorf("build requirements %q must apply only to VSFilterMod", sig.Requires)
+		}
+	default:
+		return fmt.Errorf("unsupported signature build requirements %q", sig.Requires)
+	}
 	if sig.Status != "V" && sig.Status != "S" {
 		return fmt.Errorf("signature status must be V or S, got %q", sig.Status)
 	}
@@ -150,5 +159,165 @@ func TestMatrixSignatureApplicabilityMutations(t *testing.T) {
 			}
 			t.Fatal("three-coordinate position signature missing from mutated matrix")
 		})
+	}
+}
+
+func TestMatrixFeatureRequirementsMatchPinnedSource(t *testing.T) {
+	// The source-verified condition belongs to each signature, not the name.
+	// Catch removal of a guard even if the generic XML schema remains valid.
+	want := map[string]string{
+		"pos|3|paren|vsm":   "_VSMOD",
+		"fsc|1|both|vsm":    "_VSMOD",
+		"blend|0|bare|vsm":  "_VSMOD",
+		"blend|1|paren|vsm": "_VSMOD",
+		"frs|0|bare|vsm":    "_VSMOD",
+		"frs|1|both|vsm":    "_VSMOD",
+		"fsvp|0|bare|vsm":   "_VSMOD",
+		"fsvp|1|both|vsm":   "_VSMOD",
+	}
+	matrix := loadMatrix(t)
+	for _, tag := range matrix.Tags {
+		if tag.Params == nil {
+			continue
+		}
+		for _, sig := range tag.Params.Sigs {
+			key := tag.Name + "|" + sig.N + "|" + sig.Form + "|" + sig.Renderer
+			if sig.Requires != want[key] {
+				t.Errorf("%s requires=%q, pinned requirement=%q", key, sig.Requires, want[key])
+			}
+			delete(want, key)
+		}
+	}
+	for key := range want {
+		t.Errorf("missing pinned signature %s", key)
+	}
+}
+
+func TestMatrixRejectsInvalidBuildRequirementScope(t *testing.T) {
+	matrix := loadMatrix(t)
+	for _, tag := range matrix.Tags {
+		if tag.Name != "pos" || tag.Params == nil {
+			continue
+		}
+		for _, sig := range tag.Params.Sigs {
+			if sig.N != "3" {
+				continue
+			}
+			for _, raw := range []string{"_LUA", "_LUA _VSMOD", "_VSMOD _VSMOD", "_BAD"} {
+				mutated := sig
+				mutated.Requires = raw
+				if err := validateSignatureEvidence(mutated, tag.Params.Verified); err == nil {
+					t.Errorf("invalid guard %q accepted", raw)
+				}
+			}
+			mutated := sig
+			mutated.Renderer = "libass xy vsm"
+			mutated.Verified = "libass xy vsm"
+			mutated.Cite = "libass:libass/ass_parse.c:606-621 xy:src/subtitles/RTS.cpp:2615-2627 vsm:src/subtitles/RTS.cpp:3510-3543"
+			if err := validateSignatureEvidence(mutated, tag.Params.Verified); err == nil {
+				t.Fatal("VSFilterMod-only build requirement accepted for shared signature")
+			}
+			return
+		}
+	}
+	t.Fatal("missing pinned three-coordinate pos signature")
+}
+
+// validateExhaustiveEvidence enforces that a rejection claim is independently
+// cited and every applicable arity is source-verified for that renderer.
+// Recording all *known* arities is insufficient to establish completeness.
+func validateExhaustiveEvidence(params *xmlParams) error {
+	if params.Exhaustive == "" {
+		if params.ExhaustiveCite != "" {
+			return fmt.Errorf("exhaustive-cite without exhaustive renderer scope")
+		}
+		return nil
+	}
+	scopes, err := rendererScope(params.Exhaustive, true)
+	if err != nil {
+		return err
+	}
+	verified, err := rendererScope(params.Verified, false)
+	if err != nil {
+		return err
+	}
+	cited := map[string]bool{}
+	for _, token := range strings.Fields(params.ExhaustiveCite) {
+		if !citeToken.MatchString(token) {
+			return fmt.Errorf("invalid exhaustive citation %q", token)
+		}
+		name, _, _ := strings.Cut(token, ":")
+		cited[name] = true
+	}
+	for _, scope := range scopes {
+		if !slices.Contains(verified, scope) {
+			return fmt.Errorf("exhaustive renderer %s lacks parent source verification", scope)
+		}
+		if !cited[scope] {
+			return fmt.Errorf("exhaustive renderer %s lacks independent source citation", scope)
+		}
+		hasSignature := false
+		for _, sig := range params.Sigs {
+			if !slices.Contains(strings.Fields(sig.Renderer), scope) {
+				continue
+			}
+			hasSignature = true
+			if !slices.Contains(strings.Fields(sig.Verified), scope) {
+				return fmt.Errorf("exhaustive %s scope includes inferred signature n=%s form=%s",
+					scope, sig.N, sig.Form)
+			}
+		}
+		if !hasSignature {
+			return fmt.Errorf("exhaustive renderer %s has no applicable signatures", scope)
+		}
+	}
+	for name := range cited {
+		if slices.Contains(rendererOrder, name) && !slices.Contains(scopes, name) {
+			return fmt.Errorf("source citation for %s outside exhaustive scope", name)
+		}
+	}
+	return nil
+}
+
+func TestPinnedExhaustiveSignatureClaims(t *testing.T) {
+	matrix := loadMatrix(t)
+	for _, tag := range matrix.Tags {
+		if tag.Params == nil {
+			continue
+		}
+		if err := validateExhaustiveEvidence(tag.Params); err != nil {
+			t.Errorf("%s: %v", tag.Name, err)
+		}
+		switch tag.Name {
+		case "pos":
+			if tag.Params.Exhaustive != "libass xy vsm" {
+				t.Fatalf("pos must retain three-renderer pinned arity completeness: %q", tag.Params.Exhaustive)
+			}
+			if tag.Params.ExhaustiveCite == "" {
+				t.Fatal("position arity completeness lost its source citation")
+			}
+			for _, mutation := range []struct {
+				name  string
+				apply func(*xmlParams)
+			}{
+				{"missing-citation", func(p *xmlParams) { p.ExhaustiveCite = "" }},
+				{"unverified-renderer", func(p *xmlParams) { p.Verified = "libass xy" }},
+				{"unverified-form", func(p *xmlParams) { p.Sigs[0].Verified = "libass xy" }},
+				{"scope-without-signature", func(p *xmlParams) { p.Sigs = nil }},
+			} {
+				t.Run(mutation.name, func(t *testing.T) {
+					p := *tag.Params
+					p.Sigs = append([]xmlSig(nil), p.Sigs...)
+					mutation.apply(&p)
+					if err := validateExhaustiveEvidence(&p); err == nil {
+						t.Fatal("invalid completeness evidence was accepted")
+					}
+				})
+			}
+		default:
+			if tag.Params.Exhaustive != "" {
+				t.Errorf("%s claims exhaustive arities without independent pinned audit", tag.Name)
+			}
+		}
 	}
 }
