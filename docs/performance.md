@@ -120,3 +120,15 @@ Possible future investigation: repeated AST walks and transient map/state
 allocations. This issue does not attempt such optimizations; future changes
 must preserve correctness, SafeFix behavior, and renderer-equivalence checks,
 and should be compared against this baseline with `benchstat`.
+
+## Renderer architecture baseline (issue #17)
+
+The renderer-aware migration freezes the original `main@6ba745336615f102d5de39f76550f0a45da7bbb6` performance separately from the issue #2 optimization baseline.
+
+- Raw benchstat input: [baseline-6ba7453-windows-amd64.txt](performance/baseline-6ba7453-windows-amd64.txt)
+- Environment: Windows/amd64, Intel Core i5-9300H, Go 1.27.0, eight logical CPUs
+- Sample settings: `-benchmem -benchtime=250ms -count=5`
+- Workloads and timed regions: unchanged from the table above
+- Detailed regression and evidence contract: [renderer-contracts.md](renderer-contracts.md)
+
+Treat the two baseline commits as distinct measurement points. Compare P02–P10 against the renderer architecture baseline using equivalent software and hardware; use `benchstat` instead of treating single-sample differences as regressions.

@@ -13,6 +13,11 @@ import (
 
 type xmlMatrix struct {
 	Meta struct {
+		Pins []struct {
+			Renderer string `xml:"renderer,attr"`
+			Commit   string `xml:"commit,attr"`
+			Path     string `xml:"path,attr"`
+		} `xml:"pin"`
 		Scenarios []struct {
 			ID      string `xml:"id,attr"`
 			Default string `xml:"default,attr"`
@@ -33,6 +38,7 @@ type xmlMatrix struct {
 		Scens  []struct {
 			ID          string `xml:"id,attr"`
 			Status      string `xml:"status,attr"`
+			Verified    string `xml:"verified,attr"`
 			Base        string `xml:"base,attr"`
 			VSFilter    string `xml:"vsfilter,attr"`
 			VSFilterMod string `xml:"vsfiltermod,attr"`
@@ -50,6 +56,10 @@ type xmlSig struct {
 	N        string `xml:"n,attr"`
 	Form     string `xml:"form,attr"`
 	Renderer string `xml:"renderer,attr"`
+	Status   string `xml:"status,attr"`
+	Verified string `xml:"verified,attr"`
+	Inferred string `xml:"inferred,attr"`
+	Cite     string `xml:"cite,attr"`
 	Params   []struct {
 		I     string `xml:"i,attr"`
 		Name  string `xml:"name,attr"`
@@ -61,8 +71,6 @@ type xmlSig struct {
 var citeToken = regexp.MustCompile(`^(libass|xy|vsm|docs):[\w/+.@-]+:\d+(-\d+)?(,\d+(-\d+)?)*$`)
 
 var sigForms = map[string]bool{"bare": true, "paren": true, "both": true}
-
-var sigRenderers = map[string]bool{"": true, "libass": true, "xy": true, "vsm": true}
 
 func loadMatrix(t *testing.T) *xmlMatrix {
 	t.Helper()
@@ -224,8 +232,8 @@ func checkParams(t *testing.T, kinds map[string]bool, checkCite func(where, cite
 		if !sigForms[sig.Form] {
 			t.Errorf("%s: form %q is not bare, paren or both", where, sig.Form)
 		}
-		if !sigRenderers[sig.Renderer] {
-			t.Errorf("%s: renderer %q is not libass, xy, vsm or empty (all)", where, sig.Renderer)
+		if err := validateSignatureEvidence(sig, params.Verified); err != nil {
+			t.Errorf("%s: %v", where, err)
 		}
 		key := sig.N + "|" + sig.Form + "|" + sig.Renderer
 		if seenSig[key] {
@@ -258,7 +266,8 @@ func checkParams(t *testing.T, kinds map[string]bool, checkCite func(where, cite
 }
 
 type xmlParams struct {
-	Status string   `xml:"status,attr"`
-	Cite   string   `xml:"cite,attr"`
-	Sigs   []xmlSig `xml:"sig"`
+	Verified string   `xml:"verified,attr"`
+	Status   string   `xml:"status,attr"`
+	Cite     string   `xml:"cite,attr"`
+	Sigs     []xmlSig `xml:"sig"`
 }
