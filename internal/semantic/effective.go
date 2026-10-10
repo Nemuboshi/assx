@@ -59,6 +59,7 @@ type TagEvent struct {
 	Match     renderer.MatchStatus
 	Signature renderer.SignatureStatus
 	Shadowed  string
+	Citation  string
 	Ignored   bool
 }
 
@@ -297,6 +298,7 @@ func (m *evaluator) consumeTag(tag ass.Tag) TagEvent {
 	if m.options.Profile != nil {
 		event.Renderer = m.options.Profile.Kind()
 		event.Match, event.Signature, event.Shadowed = op.match, op.signature, op.shadowed
+		event.Citation = op.citation
 		// Resolution cannot name an unclosed parenthesized expression. It is
 		// malformed syntax, not a well-formed, harmless unknown command.
 		// Handle this before the UnknownName/Ignored fast path so malformed
@@ -319,7 +321,12 @@ func (m *evaluator) consumeTag(tag ass.Tag) TagEvent {
 		switch op.match {
 		case renderer.UnknownName, renderer.Ignored, renderer.Disabled:
 			event.Ignored = true
-			event.Uncertainty = UncertaintyUnsupported
+			m.markActiveLive()
+			reason := UncertaintyUnsupported
+			if op.match == renderer.Disabled {
+				reason = UncertaintyRendererDependent
+			}
+			m.blockProofs(&event, reason)
 			return event
 		case renderer.Conditional:
 			m.markActiveLive()

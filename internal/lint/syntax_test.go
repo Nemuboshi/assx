@@ -15,8 +15,8 @@ func TestEmptyOverrideBlockAndOverrideJunk(t *testing.T) {
 		switch diagnostic.ID {
 		case IssueEmptyOverrideBlock:
 			empty++
-			if diagnostic.FixSafety != SafeFix || len(diagnostic.Edits) != 1 {
-				t.Fatalf("ASS018 is not SafeFix: %#v", diagnostic)
+			if diagnostic.FixSafety == SafeFix || len(diagnostic.Edits) != 0 || diagnostic.FixProof != nil {
+				t.Fatalf("ASS018 retained a fix in a dialogue with unresolved commands: %#v", diagnostic)
 			}
 		case IssueOverrideJunk:
 			junk++
@@ -33,12 +33,8 @@ func TestEmptyOverrideBlockAndOverrideJunk(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if count != 2 {
-		t.Fatalf("safe fix count = %d, want 2", count)
-	}
-	fixedDoc := ass.Parse(fixed)
-	if len(fixedDoc.Dialogues) != 1 || fixedDoc.Dialogues[0].Text != "AB{comment}C{\\fs20 junk \\bord2}D" {
-		t.Fatalf("fixed dialogue = %#v", fixedDoc.Dialogues)
+	if count != 0 || fixed != doc.Text {
+		t.Fatalf("unresolved dialogue changed: count=%d text=%q", count, fixed)
 	}
 }
 

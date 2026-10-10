@@ -10,7 +10,7 @@ import (
 func AnalyzeDocument(doc ass.Document) []Diagnostic {
 	diagnostics := AnalyzeHeaders(doc)
 	diagnostics = append(diagnostics, AnalyzeKeywords(doc)...)
-	diagnostics = append(diagnostics, AnalyzeStyles(doc)...)
+	diagnostics = append(diagnostics, analyzeStyles(doc)...)
 	diagnostics = append(diagnostics, AnalyzeEventFields(doc)...)
 	diagnostics = append(diagnostics, analyzeUndefinedStyleReferences(doc)...)
 	styles := semantic.StyleStatesByName(doc.StyleFields)
@@ -45,7 +45,7 @@ func AnalyzeDocument(doc ass.Document) []Diagnostic {
 		}
 		return diagnostics[i].Line < diagnostics[j].Line
 	})
-	return diagnostics
+	return proveSafeFixes(doc, diagnostics, defaultFixTargets())
 }
 
 func suppressOverlappingNoEffect(diagnostics, redundant []Diagnostic) []Diagnostic {

@@ -472,6 +472,410 @@
         "description": "An override is replaced, reset, or ignored before it affects dialogue text, or repeats the value already active in every affected state slot.",
         "suggested_fix": "Remove it or move it to the intended text boundary.",
         "fix_safety": "safe",
+        "fix_proof": {
+          "id": "632c4799f2c6a87b0c8ca3ff1b7bbb0f2a8c902a81c50da6a54c7b0cb285d02f",
+          "source_sha256": "f35243ebda94f944297a63274bd2e46cf05cf1bd1369a7b69fe82dce713fcfa2",
+          "edited_sha256": "06baed46a8bf0932cf2d8af1a352d139d72bcb24b21f558ba4c120486cd4850a",
+          "source_edits": [
+            {
+              "id": "ASS006",
+              "edit": {
+                "start": 438,
+                "end": 443,
+                "replacement": ""
+              }
+            }
+          ],
+          "targets": [
+            {
+              "renderer": "libass",
+              "version": "f61db567e6593df3470e91594bcd4ad2d0473aff",
+              "capabilities": {
+                "vsfiltermod": "not-applicable",
+                "lua": "not-applicable"
+              }
+            },
+            {
+              "renderer": "xy-VSFilter",
+              "version": "135a30153a38fa846cb5c39df0f258403e92096e",
+              "capabilities": {
+                "vsfiltermod": "not-applicable",
+                "lua": "not-applicable"
+              }
+            }
+          ],
+          "interpretations": [
+            {
+              "target": {
+                "renderer": "libass",
+                "version": "f61db567e6593df3470e91594bcd4ad2d0473aff",
+                "capabilities": {
+                  "vsfiltermod": "not-applicable",
+                  "lua": "not-applicable"
+                }
+              },
+              "dialogues": [
+                {
+                  "line": 15,
+                  "before_trace_sha256": "08a33364ea30728176b877065765e0c2d8cbb4b7556c0217571f8e8d2185c840",
+                  "after_trace_sha256": "dd92579d5b2424caf86c1beb03597be9e41303c8010b676fca33f92e649cdd93",
+                  "before_interpretations": [
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 1,
+                        "End": 6
+                      },
+                      "tag": "fs",
+                      "raw": "\\fs20",
+                      "arguments": [
+                        "20"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:465-475 xy:src/subtitles/RTS.cpp:2506-2525 vsm:src/subtitles/RTS.cpp:3188-3206",
+                      "policy": "assign",
+                      "slots": [
+                        "fontsize"
+                      ],
+                      "before": {
+                        "fontsize": {
+                          "value": "24:24",
+                          "known": true
+                        }
+                      },
+                      "after": {
+                        "fontsize": {
+                          "value": "20:20",
+                          "known": true
+                        }
+                      },
+                      "applied": true,
+                      "known": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {
+                          "fontsize": {
+                            "value": "20:20",
+                            "known": true
+                          }
+                        },
+                        "sources": {
+                          "fontsize": 0
+                        }
+                      }
+                    },
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 6,
+                        "End": 11
+                      },
+                      "index": 1,
+                      "tag": "fs",
+                      "raw": "\\fs25",
+                      "arguments": [
+                        "25"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:465-475 xy:src/subtitles/RTS.cpp:2506-2525 vsm:src/subtitles/RTS.cpp:3188-3206",
+                      "policy": "assign",
+                      "slots": [
+                        "fontsize"
+                      ],
+                      "before": {
+                        "fontsize": {
+                          "value": "20:20",
+                          "known": true
+                        }
+                      },
+                      "after": {
+                        "fontsize": {
+                          "value": "25:25",
+                          "known": true
+                        }
+                      },
+                      "applied": true,
+                      "known": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {
+                          "fontsize": {
+                            "value": "25:25",
+                            "known": true
+                          }
+                        },
+                        "sources": {
+                          "fontsize": 1
+                        }
+                      }
+                    }
+                  ],
+                  "after_interpretations": [
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 1,
+                        "End": 6
+                      },
+                      "tag": "fs",
+                      "raw": "\\fs25",
+                      "arguments": [
+                        "25"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:465-475 xy:src/subtitles/RTS.cpp:2506-2525 vsm:src/subtitles/RTS.cpp:3188-3206",
+                      "policy": "assign",
+                      "slots": [
+                        "fontsize"
+                      ],
+                      "before": {
+                        "fontsize": {
+                          "value": "24:24",
+                          "known": true
+                        }
+                      },
+                      "after": {
+                        "fontsize": {
+                          "value": "25:25",
+                          "known": true
+                        }
+                      },
+                      "applied": true,
+                      "known": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {
+                          "fontsize": {
+                            "value": "25:25",
+                            "known": true
+                          }
+                        },
+                        "sources": {
+                          "fontsize": 0
+                        }
+                      }
+                    },
+                    {
+                      "kind": "text",
+                      "source": {
+                        "Start": 7,
+                        "End": 32
+                      },
+                      "text": "Unicode: café, 日本語",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {
+                          "fontsize": {
+                            "value": "25:25",
+                            "known": true
+                          }
+                        },
+                        "sources": {
+                          "fontsize": 0
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "target": {
+                "renderer": "xy-VSFilter",
+                "version": "135a30153a38fa846cb5c39df0f258403e92096e",
+                "capabilities": {
+                  "vsfiltermod": "not-applicable",
+                  "lua": "not-applicable"
+                }
+              },
+              "dialogues": [
+                {
+                  "line": 15,
+                  "before_trace_sha256": "08a33364ea30728176b877065765e0c2d8cbb4b7556c0217571f8e8d2185c840",
+                  "after_trace_sha256": "dd92579d5b2424caf86c1beb03597be9e41303c8010b676fca33f92e649cdd93",
+                  "before_interpretations": [
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 1,
+                        "End": 6
+                      },
+                      "tag": "fs",
+                      "raw": "\\fs20",
+                      "arguments": [
+                        "20"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:465-475 xy:src/subtitles/RTS.cpp:2506-2525 vsm:src/subtitles/RTS.cpp:3188-3206",
+                      "policy": "assign",
+                      "slots": [
+                        "fontsize"
+                      ],
+                      "before": {
+                        "fontsize": {
+                          "value": "24:24",
+                          "known": true
+                        }
+                      },
+                      "after": {
+                        "fontsize": {
+                          "value": "20:20",
+                          "known": true
+                        }
+                      },
+                      "applied": true,
+                      "known": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {
+                          "fontsize": {
+                            "value": "20:20",
+                            "known": true
+                          }
+                        },
+                        "sources": {
+                          "fontsize": 0
+                        }
+                      }
+                    },
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 6,
+                        "End": 11
+                      },
+                      "index": 1,
+                      "tag": "fs",
+                      "raw": "\\fs25",
+                      "arguments": [
+                        "25"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:465-475 xy:src/subtitles/RTS.cpp:2506-2525 vsm:src/subtitles/RTS.cpp:3188-3206",
+                      "policy": "assign",
+                      "slots": [
+                        "fontsize"
+                      ],
+                      "before": {
+                        "fontsize": {
+                          "value": "20:20",
+                          "known": true
+                        }
+                      },
+                      "after": {
+                        "fontsize": {
+                          "value": "25:25",
+                          "known": true
+                        }
+                      },
+                      "applied": true,
+                      "known": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {
+                          "fontsize": {
+                            "value": "25:25",
+                            "known": true
+                          }
+                        },
+                        "sources": {
+                          "fontsize": 1
+                        }
+                      }
+                    }
+                  ],
+                  "after_interpretations": [
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 1,
+                        "End": 6
+                      },
+                      "tag": "fs",
+                      "raw": "\\fs25",
+                      "arguments": [
+                        "25"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:465-475 xy:src/subtitles/RTS.cpp:2506-2525 vsm:src/subtitles/RTS.cpp:3188-3206",
+                      "policy": "assign",
+                      "slots": [
+                        "fontsize"
+                      ],
+                      "before": {
+                        "fontsize": {
+                          "value": "24:24",
+                          "known": true
+                        }
+                      },
+                      "after": {
+                        "fontsize": {
+                          "value": "25:25",
+                          "known": true
+                        }
+                      },
+                      "applied": true,
+                      "known": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {
+                          "fontsize": {
+                            "value": "25:25",
+                            "known": true
+                          }
+                        },
+                        "sources": {
+                          "fontsize": 0
+                        }
+                      }
+                    },
+                    {
+                      "kind": "text",
+                      "source": {
+                        "Start": 7,
+                        "End": 32
+                      },
+                      "text": "Unicode: café, 日本語",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {
+                          "fontsize": {
+                            "value": "25:25",
+                            "known": true
+                          }
+                        },
+                        "sources": {
+                          "fontsize": 0
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "verification_basis": [
+            "Compare interpretations within every pinned target renderer.",
+            "Require verified signatures and citations for every command affected by a semantic edit.",
+            "Compare the full trace when an edit removes only an empty override block.",
+            "Compare visible text, tracked state values, and source provenance before and after the edit.",
+            "Reject edits that change document parsing or an unresolved semantic operation.",
+            "Compare integer Style fields by the exact integer consumed before and after the edit.",
+            "Use libass rendercheck for pixel regression fixtures; use pinned-source and trace evidence for xy-VSFilter."
+          ]
+        },
         "edits": [
           {
             "start": 438,
@@ -508,6 +912,410 @@
         "description": "An override is replaced, reset, or ignored before it affects dialogue text, or repeats the value already active in every affected state slot.",
         "suggested_fix": "Remove it or move it to the intended text boundary.",
         "fix_safety": "safe",
+        "fix_proof": {
+          "id": "632c4799f2c6a87b0c8ca3ff1b7bbb0f2a8c902a81c50da6a54c7b0cb285d02f",
+          "source_sha256": "f35243ebda94f944297a63274bd2e46cf05cf1bd1369a7b69fe82dce713fcfa2",
+          "edited_sha256": "06baed46a8bf0932cf2d8af1a352d139d72bcb24b21f558ba4c120486cd4850a",
+          "source_edits": [
+            {
+              "id": "ASS006",
+              "edit": {
+                "start": 438,
+                "end": 443,
+                "replacement": ""
+              }
+            }
+          ],
+          "targets": [
+            {
+              "renderer": "libass",
+              "version": "f61db567e6593df3470e91594bcd4ad2d0473aff",
+              "capabilities": {
+                "vsfiltermod": "not-applicable",
+                "lua": "not-applicable"
+              }
+            },
+            {
+              "renderer": "xy-VSFilter",
+              "version": "135a30153a38fa846cb5c39df0f258403e92096e",
+              "capabilities": {
+                "vsfiltermod": "not-applicable",
+                "lua": "not-applicable"
+              }
+            }
+          ],
+          "interpretations": [
+            {
+              "target": {
+                "renderer": "libass",
+                "version": "f61db567e6593df3470e91594bcd4ad2d0473aff",
+                "capabilities": {
+                  "vsfiltermod": "not-applicable",
+                  "lua": "not-applicable"
+                }
+              },
+              "dialogues": [
+                {
+                  "line": 15,
+                  "before_trace_sha256": "08a33364ea30728176b877065765e0c2d8cbb4b7556c0217571f8e8d2185c840",
+                  "after_trace_sha256": "dd92579d5b2424caf86c1beb03597be9e41303c8010b676fca33f92e649cdd93",
+                  "before_interpretations": [
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 1,
+                        "End": 6
+                      },
+                      "tag": "fs",
+                      "raw": "\\fs20",
+                      "arguments": [
+                        "20"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:465-475 xy:src/subtitles/RTS.cpp:2506-2525 vsm:src/subtitles/RTS.cpp:3188-3206",
+                      "policy": "assign",
+                      "slots": [
+                        "fontsize"
+                      ],
+                      "before": {
+                        "fontsize": {
+                          "value": "24:24",
+                          "known": true
+                        }
+                      },
+                      "after": {
+                        "fontsize": {
+                          "value": "20:20",
+                          "known": true
+                        }
+                      },
+                      "applied": true,
+                      "known": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {
+                          "fontsize": {
+                            "value": "20:20",
+                            "known": true
+                          }
+                        },
+                        "sources": {
+                          "fontsize": 0
+                        }
+                      }
+                    },
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 6,
+                        "End": 11
+                      },
+                      "index": 1,
+                      "tag": "fs",
+                      "raw": "\\fs25",
+                      "arguments": [
+                        "25"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:465-475 xy:src/subtitles/RTS.cpp:2506-2525 vsm:src/subtitles/RTS.cpp:3188-3206",
+                      "policy": "assign",
+                      "slots": [
+                        "fontsize"
+                      ],
+                      "before": {
+                        "fontsize": {
+                          "value": "20:20",
+                          "known": true
+                        }
+                      },
+                      "after": {
+                        "fontsize": {
+                          "value": "25:25",
+                          "known": true
+                        }
+                      },
+                      "applied": true,
+                      "known": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {
+                          "fontsize": {
+                            "value": "25:25",
+                            "known": true
+                          }
+                        },
+                        "sources": {
+                          "fontsize": 1
+                        }
+                      }
+                    }
+                  ],
+                  "after_interpretations": [
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 1,
+                        "End": 6
+                      },
+                      "tag": "fs",
+                      "raw": "\\fs25",
+                      "arguments": [
+                        "25"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:465-475 xy:src/subtitles/RTS.cpp:2506-2525 vsm:src/subtitles/RTS.cpp:3188-3206",
+                      "policy": "assign",
+                      "slots": [
+                        "fontsize"
+                      ],
+                      "before": {
+                        "fontsize": {
+                          "value": "24:24",
+                          "known": true
+                        }
+                      },
+                      "after": {
+                        "fontsize": {
+                          "value": "25:25",
+                          "known": true
+                        }
+                      },
+                      "applied": true,
+                      "known": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {
+                          "fontsize": {
+                            "value": "25:25",
+                            "known": true
+                          }
+                        },
+                        "sources": {
+                          "fontsize": 0
+                        }
+                      }
+                    },
+                    {
+                      "kind": "text",
+                      "source": {
+                        "Start": 7,
+                        "End": 32
+                      },
+                      "text": "Unicode: café, 日本語",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {
+                          "fontsize": {
+                            "value": "25:25",
+                            "known": true
+                          }
+                        },
+                        "sources": {
+                          "fontsize": 0
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "target": {
+                "renderer": "xy-VSFilter",
+                "version": "135a30153a38fa846cb5c39df0f258403e92096e",
+                "capabilities": {
+                  "vsfiltermod": "not-applicable",
+                  "lua": "not-applicable"
+                }
+              },
+              "dialogues": [
+                {
+                  "line": 15,
+                  "before_trace_sha256": "08a33364ea30728176b877065765e0c2d8cbb4b7556c0217571f8e8d2185c840",
+                  "after_trace_sha256": "dd92579d5b2424caf86c1beb03597be9e41303c8010b676fca33f92e649cdd93",
+                  "before_interpretations": [
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 1,
+                        "End": 6
+                      },
+                      "tag": "fs",
+                      "raw": "\\fs20",
+                      "arguments": [
+                        "20"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:465-475 xy:src/subtitles/RTS.cpp:2506-2525 vsm:src/subtitles/RTS.cpp:3188-3206",
+                      "policy": "assign",
+                      "slots": [
+                        "fontsize"
+                      ],
+                      "before": {
+                        "fontsize": {
+                          "value": "24:24",
+                          "known": true
+                        }
+                      },
+                      "after": {
+                        "fontsize": {
+                          "value": "20:20",
+                          "known": true
+                        }
+                      },
+                      "applied": true,
+                      "known": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {
+                          "fontsize": {
+                            "value": "20:20",
+                            "known": true
+                          }
+                        },
+                        "sources": {
+                          "fontsize": 0
+                        }
+                      }
+                    },
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 6,
+                        "End": 11
+                      },
+                      "index": 1,
+                      "tag": "fs",
+                      "raw": "\\fs25",
+                      "arguments": [
+                        "25"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:465-475 xy:src/subtitles/RTS.cpp:2506-2525 vsm:src/subtitles/RTS.cpp:3188-3206",
+                      "policy": "assign",
+                      "slots": [
+                        "fontsize"
+                      ],
+                      "before": {
+                        "fontsize": {
+                          "value": "20:20",
+                          "known": true
+                        }
+                      },
+                      "after": {
+                        "fontsize": {
+                          "value": "25:25",
+                          "known": true
+                        }
+                      },
+                      "applied": true,
+                      "known": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {
+                          "fontsize": {
+                            "value": "25:25",
+                            "known": true
+                          }
+                        },
+                        "sources": {
+                          "fontsize": 1
+                        }
+                      }
+                    }
+                  ],
+                  "after_interpretations": [
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 1,
+                        "End": 6
+                      },
+                      "tag": "fs",
+                      "raw": "\\fs25",
+                      "arguments": [
+                        "25"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:465-475 xy:src/subtitles/RTS.cpp:2506-2525 vsm:src/subtitles/RTS.cpp:3188-3206",
+                      "policy": "assign",
+                      "slots": [
+                        "fontsize"
+                      ],
+                      "before": {
+                        "fontsize": {
+                          "value": "24:24",
+                          "known": true
+                        }
+                      },
+                      "after": {
+                        "fontsize": {
+                          "value": "25:25",
+                          "known": true
+                        }
+                      },
+                      "applied": true,
+                      "known": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {
+                          "fontsize": {
+                            "value": "25:25",
+                            "known": true
+                          }
+                        },
+                        "sources": {
+                          "fontsize": 0
+                        }
+                      }
+                    },
+                    {
+                      "kind": "text",
+                      "source": {
+                        "Start": 7,
+                        "End": 32
+                      },
+                      "text": "Unicode: café, 日本語",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {
+                          "fontsize": {
+                            "value": "25:25",
+                            "known": true
+                          }
+                        },
+                        "sources": {
+                          "fontsize": 0
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "verification_basis": [
+            "Compare interpretations within every pinned target renderer.",
+            "Require verified signatures and citations for every command affected by a semantic edit.",
+            "Compare the full trace when an edit removes only an empty override block.",
+            "Compare visible text, tracked state values, and source provenance before and after the edit.",
+            "Reject edits that change document parsing or an unresolved semantic operation.",
+            "Compare integer Style fields by the exact integer consumed before and after the edit.",
+            "Use libass rendercheck for pixel regression fixtures; use pinned-source and trace evidence for xy-VSFilter."
+          ]
+        },
         "edits": [
           {
             "start": 438,

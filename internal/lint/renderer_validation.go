@@ -25,7 +25,7 @@ func AnalyzeForRenderer(dialogue ass.Dialogue, profile renderer.Profile) []Diagn
 func AnalyzeDocumentForRenderer(doc ass.Document, profile renderer.Profile) []Diagnostic {
 	diagnostics := AnalyzeHeaders(doc)
 	diagnostics = append(diagnostics, AnalyzeKeywords(doc)...)
-	diagnostics = append(diagnostics, AnalyzeStyles(doc)...)
+	diagnostics = append(diagnostics, analyzeStyles(doc)...)
 	diagnostics = append(diagnostics, analyzeEventFields(doc, &profile, false)...)
 	diagnostics = append(diagnostics, analyzeUndefinedStyleReferencesForRenderer(doc, profile)...)
 
@@ -52,6 +52,8 @@ func scopeDiagnostics(diagnostics []Diagnostic, profile renderer.Profile) []Diag
 	for i := range diagnostics {
 		diagnostics[i].Renderer = profile.Kind().String()
 		diagnostics[i].FixSafety = ""
+		diagnostics[i].FixProof = nil
+		diagnostics[i].FixProofRef = ""
 		diagnostics[i].Edits = nil
 	}
 	sort.SliceStable(diagnostics, func(i, j int) bool {
