@@ -37,7 +37,9 @@ func TestRenderHandlesCRAndCRLFSourceLines(t *testing.T) {
 		File: "sample.ass", Diagnostics: []report.Diagnostic{{Line: 2, Column: 1, SourceColumn: 1, SourceWidth: 1, ID: "ASS001", Severity: "error", Title: "Finding"}},
 	}}}
 	var out strings.Builder
-	Render(&out, view, "first\rsecond\r\nthird", false, 80)
+	if err := Render(&out, view, "first\rsecond\r\nthird", false, 80); err != nil {
+		t.Fatal(err)
+	}
 	if !strings.Contains(out.String(), "  2 | second\n") {
 		t.Fatalf("CR/CRLF source line was not split correctly: %q", out.String())
 	}
@@ -49,7 +51,9 @@ func TestCodeFrameMarkerAlignsAfterFourDigitLineNumber(t *testing.T) {
 	}}}}}
 	source := strings.Repeat("\n", 4666) + "012345"
 	var out strings.Builder
-	Render(&out, view, source, false, 80)
+	if err := Render(&out, view, source, false, 80); err != nil {
+		t.Fatal(err)
+	}
 	if !strings.Contains(out.String(), "  4667 | 012345\n       |   ^\n") {
 		t.Fatalf("four-digit source frame is misaligned:\n%s", out.String())
 	}
@@ -78,7 +82,9 @@ func BenchmarkRenderReport(b *testing.B) {
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
 		var out strings.Builder
-		Render(&out, view, source, false, 80)
+		if err := Render(&out, view, source, false, 80); err != nil {
+			b.Fatal(err)
+		}
 	}
 }
 
@@ -93,7 +99,9 @@ func TestPrettyShowsMultipleFindingsOnOneComplexDialogueLine(t *testing.T) {
 		},
 	}}}
 	var out strings.Builder
-	Render(&out, view, source, false, 80)
+	if err := Render(&out, view, source, false, 80); err != nil {
+		t.Fatal(err)
+	}
 	got := out.String()
 	if strings.Count(got, "  1 | ") != 1 || strings.Count(got, "^~~~~~~~~~~") != 1 || strings.Count(got, "^") != 2 || strings.Index(got, "error[ASS001]") > strings.Index(got, "error[ASS002]") {
 		t.Fatalf("complex line findings were omitted or out of order: %s", got)
@@ -109,7 +117,9 @@ func TestPrettyReprintsChangedViewportAndAlignsEachCaret(t *testing.T) {
 	}
 	view := report.Summary{Total: len(diagnostics), Groups: []report.Group{{File: "sample.ass", Errors: len(diagnostics), Diagnostics: diagnostics}}}
 	var out strings.Builder
-	Render(&out, view, source, false, 40)
+	if err := Render(&out, view, source, false, 40); err != nil {
+		t.Fatal(err)
+	}
 	lines := strings.Split(out.String(), "\n")
 	frames := 0
 	for i, line := range lines {
@@ -142,7 +152,9 @@ func TestPrettySortsPresentationByPhysicalSourcePosition(t *testing.T) {
 	}
 	view := report.Summary{Total: len(diagnostics), Groups: []report.Group{{File: "sample.ass", Warnings: len(diagnostics), Diagnostics: diagnostics}}}
 	var out strings.Builder
-	Render(&out, view, strings.Repeat("x", 100), false, 120)
+	if err := Render(&out, view, strings.Repeat("x", 100), false, 120); err != nil {
+		t.Fatal(err)
+	}
 	got := out.String()
 	last := -1
 	for _, column := range []int{35, 52, 62, 71} {
@@ -161,7 +173,9 @@ func TestWholeReportFitsCommonTerminalWidths(t *testing.T) {
 	}}}
 	for _, width := range []int{40, 80, 120} {
 		var out strings.Builder
-		Render(&out, view, "x", false, width)
+		if err := Render(&out, view, "x", false, width); err != nil {
+			t.Fatal(err)
+		}
 		for lineNumber, line := range strings.Split(out.String(), "\n") {
 			if cells := ansi.StringWidth(line); cells > width {
 				t.Errorf("width %d line %d uses %d cells: %q", width, lineNumber+1, cells, line)
@@ -179,7 +193,9 @@ func TestPrettyReportGoldenNoColor(t *testing.T) {
 	}}}
 	source := `Dialogue: {\fsbad}hello`
 	var out strings.Builder
-	Render(&out, view, source, false, 80)
+	if err := Render(&out, view, source, false, 80); err != nil {
+		t.Fatal(err)
+	}
 	want := "assx  sample.ass\n1 errors  |  0 warnings  |  0 suggestions\n\n" +
 		"error[ASS001]  Bad tag  1:12\n" +
 		"  1 | Dialogue: {\\fsbad}hello\n" +
@@ -198,8 +214,12 @@ func TestRenderColorIsOptionalAndDoesNotChangeText(t *testing.T) {
 		File: "sample.ass", Diagnostics: []report.Diagnostic{{Line: 1, Column: 1, SourceColumn: 1, ID: "ASS001", Severity: "error", Title: "Bad source", Detail: "Invalid token"}},
 	}}}
 	var plain, colored strings.Builder
-	Render(&plain, view, "x", false, 80)
-	Render(&colored, view, "x", true, 80)
+	if err := Render(&plain, view, "x", false, 80); err != nil {
+		t.Fatal(err)
+	}
+	if err := Render(&colored, view, "x", true, 80); err != nil {
+		t.Fatal(err)
+	}
 	if strings.Contains(plain.String(), "\x1b") || !strings.Contains(colored.String(), "\x1b[") || ansi.Strip(colored.String()) != plain.String() {
 		t.Fatalf("color output mismatch: plain=%q colored=%q", plain.String(), colored.String())
 	}
@@ -213,14 +233,18 @@ func TestRenderEscapesTerminalControlsAndSeparatesExplanation(t *testing.T) {
 		}},
 	}}}
 	var out strings.Builder
-	Render(&out, view, "Dialogue: test\r\n", false, 80)
+	if err := Render(&out, view, "Dialogue: test\r\n", false, 80); err != nil {
+		t.Fatal(err)
+	}
 	got := out.String()
 	if strings.Contains(got, "\x1b") || !strings.Contains(got, "Short reason") || strings.Contains(got, "Long rule description") {
 		t.Fatalf("default report has unsafe or expanded text: %q", got)
 	}
 	view.Explain = true
 	out.Reset()
-	Render(&out, view, "Dialogue: test\r\n", false, 80)
+	if err := Render(&out, view, "Dialogue: test\r\n", false, 80); err != nil {
+		t.Fatal(err)
+	}
 	if !strings.Contains(out.String(), "Long rule description") {
 		t.Fatalf("expanded explanation missing: %q", out.String())
 	}

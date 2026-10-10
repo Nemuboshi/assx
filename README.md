@@ -30,6 +30,23 @@ go vet ./...
 go build ./cmd/assx
 ```
 
+### Static analysis
+
+Use `golangci-lint` v2.14.0 with [.golangci.yml](.golangci.yml). It scans the
+entire Go module, including tests, with `errcheck`, `govet`, `ineffassign`,
+`staticcheck`, and `unused`. Local hooks and CI share this configuration and
+report findings without applying automatic fixes.
+
+With the pinned binary installed:
+
+```sh
+golangci-lint config verify
+golangci-lint run
+```
+
+Keep the version pins in `.pre-commit-config.yaml` and
+`.github/workflows/ci.yml` in sync when upgrading.
+
 ### Git hooks
 
 Install `prek` using your preferred method (for example, `uv tool install prek`), then install the hooks configured in `.pre-commit-config.yaml`:
@@ -37,3 +54,13 @@ Install `prek` using your preferred method (for example, `uv tool install prek`)
 ```sh
 prek install --prepare-hooks
 ```
+
+`prek` installs the pinned linter in its managed Go environment. A global
+`golangci-lint` installation is unnecessary for hook users. Run checks manually:
+
+```sh
+prek run golangci-lint-full --all-files
+prek run golangci-lint-config-verify --all-files
+```
+
+The full-module lint hook also runs for configuration-only commits.

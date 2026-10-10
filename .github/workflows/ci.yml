@@ -20,6 +20,11 @@ jobs:
         run: test -z "$(gofmt -l $(find ./cmd ./internal -type f -name '*.go'))"
       - name: Vet
         run: go vet ./...
+      - name: Lint
+        uses: golangci/golangci-lint-action@db9de0fc1a667e1a49d2291a1a042dff081d78f6 # v9
+        with:
+          version: v2.14.0
+          args: --timeout=5m
       - name: Verify generated renderer evidence
         working-directory: internal/ass/renderer
         run: go run ./cmd/genmatrix -check

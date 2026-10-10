@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -36,11 +37,13 @@ func run(args []string, stdout, stderr io.Writer) int {
 	unsafeFix := flags.Bool("unsafe-fix", false, "apply safe and unsafe fixes")
 	checkFonts := flags.Bool("check-fonts", false, "check subtitle font availability and character coverage")
 	fontDir := flags.String("font-dir", "", "font folder to scan instead of system fonts (requires --check-fonts)")
+	// Usage and fallback diagnostics on stderr are best-effort: their write
+	// failures cannot be reported through the same failing stream.
 	flags.Usage = func() {
-		fmt.Fprintln(stderr, "Usage: assx [--format pretty|plain|json] [--explain] [--fix] [--unsafe-fix] [--check-fonts] [--font-dir DIR] file.ass")
+		_, _ = fmt.Fprintln(stderr, "Usage: assx [--format pretty|plain|json] [--explain] [--fix] [--unsafe-fix] [--check-fonts] [--font-dir DIR] file.ass")
 	}
 	if option := singleDashOption(args); option != "" {
-		fmt.Fprintf(stderr, "Options must use the -- prefix: %s\n", option)
+		_, _ = fmt.Fprintf(stderr, "Options must use the -- prefix: %s\n", option)
 		return 2
 	}
 	if err := flags.Parse(args); err != nil {
@@ -54,7 +57,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return 2
 	}
 	if *format != "pretty" && *format != "plain" && *format != "json" {
-		fmt.Fprintf(stderr, "Unknown output format %q. Use pretty, plain, or json.\n", *format)
+		_, _ = fmt.Fprintf(stderr, "Unknown output format %q. Use pretty, plain, or json.\n", *format)
 		return 2
 	}
 
@@ -67,7 +70,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 		resolved, err := filepath.EvalSymlinks(path)
 		if err != nil {
 			progress.stop()
-			fmt.Fprintln(stderr, err)
+			_, _ = fmt.Fprintln(stderr, err)
 			return 2
 		}
 		readPath = resolved
@@ -75,13 +78,13 @@ func run(args []string, stdout, stderr io.Writer) int {
 	original, err := os.ReadFile(readPath)
 	if err != nil {
 		progress.stop()
-		fmt.Fprintln(stderr, err)
+		_, _ = fmt.Fprintln(stderr, err)
 		return 2
 	}
 	source, err := ass.DecodeSource(original)
 	if err != nil {
 		progress.stop()
-		fmt.Fprintln(stderr, err)
+		_, _ = fmt.Fprintln(stderr, err)
 		return 2
 	}
 	doc := ass.Parse(source.Text)
@@ -90,7 +93,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 		fontChecker, err = lint.NewFontChecker(*fontDir)
 		if err != nil {
 			progress.stop()
-			fmt.Fprintf(stderr, "Failed to scan fonts: %v\n", err)
+			_, _ = fmt.Fprintf(stderr, "Failed to scan fonts: %v\n", err)
 			return 2
 		}
 	}
@@ -114,7 +117,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 	diagnostics, err := analyzeDoc(doc)
 	if err != nil {
 		progress.stop()
-		fmt.Fprintf(stderr, "Font check failed: %v\n", err)
+		_, _ = fmt.Fprintf(stderr, "Font check failed: %v\n", err)
 		return 2
 	}
 	var appliedSafe, appliedUnsafe int
@@ -123,24 +126,24 @@ func run(args []string, stdout, stderr io.Writer) int {
 		fixedText, count, err := lint.ApplyFixes(doc.Text, diagnostics, *unsafeFix)
 		if err != nil {
 			progress.stop()
-			fmt.Fprintln(stderr, err)
+			_, _ = fmt.Fprintln(stderr, err)
 			return 2
 		}
 		if count > 0 {
 			if !bytes.Equal(source.Encode(doc.Text), original) {
 				progress.stop()
-				fmt.Fprintln(stderr, "Refusing to modify a file that cannot be losslessly round-tripped.")
+				_, _ = fmt.Fprintln(stderr, "Refusing to modify a file that cannot be losslessly round-tripped.")
 				return 2
 			}
 			info, err := os.Stat(readPath)
 			if err != nil {
 				progress.stop()
-				fmt.Fprintln(stderr, err)
+				_, _ = fmt.Fprintln(stderr, err)
 				return 2
 			}
 			if err := writeAtomically(readPath, source.Encode(fixedText), info.Mode().Perm()); err != nil {
 				progress.stop()
-				fmt.Fprintln(stderr, err)
+				_, _ = fmt.Fprintln(stderr, err)
 				return 2
 			}
 			appliedSafe = availableSafe
@@ -151,7 +154,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 			diagnostics, err = analyzeDoc(doc)
 			if err != nil {
 				progress.stop()
-				fmt.Fprintf(stderr, "Font check failed: %v\n", err)
+				_, _ = fmt.Fprintf(stderr, "Font check failed: %v\n", err)
 				return 2
 			}
 		}
@@ -167,21 +170,28 @@ func run(args []string, stdout, stderr io.Writer) int {
 	if appliedSafe+appliedUnsafe > 0 {
 		summary = fmt.Sprintf("Applied fixes: %d safe, %d unsafe. %s", appliedSafe, appliedUnsafe, summary)
 	}
-	if *format == "json" {
+	switch *format {
+	case "json":
 		encoder := json.NewEncoder(stdout)
 		encoder.SetIndent("", "  ")
 		if err := encoder.Encode(diagnostics); err != nil {
-			fmt.Fprintln(stderr, err)
+			_, _ = fmt.Fprintln(stderr, err)
 			return 2
 		}
-		fmt.Fprintln(stderr, summary)
-	} else if *format == "plain" {
-		plain.Render(stdout, path, diagnostics, elapsed, summary)
-	} else {
+		_, _ = fmt.Fprintln(stderr, summary)
+	case "plain":
+		if err := plain.Render(stdout, path, diagnostics, elapsed, summary); err != nil {
+			_, _ = fmt.Fprintln(stderr, err)
+			return 2
+		}
+	default:
 		view := report.Build(path, diagnostics, doc)
 		view.Explain = *explain
 		view.Applied.Safe, view.Applied.Unsafe = appliedSafe, appliedUnsafe
-		pretty.Render(stdout, view, doc.Text, colorAllowed(stdout), outputWidth(stdout))
+		if err := pretty.Render(stdout, view, doc.Text, colorAllowed(stdout), outputWidth(stdout)); err != nil {
+			_, _ = fmt.Fprintln(stderr, err)
+			return 2
+		}
 	}
 
 	for _, diagnostic := range diagnostics {
@@ -243,7 +253,8 @@ func startScanProgress(writer io.Writer, path string, enabled bool) *scanProgres
 		frame := 0
 		draw := func() {
 			icon := colorText(colorAllowed(writer), "36", frames[frame])
-			fmt.Fprintf(writer, "\r\033[2K%s Scanning %s", icon, terminalText(path))
+			// Transient progress is best-effort; report output is checked separately.
+			_, _ = fmt.Fprintf(writer, "\r\033[2K%s Scanning %s", icon, terminalText(path))
 			frame = (frame + 1) % len(frames)
 		}
 		draw()
@@ -266,7 +277,7 @@ func (p *scanProgress) stop() {
 	p.stopOnce.Do(func() {
 		close(p.done)
 		<-p.finished
-		fmt.Fprint(p.writer, "\r\033[2K")
+		_, _ = fmt.Fprint(p.writer, "\r\033[2K")
 	})
 }
 
@@ -307,28 +318,35 @@ func colorText(enabled bool, code, text string) string {
 	return "\033[" + code + "m" + text + "\033[0m"
 }
 
-func writeAtomically(path string, data []byte, mode os.FileMode) error {
+func writeAtomically(path string, data []byte, mode os.FileMode) (err error) {
 	dir := filepath.Dir(path)
 	tmp, err := os.CreateTemp(dir, ".assx-*.tmp")
 	if err != nil {
 		return err
 	}
 	tempPath := tmp.Name()
-	defer os.Remove(tempPath)
+	closed := false
+	defer func() {
+		if !closed {
+			err = errors.Join(err, tmp.Close())
+		}
+		if removeErr := os.Remove(tempPath); removeErr != nil && !errors.Is(removeErr, os.ErrNotExist) {
+			err = errors.Join(err, removeErr)
+		}
+	}()
 	if err := tmp.Chmod(mode); err != nil {
-		tmp.Close()
 		return err
 	}
 	if _, err := tmp.Write(data); err != nil {
-		tmp.Close()
 		return err
 	}
 	if err := tmp.Sync(); err != nil {
-		tmp.Close()
 		return err
 	}
-	if err := tmp.Close(); err != nil {
-		return err
+	closeErr := tmp.Close()
+	closed = true
+	if closeErr != nil {
+		return closeErr
 	}
 	return os.Rename(tempPath, path)
 }

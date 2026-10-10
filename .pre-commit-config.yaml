@@ -26,6 +26,16 @@ repos:
         always_run: true
         stages: [pre-commit]
 
+  - repo: https://github.com/golangci/golangci-lint
+    rev: v2.14.0
+    hooks:
+      - id: golangci-lint-full
+        entry: golangci-lint run
+        always_run: true
+        stages: [pre-commit]
+      - id: golangci-lint-config-verify
+        stages: [pre-commit]
+
   - repo: https://github.com/commitizen-tools/commitizen
     rev: v4.19.1
     hooks:

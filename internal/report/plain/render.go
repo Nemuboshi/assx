@@ -1,6 +1,7 @@
 package plain
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"sort"
@@ -11,7 +12,9 @@ import (
 )
 
 // Render preserves the existing plain diagnostic layout.
-func Render(writer io.Writer, path string, diagnostics []lint.Diagnostic, elapsed time.Duration, fixSummary string) {
+func Render(output io.Writer, path string, diagnostics []lint.Diagnostic, elapsed time.Duration, fixSummary string) error {
+	// Formatting errors are retained by the buffer and returned by Flush.
+	writer := bufio.NewWriter(output)
 	ordered := append([]lint.Diagnostic(nil), diagnostics...)
 	sort.SliceStable(ordered, func(i, j int) bool {
 		if ordered[i].Line == ordered[j].Line {
@@ -23,22 +26,22 @@ func Render(writer io.Writer, path string, diagnostics []lint.Diagnostic, elapse
 		return ordered[i].Line < ordered[j].Line
 	})
 	if len(ordered) == 0 {
-		fmt.Fprintln(writer, "No issues found.")
+		_, _ = fmt.Fprintln(writer, "No issues found.")
 	} else {
 		for i, d := range ordered {
-			fmt.Fprintf(writer, "%s[%s] %s:%d:%d\n", strings.ToUpper(string(d.Severity)), d.ID, path, d.Line, d.Column)
-			fmt.Fprintf(writer, "    %s\n", d.Title)
+			_, _ = fmt.Fprintf(writer, "%s[%s] %s:%d:%d\n", strings.ToUpper(string(d.Severity)), d.ID, path, d.Line, d.Column)
+			_, _ = fmt.Fprintf(writer, "    %s\n", d.Title)
 			if d.Tag != "" {
-				fmt.Fprintf(writer, "    tag: \\%s\n", d.Tag)
+				_, _ = fmt.Fprintf(writer, "    tag: \\%s\n", d.Tag)
 			}
 			if d.Field != "" {
-				fmt.Fprintf(writer, "    field: %s\n", d.Field)
+				_, _ = fmt.Fprintf(writer, "    field: %s\n", d.Field)
 			}
 			if d.Detail != "" {
-				fmt.Fprintf(writer, "    %s\n", d.Detail)
+				_, _ = fmt.Fprintf(writer, "    %s\n", d.Detail)
 			}
 			if i+1 < len(ordered) {
-				fmt.Fprintln(writer)
+				_, _ = fmt.Fprintln(writer)
 			}
 		}
 	}
@@ -53,8 +56,9 @@ func Render(writer io.Writer, path string, diagnostics []lint.Diagnostic, elapse
 			suggestions++
 		}
 	}
-	fmt.Fprintf(writer, "\nChecked %s in %s. Summary: %d diagnostics (%d errors, %d warnings, %d suggestions).\n", path, formatDuration(elapsed), len(ordered), errors, warnings, suggestions)
-	fmt.Fprintln(writer, fixSummary)
+	_, _ = fmt.Fprintf(writer, "\nChecked %s in %s. Summary: %d diagnostics (%d errors, %d warnings, %d suggestions).\n", path, formatDuration(elapsed), len(ordered), errors, warnings, suggestions)
+	_, _ = fmt.Fprintln(writer, fixSummary)
+	return writer.Flush()
 }
 
 func formatDuration(elapsed time.Duration) string {

@@ -1,6 +1,7 @@
 package pretty
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"sort"
@@ -17,14 +18,16 @@ import (
 )
 
 // Render prints a source-aware, color-independent diagnostic report.
-func Render(w io.Writer, summary report.Summary, source string, color bool, width int) {
+func Render(output io.Writer, summary report.Summary, source string, color bool, width int) error {
+	// Formatting errors are retained by the buffer and returned by Flush.
+	w := bufio.NewWriter(output)
 	lines := strings.Split(strings.NewReplacer("\r\n", "\n", "\r", "\n").Replace(source), "\n")
 	for _, group := range summary.Groups {
 		writeWrapped(w, "", "assx  "+group.File, width)
 		writeWrapped(w, "", fmt.Sprintf("%d errors  |  %d warnings  |  %d suggestions", group.Errors, group.Warnings, group.Suggestions), width)
-		fmt.Fprintln(w)
+		_, _ = fmt.Fprintln(w)
 		if len(group.Diagnostics) == 0 {
-			fmt.Fprintln(w, "No issues found.")
+			_, _ = fmt.Fprintln(w, "No issues found.")
 		}
 		diagnostics := append([]report.Diagnostic(nil), group.Diagnostics...)
 		sort.SliceStable(diagnostics, func(i, j int) bool {
@@ -55,11 +58,11 @@ func Render(w io.Writer, summary report.Summary, source string, color bool, widt
 				frameWidth := max(1, min(100, width-numberWidth-5))
 				shown, marker, markWidth, frameStart := frame(line, d.SourceColumn-1, d.SourceWidth, frameWidth)
 				if d.Line != lastSourceLine || frameStart != lastFrameStart {
-					fmt.Fprintf(w, "  %*d | %s\n", numberWidth, d.Line, shown)
+					_, _ = fmt.Fprintf(w, "  %*d | %s\n", numberWidth, d.Line, shown)
 					lastSourceLine, lastFrameStart = d.Line, frameStart
 				}
 				if d.SourceColumn > 0 && d.SourceColumn-1 <= len(line) {
-					fmt.Fprintf(w, "  %s | %s%s\n", strings.Repeat(" ", numberWidth), strings.Repeat(" ", marker), "^"+strings.Repeat("~", max(0, markWidth-1)))
+					_, _ = fmt.Fprintf(w, "  %s | %s%s\n", strings.Repeat(" ", numberWidth), strings.Repeat(" ", marker), "^"+strings.Repeat("~", max(0, markWidth-1)))
 				}
 			}
 			if summary.Explain {
@@ -82,22 +85,22 @@ func Render(w io.Writer, summary report.Summary, source string, color bool, widt
 				if d.Fix != "" {
 					writeWrapped(w, "  ", "Fix: edit manually ("+d.Fix+")", width)
 				} else {
-					fmt.Fprintln(w, "  Fix: edit manually")
+					_, _ = fmt.Fprintln(w, "  Fix: edit manually")
 				}
 			}
 			if i+1 < len(group.Diagnostics) {
-				fmt.Fprintln(w)
+				_, _ = fmt.Fprintln(w)
 			}
 		}
 		footer := fmt.Sprintf("%d diagnostics", summary.Total)
 		if summary.Applied.Total() > 0 {
 			footer += fmt.Sprintf("  |  Applied fixes: %d safe, %d unsafe.", summary.Applied.Safe, summary.Applied.Unsafe)
 		}
-		fmt.Fprintln(w)
+		_, _ = fmt.Fprintln(w)
 		writeWrapped(w, "", footer, width)
 		writeWrapped(w, "", fmt.Sprintf("Fixes available: %d safe, %d unsafe, %d not auto-fixable.", summary.Remaining.Safe, summary.Remaining.Unsafe, summary.Remaining.Unfixable), width)
 	}
-
+	return w.Flush()
 }
 
 func sourceLine(lines []string, number int) (string, bool) {
@@ -154,16 +157,16 @@ func frame(s string, at, span, limit int) (string, int, int, int) {
 	return shown, max(0, marker), markWidth, start
 }
 
-func writeStyledWrapped(w io.Writer, text string, width int) {
+func writeStyledWrapped(w *bufio.Writer, text string, width int) {
 	for _, line := range strings.Split(ansi.Wrap(text, max(1, width), " /\\"), "\n") {
-		fmt.Fprintln(w, line)
+		_, _ = fmt.Fprintln(w, line)
 	}
 }
 
-func writeWrapped(w io.Writer, indent, text string, width int) {
+func writeWrapped(w *bufio.Writer, indent, text string, width int) {
 	wrapped := ansi.Wrap(clean(text), max(1, width-ansi.StringWidth(indent)), " /\\")
 	for _, line := range strings.Split(wrapped, "\n") {
-		fmt.Fprintf(w, "%s%s\n", indent, line)
+		_, _ = fmt.Fprintf(w, "%s%s\n", indent, line)
 	}
 }
 

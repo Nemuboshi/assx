@@ -172,7 +172,7 @@ func beginTagParse(block string, base, tagStart, slashStart int, inTransition bo
 		j++
 	}
 	k := j
-	for k < len(block) && block[k] != '(' && block[k] != '\\' && !(inTransition && block[k] == ')') {
+	for k < len(block) && block[k] != '(' && block[k] != '\\' && (!inTransition || block[k] != ')') {
 		k++
 	}
 	if k == j {

@@ -207,9 +207,7 @@ func canonicalStyleColour(raw string) (colour, alpha string, ok bool) {
 	if len(digits) >= 2 && strings.EqualFold(digits[:2], "&H") {
 		digits = digits[2:]
 	}
-	if strings.HasSuffix(digits, "&") {
-		digits = digits[:len(digits)-1]
-	}
+	digits = strings.TrimSuffix(digits, "&")
 	if len(digits) != 8 {
 		return "", "", false
 	}
