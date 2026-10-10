@@ -7,8 +7,8 @@ import (
 )
 
 // AnalyzeNoEffectsForRenderer exposes ASS006 observations for one pinned
-// renderer without coupling them to legacy name/arity validation. P06 will
-// integrate renderer-specific diagnostics. P08 will establish which observations
+// renderer without coupling them to legacy name/arity validation. P06 now
+// integrates renderer-specific diagnostics. P08 will establish which observations
 // justify multi-target edits; this function never attaches an automatic fix.
 func AnalyzeNoEffectsForRenderer(dialogue ass.Dialogue, profile renderer.Profile) []Diagnostic {
 	evaluation := semantic.EvaluateResolved(ass.ParseConcreteDialogue(dialogue.Text), profile,
@@ -24,5 +24,5 @@ func AnalyzeNoEffectsForRenderer(dialogue ass.Dialogue, profile renderer.Profile
 			Sources: rule.Sources,
 		})
 	}
-	return findings
+	return scopeDiagnostics(findings, profile)
 }

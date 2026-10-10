@@ -28,6 +28,7 @@ type Diagnostic struct {
 	Tag         string     `json:"tag,omitempty"`
 	Field       string     `json:"field,omitempty"`
 	Detail      string     `json:"detail,omitempty"`
+	Renderer    string     `json:"renderer,omitempty"`
 	Sources     []string   `json:"sources"`
 }
 
@@ -157,7 +158,12 @@ func (a *dialogueAnalyzer) consumeTag(tag ass.Tag) {
 }
 
 func (a *dialogueAnalyzer) validate(tag ass.Tag) {
-	ir := ass.DecodeTag(tag)
+	a.validateIR(tag, ass.DecodeTag(tag), true, true)
+}
+
+// validateIR accepts only the policy selected by the caller. The compatibility
+// adapter still supplies the frozen default decoder until the CLI migration.
+func (a *dialogueAnalyzer) validateIR(tag ass.Tag, ir ass.TagIR, policyArity, comparisons bool) {
 	if !ir.Known {
 		return
 	}
@@ -165,7 +171,7 @@ func (a *dialogueAnalyzer) validate(tag ass.Tag) {
 	if tag.Paren && len(tag.Args) == 0 {
 		return // Empty parenthesized expressions are ignored by the renderers.
 	}
-	if tagSpec.Counts != nil && !ir.HasExpectedArity() {
+	if policyArity && tagSpec.Counts != nil && !ir.HasExpectedArity() {
 		a.add(IssueArgumentCount, tag, fmt.Sprintf("Found %d arguments; expected %s.", len(tag.Args), countsText(tagSpec.Counts)))
 		return
 	}
@@ -184,14 +190,14 @@ func (a *dialogueAnalyzer) validate(tag ass.Tag) {
 			invalid(fmt.Sprintf("Expected an integer, found %q.", arg))
 		} else if (tagSpec.Min != 0 || tagSpec.Max != 0) && (decoded.Integer < int64(tagSpec.Min) || decoded.Integer > int64(tagSpec.Max)) {
 			invalid(fmt.Sprintf("Value %d is outside the accepted range %d..%d.", decoded.Integer, tagSpec.Min, tagSpec.Max))
-		} else if tag.Name == "a" && (decoded.Integer == 4 || decoded.Integer == 8) {
+		} else if comparisons && tag.Name == "a" && (decoded.Integer == 4 || decoded.Integer == 8) {
 			a.add(IssueRendererDiff, tag, fmt.Sprintf("libass treats \\a%d as middle-center like \\a5; xy-VSFilter and VSFilterMod bit-map it to a different alignment.", decoded.Integer))
 		}
 	case spec.NumberValue:
 		if decoded.Consumed == 0 {
 			invalid(fmt.Sprintf("Expected a number, found %q.", arg))
 		}
-		if tag.Name == "blur" && usable && decoded.Number > 100 {
+		if comparisons && tag.Name == "blur" && usable && decoded.Number > 100 {
 			a.add(IssueRendererDiff, tag, "Values above 100 are clamped by libass but have no matching upper clamp in VSFilter.")
 		}
 	case spec.BoldValue:
@@ -206,7 +212,7 @@ func (a *dialogueAnalyzer) validate(tag ass.Tag) {
 	case spec.HexValue:
 		if decoded.Consumed == 0 {
 			invalid(fmt.Sprintf("Expected a hexadecimal value, found %q.", arg))
-		} else if tag.Paren && strings.HasPrefix(strings.ToUpper(arg), "&H") {
+		} else if comparisons && tag.Paren && strings.HasPrefix(strings.ToUpper(arg), "&H") {
 			a.add(IssueRendererDiff, tag, "VSFilter and libass treat an &H prefix in parenthesized color/alpha arguments differently.")
 		}
 	case spec.NumberListValue:
@@ -229,7 +235,7 @@ func (a *dialogueAnalyzer) validate(tag ass.Tag) {
 					rendererDiff = true
 				}
 			}
-			if rendererDiff {
+			if comparisons && rendererDiff {
 				a.add(IssueRendererDiff, tag, "Fractional rectangular clip coordinates can round differently: xy-VSFilter adds 0.5 before integer conversion, while libass and VSFilterMod consume integer values.")
 			}
 		}

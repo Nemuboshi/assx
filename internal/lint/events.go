@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"assx/internal/ass"
+	"assx/internal/ass/renderer"
 )
 
 // assEventFormat and ssaEventFormat mirror libass ass_event_format and
@@ -31,6 +32,16 @@ var eventTimeShape = regexp.MustCompile(`^[+-]?\d+:[+-]?\d+:[+-]?\d+\.[+-]?\d+$`
 // AnalyzeEventFields checks the Events Format line and every parsed event
 // field against what libass and VSFilter actually do with it.
 func AnalyzeEventFields(doc ass.Document) []Diagnostic {
+	return analyzeEventFields(doc, nil)
+}
+
+// AnalyzeEventFieldsForRenderer keeps the shared document-level checks while
+// obtaining karaoke timing from the selected profile, not the legacy tags.
+func AnalyzeEventFieldsForRenderer(doc ass.Document, profile renderer.Profile) []Diagnostic {
+	return analyzeEventFields(doc, &profile)
+}
+
+func analyzeEventFields(doc ass.Document, profile *renderer.Profile) []Diagnostic {
 	diagnostics := eventFormatFindings(doc)
 	for _, dialogue := range doc.Dialogues {
 		if dialogue.MissingFields {
@@ -53,7 +64,11 @@ func AnalyzeEventFields(doc ass.Document) []Diagnostic {
 		diagnostics = append(diagnostics, analyzeEventDuration(dialogue)...)
 		diagnostics = append(diagnostics, analyzeLayer(dialogue)...)
 		diagnostics = append(diagnostics, analyzeEffect(dialogue)...)
-		diagnostics = append(diagnostics, analyzeKaraoke(dialogue)...)
+		if profile == nil {
+			diagnostics = append(diagnostics, analyzeKaraoke(dialogue)...)
+		} else {
+			diagnostics = append(diagnostics, analyzeKaraokeForRenderer(dialogue, *profile)...)
+		}
 	}
 	return diagnostics
 }
@@ -172,6 +187,16 @@ func analyzeLayer(dialogue ass.Dialogue) []Diagnostic {
 // semantics differ between engines, and a VSFilterMod-only tag can rewrite
 // timing, so both cases bail to avoid a false claim.
 func analyzeKaraoke(dialogue ass.Dialogue) []Diagnostic {
+	return analyzeKaraokeWithCursor(dialogue, func() (int64, bool) { return karaokeCursor(dialogue.ParsedText()) })
+}
+
+func analyzeKaraokeForRenderer(dialogue ass.Dialogue, profile renderer.Profile) []Diagnostic {
+	return analyzeKaraokeWithCursor(dialogue, func() (int64, bool) {
+		return karaokeCursorResolved(ass.ParseConcreteDialogue(dialogue.Text), profile)
+	})
+}
+
+func analyzeKaraokeWithCursor(dialogue ass.Dialogue, findCursor func() (int64, bool)) []Diagnostic {
 	start, startOK := dialogueTime(dialogue, "start")
 	end, endOK := dialogueTime(dialogue, "end")
 	if !startOK || !endOK {
@@ -181,7 +206,7 @@ func analyzeKaraoke(dialogue ass.Dialogue) []Diagnostic {
 	if duration <= 0 {
 		return nil
 	}
-	cursor, modeled := karaokeCursor(dialogue.ParsedText())
+	cursor, modeled := findCursor()
 	if !modeled {
 		return nil
 	}

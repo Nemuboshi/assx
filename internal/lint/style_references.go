@@ -5,10 +5,19 @@ import (
 	"strings"
 
 	"assx/internal/ass"
+	"assx/internal/ass/renderer"
 	"assx/internal/semantic"
 )
 
 func analyzeUndefinedStyleReferences(doc ass.Document) []Diagnostic {
+	return analyzeStyleReferences(doc, nil)
+}
+
+func analyzeUndefinedStyleReferencesForRenderer(doc ass.Document, profile renderer.Profile) []Diagnostic {
+	return analyzeStyleReferences(doc, &profile)
+}
+
+func analyzeStyleReferences(doc ass.Document, profile *renderer.Profile) []Diagnostic {
 	styles := semantic.DefinedStyleNames(doc.StyleFields)
 	var diagnostics []Diagnostic
 	for _, dialogue := range doc.Dialogues {
@@ -18,20 +27,31 @@ func analyzeUndefinedStyleReferences(doc ass.Document) []Diagnostic {
 				fmt.Sprintf("Dialogue references undefined style %q.", name),
 			))
 		}
-		dialogue.ParsedText().WalkTokens(func(token ass.TokenView) bool {
-			if !token.HasTag || token.Tag.Name != "r" || len(token.Tag.Args) == 0 {
-				return true
-			}
-			name := strings.TrimSpace(strings.Join(token.Tag.Args, ","))
+		checkReset := func(name string, column int) {
+			name = strings.TrimSpace(name)
 			if name == "" || semantic.ResolveResetStyleReference(name, styles) {
-				return true
+				return
 			}
 			diagnostics = append(diagnostics, undefinedStyleDiagnostic(
-				dialogue.Line, token.Tag.Column, token.Tag.Name, "",
+				dialogue.Line, column, "r", "",
 				fmt.Sprintf("Override tag references undefined style %q.", name),
 			))
-			return true
-		})
+		}
+		if profile == nil {
+			dialogue.ParsedText().WalkTokens(func(token ass.TokenView) bool {
+				if token.HasTag && token.Tag.Name == "r" && len(token.Tag.Args) > 0 {
+					checkReset(strings.Join(token.Tag.Args, ","), token.Tag.Column)
+				}
+				return true
+			})
+		} else {
+			profile.WalkDialogue(ass.ParseConcreteDialogue(dialogue.Text), func(result renderer.Result, _ bool) bool {
+				if result.Status == renderer.Matched && result.Name == "r" && len(result.Args) > 0 {
+					checkReset(result.Args[0].Raw, result.Source.Start+2)
+				}
+				return true
+			})
+		}
 	}
 	return diagnostics
 }

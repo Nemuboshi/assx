@@ -114,7 +114,7 @@ type EvaluationOptions struct {
 	// effective text state is needed (for example, font coverage analysis).
 	SkipNoEffectProofs bool
 	// Profile selects independent renderer resolution. Nil preserves the
-	// historical default lint contract until profile-scoped validation in P06.
+	// historical default lint contract until the CLI migration in P10.
 	Profile *renderer.Profile
 }
 
