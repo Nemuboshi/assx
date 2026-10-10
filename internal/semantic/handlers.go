@@ -220,3 +220,21 @@ func (m *evaluator) resetStyle(tag ass.Tag) bool {
 	// resolved. An arbitrary named reset must not establish a SafeFix proof.
 	return known || (len(m.options.Styles) == 0 && target == m.originalStyle)
 }
+
+// invalidateMalformedTag clears every possible affected state slot when the
+// declared arity cannot identify which specialized form the renderer sees.
+func (m *evaluator) invalidateMalformedTag(tagSpec spec.TagSpec, index int) {
+	if tagSpec.Semantic != spec.SemanticClip {
+		m.invalidate(tagSpec.Slots)
+		return
+	}
+	// A malformed clip may be interpreted as either a rectangle or a vector.
+	// Neither previous value nor its source remains a valid proof.
+	m.invalidate([]string{"clip_rect", "clip_vector"})
+	// Vector clipping uses first-wins semantics. A malformed clip might have
+	// claimed that slot, so do not later establish a definite vector owner.
+	if _, exists := m.latched["clip_vector"]; !exists {
+		m.latched["clip_vector"] = index
+	}
+	m.uncertainLatches["clip_vector"] = true
+}

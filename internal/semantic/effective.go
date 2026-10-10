@@ -250,7 +250,7 @@ func (m *evaluator) consumeTag(tag ass.Tag) TagEvent {
 		return event
 	}
 	if tagSpec.Counts != nil && !slices.Contains(tagSpec.Counts, len(tag.Args)) {
-		m.invalidate(tagSpec.Slots)
+		m.invalidateMalformedTag(tagSpec, index)
 		m.blockProofs(&event, UncertaintyMalformed)
 		return event
 	}
