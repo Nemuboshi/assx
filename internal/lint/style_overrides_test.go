@@ -55,7 +55,7 @@ func TestRedundantStyleOverrideStateTracking(t *testing.T) {
 		{name: "italic y scale and spacing settle on style", text: `{\i1\i0\fscy120\fscy100\fsp2\fsp0}A`, want: true},
 		{name: "Style-backed state differs at first text", text: `{\fnCourier New}A{\fnArial}B`},
 		{name: "safe prefix before state change", text: `{\fnArial}A{\fnCourier New}B{\fnArial}C`, want: true},
-		{name: "safe prefix before unresolved style reset", text: `{\fnArial}A{\rOther}B`, want: true},
+		{name: "unresolved style reset revokes earlier proofs", text: `{\fnArial}A{\rOther}B`},
 		{name: "safe prefix before transform", text: `{\fnArial}A{\t(0,500,\fs24)}B`, want: true},
 		{name: "rotation has no Style field", text: `{\frz0}A`},
 		{name: "encoding has no Style field", text: `{\fe1}A`},

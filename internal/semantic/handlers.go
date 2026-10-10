@@ -11,26 +11,27 @@ import (
 // Tag-specific semantics live here; simple assignments remain metadata-driven.
 // No per-tag interface allocations or runtime registration are required.
 
-func (m *evaluator) handleTransformChild(tag ass.Tag, tagSpec spec.TagSpec) bool {
-	// The parent transform evaluates supported targets. Validate child
-	// syntax separately so malformed known tags cannot bypass the proof
-	// fence merely because they appear inside \\t(...).
-	slots := tagSpec.Slots
+func (m *evaluator) handleTransformChild(tag ass.Tag, tagSpec spec.TagSpec) SemanticUncertainty {
+	// A transform child is evaluated by its parent. Unsupported targets or
+	// syntax must still revoke proofs created before the parent transform.
 	unknown := tagSpec.Behavior != spec.Assign || RelativeFontSize(tag)
 	if tagSpec.Semantic == spec.SemanticClip {
-		unknown = true // Vector and rectangular clips have shape-specific semantics.
-	} else if len(slots) != 0 && !unknown {
-		_, modeled := CanonicalTagState(tag, tagSpec, slots)
+		unknown = true
+	} else if len(tagSpec.Slots) != 0 && !unknown {
+		_, modeled := CanonicalTagState(tag, tagSpec, tagSpec.Slots)
 		unknown = !modeled
 	}
-	if unknown {
-		m.revokeProofs()
-		return true
+	if !unknown {
+		return UncertaintyNone
 	}
-	return false
+	reason := assignmentUncertainty(tag, tagSpec)
+	if reason == UncertaintyMalformed || reason == UncertaintyRendererDependent {
+		return reason
+	}
+	return UncertaintyUnsupported
 }
 
-func (m *evaluator) consumeTransform(tag ass.Tag, index int) {
+func (m *evaluator) consumeTransform(tag ass.Tag, index int) bool {
 	if len(tag.Children) > 0 {
 		m.markActiveLive()
 	}
@@ -42,6 +43,7 @@ func (m *evaluator) consumeTransform(tag ass.Tag, index int) {
 	if !noEffect {
 		m.invalidateAll()
 	}
+	return noEffect
 }
 
 func resolveAssignmentPolicy(tag ass.Tag, tagSpec spec.TagSpec) ([]string, spec.Behavior) {
@@ -61,10 +63,34 @@ func (m *evaluator) handleRelativeFontSize(tag ass.Tag, tagSpec spec.TagSpec, ev
 		return false
 	}
 	m.invalidate([]string{"fontsize"})
-	m.revokeProofs()
+	m.blockProofs(event, UncertaintyUnsupported)
 	m.fillValues(&event.After, slots)
-	event.Barrier = true
 	return true
+}
+
+// assignmentUncertainty preserves the decoder's distinctions without
+// making a renderer-specific assumption when canonicalization fails.
+func assignmentUncertainty(tag ass.Tag, tagSpec spec.TagSpec) SemanticUncertainty {
+	ir := ass.DecodeTag(tag)
+	if tagSpec.Semantic == spec.SemanticClip && len(tag.Args) != 4 && ir.HasExpectedArity() {
+		return UncertaintyUnsupported
+	}
+	switch ir.ArgumentsStatus() {
+	case ass.ValueInvalid:
+		return UncertaintyMalformed
+	case ass.ValueAmbiguous:
+		return UncertaintyRendererDependent
+	case ass.ValueUnknown:
+		return UncertaintyUnresolved
+	}
+	if tagSpec.Value == spec.IntegerValue && len(tag.Args) == 1 {
+		decoded := ir.Argument(0)
+		if decoded.Status == ass.ValueValid && (tagSpec.Min != 0 || tagSpec.Max != 0) &&
+			(decoded.Integer < int64(tagSpec.Min) || decoded.Integer > int64(tagSpec.Max)) {
+			return UncertaintyMalformed
+		}
+	}
+	return UncertaintyUnresolved
 }
 
 func (m *evaluator) assignmentValues(tag ass.Tag, tagSpec spec.TagSpec, slots []string) ([]string, bool) {
@@ -94,34 +120,45 @@ func (m *evaluator) assignmentValues(tag ass.Tag, tagSpec spec.TagSpec, slots []
 // Accumulating karaoke tags contribute to a shared timeline. Unknown forms,
 // transform children, and renderer-specific absolute \kt semantics poison the
 // timeline rather than returning an incorrect known duration.
-func (m *evaluator) accumulate(tag ass.Tag) {
+// Invalidate provenance as well as value: a previously known karaoke owner
+// cannot justify SafeFix decisions after the timeline becomes uncertain.
+func (m *evaluator) invalidateKaraoke(reason SemanticUncertainty) SemanticUncertainty {
+	const slot = "karaoke_cursor"
+	m.state[slot] = UnknownValue()
+	m.active[slot] = owner{index: -1, start: m.position}
+	return reason
+}
+
+func (m *evaluator) accumulate(tag ass.Tag) SemanticUncertainty {
 	const slot = "karaoke_cursor"
 	if tag.Name == "kt" {
-		m.state[slot] = UnknownValue()
-		m.active[slot] = owner{index: -1, start: m.position}
-		return
+		return m.invalidateKaraoke(UncertaintyRendererDependent)
 	}
 	current := m.value(slot)
 	duration := int64(1000)
 	if len(tag.Args) > 1 || tag.InTransition {
-		m.state[slot] = UnknownValue()
-		return
+		return m.invalidateKaraoke(UncertaintyMalformed)
 	}
 	if len(tag.Args) == 1 {
 		value := ass.DecodeNumber(tag.Args[0])
-		if value.Status != ass.ValueValid || value.Number < 0 || value.Number > float64(int64(^uint64(0)>>1)/10) {
-			m.state[slot] = UnknownValue()
-			return
+		// Prefix-only decoding is sufficient for syntax diagnostics, but not
+		// for proof of a canonical karaoke duration.
+		if value.Status != ass.ValueValid || value.Consumed != len(value.Raw) ||
+			value.Number < 0 || value.Number > float64(int64(^uint64(0)>>1)/10) {
+			return m.invalidateKaraoke(UncertaintyMalformed)
 		}
 		duration = int64(value.Number) * 10
 	}
 	previous, err := strconv.ParseInt(current.Value, 10, 64)
-	if !current.Known || err != nil || duration > int64(^uint64(0)>>1)-previous {
-		m.state[slot] = UnknownValue()
-		return
+	if !current.Known || err != nil {
+		return m.invalidateKaraoke(UncertaintyUnresolved)
+	}
+	if duration > int64(^uint64(0)>>1)-previous {
+		return m.invalidateKaraoke(UncertaintyMalformed)
 	}
 	m.state[slot] = KnownValue(strconv.FormatInt(previous+duration, 10))
 	m.active[slot] = owner{index: m.tagIndex - 1, start: m.position, proven: true}
+	return UncertaintyNone
 }
 
 func (m *evaluator) transitionHasNoEffect(tag ass.Tag) bool {
@@ -148,7 +185,7 @@ func (m *evaluator) transitionHasNoEffect(tag ass.Tag) bool {
 	return true
 }
 
-func (m *evaluator) resetStyle(tag ass.Tag) {
+func (m *evaluator) resetStyle(tag ass.Tag) bool {
 	target := m.originalStyle
 	if len(tag.Args) > 0 && strings.TrimSpace(strings.Join(tag.Args, ",")) != "" {
 		target = strings.TrimSpace(strings.Join(tag.Args, ","))
@@ -179,7 +216,7 @@ func (m *evaluator) resetStyle(tag ass.Tag) {
 	m.activeStyle = target
 	_, known := m.options.Styles[target]
 	m.baseValid = len(m.options.Styles) == 0 || known
-	if len(m.options.Styles) > 0 && !known {
-		m.proofsDisabled = true
-	}
+	// Without a Style table, only the original Dialogue Style can be
+	// resolved. An arbitrary named reset must not establish a SafeFix proof.
+	return known || (len(m.options.Styles) == 0 && target == m.originalStyle)
 }

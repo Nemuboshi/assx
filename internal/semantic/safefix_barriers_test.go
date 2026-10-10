@@ -42,9 +42,18 @@ func TestSupportedTagsStillAllowNoEffectProofs(t *testing.T) {
 	for _, tc := range []string{
 		`{\fs20\fs20}A`,
 		`{\fs20\fs20\bord2}A`,
+		`{\fs20\fs20\k20}A`,
+		`{\fs20\fs20\clip(0,0,10,10)}A`,
+		`{\fs20\fs20\pos(10,20)}A`,
 	} {
-		if effects := EvaluateDialogue(ass.ParseDialogueText(tc)); len(effects) == 0 {
+		effects := EvaluateDialogue(ass.ParseDialogueText(tc))
+		if len(effects) == 0 {
 			t.Errorf("ordinary supported tag should keep no-effect proof: %q", tc)
+		}
+		for _, effect := range effects {
+			if effect.ProofRevoked {
+				t.Errorf("supported tag unexpectedly revoked proof for %q: %#v", tc, effect)
+			}
 		}
 	}
 }

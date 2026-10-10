@@ -24,19 +24,34 @@ type NoEffect struct {
 	ProofRevoked bool // An unmodeled operation invalidated the SafeFix proof.
 }
 
+// SemanticUncertainty records why a tag cannot be modeled exactly.
+// A nonzero value does not by itself imply a dialogue-wide SafeFix barrier:
+// time-dependent transforms are represented separately from proof failures.
+type SemanticUncertainty uint8
+
+const (
+	UncertaintyNone SemanticUncertainty = iota
+	UncertaintyMalformed
+	UncertaintyUnsupported
+	UncertaintyUnresolved
+	UncertaintyRendererDependent
+	UncertaintyTimeDependent
+)
+
 // TagEvent describes the state transition performed by one source tag.
 // Before and After correspond to Slots, in the same order. Observers must not
 // retain the slices or mutate the state view.
 type TagEvent struct {
-	Tag     ass.Tag
-	Index   int
-	Policy  spec.Behavior
-	Slots   []string
-	Before  [4]StateValue
-	After   [4]StateValue
-	Applied bool
-	Known   bool
-	Barrier bool
+	Tag         ass.Tag
+	Index       int
+	Policy      spec.Behavior
+	Slots       []string
+	Before      [4]StateValue
+	After       [4]StateValue
+	Applied     bool
+	Known       bool
+	Barrier     bool
+	Uncertainty SemanticUncertainty
 }
 
 // StateView is valid only during an observer callback. It exposes the same
@@ -227,33 +242,43 @@ func (m *evaluator) consumeTag(tag ass.Tag) TagEvent {
 		// any later fix on the strength of the previous state.
 		m.markActiveLive()
 		m.invalidateAll()
-		m.revokeProofs()
-		event.Barrier = true
+		reason := UncertaintyUnsupported
+		if tagSpec.VSFilterModOnly {
+			reason = UncertaintyRendererDependent
+		}
+		m.blockProofs(&event, reason)
 		return event
 	}
 	if tagSpec.Counts != nil && !slices.Contains(tagSpec.Counts, len(tag.Args)) {
 		m.invalidate(tagSpec.Slots)
-		m.revokeProofs()
-		event.Barrier = true
+		m.blockProofs(&event, UncertaintyMalformed)
 		return event
 	}
 	if tag.InTransition {
-		event.Barrier = m.handleTransformChild(tag, tagSpec)
+		if reason := m.handleTransformChild(tag, tagSpec); reason != UncertaintyNone {
+			m.blockProofs(&event, reason)
+		}
 		return event
 	}
 
 	event.Policy = tagSpec.Behavior
 	switch tagSpec.Semantic {
 	case spec.SemanticStyleReset:
-		m.resetStyle(tag)
+		if !m.resetStyle(tag) {
+			m.blockProofs(&event, UncertaintyUnresolved)
+		}
 		event.Applied = true
 		return event
 	case spec.SemanticTransform:
-		m.consumeTransform(tag, index)
+		if !m.consumeTransform(tag, index) {
+			event.Uncertainty = UncertaintyTimeDependent
+		}
 		event.Applied = true
 		return event
 	case spec.SemanticKaraoke:
-		m.accumulate(tag)
+		if reason := m.accumulate(tag); reason != UncertaintyNone {
+			m.blockProofs(&event, reason)
+		}
 		event.Applied = true
 		return event
 	}
@@ -272,8 +297,7 @@ func (m *evaluator) consumeTag(tag ass.Tag) TagEvent {
 	if !valuesKnown {
 		// Renderer-dependent or malformed assignments cannot justify
 		// removing previously tracked tags, even before this boundary.
-		m.revokeProofs()
-		event.Barrier = true
+		m.blockProofs(&event, assignmentUncertainty(tag, tagSpec))
 	}
 	if behavior == spec.Assign && valuesKnown && m.sameSlotValues(slots, values) {
 		if !m.proofsDisabled {
@@ -371,6 +395,14 @@ func (m *evaluator) invalidateAll() {
 // State invalidation remains a separate concern.
 func (m *evaluator) revokeProofs() {
 	m.proofsDisabled = true
+}
+
+// A semantic barrier revokes earlier and later SafeFix proofs, including
+// candidates emitted before the unknown operation was encountered.
+func (m *evaluator) blockProofs(event *TagEvent, reason SemanticUncertainty) {
+	m.revokeProofs()
+	event.Barrier = true
+	event.Uncertainty = reason
 }
 
 func (m *evaluator) markCandidate(index int, tag ass.Tag, reason NoEffectReason, ownerIndex int, always bool) {
