@@ -65,6 +65,15 @@ func validateSignatureEvidence(sig xmlSig, parentVerified string) error {
 		return fmt.Errorf("applicability %q must equal verified %q plus inferred %q",
 			sig.Renderer, sig.Verified, sig.Inferred)
 	}
+	switch sig.Requires {
+	case "":
+	case "_VSMOD", "_VSMOD _LUA":
+		if !slices.Equal(applies, []string{"vsm"}) {
+			return fmt.Errorf("build requirements %q must apply only to VSFilterMod", sig.Requires)
+		}
+	default:
+		return fmt.Errorf("unsupported signature build requirements %q", sig.Requires)
+	}
 	if sig.Status != "V" && sig.Status != "S" {
 		return fmt.Errorf("signature status must be V or S, got %q", sig.Status)
 	}
@@ -151,4 +160,62 @@ func TestMatrixSignatureApplicabilityMutations(t *testing.T) {
 			t.Fatal("three-coordinate position signature missing from mutated matrix")
 		})
 	}
+}
+
+func TestMatrixFeatureRequirementsMatchPinnedSource(t *testing.T) {
+	// The source-verified condition belongs to each signature, not the name.
+	// Catch removal of a guard even if the generic XML schema remains valid.
+	want := map[string]string{
+		"pos|3|paren|vsm":   "_VSMOD",
+		"fsc|1|both|vsm":    "_VSMOD",
+		"blend|1|paren|vsm": "_VSMOD",
+		"frs|1|both|vsm":    "_VSMOD",
+		"fsvp|1|both|vsm":   "_VSMOD",
+	}
+	matrix := loadMatrix(t)
+	for _, tag := range matrix.Tags {
+		if tag.Params == nil {
+			continue
+		}
+		for _, sig := range tag.Params.Sigs {
+			key := tag.Name + "|" + sig.N + "|" + sig.Form + "|" + sig.Renderer
+			if sig.Requires != want[key] {
+				t.Errorf("%s requires=%q, pinned requirement=%q", key, sig.Requires, want[key])
+			}
+			delete(want, key)
+		}
+	}
+	for key := range want {
+		t.Errorf("missing pinned signature %s", key)
+	}
+}
+
+func TestMatrixRejectsInvalidBuildRequirementScope(t *testing.T) {
+	matrix := loadMatrix(t)
+	for _, tag := range matrix.Tags {
+		if tag.Name != "pos" || tag.Params == nil {
+			continue
+		}
+		for _, sig := range tag.Params.Sigs {
+			if sig.N != "3" {
+				continue
+			}
+			for _, raw := range []string{"_LUA", "_LUA _VSMOD", "_VSMOD _VSMOD", "_BAD"} {
+				mutated := sig
+				mutated.Requires = raw
+				if err := validateSignatureEvidence(mutated, tag.Params.Verified); err == nil {
+					t.Errorf("invalid guard %q accepted", raw)
+				}
+			}
+			mutated := sig
+			mutated.Renderer = "libass xy vsm"
+			mutated.Verified = "libass xy vsm"
+			mutated.Cite = "libass:libass/ass_parse.c:606-621 xy:src/subtitles/RTS.cpp:2615-2627 vsm:src/subtitles/RTS.cpp:3510-3543"
+			if err := validateSignatureEvidence(mutated, tag.Params.Verified); err == nil {
+				t.Fatal("VSFilterMod-only build requirement accepted for shared signature")
+			}
+			return
+		}
+	}
+	t.Fatal("missing pinned three-coordinate pos signature")
 }

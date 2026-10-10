@@ -27,10 +27,21 @@ The caller can inspect independently:
   a state transition is outside this PR.
 
 An XML signature records applicability separately from per-renderer
-verification. Absence of signatures is unknown, never an implicit valid
-default. A rejection requires a complete verified signature set. A verified
-signature is *not* proof that its effect is understood or that an edit is
-SafeFix; those decisions belong to P05/P07/P08.
+verification **and per-signature compile-time requirements**. In VSFilterMod,
+the three-coordinate pos and argument-bearing fsc variants require _VSMOD;
+their core two-coordinate / zero-argument variants remain available without
+it. The gated-only blend, frs and fsvp signatures carry the same requirement.
+Profile.Signatures reports each variant's Availability and Requires along with
+evidence scoped to the actual build; an unknown or unavailable guard cannot
+yield SignatureVerified. An unknown optional branch prevents proving that the
+available signatures exhaust all arities; a known-disabled branch is excluded
+from that set. Zero-argument bare signatures such as fsc and r participate
+normally in evidence matching.
+
+Absence of signatures is unknown, never an implicit valid default. A rejection
+requires a complete verified set of signatures *available in that build*.
+A verified signature is *not* proof that its effect is understood or that an
+edit is SafeFix; those decisions belong to P05/P07/P08.
 
 ## Dispatch mechanics
 
@@ -73,7 +84,8 @@ signature shapes. The source digest canonicalizes CRLF and standalone CR to LF
 before hashing, so different Git checkout settings cannot invalidate the
 evidence hash. The generator's -check mode compares canonical line endings;
 .gitattributes also pins the XML and generated Go file to LF on checkout.
-Unverified tag groups become explicit stubs, without inventing signatures. A test pins the XML digest to generated code and
+Unverified tag groups become explicit stubs, without inventing signatures.
+A test pins the XML digest to generated code and
 compares source revision hashes to Profile.Version. Existing
 internal/ass/spec evidence validators remain authoritative.
 
@@ -83,7 +95,7 @@ do not require those ignored local checkouts. Keep the hand-audited dispatch
 tables synchronized with those tests when pinned code changes. Run:
 
     go generate ./internal/ass/renderer
-    go run ./internal/ass/renderer/cmd/genmatrix -check
+    (cd internal/ass/renderer && go run ./cmd/genmatrix -check)
     go test ./...
     go test -race ./internal/ass/renderer/...
     go vet ./...

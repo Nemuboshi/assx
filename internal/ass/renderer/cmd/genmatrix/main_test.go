@@ -25,3 +25,24 @@ func TestCanonicalNewlinesAreIndependentOfCheckoutStyle(t *testing.T) {
 		})
 	}
 }
+
+func TestRequirementMaskRejectsUnsupportedOrAmbiguousGates(t *testing.T) {
+	for _, tc := range []struct {
+		raw   string
+		mask  uint8
+		valid bool
+	}{
+		{"", 0, true},
+		{"_VSMOD", 1, true},
+		{"_VSMOD _LUA", 3, true},
+		{"_LUA", 0, false},
+		{"_LUA _VSMOD", 0, false},
+		{"_VSMOD _VSMOD", 0, false},
+		{"_VSMOD garbage", 0, false},
+	} {
+		got, err := requirementMask(tc.raw)
+		if (err == nil) != tc.valid || (tc.valid && got != tc.mask) {
+			t.Errorf("requires=%q got mask=%d err=%v, want mask=%d valid=%v", tc.raw, got, err, tc.mask, tc.valid)
+		}
+	}
+}

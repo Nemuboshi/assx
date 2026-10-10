@@ -145,13 +145,24 @@ func (p Profile) Resolve(expr ass.ConcreteExpression, source string) Result {
 		return r
 	}
 	sigs := p.Signatures(r.Name)
-	if len(sigs) == 0 || (!expr.Parenthesized && r.Suffix == "") {
+	if len(sigs) == 0 {
 		return r
 	}
 	// Missing matches imply rejection only when the entire applicable
 	// signature set is source-verified. Inferred entries cannot prove absence.
 	fullyVerified := true
+	hasAvailable := false
 	for _, s := range sigs {
+		switch s.Availability {
+		case SignatureUnavailable:
+			// Known-off branches are not part of this build's signature set.
+			continue
+		case SignatureConditional:
+			// Unknown compile-time branches prevent definitive rejection.
+			fullyVerified = false
+			continue
+		}
+		hasAvailable = true
 		if s.Evidence != SignatureVerified {
 			fullyVerified = false
 		}
@@ -162,7 +173,7 @@ func (p Profile) Resolve(expr ass.ConcreteExpression, source string) Result {
 			r.Signature, r.Citation = s.Evidence, s.Citation
 		}
 	}
-	if r.Signature == SignatureUnknown && fullyVerified {
+	if r.Signature == SignatureUnknown && hasAvailable && fullyVerified {
 		r.Signature = SignatureRejected
 	}
 	// Parenthesized suffixes have parser-specific consumption semantics; do

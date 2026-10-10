@@ -21,6 +21,7 @@ type signature struct {
 	Form     string `xml:"form,attr"`
 	Scope    string `xml:"renderer,attr"`
 	Verified string `xml:"verified,attr"`
+	Requires string `xml:"requires,attr"`
 	Cite     string `xml:"cite,attr"`
 }
 type tag struct {
@@ -64,6 +65,21 @@ func mask(fields string) (uint8, error) {
 func canonicalNewlines(data []byte) []byte {
 	data = bytes.ReplaceAll(data, []byte("\r\n"), []byte("\n"))
 	return bytes.ReplaceAll(data, []byte("\r"), []byte("\n"))
+}
+
+// requirementMask accepts only canonical guard sets from the pinned source.
+// _LUA cannot be independently enabled without _VSMOD.
+func requirementMask(raw string) (uint8, error) {
+	switch raw {
+	case "":
+		return 0, nil
+	case "_VSMOD":
+		return 1, nil
+	case "_VSMOD _LUA":
+		return 3, nil
+	default:
+		return 0, fmt.Errorf("unsupported signature requirements %q", raw)
+	}
 }
 
 func run() error {
@@ -115,6 +131,13 @@ func run() error {
 			if sc == 0 || v & ^sc != 0 {
 				return fmt.Errorf("%s: invalid signature scope", t.Name)
 			}
+			requires, e := requirementMask(s.Requires)
+			if e != nil {
+				return fmt.Errorf("%s: %w", t.Name, e)
+			}
+			if requires != 0 && sc != 4 {
+				return fmt.Errorf("%s: build requirements apply only to VSFilterMod signatures", t.Name)
+			}
 			var form string
 			switch s.Form {
 			case "bare":
@@ -126,7 +149,11 @@ func run() error {
 			default:
 				return fmt.Errorf("%s: invalid form %q", t.Name, s.Form)
 			}
-			fmt.Fprintf(&out, "{count:%d,form:%s,scope:%d,verified:%d,citation:%q},", n, form, sc, v, s.Cite)
+			fmt.Fprintf(&out, "{count:%d,form:%s,scope:%d,verified:%d,", n, form, sc, v)
+			if requires != 0 {
+				fmt.Fprintf(&out, "requires:%d,", requires)
+			}
+			fmt.Fprintf(&out, "citation:%q},", s.Cite)
 		}
 		fmt.Fprintln(&out, "}},")
 	}

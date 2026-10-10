@@ -147,6 +147,177 @@ func TestCapabilitiesNeverDefaultToEnabled(t *testing.T) {
 	}
 }
 
+func TestBuildScopedSignaturesAndRejection(t *testing.T) {
+	profiles := make(map[Feature]Profile)
+	for _, state := range []Feature{FeatureUnknown, FeatureDisabled, FeatureEnabled} {
+		profile, err := New(VSFilterMod, Build{Mod: state})
+		if err != nil {
+			t.Fatal(err)
+		}
+		profiles[state] = profile
+	}
+	for _, tc := range []struct {
+		raw                        string
+		unknown, disabled, enabled SignatureStatus
+	}{
+		{"\\pos(1,2)", SignatureVerified, SignatureVerified, SignatureVerified},
+		{"\\pos(1,2,3)", SignatureUnknown, SignatureRejected, SignatureVerified},
+		{"\\pos(1,2,3,4)", SignatureUnknown, SignatureRejected, SignatureRejected},
+		{"\\fsc", SignatureVerified, SignatureVerified, SignatureVerified},
+		{"\\fsc42", SignatureUnknown, SignatureRejected, SignatureVerified},
+		{"\\fsc(42)", SignatureUnknown, SignatureRejected, SignatureVerified},
+		{"\\fsc(42,24)", SignatureUnknown, SignatureRejected, SignatureRejected},
+		{"\\r", SignatureInferred, SignatureInferred, SignatureInferred},
+	} {
+		t.Run(tc.raw, func(t *testing.T) {
+			expr, source := first(t, tc.raw)
+			for _, state := range []struct {
+				feature Feature
+				want    SignatureStatus
+			}{
+				{FeatureUnknown, tc.unknown},
+				{FeatureDisabled, tc.disabled},
+				{FeatureEnabled, tc.enabled},
+			} {
+				got := profiles[state.feature].Resolve(expr, source)
+				if got.Status != Matched || got.Signature != state.want {
+					t.Errorf("build=%d got status=%v signature=%v; want Matched, %v",
+						state.feature, got.Status, got.Signature, state.want)
+				}
+			}
+		})
+	}
+}
+
+func TestSignatureMetadataCannotPromoteConditionalGates(t *testing.T) {
+	for _, tc := range []struct {
+		tag   string
+		arity int
+		form  Form
+	}{
+		{"pos", 3, Paren},
+		{"fsc", 1, Both},
+		{"blend", 1, Paren},
+		{"frs", 1, Both},
+		{"fsvp", 1, Both},
+	} {
+		t.Run(tc.tag, func(t *testing.T) {
+			for _, state := range []struct {
+				build        Feature
+				availability SignatureAvailability
+			}{
+				{FeatureUnknown, SignatureConditional},
+				{FeatureDisabled, SignatureUnavailable},
+				{FeatureEnabled, SignatureAvailable},
+			} {
+				profile, err := New(VSFilterMod, Build{Mod: state.build})
+				if err != nil {
+					t.Fatal(err)
+				}
+				found := false
+				for _, sig := range profile.Signatures(tc.tag) {
+					if sig.Count != tc.arity || sig.Form != tc.form {
+						continue
+					}
+					found = true
+					if !sig.Requires.Mod || sig.Requires.Lua {
+						t.Errorf("build=%d unexpected guards: %+v", state.build, sig)
+					}
+					if sig.Availability != state.availability {
+						t.Errorf("build=%d availability=%v want %v", state.build, sig.Availability, state.availability)
+					}
+					if sig.Citation == "" {
+						t.Fatal("missing source citation")
+					}
+					if state.build != FeatureEnabled && sig.Evidence != SignatureUnknown {
+						t.Errorf("build=%d advertised evidence from unavailable branch: %+v", state.build, sig)
+					}
+					if state.build == FeatureEnabled && tc.tag != "fsvp" && sig.Evidence != SignatureVerified {
+						t.Errorf("enabled source-verified signature lost evidence: %+v", sig)
+					}
+					if state.build == FeatureEnabled && tc.tag == "fsvp" && sig.Evidence != SignatureInferred {
+						t.Errorf("inferred evidence upgraded without proof: %+v", sig)
+					}
+				}
+				if !found {
+					t.Fatalf("missing signature %s arity=%d", tc.tag, tc.arity)
+				}
+			}
+		})
+	}
+	for _, state := range []Feature{FeatureUnknown, FeatureDisabled, FeatureEnabled} {
+		profile, _ := New(VSFilterMod, Build{Mod: state})
+		for _, core := range []struct {
+			tag   string
+			arity int
+		}{{"pos", 2}, {"fsc", 0}} {
+			found := false
+			for _, sig := range profile.Signatures(core.tag) {
+				if sig.Count != core.arity {
+					continue
+				}
+				found = true
+				if sig.Availability != SignatureAvailable || sig.Evidence != SignatureVerified || sig.Requires.Mod {
+					t.Errorf("core %s arity=%d unavailable under mod=%d: %+v", core.tag, core.arity, state, sig)
+				}
+			}
+			if !found {
+				t.Errorf("missing core %s arity %d", core.tag, core.arity)
+			}
+		}
+	}
+}
+
+func TestCombinedBuildRequirements(t *testing.T) {
+	for _, tc := range []struct {
+		mod, lua Feature
+		want     SignatureAvailability
+	}{
+		{FeatureEnabled, FeatureEnabled, SignatureAvailable},
+		{FeatureEnabled, FeatureUnknown, SignatureConditional},
+		{FeatureUnknown, FeatureEnabled, SignatureConditional},
+		{FeatureUnknown, FeatureUnknown, SignatureConditional},
+		{FeatureDisabled, FeatureUnknown, SignatureUnavailable},
+		{FeatureUnknown, FeatureDisabled, SignatureUnavailable},
+		{FeatureEnabled, FeatureDisabled, SignatureUnavailable},
+	} {
+		profile, err := New(VSFilterMod, Build{Mod: tc.mod, Lua: tc.lua})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got := profile.signatureAvailability(requiresMod | requiresLua); got != tc.want {
+			t.Errorf("_VSMOD=%v _LUA=%v availability=%v want %v", tc.mod, tc.lua, got, tc.want)
+		}
+	}
+}
+
+func TestBareZeroArityIsNotImplicitForAllCommands(t *testing.T) {
+	for _, raw := range []string{"\\fsc", "\\r", "\\pos"} {
+		e, source := first(t, raw)
+		for _, profile := range profiles(t) {
+			got := profile.Resolve(e, source)
+			switch raw {
+			case "\\fsc":
+				if got.Signature != SignatureVerified {
+					t.Errorf("%s %s should verify zero arity: %+v", profile.Kind(), raw, got)
+				}
+			case "\\r":
+				want := SignatureVerified
+				if profile.Kind() == VSFilterMod {
+					want = SignatureInferred
+				}
+				if got.Signature != want {
+					t.Errorf("%s %s got=%v want=%v", profile.Kind(), raw, got.Signature, want)
+				}
+			case "\\pos":
+				if got.Signature == SignatureVerified || got.Signature == SignatureInferred {
+					t.Errorf("%s missing required args incorrectly accepted: %+v", profile.Kind(), got)
+				}
+			}
+		}
+	}
+}
+
 func TestNoOpNormalizationIsNotAValidCommandWithSuffix(t *testing.T) {
 	mod := profiles(t)[2]
 	e, source := first(t, "\\posjunk(1,2)")

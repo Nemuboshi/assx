@@ -30,6 +30,9 @@
 
   Each <sig> also declares mandatory renderer applicability and separate
   status, verified, inferred, cite metadata for that exact arity/form.
+  Optional requires="_VSMOD" (or "_VSMOD _LUA") binds validity of an
+  individual signature to compile-time guards rather than command dispatch.
+  Unknown build flags cannot prove validity or a rejected-arity result.
   A shared <params> citation never proves every child signature. "inferred"
   explicitly records applicability asserted without per-signature verification
   and cannot justify SafeFix. Missing renderer scope is invalid (never "all").
@@ -231,7 +234,7 @@
       <sig n="0" form="bare" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:454-456 xy:src/subtitles/RTS.cpp:2493-2497 vsm:src/subtitles/RTS.cpp:3150-3165">
         <p i="1" name="none" kind="none" range="resets ScaleX and ScaleY to the style; arguments after \fsc are ignored by libass and xy-VSFilter"/>
       </sig>
-      <sig n="1" form="both" renderer="vsm" status="V" verified="vsm" cite="vsm:src/subtitles/RTS.cpp:3150-3165">
+      <sig n="1" form="both" renderer="vsm" status="V" verified="vsm" requires="_VSMOD" cite="vsm:src/subtitles/RTS.cpp:3150-3165">
         <p i="1" name="scale" kind="number" range="&lt;=0 clamps to 0; patch f004 applies the value to both scale slots"/>
       </sig>
     </params>
@@ -590,7 +593,7 @@
         <p i="1" name="x" kind="coord" range="any; &gt;=0 expected, no clamp"/>
         <p i="2" name="y" kind="coord" range="any; no clamp"/>
       </sig>
-      <sig n="3" form="paren" renderer="vsm" status="V" verified="vsm" cite="vsm:src/subtitles/RTS.cpp:3510-3543">
+      <sig n="3" form="paren" renderer="vsm" status="V" verified="vsm" requires="_VSMOD" cite="vsm:src/subtitles/RTS.cpp:3510-3543">
         <p i="1" name="x" kind="coord" range="screen x"/>
         <p i="2" name="y" kind="coord" range="screen y"/>
         <p i="3" name="z" kind="number" range="VSFilterMod-only depth: stored as style.mod_z = z*80 (RTS.cpp:3539), assigned as every glyph point's z (611-612), then used by the frx/fry rotation and the perspective divide (640-653). Effect is only visible with a 3D rotation; libass and xy reject the 3-arg form entirely."/>
@@ -974,7 +977,7 @@
 
   <tag name="blend" status="V">
     <params status="V" verified="vsm" cite="vsm:src/subtitles/RTS.cpp:3716-3730">
-      <sig n="1" form="paren" renderer="vsm" status="V" verified="vsm" cite="vsm:src/subtitles/RTS.cpp:3716-3730">
+      <sig n="1" form="paren" renderer="vsm" status="V" verified="vsm" requires="_VSMOD" cite="vsm:src/subtitles/RTS.cpp:3716-3730">
         <p i="1" name="mode" kind="int" range="over|add|sub|mult|scr|diff|rsub|isub or integer; normalized and handled by the apply branch"/>
       </sig>
     </params>
@@ -989,7 +992,7 @@
 
   <tag name="frs" status="V">
     <params status="V" verified="vsm" cite="vsm:src/subtitles/RTS.cpp:3108-3115">
-      <sig n="1" form="both" renderer="vsm" status="V" verified="vsm" cite="vsm:src/subtitles/RTS.cpp:3108-3115">
+      <sig n="1" form="both" renderer="vsm" status="V" verified="vsm" requires="_VSMOD" cite="vsm:src/subtitles/RTS.cpp:3108-3115">
         <p i="1" name="angle" kind="number" range="symbol-orientation angle x10; empty selects org; libass/xy read it as \fr with junk arg &quot;s&quot; (scen)"/>
       </sig>
     </params>
@@ -1003,7 +1006,7 @@
 
   <tag name="fsvp" status="S">
     <params status="S" cite="vsm:src/subtitles/RTS.cpp:2587,3174">
-      <sig n="1" form="both" renderer="vsm" status="S" inferred="vsm" cite="vsm:src/subtitles/RTS.cpp:2587,3174">
+      <sig n="1" form="both" renderer="vsm" status="S" inferred="vsm" requires="_VSMOD" cite="vsm:src/subtitles/RTS.cpp:2587,3174">
         <p i="1" name="vs" kind="number" range="unchecked (patch m001); libass/xy read it as \fs with junk arg &quot;vp&quot;"/>
       </sig>
     </params>

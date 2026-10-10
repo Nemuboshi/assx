@@ -112,11 +112,30 @@ type Argument struct {
 	Span ass.ConcreteSpan
 	Raw  string
 }
+
+// SignatureAvailability is compile-time reachability of an individual
+// argument shape. It is independent of the command-name match.
+type SignatureAvailability uint8
+
+const (
+	SignatureAvailable   SignatureAvailability = iota
+	SignatureConditional                       // an unknown build flag may enable the signature
+	SignatureUnavailable                       // a required build flag is known to be disabled
+)
+
+// FeatureRequirements describes the guards associated with one signature.
+type FeatureRequirements struct {
+	Mod bool // _VSMOD
+	Lua bool // _LUA, together with _VSMOD
+}
+
 type Signature struct {
-	Count    int
-	Form     Form
-	Evidence SignatureStatus
-	Citation string
+	Count        int
+	Form         Form
+	Evidence     SignatureStatus // Unknown unless available in this build
+	Availability SignatureAvailability
+	Requires     FeatureRequirements
+	Citation     string
 }
 type Result struct {
 	Renderer  Kind
@@ -149,12 +168,46 @@ func (p Profile) Signatures(name string) []Signature {
 		if s.scope&mask == 0 {
 			continue
 		}
-		evidence := SignatureInferred
-		if s.verified&mask != 0 {
-			evidence = SignatureVerified
+		availability := p.signatureAvailability(s.requires)
+		evidence := SignatureUnknown
+		if availability == SignatureAvailable {
+			evidence = SignatureInferred
+			if s.verified&mask != 0 {
+				evidence = SignatureVerified
+			}
 		}
-		out = append(out, Signature{Count: s.count, Form: s.form, Evidence: evidence, Citation: s.citation})
+		out = append(out, Signature{
+			Count: s.count, Form: s.form, Evidence: evidence,
+			Availability: availability,
+			Requires:     FeatureRequirements{Mod: s.requires&requiresMod != 0, Lua: s.requires&requiresLua != 0},
+			Citation:     s.citation,
+		})
 	}
 	return out
 }
+
+// Disabled requirements take precedence over unknown flags. A conditional
+// signature neither proves acceptance nor exhausts the available arities.
+func (p Profile) signatureAvailability(requires featureMask) SignatureAvailability {
+	if requires == 0 {
+		return SignatureAvailable
+	}
+	result := SignatureAvailable
+	for _, feature := range []struct {
+		mask  featureMask
+		state Feature
+	}{{requiresMod, p.build.Mod}, {requiresLua, p.build.Lua}} {
+		if requires&feature.mask == 0 {
+			continue
+		}
+		switch feature.state {
+		case FeatureDisabled:
+			return SignatureUnavailable
+		case FeatureUnknown:
+			result = SignatureConditional
+		}
+	}
+	return result
+}
+
 func bit(k Kind) uint8 { return 1 << k }
