@@ -23,79 +23,77 @@ func KnownValue(value string) StateValue {
 	return StateValue{Value: value, Known: true}
 }
 
+// CanonicalTagState decodes every argument at most once. Syntax diagnostics
+// may accept a renderer-consumed prefix, but equivalence proofs require an
+// unambiguous value whose entire argument is consumed.
 func CanonicalTagState(tag ass.Tag, tagSpec spec.TagSpec, slots []string) ([]string, bool) {
 	if len(slots) == 0 {
 		return nil, false
 	}
+	ir := ass.DecodeTag(tag)
 	var value string
 	var ok bool
-	decodedTag := ass.DecodeTag(tag)
-	// Renderer-dependent values cannot prove equivalence for automatic fixes.
-	for i := range tag.Args {
-		if decodedTag.Argument(i).Status == ass.ValueAmbiguous {
-			return nil, false
-		}
-	}
 	switch tagSpec.Value {
 	case spec.IntegerValue, spec.NumberValue, spec.BoldValue, spec.FontNameValue, spec.HexValue, spec.NoValue:
 		if len(tag.Args) != 1 {
 			return nil, false
 		}
-		// Renderers only skip ASCII spaces and tabs, but the parser trims Unicode
-		// whitespace too, so a form like `\i\u30001` would otherwise read as "1"
-		// while both renderers read zero.
+		// AST arguments trim Unicode whitespace, but renderers do not. Their
+		// interpretation of a prefixed non-ASCII space can differ.
 		if source, known := tag.RawArgument(); !known || strings.ContainsFunc(source, func(r rune) bool {
 			return r != ' ' && r != '\t' && unicode.IsSpace(r)
 		}) {
 			return nil, false
 		}
 		raw := strings.TrimSpace(tag.Args[0])
+		decoded := ir.Argument(0)
+		if decoded.Status != ass.ValueValid || decoded.Consumed != len(decoded.Raw) {
+			return nil, false
+		}
 		switch tagSpec.Value {
 		case spec.IntegerValue:
-			value, ok = CanonicalInteger(raw)
+			if (tagSpec.Min != 0 || tagSpec.Max != 0) &&
+				(decoded.Integer < int64(tagSpec.Min) || decoded.Integer > int64(tagSpec.Max)) {
+				return nil, false
+			}
+			value = strconv.FormatInt(decoded.Integer, 10)
+			ok = true
 		case spec.NumberValue:
-			if tag.Name == "fs" {
-				number, parsed := ParseFloat(raw)
-				if !parsed || number <= 0 {
+			number := decoded.Number
+			if tag.Name == "fs" && number <= 0 {
+				return nil, false
+			}
+			if (tag.Name == "fscx" || tag.Name == "fscy" || tag.Name == "shad") && number < 0 {
+				if tag.Name == "shad" && tag.InTransition {
 					return nil, false
 				}
+				number = 0
 			}
-			if tag.Name == "fscx" || tag.Name == "fscy" || tag.Name == "shad" {
-				if number, parsed := ParseFloat(raw); parsed && number < 0 {
-					if tag.Name == "shad" && tag.InTransition {
-						return nil, false
-					}
-					raw = "0"
-				}
-			}
-			value, ok = CanonicalNumber(raw)
+			value, ok = canonicalFloat(number)
 		case spec.BoldValue:
-			value, ok = CanonicalBold(raw, false)
+			value, ok = canonicalBoldInteger(decoded.Integer, false)
 		case spec.FontNameValue:
 			if raw != "" && raw != "0" {
 				value, ok = raw, true
 			}
 		case spec.HexValue:
-			// Prefix handling is shared only for concatenated uppercase &H syntax.
-			if len(raw) >= 2 && strings.EqualFold(raw[:2], "&H") && (tag.Paren || raw[:2] != "&H") {
+			if len(raw) >= 2 && strings.EqualFold(raw[:2], "&H") &&
+				(tag.Paren || raw[:2] != "&H") {
 				return nil, false
 			}
-			decoded := decodedTag.Argument(0)
-			if decoded.Status == ass.ValueValid && decoded.Consumed == len(raw) {
-				parsed := uint64(decoded.Hex)
-				values := make([]string, len(slots))
-				for i, slot := range slots {
-					if strings.HasPrefix(slot, "a") {
-						values[i] = strconv.FormatUint(parsed&0xff, 16)
-					} else {
-						values[i] = strconv.FormatUint(parsed&0xffffff, 16)
-					}
+			parsed := uint64(decoded.Hex)
+			values := make([]string, len(slots))
+			for i, slot := range slots {
+				if strings.HasPrefix(slot, "a") {
+					values[i] = strconv.FormatUint(parsed&0xff, 16)
+				} else {
+					values[i] = strconv.FormatUint(parsed&0xffffff, 16)
 				}
-				return values, true
 			}
+			return values, true
 		case spec.NoValue:
 			if slots[0] == "charset" {
-				value, ok = CanonicalInteger(raw)
+				value, ok = strconv.FormatInt(decoded.Integer, 10), true
 			}
 		}
 	case spec.NumberListValue, spec.RectValue:
@@ -103,8 +101,12 @@ func CanonicalTagState(tag ass.Tag, tagSpec spec.TagSpec, slots []string) ([]str
 			return nil, false
 		}
 		parts := make([]string, len(tag.Args))
-		for i, arg := range tag.Args {
-			parts[i], ok = CanonicalNumber(arg)
+		for i := range tag.Args {
+			decoded := ir.Argument(i)
+			if decoded.Status != ass.ValueValid || decoded.Consumed != len(decoded.Raw) {
+				return nil, false
+			}
+			parts[i], ok = canonicalFloat(decoded.Number)
 			if !ok {
 				return nil, false
 			}
@@ -122,6 +124,31 @@ func CanonicalTagState(tag ass.Tag, tagSpec spec.TagSpec, slots []string) ([]str
 		values[i] = value
 	}
 	return values, true
+}
+
+func canonicalFloat(value float64) (string, bool) {
+	value32 := float32(value)
+	if math.IsInf(float64(value32), 0) {
+		return "", false
+	}
+	if value == 0 {
+		value = 0
+	}
+	if value32 == 0 {
+		value32 = 0
+	}
+	return strconv.FormatFloat(value, 'g', -1, 64) + ":" +
+		strconv.FormatFloat(float64(value32), 'g', -1, 32), true
+}
+
+func canonicalBoldInteger(value int64, style bool) (string, bool) {
+	if value != 0 && value != 1 && value < 100 && !(style && value == -1) {
+		return "", false
+	}
+	if value == -1 || value == 1 {
+		value = 1
+	}
+	return strconv.FormatInt(value, 10), true
 }
 
 func RelativeFontSize(tag ass.Tag) bool {
@@ -145,14 +172,7 @@ func CanonicalBold(raw string, style bool) (string, bool) {
 	if decoded.Status != ass.ValueValid {
 		return "", false
 	}
-	value := decoded.Integer
-	if value != 0 && value != 1 && value < 100 && !(style && value == -1) {
-		return "", false
-	}
-	if value == -1 || value == 1 {
-		value = 1
-	}
-	return strconv.FormatInt(value, 10), true
+	return canonicalBoldInteger(decoded.Integer, style)
 }
 
 func CanonicalNumber(raw string) (string, bool) {
@@ -160,17 +180,7 @@ func CanonicalNumber(raw string) (string, bool) {
 	if !ok {
 		return "", false
 	}
-	value32 := float32(value)
-	if math.IsInf(float64(value32), 0) {
-		return "", false
-	}
-	if value == 0 {
-		value = 0
-	}
-	if value32 == 0 {
-		value32 = 0
-	}
-	return strconv.FormatFloat(value, 'g', -1, 64) + ":" + strconv.FormatFloat(float64(value32), 'g', -1, 32), true
+	return canonicalFloat(value)
 }
 
 func ParseFloat(raw string) (float64, bool) {
