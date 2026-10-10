@@ -112,16 +112,21 @@ func (p Profile) Resolve(expr ass.ConcreteExpression, source string) Result {
 				start = comma + 1
 			}
 			r.Args = append(r.Args, Argument{Span: ass.ConcreteSpan{Start: start, End: expr.ContentSpan.End}, Raw: source[start:expr.ContentSpan.End]})
+			isEmpty := func(raw string) bool {
+				if p.kind == Libass {
+					return strings.Trim(raw, " \\t") == ""
+				}
+				return strings.TrimSpace(raw) == ""
+			}
 			for _, arg := range r.Args {
-				if strings.TrimSpace(arg.Raw) == "" {
+				if isEmpty(arg.Raw) {
 					r.EmptyComponents = true
 				}
 			}
-			// All pinned parsers omit empty parenthesized components.
 			// Keep each surviving argument's original raw bytes and source span.
 			filtered := r.Args[:0]
 			for _, arg := range r.Args {
-				if strings.TrimSpace(arg.Raw) != "" {
+				if !isEmpty(arg.Raw) {
 					filtered = append(filtered, arg)
 				}
 			}

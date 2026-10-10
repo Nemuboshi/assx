@@ -105,6 +105,40 @@ func TestSignatureEvidenceIsRendererScoped(t *testing.T) {
 	}
 }
 
+func TestLibassUsesASCIIWhitespaceForEmptyComponents(t *testing.T) {
+	libass, err := Standard(Libass)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, tc := range []struct {
+		name      string
+		component string
+		wantArgs  int
+		wantSig   SignatureStatus
+		wantEmpty bool
+	}{
+		{"empty", "", 2, SignatureVerified, true},
+		{"ascii spaces", " ", 2, SignatureVerified, true},
+		{"nonbreaking space", "\u00a0", 3, SignatureRejected, false},
+		{"em space", "\u2003", 3, SignatureRejected, false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			raw := "\\pos(1," + tc.component + ",2)"
+			expr, source := first(t, raw)
+			got := libass.Resolve(expr, source)
+			if len(got.Args) != tc.wantArgs || got.Signature != tc.wantSig || got.EmptyComponents != tc.wantEmpty {
+				t.Fatalf("resolved args=%#v signature=%v empty=%t; want %d args, %v, empty=%t",
+					got.Args, got.Signature, got.EmptyComponents, tc.wantArgs, tc.wantSig, tc.wantEmpty)
+			}
+			for _, arg := range got.Args {
+				if source[arg.Span.Start:arg.Span.End] != arg.Raw {
+					t.Fatalf("argument source span changed: %#v", arg)
+				}
+			}
+		})
+	}
+}
+
 func TestCapabilitiesNeverDefaultToEnabled(t *testing.T) {
 	unknown, err := Standard(VSFilterMod)
 	if err != nil {

@@ -2,6 +2,7 @@ package semantic
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 
 	"assx/internal/ass"
@@ -109,6 +110,46 @@ func TestCompatibilityParserNormalizationIndependentOfAcceptance(t *testing.T) {
 		}
 	}
 	t.Fatal("missing parser normalization comparison")
+}
+
+func TestLibassRetainsUnicodeWhitespaceArguments(t *testing.T) {
+	profile := mustProfile(t, renderer.Libass)
+	for _, whitespace := range []string{"\u00a0", "\u2003"} {
+		source := "{\\pos(1," + whitespace + ",2)\\pos(4,5)}A"
+		t.Run(source, func(t *testing.T) {
+			var after StateView
+			EvaluateResolved(ass.ParseConcreteDialogue(source), profile, EvaluationOptions{
+				Observer: Observer{Text: func(text string, _ int, state StateView) {
+					if text == "A" {
+						after = state
+					}
+				}},
+			})
+			if owner := after.Source("position"); owner != 1 {
+				t.Fatalf("second valid position did not own state: owner=%d want=1", owner)
+			}
+		})
+	}
+}
+
+func TestCompatibilityUnicodeWhitespaceKeepsRendererOwnershipSeparate(t *testing.T) {
+	profiles := []renderer.Profile{mustProfile(t, renderer.Libass), mustProfile(t, renderer.XYVSFilter)}
+	for _, whitespace := range []string{"\u00a0", "\u2003"} {
+		source := "{\\pos(1," + whitespace + ",2)\\pos(4,5)}A"
+		found := false
+		for _, finding := range CompareDialogue(ass.ParseConcreteDialogue(source), profiles, EvaluationOptions{}) {
+			if finding.Dimension != "ownership" || finding.Source.Start != strings.LastIndex(source, `\pos`) {
+				continue
+			}
+			found = true
+			if finding.Status != CompatibilityDivergent {
+				t.Fatalf("Unicode whitespace did not preserve renderer ownership difference: %#v", finding)
+			}
+		}
+		if !found {
+			t.Fatalf("missing ownership comparison for %q", source)
+		}
+	}
 }
 
 func TestCompatibilityRepeatBehaviorRequiresOccupiedLatch(t *testing.T) {
