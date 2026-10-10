@@ -79,6 +79,22 @@ func (e ConcreteExpression) Closed() bool {
 	return !e.Parenthesized || e.Close >= 0
 }
 
+// HasCandidates reports whether the lossless tree contains override
+// expressions. It is a cheap fast path for state-only consumers of plain text.
+func (tree ConcreteDialogue) HasCandidates() bool {
+	for _, node := range tree.Nodes {
+		if node.Block == nil {
+			continue
+		}
+		for _, item := range node.Block.Items {
+			if item.Expression != nil {
+				return true
+			}
+		}
+	}
+	return false
+}
+
 // ParseConcreteDialogue retains every source byte, even where syntax is
 // incomplete. The first closing brace terminates a block, matching existing
 // ASS dialogue framing; braced content is otherwise not interpreted here.

@@ -1,7 +1,6 @@
 package semantic
 
 import (
-	"slices"
 	"strconv"
 	"strings"
 
@@ -300,16 +299,14 @@ func StyleTagState(tag ass.Tag, tagSpec spec.TagSpec, slots []string, base, orig
 	return CanonicalTagState(tag, tagSpec, slots)
 }
 
-func SafeIndependentStyleTag(tag ass.Tag) bool {
-	if tag.InTransition || tag.RepeatedSlashes > 0 || tag.Name == "p" || tag.Name == "n" || tag.Name == "h" || RelativeFontSize(tag) {
+// SafeIndependentStyleEvent considers the already resolved state transition.
+// ASS013 must not re-interpret a tag through the union name registry.
+func SafeIndependentStyleEvent(event TagEvent) bool {
+	tag := event.Tag
+	if event.Barrier || event.Ignored || event.Uncertainty != UncertaintyNone ||
+		tag.InTransition || tag.RepeatedSlashes > 0 || tag.Name == "p" ||
+		tag.Name == "n" || tag.Name == "h" || RelativeFontSize(tag) {
 		return false
 	}
-	tagSpec, ok := spec.TagSpecs[tag.Name]
-	if !ok || tagSpec.VSFilterModOnly || tagSpec.Behavior == spec.StyleReset || tagSpec.Behavior == spec.Transition {
-		return false
-	}
-	if tagSpec.Counts != nil && !slices.Contains(tagSpec.Counts, len(tag.Args)) {
-		return false
-	}
-	return true
+	return event.Policy != spec.StyleReset && event.Policy != spec.Transition
 }

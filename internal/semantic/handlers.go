@@ -71,7 +71,7 @@ func (m *evaluator) handleRelativeFontSize(tag ass.Tag, tagSpec spec.TagSpec, ev
 // assignmentUncertainty preserves the decoder's distinctions without
 // making a renderer-specific assumption when canonicalization fails.
 func assignmentUncertainty(tag ass.Tag, tagSpec spec.TagSpec) SemanticUncertainty {
-	ir := ass.DecodeTag(tag)
+	ir := ass.DecodeTagWithSpec(tag, tagSpec, true)
 	if tagSpec.Semantic == spec.SemanticClip && len(tag.Args) != 4 && ir.HasExpectedArity() {
 		return UncertaintyUnsupported
 	}
@@ -166,8 +166,8 @@ func (m *evaluator) transitionHasNoEffect(tag ass.Tag) bool {
 		return true
 	}
 	for _, child := range tag.Children {
-		tagSpec := spec.TagSpecs[child.Name]
-		if child.RepeatedSlashes > 0 || !tagSpec.TransformComparable || RelativeFontSize(child) {
+		tagSpec, known := m.policyFor(child)
+		if !known || child.RepeatedSlashes > 0 || !tagSpec.TransformComparable || RelativeFontSize(child) {
 			return false
 		}
 		slots := tagSpec.Slots
@@ -231,10 +231,7 @@ func (m *evaluator) invalidateMalformedTag(tagSpec spec.TagSpec, index int) {
 	// A malformed clip may be interpreted as either a rectangle or a vector.
 	// Neither previous value nor its source remains a valid proof.
 	m.invalidate([]string{"clip_rect", "clip_vector"})
-	// Vector clipping uses first-wins semantics. A malformed clip might have
-	// claimed that slot, so do not later establish a definite vector owner.
-	if _, exists := m.latched["clip_vector"]; !exists {
-		m.latched["clip_vector"] = index
-	}
+	// Unknown clip shape prevents a proof about the vector latch, but does
+	// not create a first-wins owner for a tag with rejected arguments.
 	m.uncertainLatches["clip_vector"] = true
 }
