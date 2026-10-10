@@ -71,8 +71,28 @@ func TestMatrixVerifiedCellScope(t *testing.T) {
 	m := loadMatrix(t)
 	for _, tag := range m.Tags {
 		if tag.Params != nil {
-			checkVerifiedScope(t, "tag "+tag.Name+" params", tag.Params.Status,
+			where := "tag " + tag.Name + " params"
+			checkVerifiedScope(t, where, tag.Params.Status,
 				tag.Params.Verified, tag.Params.Cite, nil)
+			seen := make(map[string]bool)
+			for _, sig := range tag.Params.Sigs {
+				if err := validateSignatureEvidence(sig, tag.Params.Verified); err != nil {
+					t.Errorf("%s sig n=%s form=%s: %v", where, sig.N, sig.Form, err)
+				}
+				for _, renderer := range strings.Fields(sig.Verified) {
+					seen[renderer] = true
+				}
+			}
+			var verified []string
+			for _, renderer := range rendererOrder {
+				if seen[renderer] {
+					verified = append(verified, renderer)
+				}
+			}
+			if !slices.Equal(verified, strings.Fields(tag.Params.Verified)) {
+				t.Errorf("%s: group verified scope %q differs from signature evidence %q",
+					where, tag.Params.Verified, strings.Join(verified, " "))
+			}
 		}
 		for _, scen := range tag.Scens {
 			results := map[string]string{
