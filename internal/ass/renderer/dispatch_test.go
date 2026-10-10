@@ -164,9 +164,9 @@ func TestBuildScopedSignaturesAndRejection(t *testing.T) {
 		{"\\pos(1,2,3)", SignatureUnknown, SignatureRejected, SignatureVerified},
 		{"\\pos(1,2,3,4)", SignatureUnknown, SignatureRejected, SignatureRejected},
 		{"\\fsc", SignatureVerified, SignatureVerified, SignatureVerified},
-		{"\\fsc42", SignatureUnknown, SignatureRejected, SignatureVerified},
-		{"\\fsc(42)", SignatureUnknown, SignatureRejected, SignatureVerified},
-		{"\\fsc(42,24)", SignatureUnknown, SignatureRejected, SignatureRejected},
+		{"\\fsc42", SignatureUnknown, SignatureUnknown, SignatureVerified},
+		{"\\fsc(42)", SignatureUnknown, SignatureUnknown, SignatureVerified},
+		{"\\fsc(42,24)", SignatureUnknown, SignatureUnknown, SignatureUnknown},
 		{"\\r", SignatureInferred, SignatureInferred, SignatureInferred},
 	} {
 		t.Run(tc.raw, func(t *testing.T) {

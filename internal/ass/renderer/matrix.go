@@ -21,5 +21,7 @@ type generatedSignature struct {
 	citation string
 }
 type tagMeta struct {
-	signatures []generatedSignature
+	signatures         []generatedSignature
+	exhaustive         uint8 // renderer-specific, source-proven complete set of accepted arities
+	exhaustiveCitation string
 }

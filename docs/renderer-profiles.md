@@ -35,13 +35,29 @@ Profile.Signatures reports each variant's Availability and Requires along with
 evidence scoped to the actual build; an unknown or unavailable guard cannot
 yield SignatureVerified. An unknown optional branch prevents proving that the
 available signatures exhaust all arities; a known-disabled branch is excluded
-from that set. Zero-argument bare signatures such as fsc and r participate
-normally in evidence matching.
+from that set. Empty bare values are not the same as invalid arguments:
+the pinned scalar handlers often restore a style property or apply a
+renderer-defined default. The evidence matrix therefore records explicit
+zero-argument bare signatures for 47 additional scalar names, as well as
+the existing fsc and r forms. This includes fs, bord, fn, color/alpha
+reset tags, transforms of scalar properties, and the build-gated
+VSFilterMod blend, frs and fsvp defaults. Each signature retains its
+renderer-scoped source verification or inference and optional build gate.
+Tags requiring coordinate tuples, such as bare pos, have no zero-arity
+evidence and remain rejectable when the build is known.
 
-Absence of signatures is unknown, never an implicit valid default. A rejection
-requires a complete verified set of signatures *available in that build*.
-A verified signature is *not* proof that its effect is understood or that an
-edit is SafeFix; those decisions belong to P05/P07/P08.
+Absence of signatures is unknown, never an implicit valid default. More
+importantly, even a list consisting entirely of verified signatures is not
+proof that every accepted arity has been enumerated: scalar handlers can
+consume only their first value or default a missing one. The generated matrix
+therefore contains a separate, renderer-scoped **exhaustive** declaration with
+independent pinned-source citations. Only pos currently claims this proof,
+for all three renderers (with three-coordinate support still gated on _VSMOD).
+Without that declaration, unlisted forms remain SignatureUnknown, not
+SignatureRejected. The rejection algorithm additionally requires every
+build-applicable signature to be verified and no conditional signature to
+remain unresolved. A verified signature is *not* proof that its effect is
+understood or that an edit is SafeFix; those decisions belong to P05/P07/P08.
 
 ## Dispatch mechanics
 
