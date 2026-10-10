@@ -225,12 +225,12 @@ func karaokeCursor(tree ass.DialogueText) (int64, bool) {
 			switch len(tag.Args) {
 			case 0:
 			case 1:
-				value, ok := parseNumber(tag.Args[0])
-				if !ok || value < 0 || value > float64(int64(^uint64(0)>>1)/10) {
+				value := ass.DecodeNumber(tag.Args[0])
+				if value.Status != ass.ValueValid || value.Number < 0 || value.Number > float64(int64(^uint64(0)>>1)/10) {
 					modeled = false
 					return false
 				}
-				duration = int64(value) * 10
+				duration = int64(value.Number) * 10
 			default:
 				modeled = false
 				return false
