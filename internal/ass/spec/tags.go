@@ -78,8 +78,9 @@ var TagSpecs = map[string]TagSpec{
 }
 
 var KeepOnStyleReset = map[string]bool{
-	"wrap_style":    true,
-	"drawing_scale": true,
-	"pbo":           true,
-	"clip_rect":     true,
+	"wrap_style":     true,
+	"drawing_scale":  true,
+	"karaoke_cursor": true,
+	"pbo":            true,
+	"clip_rect":      true,
 }

@@ -177,6 +177,17 @@ func ParseDialogueText(text string) DialogueText {
 	return tree
 }
 
+// HasTags checks the already-parsed syntax tree without creating a token
+// stream. Plain dialogue does not require override state evaluation.
+func (tree DialogueText) HasTags() bool {
+	for _, node := range tree.Nodes {
+		if node.Kind == OverrideNode && node.Block != nil && node.Block.HasTags() {
+			return true
+		}
+	}
+	return false
+}
+
 func (tree DialogueText) Tokens() []Token {
 	var tokens []Token
 	tree.WalkTokens(func(view TokenView) bool {

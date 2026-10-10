@@ -63,6 +63,10 @@ type dialogueAnalyzer struct {
 }
 
 func Analyze(dialogue ass.Dialogue) []Diagnostic {
+	return analyzeWithEffects(dialogue, semantic.EvaluateDialogue(dialogue.ParsedText()))
+}
+
+func analyzeWithEffects(dialogue ass.Dialogue, effects []semantic.NoEffect) []Diagnostic {
 	tree := dialogue.ParsedText()
 	analyzer := dialogueAnalyzer{line: dialogue.Line, textStart: dialogue.TextStart}
 
@@ -77,9 +81,15 @@ func Analyze(dialogue ass.Dialogue) []Diagnostic {
 	analyzer.diagnostics = append(analyzer.diagnostics, analyzeDrawings(dialogue, tree)...)
 	analyzer.diagnostics = append(analyzer.diagnostics, analyzeUnterminatedBlocks(dialogue)...)
 
-	for _, effect := range semantic.EvaluateDialogue(tree) {
+	for _, effect := range effects {
 		analyzer.add(IssueNoEffect, effect.Tag, noEffectDetail(effect))
-		analyzer.diagnostics[len(analyzer.diagnostics)-1].Edits = []TextEdit{
+		finding := &analyzer.diagnostics[len(analyzer.diagnostics)-1]
+		if effect.ProofRevoked {
+			finding.FixSafety = ""
+			finding.Detail += " A later unmodeled operation prevents proving this fix safe across renderers."
+			continue
+		}
+		finding.Edits = []TextEdit{
 			noEffectRemovalEdit(tree, effect.Tag, analyzer.textStart),
 		}
 	}
