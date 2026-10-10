@@ -1,5 +1,6 @@
 ref/
 .pi/
+/.codegraph/
 /assx
 /assx.exe
 /AGENTS.md
