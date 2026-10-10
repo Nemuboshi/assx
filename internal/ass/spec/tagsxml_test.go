@@ -59,6 +59,7 @@ type xmlSig struct {
 	Status   string `xml:"status,attr"`
 	Verified string `xml:"verified,attr"`
 	Inferred string `xml:"inferred,attr"`
+	Requires string `xml:"requires,attr"`
 	Cite     string `xml:"cite,attr"`
 	Params   []struct {
 		I     string `xml:"i,attr"`

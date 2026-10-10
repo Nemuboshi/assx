@@ -181,6 +181,9 @@
                     <xsl:if test="../@renderer != 'libass xy vsm'">
                       <xsl:text> · only </xsl:text><xsl:value-of select="../@renderer"/>
                     </xsl:if>
+                    <xsl:if test="../@requires">
+                      <xsl:text> · requires </xsl:text><xsl:value-of select="../@requires"/>
+                    </xsl:if>
                   </span>
                 </td>
               </xsl:if>
