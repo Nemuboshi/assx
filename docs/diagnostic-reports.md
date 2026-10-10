@@ -12,4 +12,4 @@ Use `--explain` to include full rule descriptions and evidence URLs. The default
 
 Build and CI use the Go version declared by `go.mod` (Go 1.27.0). CI uses `actions/setup-go` with `go-version-file: go.mod` so it does not silently select a newer toolchain.
 
-`BenchmarkRenderReport` renders 50 findings against a 200-line source. On Windows/amd64 with Go 1.27.0 and an Intel Core i5-9300H, a 10-iteration sample measured about 2.86 ms/op, 211,645 B/op, and 2,510 allocs/op. Run it with `go test ./internal/report/pretty -run '^$' -bench BenchmarkRenderReport -benchmem` to compare later changes.
+`BenchmarkRenderReport` renders 50 findings against a 200-line source. On Windows/amd64 with Go 1.27.0, a 10-iteration sample measured about 2.72 ms/op, 238,274 B/op, and 2,649 allocs/op. Run it with `go test ./internal/report/pretty -run '^$' -bench BenchmarkRenderReport -benchmem` to compare later changes.
