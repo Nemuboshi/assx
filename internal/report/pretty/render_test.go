@@ -1,6 +1,7 @@
 package pretty
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
@@ -12,7 +13,7 @@ import (
 
 func TestFrameCropsByDisplayCellsAndExpandsTabs(t *testing.T) {
 	line := "前\t" + strings.Repeat("a", 120) + "終"
-	shown, marker, _ := frame(line, len("前\t"), 1, 40)
+	shown, marker, _, _ := frame(line, len("前\t"), 1, 40)
 	if cells := ansi.StringWidth(shown); cells > 42 {
 		t.Fatalf("cropped frame is too long: %d cells: %q", cells, shown)
 	}
@@ -25,7 +26,7 @@ func TestFrameUsesGraphemeCellWidths(t *testing.T) {
 	family := "👩‍👩‍👧‍👦"
 	line := "界é" + family + "\tX"
 	at := strings.Index(line, family)
-	shown, marker, width := frame(line, at, len(family), 120)
+	shown, marker, width, _ := frame(line, at, len(family), 120)
 	if marker != ansi.StringWidth(expand(line[:at])) || width != 2 || ansi.StringWidth(shown) != ansi.StringWidth(expand(line)) {
 		t.Fatalf("frame = %q, marker %d, width %d", shown, marker, width)
 	}
@@ -57,7 +58,7 @@ func TestCodeFrameMarkerAlignsAfterFourDigitLineNumber(t *testing.T) {
 func TestFrameAdaptsAtCommonTerminalWidths(t *testing.T) {
 	line := strings.Repeat("x", 240)
 	for _, width := range []int{40, 80, 120} {
-		shown, marker, _ := frame(line, 130, 1, width-8)
+		shown, marker, _, _ := frame(line, 130, 1, width-8)
 		if got := ansi.StringWidth(shown); got > width-6 {
 			t.Errorf("width %d frame uses %d cells", width, got)
 		}
@@ -99,6 +100,76 @@ func TestPrettyShowsMultipleFindingsOnOneComplexDialogueLine(t *testing.T) {
 	}
 }
 
+func TestPrettyReprintsChangedViewportAndAlignsEachCaret(t *testing.T) {
+	source := strings.Repeat("0123456789", 30)
+	columns := []int{35, 180}
+	diagnostics := make([]report.Diagnostic, 0, len(columns))
+	for i, column := range columns {
+		diagnostics = append(diagnostics, report.Diagnostic{Line: 1, Column: column, SourceColumn: column, SourceWidth: 1, ID: fmt.Sprintf("ASS%03d", i), Severity: lint.Error, Title: "Finding"})
+	}
+	view := report.Summary{Total: len(diagnostics), Groups: []report.Group{{File: "sample.ass", Errors: len(diagnostics), Diagnostics: diagnostics}}}
+	var out strings.Builder
+	Render(&out, view, source, false, 40)
+	lines := strings.Split(out.String(), "\n")
+	frames := 0
+	for i, line := range lines {
+		if !strings.HasPrefix(line, "  1 | ") {
+			continue
+		}
+		frames++
+		if i+1 >= len(lines) {
+			t.Fatalf("missing marker after %q", line)
+		}
+		column := columns[frames-1]
+		_, wantMarker, _, _ := frame(source, column-1, 1, 34)
+		markerLine := lines[i+1]
+		bar := strings.Index(markerLine, "|")
+		caret := strings.Index(markerLine, "^")
+		if bar < 0 || caret-bar-2 != wantMarker {
+			t.Fatalf("column %d marker offset = %d, want %d; frame=%q marker=%q", column, caret-bar-2, wantMarker, line, markerLine)
+		}
+	}
+	if frames != len(columns) {
+		t.Fatalf("source frames = %d, want %d:\n%s", frames, len(columns), out.String())
+	}
+}
+
+func TestPrettySortsPresentationByPhysicalSourcePosition(t *testing.T) {
+	columns := []int{52, 62, 71, 35}
+	diagnostics := make([]report.Diagnostic, 0, len(columns))
+	for _, column := range columns {
+		diagnostics = append(diagnostics, report.Diagnostic{Line: 1, Column: column, SourceColumn: column, SourceWidth: 1, ID: fmt.Sprintf("ASS%03d", column), Severity: lint.Warning, Title: "Finding"})
+	}
+	view := report.Summary{Total: len(diagnostics), Groups: []report.Group{{File: "sample.ass", Warnings: len(diagnostics), Diagnostics: diagnostics}}}
+	var out strings.Builder
+	Render(&out, view, strings.Repeat("x", 100), false, 120)
+	got := out.String()
+	last := -1
+	for _, column := range []int{35, 52, 62, 71} {
+		at := strings.Index(got, fmt.Sprintf("warning[ASS%03d]", column))
+		if at <= last {
+			t.Fatalf("presentation order not sorted by source column %d: %s", column, got)
+		}
+		last = at
+	}
+}
+
+func TestWholeReportFitsCommonTerminalWidths(t *testing.T) {
+	view := report.Summary{Total: 1234, Remaining: report.FixCounts{Safe: 111, Unsafe: 222, Unfixable: 901}, Groups: []report.Group{{
+		File: strings.Repeat("very-long-directory/", 8) + "sample.ass", Errors: 123, Warnings: 456, Suggestions: 655,
+		Diagnostics: []report.Diagnostic{{Line: 1, Column: 2, SourceColumn: 2, SourceWidth: 1, ID: "ASS001", Severity: lint.Error, Title: strings.Repeat("A long diagnostic title ", 4), Detail: strings.Repeat("A detailed explanation with several words. ", 4), Outcome: report.FixUnsafe, Fix: strings.Repeat("Review this change carefully. ", 4)}},
+	}}}
+	for _, width := range []int{40, 80, 120} {
+		var out strings.Builder
+		Render(&out, view, "x", false, width)
+		for lineNumber, line := range strings.Split(out.String(), "\n") {
+			if cells := ansi.StringWidth(line); cells > width {
+				t.Errorf("width %d line %d uses %d cells: %q", width, lineNumber+1, cells, line)
+			}
+		}
+	}
+}
+
 func TestPrettyReportGoldenNoColor(t *testing.T) {
 	view := report.Summary{Total: 1, Remaining: report.FixCounts{Unfixable: 1}, Groups: []report.Group{{
 		File: "sample.ass", Errors: 1, Diagnostics: []report.Diagnostic{{
@@ -115,7 +186,8 @@ func TestPrettyReportGoldenNoColor(t *testing.T) {
 		"    |            ^~~~~~\n" +
 		"  Invalid font size.\n" +
 		"  Fix: edit manually\n\n" +
-		"1 diagnostics  |  Fixes available: 0 safe, 0 unsafe, 1 not auto-fixable.\n"
+		"1 diagnostics\n" +
+		"Fixes available: 0 safe, 0 unsafe, 1 not auto-fixable.\n"
 	if out.String() != want {
 		t.Fatalf("report differs from golden:\n--- got ---\n%s--- want ---\n%s", out.String(), want)
 	}

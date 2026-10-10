@@ -3,6 +3,7 @@ package pretty
 import (
 	"fmt"
 	"io"
+	"sort"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -19,14 +20,25 @@ import (
 func Render(w io.Writer, summary report.Summary, source string, color bool, width int) {
 	lines := strings.Split(strings.NewReplacer("\r\n", "\n", "\r", "\n").Replace(source), "\n")
 	for _, group := range summary.Groups {
-		fmt.Fprintf(w, "assx  %s\n", clean(group.File))
-		fmt.Fprintf(w, "%d errors  |  %d warnings  |  %d suggestions\n\n", group.Errors, group.Warnings, group.Suggestions)
+		writeWrapped(w, "", "assx  "+group.File, width)
+		writeWrapped(w, "", fmt.Sprintf("%d errors  |  %d warnings  |  %d suggestions", group.Errors, group.Warnings, group.Suggestions), width)
+		fmt.Fprintln(w)
 		if len(group.Diagnostics) == 0 {
 			fmt.Fprintln(w, "No issues found.")
 		}
-		lastSourceLine := 0
-		for i, d := range group.Diagnostics {
-			severity := strings.ToLower(string(d.Severity))
+		diagnostics := append([]report.Diagnostic(nil), group.Diagnostics...)
+		sort.SliceStable(diagnostics, func(i, j int) bool {
+			if diagnostics[i].Line != diagnostics[j].Line {
+				return diagnostics[i].Line < diagnostics[j].Line
+			}
+			if diagnostics[i].SourceColumn != diagnostics[j].SourceColumn {
+				return diagnostics[i].SourceColumn < diagnostics[j].SourceColumn
+			}
+			return diagnostics[i].ID < diagnostics[j].ID
+		})
+		lastSourceLine, lastFrameStart := 0, -1
+		for i, d := range diagnostics {
+			severity := clean(strings.ToLower(string(d.Severity)))
 			if color {
 				severity = severityStyle(d.Severity).Render(severity)
 			}
@@ -35,18 +47,18 @@ func Render(w io.Writer, summary report.Summary, source string, color bool, widt
 				id = lipgloss.NewStyle().Faint(true).Render(id)
 			}
 			location := fmt.Sprintf("%d:%d", d.Line, d.SourceColumn)
-			titleWidth := max(4, width-ansi.StringWidth(severity+"["+id+"]  ")-ansi.StringWidth("  "+location))
-			title := ansi.Truncate(clean(d.Title), titleWidth, "…")
-			fmt.Fprintf(w, "%s[%s]  %s  %s\n", severity, id, title, location)
+			fixedWidth := ansi.StringWidth(severity+"["+id+"]  ") + ansi.StringWidth("  "+location)
+			title := ansi.Truncate(clean(d.Title), max(1, width-fixedWidth), "…")
+			writeStyledWrapped(w, severity+"["+id+"]  "+title+"  "+location, width)
 			if line, ok := sourceLine(lines, d.Line); ok {
-				shown, marker, markWidth := frame(line, d.SourceColumn-1, d.SourceWidth, max(20, min(100, width-8)))
-				if d.Line != lastSourceLine {
-					numberWidth := len(fmt.Sprint(d.Line))
+				numberWidth := len(fmt.Sprint(d.Line))
+				frameWidth := max(1, min(100, width-numberWidth-5))
+				shown, marker, markWidth, frameStart := frame(line, d.SourceColumn-1, d.SourceWidth, frameWidth)
+				if d.Line != lastSourceLine || frameStart != lastFrameStart {
 					fmt.Fprintf(w, "  %*d | %s\n", numberWidth, d.Line, shown)
-					lastSourceLine = d.Line
+					lastSourceLine, lastFrameStart = d.Line, frameStart
 				}
 				if d.SourceColumn > 0 && d.SourceColumn-1 <= len(line) {
-					numberWidth := len(fmt.Sprint(d.Line))
 					fmt.Fprintf(w, "  %s | %s%s\n", strings.Repeat(" ", numberWidth), strings.Repeat(" ", marker), "^"+strings.Repeat("~", max(0, markWidth-1)))
 				}
 			}
@@ -77,11 +89,13 @@ func Render(w io.Writer, summary report.Summary, source string, color bool, widt
 				fmt.Fprintln(w)
 			}
 		}
-		fmt.Fprintf(w, "\n%d diagnostics", summary.Total)
+		footer := fmt.Sprintf("%d diagnostics", summary.Total)
 		if summary.Applied.Total() > 0 {
-			fmt.Fprintf(w, "  |  Applied fixes: %d safe, %d unsafe.", summary.Applied.Safe, summary.Applied.Unsafe)
+			footer += fmt.Sprintf("  |  Applied fixes: %d safe, %d unsafe.", summary.Applied.Safe, summary.Applied.Unsafe)
 		}
-		fmt.Fprintf(w, "  |  Fixes available: %d safe, %d unsafe, %d not auto-fixable.\n", summary.Remaining.Safe, summary.Remaining.Unsafe, summary.Remaining.Unfixable)
+		fmt.Fprintln(w)
+		writeWrapped(w, "", footer, width)
+		writeWrapped(w, "", fmt.Sprintf("Fixes available: %d safe, %d unsafe, %d not auto-fixable.", summary.Remaining.Safe, summary.Remaining.Unsafe, summary.Remaining.Unfixable), width)
 	}
 
 }
@@ -93,7 +107,7 @@ func sourceLine(lines []string, number int) (string, bool) {
 	return strings.TrimSuffix(lines[number-1], "\r"), true
 }
 
-func frame(s string, at, span, limit int) (string, int, int) {
+func frame(s string, at, span, limit int) (string, int, int, int) {
 	if at < 0 {
 		at = 0
 	}
@@ -137,11 +151,17 @@ func frame(s string, at, span, limit int) (string, int, int) {
 		shown += "…"
 	}
 	markWidth = min(markWidth, max(1, ansi.StringWidth(shown)-marker))
-	return shown, max(0, marker), markWidth
+	return shown, max(0, marker), markWidth, start
+}
+
+func writeStyledWrapped(w io.Writer, text string, width int) {
+	for _, line := range strings.Split(ansi.Wrap(text, max(1, width), " /\\"), "\n") {
+		fmt.Fprintln(w, line)
+	}
 }
 
 func writeWrapped(w io.Writer, indent, text string, width int) {
-	wrapped := ansi.Wrap(clean(text), max(20, width-ansi.StringWidth(indent)), " ")
+	wrapped := ansi.Wrap(clean(text), max(1, width-ansi.StringWidth(indent)), " /\\")
 	for _, line := range strings.Split(wrapped, "\n") {
 		fmt.Fprintf(w, "%s%s\n", indent, line)
 	}
