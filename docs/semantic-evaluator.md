@@ -6,6 +6,17 @@ Issue: [#4](https://github.com/Nemuboshi/assx/issues/4)
 the ASS006 no-effect rule, the ASS013 Style-default rule and font analysis.
 Future formatters can consume the same state view without depending on lint.
 
+## Declarative special-tag dispatch (Issue #5, part 1)
+
+TagSpec owns the static SemanticKind dispatch policy. Generic assignments
+continue to use declared value kinds, affected slots and precedence rules;
+a small set of special forms (transforms, clipping, Style resets, karaoke,
+drawing mode and relative font sizes) are delegated to
+internal/semantic/handlers.go. TransformComparable declares the existing
+set of transform targets eligible for no-effect comparison without a
+separate tag-name whitelist. This change is a behavior-preserving relocation;
+unknown-state handling, observer output and SafeFix policy remain unchanged.
+
 ## Inputs and outputs
 
 A caller supplies a lossless `ass.DialogueText`, optional canonical Style
