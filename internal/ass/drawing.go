@@ -38,7 +38,7 @@ type Drawing struct {
 	Issues    []DrawingIssue
 }
 
-var drawingNumberPrefix = regexp.MustCompile("^[+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[eE][+-]?\\d+)?")
+var drawingNumberPrefix = regexp.MustCompile(`^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?`)
 
 func (tree DialogueText) Drawings() []Drawing {
 	var drawings []Drawing

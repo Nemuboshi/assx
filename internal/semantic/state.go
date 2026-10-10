@@ -142,7 +142,7 @@ func canonicalFloat(value float64) (string, bool) {
 }
 
 func canonicalBoldInteger(value int64, style bool) (string, bool) {
-	if value != 0 && value != 1 && value < 100 && !(style && value == -1) {
+	if value != 0 && value != 1 && value < 100 && (!style || value != -1) {
 		return "", false
 	}
 	if value == -1 || value == 1 {

@@ -152,9 +152,10 @@ func Parse(text string) Document {
 		if strings.HasPrefix(trimmed, "[") && strings.HasSuffix(trimmed, "]") {
 			section = strings.ToLower(trimmed[1 : len(trimmed)-1])
 			styleFormat = nil
-			if section == "v4+ styles" {
+			switch section {
+			case "v4+ styles":
 				styleFormat = ParseFormat("Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding")
-			} else if section == "v4 styles" {
+			case "v4 styles":
 				styleFormat = ParseFormat("Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, TertiaryColour, BackColour, Bold, Italic, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, AlphaLevel, Encoding")
 			}
 			if section == "script info" && doc.ScriptInfoLine == 0 {
@@ -248,7 +249,7 @@ func parseEventLine(body string, bodyOffset, lineOffset, line int, format []stri
 			// remaining name, including Text, and the event is discarded.
 			missingAt = i
 		}
-		if missingAt >= 0 && !(name == "text" && cursor == len(body)+1) {
+		if missingAt >= 0 && (name != "text" || cursor != len(body)+1) {
 			dialogue.Fields = append(dialogue.Fields, EventField{Name: name, Start: bodyOffset + len(body), End: bodyOffset + len(body)})
 			continue
 		}
