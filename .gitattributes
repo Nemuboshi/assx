@@ -1,0 +1,11 @@
+# Byte-sensitive fixtures must remain identical on Windows and Linux.
+# -text prevents Git from rewriting BOMs, CRLF or UTF-16 test inputs.
+testdata/contracts/cases/*.ass -text
+# This CRLF/BOM sample is binary evidence; no text diff whitespace checks.
+testdata/contracts/cases/utf8bom.ass binary
+
+# Snapshot comparisons use exact bytes produced by encoding/json.
+testdata/contracts/golden/*.json text eol=lf
+
+# Raw benchstat input is line-oriented and platform-neutral.
+docs/performance/baseline-6ba7453-windows-amd64.txt text eol=lf

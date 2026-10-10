@@ -1,0 +1,143 @@
+goos: windows
+goarch: amd64
+pkg: assx/internal/ass
+cpu: Intel(R) Core(TM) i5-9300H CPU @ 2.40GHz
+BenchmarkParseDialogueTextFixtures/dialogue-8         	   41803	      5984 ns/op	 634.33 MB/s	    4608 B/op	      96 allocs/op
+BenchmarkParseDialogueTextFixtures/dialogue-8         	   53106	      5620 ns/op	 675.39 MB/s	    4608 B/op	      96 allocs/op
+BenchmarkParseDialogueTextFixtures/dialogue-8         	   56572	      6037 ns/op	 628.80 MB/s	    4608 B/op	      96 allocs/op
+BenchmarkParseDialogueTextFixtures/dialogue-8         	   46461	      5798 ns/op	 654.76 MB/s	    4608 B/op	      96 allocs/op
+BenchmarkParseDialogueTextFixtures/dialogue-8         	   44050	      5969 ns/op	 636.01 MB/s	    4608 B/op	      96 allocs/op
+BenchmarkParseDialogueTextFixtures/typesetting-8      	    2016	    150288 ns/op	  20.71 MB/s	   96960 B/op	    1020 allocs/op
+BenchmarkParseDialogueTextFixtures/typesetting-8      	    1915	    167906 ns/op	  18.53 MB/s	   96960 B/op	    1020 allocs/op
+BenchmarkParseDialogueTextFixtures/typesetting-8      	    1855	    158176 ns/op	  19.67 MB/s	   96960 B/op	    1020 allocs/op
+BenchmarkParseDialogueTextFixtures/typesetting-8      	    1947	    153474 ns/op	  20.28 MB/s	   96960 B/op	    1020 allocs/op
+BenchmarkParseDialogueTextFixtures/typesetting-8      	    1838	    167268 ns/op	  18.60 MB/s	   96960 B/op	    1020 allocs/op
+BenchmarkParseDialogueTextFixtures/drawing-8          	    3154	     88461 ns/op	  29.66 MB/s	   50944 B/op	     588 allocs/op
+BenchmarkParseDialogueTextFixtures/drawing-8          	    3548	     87157 ns/op	  30.11 MB/s	   50944 B/op	     588 allocs/op
+BenchmarkParseDialogueTextFixtures/drawing-8          	    3720	     87656 ns/op	  29.94 MB/s	   50944 B/op	     588 allocs/op
+BenchmarkParseDialogueTextFixtures/drawing-8          	    3031	     88203 ns/op	  29.75 MB/s	   50944 B/op	     588 allocs/op
+BenchmarkParseDialogueTextFixtures/drawing-8          	    3484	     89010 ns/op	  29.48 MB/s	   50944 B/op	     588 allocs/op
+BenchmarkParseDialogueTextFixtures/transforms-8       	    1860	    172967 ns/op	  20.70 MB/s	   92992 B/op	    1088 allocs/op
+BenchmarkParseDialogueTextFixtures/transforms-8       	    1855	    169122 ns/op	  21.17 MB/s	   92992 B/op	    1088 allocs/op
+BenchmarkParseDialogueTextFixtures/transforms-8       	    1990	    163394 ns/op	  21.91 MB/s	   92992 B/op	    1088 allocs/op
+BenchmarkParseDialogueTextFixtures/transforms-8       	    1794	    168205 ns/op	  21.28 MB/s	   92992 B/op	    1088 allocs/op
+BenchmarkParseDialogueTextFixtures/transforms-8       	    1794	    172487 ns/op	  20.76 MB/s	   92992 B/op	    1088 allocs/op
+BenchmarkParseDialogueTextFixtures/long_10000-8       	      16	  19024750 ns/op	  30.69 MB/s	10903772 B/op	  123964 allocs/op
+BenchmarkParseDialogueTextFixtures/long_10000-8       	      15	  19250200 ns/op	  30.33 MB/s	10903773 B/op	  123964 allocs/op
+BenchmarkParseDialogueTextFixtures/long_10000-8       	      15	  18961760 ns/op	  30.79 MB/s	10903766 B/op	  123964 allocs/op
+BenchmarkParseDialogueTextFixtures/long_10000-8       	      14	  18952807 ns/op	  30.80 MB/s	10903752 B/op	  123964 allocs/op
+BenchmarkParseDialogueTextFixtures/long_10000-8       	      16	  19906462 ns/op	  29.33 MB/s	10903744 B/op	  123964 allocs/op
+BenchmarkASSDocumentParse/dialogue-8                  	    1524	    236425 ns/op	  40.64 MB/s	  276856 B/op	     910 allocs/op
+BenchmarkASSDocumentParse/dialogue-8                  	    1404	    240901 ns/op	  39.89 MB/s	  276856 B/op	     910 allocs/op
+BenchmarkASSDocumentParse/dialogue-8                  	    1350	    243518 ns/op	  39.46 MB/s	  276856 B/op	     910 allocs/op
+BenchmarkASSDocumentParse/dialogue-8                  	    1352	    220788 ns/op	  43.52 MB/s	  276856 B/op	     910 allocs/op
+BenchmarkASSDocumentParse/dialogue-8                  	    1317	    254661 ns/op	  37.73 MB/s	  276856 B/op	     910 allocs/op
+BenchmarkASSDocumentParse/typesetting-8               	    1026	    346596 ns/op	  18.31 MB/s	  255032 B/op	    1496 allocs/op
+BenchmarkASSDocumentParse/typesetting-8               	     909	    300340 ns/op	  21.13 MB/s	  255032 B/op	    1496 allocs/op
+BenchmarkASSDocumentParse/typesetting-8               	     964	    315901 ns/op	  20.09 MB/s	  255032 B/op	    1496 allocs/op
+BenchmarkASSDocumentParse/typesetting-8               	     997	    308432 ns/op	  20.57 MB/s	  255032 B/op	    1496 allocs/op
+BenchmarkASSDocumentParse/typesetting-8               	     997	    301559 ns/op	  21.04 MB/s	  255032 B/op	    1496 allocs/op
+BenchmarkASSDocumentParse/drawing-8                   	    1458	    191312 ns/op	  26.20 MB/s	  170232 B/op	     951 allocs/op
+BenchmarkASSDocumentParse/drawing-8                   	    1738	    183519 ns/op	  27.32 MB/s	  170232 B/op	     951 allocs/op
+BenchmarkASSDocumentParse/drawing-8                   	    1660	    192347 ns/op	  26.06 MB/s	  170232 B/op	     951 allocs/op
+BenchmarkASSDocumentParse/drawing-8                   	    1756	    183483 ns/op	  27.32 MB/s	  170232 B/op	     951 allocs/op
+BenchmarkASSDocumentParse/drawing-8                   	    1590	    197866 ns/op	  25.34 MB/s	  170232 B/op	     951 allocs/op
+BenchmarkASSDocumentParse/transforms-8                	    1117	    341903 ns/op	  19.61 MB/s	  251704 B/op	    1564 allocs/op
+BenchmarkASSDocumentParse/transforms-8                	     919	    307377 ns/op	  21.81 MB/s	  251704 B/op	    1564 allocs/op
+BenchmarkASSDocumentParse/transforms-8                	    1063	    316418 ns/op	  21.19 MB/s	  251704 B/op	    1564 allocs/op
+BenchmarkASSDocumentParse/transforms-8                	     858	    296251 ns/op	  22.63 MB/s	  251704 B/op	    1564 allocs/op
+BenchmarkASSDocumentParse/transforms-8                	    1033	    292016 ns/op	  22.96 MB/s	  251704 B/op	    1564 allocs/op
+BenchmarkASSDocumentParse/long_10000-8                	       6	  43026450 ns/op	  24.90 MB/s	37511744 B/op	  194128 allocs/op
+BenchmarkASSDocumentParse/long_10000-8                	       7	  38636443 ns/op	  27.73 MB/s	37511744 B/op	  194128 allocs/op
+BenchmarkASSDocumentParse/long_10000-8                	       7	  38088971 ns/op	  28.12 MB/s	37511744 B/op	  194128 allocs/op
+BenchmarkASSDocumentParse/long_10000-8                	       7	  40764757 ns/op	  26.28 MB/s	37511760 B/op	  194128 allocs/op
+BenchmarkASSDocumentParse/long_10000-8                	       7	  38385486 ns/op	  27.91 MB/s	37511744 B/op	  194128 allocs/op
+PASS
+ok  	assx/internal/ass	18.391s
+goos: windows
+goarch: amd64
+pkg: assx/internal/semantic
+cpu: Intel(R) Core(TM) i5-9300H CPU @ 2.40GHz
+BenchmarkEvaluateDialogue/dialogue-8         	  545572	       552.4 ns/op	6871.67 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEvaluateDialogue/dialogue-8         	  582105	       535.9 ns/op	7083.85 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEvaluateDialogue/dialogue-8         	  608013	       532.3 ns/op	7130.86 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEvaluateDialogue/dialogue-8         	  570799	       512.3 ns/op	7409.09 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEvaluateDialogue/dialogue-8         	  559491	       569.3 ns/op	6667.52 MB/s	       0 B/op	       0 allocs/op
+BenchmarkEvaluateDialogue/typesetting-8      	     894	    305816 ns/op	  10.18 MB/s	  198786 B/op	    2276 allocs/op
+BenchmarkEvaluateDialogue/typesetting-8      	    1021	    333043 ns/op	   9.34 MB/s	  198785 B/op	    2276 allocs/op
+BenchmarkEvaluateDialogue/typesetting-8      	     954	    332269 ns/op	   9.37 MB/s	  198786 B/op	    2276 allocs/op
+BenchmarkEvaluateDialogue/typesetting-8      	     996	    326461 ns/op	   9.53 MB/s	  198785 B/op	    2276 allocs/op
+BenchmarkEvaluateDialogue/typesetting-8      	     849	    360576 ns/op	   8.63 MB/s	  198786 B/op	    2276 allocs/op
+BenchmarkEvaluateDialogue/drawing-8          	    1898	    159798 ns/op	  16.42 MB/s	  107553 B/op	    1220 allocs/op
+BenchmarkEvaluateDialogue/drawing-8          	    1896	    161890 ns/op	  16.21 MB/s	  107553 B/op	    1220 allocs/op
+BenchmarkEvaluateDialogue/drawing-8          	    1862	    182450 ns/op	  14.38 MB/s	  107553 B/op	    1220 allocs/op
+BenchmarkEvaluateDialogue/drawing-8          	    1758	    186798 ns/op	  14.05 MB/s	  107553 B/op	    1220 allocs/op
+BenchmarkEvaluateDialogue/drawing-8          	    1826	    178228 ns/op	  14.72 MB/s	  107553 B/op	    1220 allocs/op
+BenchmarkEvaluateDialogue/transforms-8       	    1009	    327370 ns/op	  10.94 MB/s	  177537 B/op	    1952 allocs/op
+BenchmarkEvaluateDialogue/transforms-8       	    1045	    295008 ns/op	  12.14 MB/s	  177537 B/op	    1952 allocs/op
+BenchmarkEvaluateDialogue/transforms-8       	     924	    335023 ns/op	  10.69 MB/s	  177537 B/op	    1952 allocs/op
+BenchmarkEvaluateDialogue/transforms-8       	     979	    308894 ns/op	  11.59 MB/s	  177537 B/op	    1952 allocs/op
+BenchmarkEvaluateDialogue/transforms-8       	    1006	    303973 ns/op	  11.78 MB/s	  177537 B/op	    1952 allocs/op
+BenchmarkEvaluateDialogue/long_10000-8       	       7	  37396700 ns/op	  15.61 MB/s	21489316 B/op	  241989 allocs/op
+BenchmarkEvaluateDialogue/long_10000-8       	       7	  36139514 ns/op	  16.16 MB/s	21489225 B/op	  241988 allocs/op
+BenchmarkEvaluateDialogue/long_10000-8       	       8	  35662312 ns/op	  16.37 MB/s	21489194 B/op	  241988 allocs/op
+BenchmarkEvaluateDialogue/long_10000-8       	       8	  36714350 ns/op	  15.90 MB/s	21489190 B/op	  241988 allocs/op
+BenchmarkEvaluateDialogue/long_10000-8       	       7	  36162100 ns/op	  16.14 MB/s	21489190 B/op	  241988 allocs/op
+PASS
+ok  	assx/internal/semantic	9.777s
+goos: windows
+goarch: amd64
+pkg: assx/internal/lint
+cpu: Intel(R) Core(TM) i5-9300H CPU @ 2.40GHz
+BenchmarkAnalyzeDocumentFixtures/dialogue-8  	     715	    365203 ns/op	  26.31 MB/s	   66388 B/op	     863 allocs/op
+BenchmarkAnalyzeDocumentFixtures/dialogue-8  	     856	    361043 ns/op	  26.61 MB/s	   66590 B/op	     863 allocs/op
+BenchmarkAnalyzeDocumentFixtures/dialogue-8  	     877	    352807 ns/op	  27.24 MB/s	   66388 B/op	     863 allocs/op
+BenchmarkAnalyzeDocumentFixtures/dialogue-8  	     811	    379625 ns/op	  25.31 MB/s	   66480 B/op	     863 allocs/op
+BenchmarkAnalyzeDocumentFixtures/dialogue-8  	     751	    360936 ns/op	  26.62 MB/s	   66078 B/op	     863 allocs/op
+BenchmarkAnalyzeDocumentFixtures/typesetting-8         	     372	    893512 ns/op	   7.10 MB/s	  337421 B/op	    3430 allocs/op
+BenchmarkAnalyzeDocumentFixtures/typesetting-8         	     312	    843348 ns/op	   7.52 MB/s	  337252 B/op	    3430 allocs/op
+BenchmarkAnalyzeDocumentFixtures/typesetting-8         	     352	    897909 ns/op	   7.07 MB/s	  336914 B/op	    3430 allocs/op
+BenchmarkAnalyzeDocumentFixtures/typesetting-8         	     301	    912921 ns/op	   6.95 MB/s	  336728 B/op	    3430 allocs/op
+BenchmarkAnalyzeDocumentFixtures/typesetting-8         	     312	    915343 ns/op	   6.93 MB/s	  337027 B/op	    3430 allocs/op
+BenchmarkAnalyzeDocumentFixtures/drawing-8             	     511	    612834 ns/op	   8.18 MB/s	  208970 B/op	    2233 allocs/op
+BenchmarkAnalyzeDocumentFixtures/drawing-8             	     514	    711651 ns/op	   7.04 MB/s	  208801 B/op	    2233 allocs/op
+BenchmarkAnalyzeDocumentFixtures/drawing-8             	     364	    719209 ns/op	   6.97 MB/s	  209877 B/op	    2233 allocs/op
+BenchmarkAnalyzeDocumentFixtures/drawing-8             	     500	    748844 ns/op	   6.69 MB/s	  209590 B/op	    2233 allocs/op
+BenchmarkAnalyzeDocumentFixtures/drawing-8             	     513	    687421 ns/op	   7.29 MB/s	  209325 B/op	    2233 allocs/op
+BenchmarkAnalyzeDocumentFixtures/transforms-8          	     354	    801395 ns/op	   8.37 MB/s	  294301 B/op	    2974 allocs/op
+BenchmarkAnalyzeDocumentFixtures/transforms-8          	     394	    857647 ns/op	   7.82 MB/s	  294134 B/op	    2974 allocs/op
+BenchmarkAnalyzeDocumentFixtures/transforms-8          	     375	    775853 ns/op	   8.64 MB/s	  293901 B/op	    2974 allocs/op
+BenchmarkAnalyzeDocumentFixtures/transforms-8          	     340	    861690 ns/op	   7.78 MB/s	  293969 B/op	    2974 allocs/op
+BenchmarkAnalyzeDocumentFixtures/transforms-8          	     397	    877065 ns/op	   7.64 MB/s	  294276 B/op	    2974 allocs/op
+BenchmarkAnalyzeDocumentFixtures/long_10000-8          	       3	  95462200 ns/op	  11.22 MB/s	34227917 B/op	  353653 allocs/op
+BenchmarkAnalyzeDocumentFixtures/long_10000-8          	       3	  95871933 ns/op	  11.17 MB/s	34253101 B/op	  353657 allocs/op
+BenchmarkAnalyzeDocumentFixtures/long_10000-8          	       3	  96046133 ns/op	  11.15 MB/s	34215922 B/op	  353652 allocs/op
+BenchmarkAnalyzeDocumentFixtures/long_10000-8          	       3	  99824533 ns/op	  10.73 MB/s	34277362 B/op	  353660 allocs/op
+BenchmarkAnalyzeDocumentFixtures/long_10000-8          	       3	  96676200 ns/op	  11.08 MB/s	34215602 B/op	  353651 allocs/op
+BenchmarkParseAndAnalyzeDocumentFixtures/dialogue-8    	     404	    698576 ns/op	  13.76 MB/s	  348088 B/op	    1774 allocs/op
+BenchmarkParseAndAnalyzeDocumentFixtures/dialogue-8    	     424	    742545 ns/op	  12.94 MB/s	  347817 B/op	    1774 allocs/op
+BenchmarkParseAndAnalyzeDocumentFixtures/dialogue-8    	     405	    678837 ns/op	  14.16 MB/s	  347328 B/op	    1774 allocs/op
+BenchmarkParseAndAnalyzeDocumentFixtures/dialogue-8    	     440	    742538 ns/op	  12.94 MB/s	  347458 B/op	    1774 allocs/op
+BenchmarkParseAndAnalyzeDocumentFixtures/dialogue-8    	     417	    672541 ns/op	  14.29 MB/s	  346837 B/op	    1774 allocs/op
+BenchmarkParseAndAnalyzeDocumentFixtures/typesetting-8 	     220	   1333149 ns/op	   4.76 MB/s	  597095 B/op	    4927 allocs/op
+BenchmarkParseAndAnalyzeDocumentFixtures/typesetting-8 	     237	   1289546 ns/op	   4.92 MB/s	  596993 B/op	    4927 allocs/op
+BenchmarkParseAndAnalyzeDocumentFixtures/typesetting-8 	     228	   1391916 ns/op	   4.56 MB/s	  597228 B/op	    4927 allocs/op
+BenchmarkParseAndAnalyzeDocumentFixtures/typesetting-8 	     218	   1343068 ns/op	   4.72 MB/s	  596684 B/op	    4927 allocs/op
+BenchmarkParseAndAnalyzeDocumentFixtures/typesetting-8 	     210	   1492501 ns/op	   4.25 MB/s	  598489 B/op	    4927 allocs/op
+BenchmarkParseAndAnalyzeDocumentFixtures/drawing-8     	     356	    845608 ns/op	   5.93 MB/s	  382636 B/op	    3184 allocs/op
+BenchmarkParseAndAnalyzeDocumentFixtures/drawing-8     	     378	    901501 ns/op	   5.56 MB/s	  381513 B/op	    3184 allocs/op
+BenchmarkParseAndAnalyzeDocumentFixtures/drawing-8     	     337	    925105 ns/op	   5.42 MB/s	  382365 B/op	    3184 allocs/op
+BenchmarkParseAndAnalyzeDocumentFixtures/drawing-8     	     363	    846328 ns/op	   5.92 MB/s	  381968 B/op	    3184 allocs/op
+BenchmarkParseAndAnalyzeDocumentFixtures/drawing-8     	     312	    887391 ns/op	   5.65 MB/s	  381741 B/op	    3184 allocs/op
+BenchmarkParseAndAnalyzeDocumentFixtures/transforms-8  	     243	   1137198 ns/op	   5.90 MB/s	  550285 B/op	    4539 allocs/op
+BenchmarkParseAndAnalyzeDocumentFixtures/transforms-8  	     243	   1251642 ns/op	   5.36 MB/s	  550303 B/op	    4539 allocs/op
+BenchmarkParseAndAnalyzeDocumentFixtures/transforms-8  	     244	   1226654 ns/op	   5.47 MB/s	  550255 B/op	    4539 allocs/op
+BenchmarkParseAndAnalyzeDocumentFixtures/transforms-8  	     274	   1154555 ns/op	   5.81 MB/s	  550598 B/op	    4539 allocs/op
+BenchmarkParseAndAnalyzeDocumentFixtures/transforms-8  	     266	   1160952 ns/op	   5.78 MB/s	  550488 B/op	    4539 allocs/op
+BenchmarkParseAndAnalyzeDocumentFixtures/long_10000-8  	       2	 150661350 ns/op	   7.11 MB/s	71765472 B/op	  547785 allocs/op
+BenchmarkParseAndAnalyzeDocumentFixtures/long_10000-8  	       2	 142505250 ns/op	   7.52 MB/s	71821208 B/op	  547793 allocs/op
+BenchmarkParseAndAnalyzeDocumentFixtures/long_10000-8  	       2	 138730250 ns/op	   7.72 MB/s	71839672 B/op	  547795 allocs/op
+BenchmarkParseAndAnalyzeDocumentFixtures/long_10000-8  	       2	 144091800 ns/op	   7.43 MB/s	71747088 B/op	  547784 allocs/op
+BenchmarkParseAndAnalyzeDocumentFixtures/long_10000-8  	       2	 139437100 ns/op	   7.68 MB/s	71803432 B/op	  547794 allocs/op
+PASS
+ok  	assx/internal/lint	22.107s

@@ -1,0 +1,17 @@
+[Script Info]
+Title: Renderer baseline
+ScriptType: v4.00+
+PlayResX: 640
+PlayResY: 360
+LayoutResX: 640
+LayoutResY: 360
+YCbCr Matrix: None
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, Bold, Italic, Alignment
+Style: Default, Go Regular, 24, 0, 0, 2
+Style: Alt, Go Regular, 32, 0, 0, 7
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 0,0:00:00.00,0:00:02.00,Default,,0,0,0,,{\fsvp6\frs\blend(add)\pos(1,2,3)\pos(4,5)}A
+Dialogue: 0,0:00:02.00,0:00:04.00,Default,,0,0,0,,{\pos(1,2,3)\pos(4,5)\move(1,2,3,4)}B
+Dialogue: 0,0:00:04.00,0:00:06.00,Alt,,0,0,0,,{\be1\blend(add)\fs10\fs20}C
