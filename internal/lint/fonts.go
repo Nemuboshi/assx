@@ -7,11 +7,11 @@ import (
 	"path/filepath"
 	"runtime"
 	"sort"
+	"strconv"
 	"strings"
 	"unicode/utf8"
 
 	"assx/internal/ass"
-	"assx/internal/ass/spec"
 	"assx/internal/semantic"
 	"golang.org/x/image/font/sfnt"
 )
@@ -34,11 +34,6 @@ type fontContext struct {
 	family string
 	bold   bool
 	italic bool
-}
-
-type fontStyle struct {
-	fontContext
-	values map[string]semantic.StateValue
 }
 
 type fontUsage struct {
@@ -306,94 +301,61 @@ func styleDistance(face fontFace, context fontContext) int {
 
 // AnalyzeFonts reports missing font families and missing glyphs in dialogue text.
 func AnalyzeFonts(doc ass.Document, checker *FontChecker) ([]Diagnostic, error) {
-	styleDefinitions := semantic.StyleDefinitionsByName(doc.StyleFields)
-	styles := make(map[string]fontStyle, len(styleDefinitions))
-	for name, fields := range styleDefinitions {
-		context := fontContext{
-			family: strings.TrimSpace(fields["fontname"]),
-			bold:   styleBoolean(fields["bold"]),
-			italic: styleBoolean(fields["italic"]),
-		}
-		values := semantic.CanonicalStyleState(fields).Values
+	definitions := semantic.StyleDefinitionsByName(doc.StyleFields)
+	styles := semantic.StyleStatesByName(doc.StyleFields)
+	// ASS defaults for missing bold/italic fields are known to the font
+	// checker even when the source omitted the corresponding Style columns.
+	for name, fields := range definitions {
+		style := styles[name]
 		for _, property := range []string{"bold", "italic"} {
-			if _, exists := fields[property]; !exists {
-				values[property] = semantic.KnownValue("0")
+			if _, present := fields[property]; !present {
+				style.Values[property] = semantic.KnownValue("0")
 			}
 		}
-		styles[name] = fontStyle{fontContext: context, values: values}
+		styles[name] = style
 	}
 
 	var diagnostics []Diagnostic
 	for _, dialogue := range doc.Dialogues {
-		base, baseKnown := styles[semantic.DialogueStyleLookupName(dialogue.Style)]
-		if !baseKnown {
+		if _, exists := styles[semantic.DialogueStyleLookupName(dialogue.Style)]; !exists {
 			continue
 		}
-		current, activeStyle := base.fontContext, base
-		contextKnown := true
 		var usages []*fontUsage
 		usageByContext := make(map[fontContext]*fontUsage)
-		drawing := false
-		dialogue.ParsedText().WalkTokens(func(token ass.TokenView) bool {
-			if token.HasTag {
-				tag := token.Tag
-				if tag.InTransition {
-					return true
-				}
-				switch tag.Name {
-				case "fn", "b", "i":
-					if !contextKnown {
-						break
+		semantic.Evaluate(dialogue.ParsedText(), semantic.EvaluationOptions{
+			Styles: styles, DialogueStyle: dialogue.Style, SkipNoEffectProofs: true,
+			Observer: semantic.Observer{
+				Text: func(text string, start int, state semantic.StateView) {
+					family := state.Value("fontname")
+					bold := state.Value("bold")
+					italic := state.Value("italic")
+					drawing := state.Value("drawing_scale")
+					if !family.Known || !bold.Known || !italic.Known || !drawing.Known {
+						return
 					}
-					tagSpec := spec.TagSpecs[tag.Name]
-					values, known := semantic.StyleTagState(tag, tagSpec, tagSpec.Slots, activeStyle.values, base.values)
-					if !known {
-						contextKnown = false
-						break
+					scale, err := strconv.ParseInt(drawing.Value, 10, 32)
+					if err != nil || scale > 0 {
+						return
 					}
-					switch tag.Name {
-					case "fn":
-						current.family = values[0]
-					case "b":
-						current.bold = styleBoolean(values[0])
-					case "i":
-						current.italic = styleBoolean(values[0])
+					visible := fontVisibleText(text)
+					if visible == "" {
+						return
 					}
-				case "r":
-					activeStyle = base
-					contextKnown = true
-					if len(tag.Args) > 0 && strings.TrimSpace(tag.Args[0]) != "" {
-						if style, ok := styles[strings.TrimSpace(tag.Args[0])]; ok {
-							activeStyle = style
-						} else {
-							contextKnown = false
-						}
+					context := fontContext{
+						family: family.Value,
+						bold:   styleBoolean(bold.Value),
+						italic: styleBoolean(italic.Value),
 					}
-					current = activeStyle.fontContext
-				case "p":
-					if value, known := tag.IntegerArgument(); known {
-						drawing = value > 0
+					usage := usageByContext[context]
+					if usage == nil {
+						usage = &fontUsage{context: context, column: start + 1}
+						usageByContext[context] = usage
+						usages = append(usages, usage)
 					}
-				}
-				return true
-			}
-			if drawing || !contextKnown {
-				return true
-			}
-			visible := fontVisibleText(token.Text)
-			if visible == "" {
-				return true
-			}
-			usage := usageByContext[current]
-			if usage == nil {
-				usage = &fontUsage{context: current, column: token.Start + 1}
-				usageByContext[current] = usage
-				usages = append(usages, usage)
-			}
-			usage.text.WriteString(visible)
-			return true
+					usage.text.WriteString(visible)
+				},
+			},
 		})
-
 		for _, usage := range usages {
 			missing, found, err := checker.missingRunes(usage.context, usage.text.String())
 			if err != nil {

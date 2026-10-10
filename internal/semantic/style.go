@@ -122,6 +122,17 @@ func StyleDefinitionsByName(fields []ass.StyleField) map[string]map[string]strin
 	return styles
 }
 
+// StyleStatesByName decodes each unambiguous Style once for all semantic
+// consumers of a document.
+func StyleStatesByName(fields []ass.StyleField) map[string]StyleState {
+	definitions := StyleDefinitionsByName(fields)
+	states := make(map[string]StyleState, len(definitions))
+	for name, definition := range definitions {
+		states[name] = CanonicalStyleState(definition)
+	}
+	return states
+}
+
 func CanonicalStyleState(fields map[string]string) StyleState {
 	state := StyleState{Slots: make(map[string]bool), Values: make(map[string]StateValue)}
 	for property, slots := range stylePropertySlots {

@@ -1,163 +1,161 @@
 package lint
 
 import (
-	"maps"
 	"sort"
-	"strings"
 
 	"assx/internal/ass"
-	"assx/internal/ass/spec"
 	"assx/internal/semantic"
 )
 
-// AnalyzeRedundantStyleOverrides checks Style-backed override state for each dialogue.
+// AnalyzeRedundantStyleOverrides retains the standalone entry point while
+// sharing the state transitions used by ASS006 and the font checker.
 func AnalyzeRedundantStyleOverrides(doc ass.Document) []Diagnostic {
-	styles := semantic.StyleDefinitionsByName(doc.StyleFields)
-	styleStates := make(map[string]semantic.StyleState, len(styles))
-	for name, fields := range styles {
-		styleStates[name] = semantic.CanonicalStyleState(fields)
-	}
+	styles := semantic.StyleStatesByName(doc.StyleFields)
 	var diagnostics []Diagnostic
 	for _, dialogue := range doc.Dialogues {
-		originalName := semantic.DialogueStyleLookupName(dialogue.Style)
-		if _, ok := styles[originalName]; !ok {
+		collector := newStyleRunCollector(dialogue, styles)
+		if collector == nil {
 			continue
 		}
-		diagnostic, ok := analyzeRedundantStyleDialogue(dialogue, originalName, styleStates)
-		if ok {
+		semantic.Evaluate(dialogue.ParsedText(), semantic.EvaluationOptions{
+			Styles: styles, DialogueStyle: dialogue.Style,
+			Observer: semantic.Observer{Tag: collector.onTag, Text: collector.onText},
+		})
+		if diagnostic, ok := collector.diagnostic(); ok {
 			diagnostics = append(diagnostics, diagnostic)
 		}
 	}
 	return diagnostics
 }
 
-func analyzeRedundantStyleDialogue(dialogue ass.Dialogue, originalStyle string, styleStates map[string]semantic.StyleState) (Diagnostic, bool) {
-	tree := dialogue.ParsedText()
-	hasTags, hasVSFilterModTag := false, false
-	tree.WalkTokens(func(token ass.TokenView) bool {
-		hasTags = hasTags || token.HasTag
-		if token.HasTag && spec.TagSpecs[token.Tag.Name].VSFilterModOnly {
-			hasVSFilterModTag = true
-			return false
-		}
-		return true
-	})
-	if hasVSFilterModTag || !hasTags {
-		return Diagnostic{}, false
+// styleRunCollector owns only the ASS013 lint policy (grouping removable tags).
+// It never interprets tag values, renderer precedence, or reset semantics.
+type styleRunCollector struct {
+	dialogue   ass.Dialogue
+	tree       ass.DialogueText
+	styles     map[string]semantic.StyleState
+	stopped    bool
+	hasTags    bool
+	candidates []ass.Tag
+	runTags    []ass.Tag
+	runStart   map[string]semantic.StateValue
+	runTouched map[string]bool
+}
+
+func newStyleRunCollector(dialogue ass.Dialogue, styles map[string]semantic.StyleState) *styleRunCollector {
+	if !dialogue.ParsedText().HasTags() {
+		return nil
 	}
-	activeBase, ok := styleStates[originalStyle]
+	name := semantic.DialogueStyleLookupName(dialogue.Style)
+	if _, ok := styles[name]; !ok {
+		return nil
+	}
+	return &styleRunCollector{
+		dialogue: dialogue, tree: dialogue.ParsedText(), styles: styles,
+		runStart:   make(map[string]semantic.StateValue),
+		runTouched: make(map[string]bool),
+	}
+}
+
+func (c *styleRunCollector) flush(atVisibleText bool, state semantic.StateView) {
+	if len(c.runTags) == 0 {
+		return
+	}
+	if atVisibleText {
+		base, ok := c.styles[state.ActiveStyle()]
+		redundant := ok
+		for slot := range c.runTouched {
+			baseValue := base.Values[slot]
+			if !baseValue.Known || c.runStart[slot] != baseValue || state.Value(slot) != baseValue {
+				redundant = false
+				break
+			}
+		}
+		if redundant {
+			c.candidates = append(c.candidates, c.runTags...)
+		}
+	}
+	c.runTags = nil
+	clear(c.runStart)
+	clear(c.runTouched)
+}
+
+func (c *styleRunCollector) onText(text string, _ int, state semantic.StateView) {
+	if !c.stopped && text != "" {
+		c.flush(true, state)
+	}
+}
+
+func (c *styleRunCollector) onTag(event semantic.TagEvent, state semantic.StateView) {
+	tag := event.Tag
+	// A semantic proof barrier revokes candidates collected before it.
+	// Check even after stopping ASS013's local run: unsupported tags can
+	// occur inside later transforms, after earlier valid text boundaries.
+	if event.Barrier {
+		c.candidates = nil
+		c.runTags = nil
+		c.stopped = true
+		return
+	}
+	if c.stopped {
+		return
+	}
+	c.hasTags = true
+	if tag.Name == "r" && !tag.InTransition {
+		c.flush(false, state)
+		if _, ok := c.styles[state.ActiveStyle()]; !ok {
+			c.stopped = true
+		}
+		return
+	}
+	if event.Barrier || !semantic.SafeIndependentStyleTag(tag) {
+		c.flush(false, state)
+		c.stopped = true
+		return
+	}
+	activeBase, ok := c.styles[state.ActiveStyle()]
 	if !ok {
+		c.flush(false, state)
+		c.stopped = true
+		return
+	}
+	var slots []string
+	for i, slot := range event.Slots {
+		if activeBase.Slots[slot] {
+			slots = append(slots, slot)
+			if !c.runTouched[slot] {
+				c.runStart[slot] = event.Before[i]
+			}
+		}
+	}
+	if len(slots) == 0 {
+		return
+	}
+	if len(slots) != len(event.Slots) || !event.Known {
+		c.flush(false, state)
+		c.stopped = true
+		return
+	}
+	for _, slot := range slots {
+		c.runTouched[slot] = true
+	}
+	c.runTags = append(c.runTags, tag)
+}
+
+func (c *styleRunCollector) diagnostic() (Diagnostic, bool) {
+	if !c.hasTags || len(c.candidates) == 0 {
 		return Diagnostic{}, false
 	}
-	state := maps.Clone(activeBase.Values)
-
-	var candidates, runTags []ass.Tag
-	runStart := make(map[string]semantic.StateValue)
-	runTouched := make(map[string]bool)
-
-	flushRun := func(atVisibleText bool) {
-		if len(runTags) == 0 {
-			return
-		}
-		if atVisibleText {
-			redundant := true
-			for slot := range runTouched {
-				baseValue := activeBase.Values[slot]
-				if runStart[slot] != baseValue || state[slot] != baseValue {
-					redundant = false
-					break
-				}
-			}
-			if redundant {
-				candidates = append(candidates, runTags...)
-			}
-		}
-		runTags = nil
-		runStart = make(map[string]semantic.StateValue)
-		runTouched = make(map[string]bool)
-	}
-
-	tree.WalkTokens(func(token ass.TokenView) bool {
-		if !token.HasTag {
-			if token.Text != "" {
-				flushRun(true)
-			}
-			return true
-		}
-
-		tag := token.Tag
-		tagSpec, known := spec.TagSpecs[tag.Name]
-		if !known || tagSpec.VSFilterModOnly || tag.InTransition || tag.RepeatedSlashes > 0 {
-			flushRun(false)
-			return false
-		}
-
-		if tagSpec.Behavior == spec.StyleReset {
-			flushRun(false)
-			target := originalStyle
-			if len(tag.Args) > 0 && strings.TrimSpace(tag.Args[0]) != "" {
-				target = strings.TrimSpace(tag.Args[0])
-			}
-			nextBase, exists := styleStates[target]
-			if !exists {
-				return false
-			}
-			activeBase = nextBase
-			state = maps.Clone(activeBase.Values)
-			return true
-		}
-
-		if !semantic.SafeIndependentStyleTag(tag) {
-			flushRun(false)
-			return false
-		}
-
-		var slots []string
-		for _, slot := range tagSpec.Slots {
-			if activeBase.Slots[slot] {
-				slots = append(slots, slot)
-			}
-		}
-		if len(slots) == 0 {
-			return true
-		}
-		if len(slots) != len(tagSpec.Slots) {
-			flushRun(false)
-			return false
-		}
-
-		values, valueOK := semantic.StyleTagState(tag, tagSpec, slots, activeBase.Values, styleStates[originalStyle].Values)
-		if !valueOK {
-			flushRun(false)
-			return false
-		}
-		for _, slot := range slots {
-			if !runTouched[slot] {
-				runStart[slot] = state[slot]
-			}
-			runTouched[slot] = true
-		}
-		runTags = append(runTags, tag)
-		for i, slot := range slots {
-			state[slot] = semantic.KnownValue(values[i])
-		}
-		return true
-	})
-	flushRun(false)
-
-	if len(candidates) == 0 {
-		return Diagnostic{}, false
-	}
-	edits := redundantStyleEdits(dialogue, tree, candidates)
+	edits := redundantStyleEdits(c.dialogue, c.tree, c.candidates)
 	if len(edits) == 0 {
 		return Diagnostic{}, false
 	}
-	first := candidates[0]
+	first := c.candidates[0]
 	rule := Rules[IssueRedundantStyleOverrides]
 	return Diagnostic{
 		ID: rule.ID, Severity: rule.Severity, FixSafety: rule.FixSafety,
 		Title: rule.Title, Description: rule.Description, Fix: rule.Fix, Sources: rule.Sources,
-		Line: dialogue.Line, Column: first.Column, Tag: first.Name,
+		Line: c.dialogue.Line, Column: first.Column, Tag: first.Name,
 		Detail: "The override tags leave the active Style properties unchanged across dialogue text.",
 		Edits:  edits,
 	}, true
