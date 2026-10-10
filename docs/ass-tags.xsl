@@ -167,7 +167,7 @@
                   <span class="cite">
                     <xsl:text>n=</xsl:text><xsl:value-of select="../@n"/>
                     <xsl:text> </xsl:text><xsl:value-of select="../@form"/>
-                    <xsl:if test="../@renderer">
+                    <xsl:if test="../@renderer != 'libass xy vsm'">
                       <xsl:text> · only </xsl:text><xsl:value-of select="../@renderer"/>
                     </xsl:if>
                   </span>
@@ -179,10 +179,20 @@
               <td><xsl:value-of select="@range"/></td>
               <xsl:if test="position() = 1">
                 <td rowspan="{$rowspan}">
-                  <span class="badge {../../params/@status}">
-                    <xsl:value-of select="../../params/@status"/>
+                  <span class="badge {../@status}">
+                    <xsl:value-of select="../@status"/>
                   </span>
-                  <div class="cite"><xsl:value-of select="../../params/@cite"/></div>
+                  <div class="cite">
+                    <xsl:text>verified: </xsl:text>
+                    <xsl:choose>
+                      <xsl:when test="../@verified"><xsl:value-of select="../@verified"/></xsl:when>
+                      <xsl:otherwise>none</xsl:otherwise>
+                    </xsl:choose>
+                    <xsl:if test="../@inferred">
+                      <xsl:text> · inferred: </xsl:text><xsl:value-of select="../@inferred"/>
+                    </xsl:if>
+                  </div>
+                  <div class="cite"><xsl:value-of select="../@cite"/></div>
                 </td>
               </xsl:if>
             </tr>

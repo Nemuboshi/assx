@@ -23,7 +23,7 @@ jobs:
       - name: Test
         run: go test ./...
       - name: Renderer evidence and baseline contracts
-        run: go test ./cmd/assx ./internal/ass/spec -run '^Test(RendererBaselineContracts|MatrixRendererSourcePins|MatrixVerifiedCellScope|VSFilterModOptionalBuildCapabilities)$' -count=1
+        run: go test ./cmd/assx ./internal/ass/spec -run '^Test(RendererBaselineContracts|MatrixRendererSourcePins|MatrixVerifiedCellScope|MatrixSignatureApplicabilityMutations|DefaultRejectsModOnlyPositionArity|PrefixCollisionsDoNotAuthorizeSafeFix|VSFilterModOptionalBuildCapabilities)$' -count=1
       - name: Benchmark smoke test
         run: go test ./internal/ass ./internal/semantic ./internal/lint -run '^$' -bench 'Benchmark(ASSDocumentParse|ParseDialogueTextFixtures|EvaluateDialogue|AnalyzeDocumentFixtures|ParseAndAnalyzeDocumentFixtures)$' -benchtime=1x
       - name: Build

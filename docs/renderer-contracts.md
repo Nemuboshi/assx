@@ -48,8 +48,13 @@ unit tests, fuzz cases and rendercheck remain independent of these snapshots.
 
 The baseline is intentionally *descriptive*: for example, the existing
 `\\pos(1,2,3)` rejection in the default profile is frozen even though a
-pinned VSFilterMod build can recognize three coordinates. P01 makes no
-production parser, lint or fix changes.
+pinned VSFilterMod build can recognize three coordinates. Historical goldens
+also retain current `ASS005` prefix-collision diagnostics, but those IDs
+are **not** permanent policy invariants: future renderer-specific prefix
+resolution may correctly change them, with source evidence and an explicit
+golden update. The independent policy tests cover default arity strictness
+and prohibit SafeFix across unresolved collisions. P01 makes no production
+parser, lint or fix changes.
 
 ## Pinned source revisions and build scope
 
@@ -84,7 +89,20 @@ requiring a repository checkout under `ref/`.
 
 Each `<params>` or `<scen>` row with `status="V"` has a
 `verified="libass xy vsm"` **subset** of renderer-specific evidence
-tokens. This is intentionally separate from the row's status:
+tokens. This is intentionally separate from the row's status.
+
+Each individual `<sig>` also declares **explicit** `renderer` applicability
+(e.g. `renderer="vsm"` for three-coordinate `\\pos`), its own `status`,
+`verified`, `inferred`, and exact `cite`. Applicability must equal the
+disjoint union of verified and inferred scopes; omission is invalid and can
+never mean all renderers. Citations and verification are per signature, and
+the parent's verified range is checked against the union of its children.
+An inferred renderer has no per-signature proof and cannot silently expand
+an arity covered by verified source at the parent level. The negative
+mutation suite rejects removing the VSFilterMod-only three-coordinate
+restriction or broadening it with unsupported/inferred applicability.
+
+The four evidence classifications are:
 
 - **Verified source:** the renderer is explicitly named by
   `verified`, the row has `status="V"`, and a matching pinned-source
@@ -107,7 +125,12 @@ collapsed into a single 'valid tag' or 'safe tag' flag.
 
 `TestMatrixVerifiedCellScope` recomputes each verified scope from the
 existing row status, explicit renderer result and matching source citation.
-It rejects duplicate, invented, ungrounded or incorrectly ordered scopes.
+The per-signature validator additionally rejects missing applicability,
+unjustified scope expansion, invalid child citations and mismatched group
+evidence. `TestMatrixSignatureApplicabilityMutations` exercises XML mutations
+that would otherwise broaden VSFilterMod-only arities.
+Together they reject duplicate, invented, ungrounded or incorrectly ordered
+scopes.
 `TestMatrixRendererSourcePins` checks the exact full commits and ensures
 the libass rendercheck pin agrees. The existing XML tests still check
 vocabulary, signatures, statuses, citations and tag registry membership.

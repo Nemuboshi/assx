@@ -7,13 +7,13 @@ import (
 	"assx/internal/lint"
 )
 
-// These policy invariants must stay independent of golden-file regeneration.
-// They characterize the default libass/xy acceptance envelope at main@6ba7453.
+// These policy invariants remain separate from main@6ba7453 historical goldens.
+// Do not pin transitional diagnostics for names subject to prefix dispatch.
 func TestDefaultRejectsModOnlyPositionArity(t *testing.T) {
 	invalid := lint.Analyze(ass.Dialogue{Text: `{\pos(1,2,3)}x`})
 	invalidPos := false
 	for _, d := range invalid {
-		if d.ID == "ASS001" && d.Tag == "pos" && d.Severity == lint.Error {
+		if d.Tag == "pos" && d.Severity == lint.Error {
 			invalidPos = true
 		}
 	}
@@ -23,27 +23,29 @@ func TestDefaultRejectsModOnlyPositionArity(t *testing.T) {
 
 	valid := lint.Analyze(ass.Dialogue{Text: `{\pos(1,2)}x`})
 	for _, d := range valid {
-		if d.ID == "ASS001" && d.Tag == "pos" {
+		if d.Tag == "pos" && d.Severity == lint.Error {
 			t.Fatalf("default renderer rejected a valid 2-coordinate position: %#v", valid)
 		}
 	}
 }
 
-func TestDefaultModOnlyTagsDoNotBecomeSilentlyValid(t *testing.T) {
+// Names such as fsvp/frs/blend have renderer-dependent dispatch. A future
+// parser may resolve them through fs/fr/be instead of reporting legacy ASS005.
+// Until renderer-scoped proof exists, a prefix collision must not authorize a
+// retroactive SafeFix for an earlier candidate.
+func TestPrefixCollisionsDoNotAuthorizeSafeFix(t *testing.T) {
 	for _, name := range []string{"fsvp6", "frs", "blend(add)"} {
 		t.Run(name, func(t *testing.T) {
-			diagnostics := lint.Analyze(ass.Dialogue{Text: "{\\" + name + "}x"})
-			found := false
+			input := "{\\fs10\\fs20\\" + name + "}x"
+			diagnostics := lint.Analyze(ass.Dialogue{Text: input})
 			for _, d := range diagnostics {
-				if d.ID == lint.IssueVSFilterModTag {
-					found = true
-					if d.FixSafety != "" || len(d.Edits) != 0 {
-						t.Fatalf("VSFilterMod-only tag unexpectedly acquired an automatic edit: %#v", d)
-					}
+				if d.FixSafety == lint.SafeFix {
+					t.Fatalf("unproven edit marked SafeFix after a prefix collision: %#v", d)
 				}
 			}
-			if !found {
-				t.Fatalf("VSFilterMod-only tag lost compatibility warning: %#v", diagnostics)
+			fixed, count, err := lint.ApplyFixes(input, diagnostics, false)
+			if err != nil || count != 0 || fixed != input {
+				t.Fatalf("default --fix changed ambiguous prefix input: output=%q edits=%d err=%v", fixed, count, err)
 			}
 		})
 	}
