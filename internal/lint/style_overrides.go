@@ -18,14 +18,19 @@ func AnalyzeRedundantStyleOverrides(doc ass.Document) []Diagnostic {
 // It deliberately provides no edits: a single-profile observation is not the
 // all-target equivalence proof required by SafeFix (P08).
 func AnalyzeRedundantStyleOverridesForRenderer(doc ass.Document, profile renderer.Profile) []Diagnostic {
-	return analyzeRedundantStyleOverrides(doc, &profile)
+	return scopeDiagnostics(analyzeRedundantStyleOverrides(doc, &profile), profile)
 }
 
 func analyzeRedundantStyleOverrides(doc ass.Document, profile *renderer.Profile) []Diagnostic {
 	styles := semantic.StyleStatesByName(doc.StyleFields)
 	var diagnostics []Diagnostic
 	for _, dialogue := range doc.Dialogues {
-		collector := newStyleRunCollector(dialogue, styles)
+		var collector *styleRunCollector
+		if profile == nil {
+			collector = newStyleRunCollector(dialogue, styles)
+		} else {
+			collector = newStyleRunCollectorForRenderer(dialogue, styles)
+		}
 		if collector == nil {
 			continue
 		}
@@ -57,7 +62,15 @@ type styleRunCollector struct {
 }
 
 func newStyleRunCollector(dialogue ass.Dialogue, styles map[string]semantic.StyleState) *styleRunCollector {
-	if !dialogue.ParsedText().HasTags() {
+	return makeStyleRunCollector(dialogue, styles, dialogue.ParsedText().HasTags())
+}
+
+func newStyleRunCollectorForRenderer(dialogue ass.Dialogue, styles map[string]semantic.StyleState) *styleRunCollector {
+	return makeStyleRunCollector(dialogue, styles, ass.ParseConcreteDialogue(dialogue.Text).HasCandidates())
+}
+
+func makeStyleRunCollector(dialogue ass.Dialogue, styles map[string]semantic.StyleState, hasTags bool) *styleRunCollector {
+	if !hasTags {
 		return nil
 	}
 	name := semantic.DialogueStyleLookupName(dialogue.Style)

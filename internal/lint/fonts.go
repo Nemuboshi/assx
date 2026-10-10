@@ -308,7 +308,11 @@ func AnalyzeFonts(doc ass.Document, checker *FontChecker) ([]Diagnostic, error) 
 // AnalyzeFontsForRenderer reads text-state boundaries from the same evaluator
 // as lint while interpreting each override against one pinned renderer.
 func AnalyzeFontsForRenderer(doc ass.Document, checker *FontChecker, profile renderer.Profile) ([]Diagnostic, error) {
-	return analyzeFonts(doc, checker, &profile)
+	findings, err := analyzeFonts(doc, checker, &profile)
+	if err != nil {
+		return nil, err
+	}
+	return scopeDiagnostics(findings, profile), nil
 }
 
 func analyzeFonts(doc ass.Document, checker *FontChecker, profile *renderer.Profile) ([]Diagnostic, error) {

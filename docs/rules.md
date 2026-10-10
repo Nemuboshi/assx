@@ -127,6 +127,10 @@ Drawing mode is parsed into commands, coordinates, and source spans. The rule re
 
 The drawing AST models `m`, `n`, `l`, `b`, `s`, `p`, and `c`, and preserves drawing state across intervening override blocks. Community references include ASSWipe drawing repair and ASSFoundation's drawing parser.
 
+## ASS031 — Renderer command interpretation is unresolved
+
+Explicit renderer-scoped validation uses this warning when a command is disabled or build-conditional, matched but semantically unmodeled, backed only by inferred signature evidence, or malformed in a way that prevents a verified interpretation. The finding does not assert a cross-renderer incompatibility and never authorizes an automatic edit. The default CLI does not emit ASS031; see [renderer-scoped lint validation](renderer-lint.md).
+
 ## Fixes
 
 Severity and fix safety are independent metadata: a diagnostic can have a `SafeFix` or an `UnsafeFix`.
