@@ -2,8 +2,6 @@ package semantic
 
 import (
 	"slices"
-	"strconv"
-	"strings"
 
 	"assx/internal/ass"
 	"assx/internal/ass/spec"
@@ -240,91 +238,36 @@ func (m *evaluator) consumeTag(tag ass.Tag) TagEvent {
 		return event
 	}
 	if tag.InTransition {
-		// The parent transform evaluates supported targets. Validate child
-		// syntax separately so malformed known tags cannot bypass the proof
-		// fence merely because they appear inside \\t(...).
-		slots := tagSpec.Slots
-		unknown := tagSpec.Behavior != spec.Assign || RelativeFontSize(tag)
-		if tag.Name == "clip" || tag.Name == "iclip" {
-			unknown = true // Vector and rectangular clips have shape-specific semantics.
-		} else if len(slots) != 0 && !unknown {
-			_, modeled := CanonicalTagState(tag, tagSpec, slots)
-			unknown = !modeled
-		}
-		if unknown {
-			m.revokeProofs()
-			event.Barrier = true
-		}
+		event.Barrier = m.handleTransformChild(tag, tagSpec)
 		return event
 	}
 
 	event.Policy = tagSpec.Behavior
-	if tagSpec.Behavior == spec.StyleReset {
+	switch tagSpec.Semantic {
+	case spec.SemanticStyleReset:
 		m.resetStyle(tag)
 		event.Applied = true
 		return event
-	}
-	if tagSpec.Behavior == spec.Transition {
-		if len(tag.Children) > 0 {
-			m.markActiveLive()
-		}
-		noEffect := m.transitionHasNoEffect(tag)
-		if noEffect && m.collisionDisabled && !m.proofsDisabled {
-			m.markCandidate(index, tag, TransitionNoEffect, -1, true)
-		}
-		m.collisionDisabled = true
-		if !noEffect {
-			m.invalidateAll()
-		}
+	case spec.SemanticTransform:
+		m.consumeTransform(tag, index)
 		event.Applied = true
 		return event
-	}
-	if tagSpec.Behavior == spec.Accumulate {
+	case spec.SemanticKaraoke:
 		m.accumulate(tag)
 		event.Applied = true
 		return event
 	}
 
-	slots, behavior := tagSpec.Slots, tagSpec.Behavior
-	if tag.Name == "clip" || tag.Name == "iclip" {
-		if len(tag.Args) == 4 {
-			slots, behavior = []string{"clip_rect"}, spec.Assign
-		} else {
-			slots, behavior = []string{"clip_vector"}, spec.FirstWins
-		}
-	}
+	slots, behavior := resolveAssignmentPolicy(tag, tagSpec)
 	event.Policy = behavior
 	event.Slots = slots
 	m.fillValues(&event.Before, slots)
 
-	if RelativeFontSize(tag) {
-		m.invalidate([]string{"fontsize"})
-		m.revokeProofs()
-		m.fillValues(&event.After, slots)
-		event.Barrier = true
+	if m.handleRelativeFontSize(tag, tagSpec, &event, slots) {
 		return event
 	}
 
-	var values []string
-	var valuesKnown bool
-	if style, present := m.options.Styles[m.activeStyle]; present {
-		original := m.options.Styles[m.originalStyle]
-		values, valuesKnown = StyleTagState(tag, tagSpec, slots, style.Values, original.Values)
-	} else {
-		values, valuesKnown = CanonicalTagState(tag, tagSpec, slots)
-	}
-	if tag.Name == "p" {
-		if number, ok := tag.IntegerArgument(); ok {
-			if number > 0 {
-				values = []string{strconv.FormatInt(int64(number), 10)}
-			} else {
-				values = []string{"0"}
-			}
-			valuesKnown = true
-		} else {
-			valuesKnown = false
-		}
-	}
+	values, valuesKnown := m.assignmentValues(tag, tagSpec, slots)
 	event.Known = valuesKnown
 	if !valuesKnown {
 		// Renderer-dependent or malformed assignments cannot justify
@@ -402,39 +345,6 @@ func (m *evaluator) fillValues(dst *[4]StateValue, slots []string) {
 	}
 }
 
-// Accumulating karaoke tags contribute to a shared timeline. Unknown forms,
-// transform children, and renderer-specific absolute \kt semantics poison the
-// timeline rather than returning an incorrect known duration.
-func (m *evaluator) accumulate(tag ass.Tag) {
-	const slot = "karaoke_cursor"
-	if tag.Name == "kt" {
-		m.state[slot] = UnknownValue()
-		m.active[slot] = owner{index: -1, start: m.position}
-		return
-	}
-	current := m.value(slot)
-	duration := int64(1000)
-	if len(tag.Args) > 1 || tag.InTransition {
-		m.state[slot] = UnknownValue()
-		return
-	}
-	if len(tag.Args) == 1 {
-		value := ass.DecodeNumber(tag.Args[0])
-		if value.Status != ass.ValueValid || value.Number < 0 || value.Number > float64(int64(^uint64(0)>>1)/10) {
-			m.state[slot] = UnknownValue()
-			return
-		}
-		duration = int64(value.Number) * 10
-	}
-	previous, err := strconv.ParseInt(current.Value, 10, 64)
-	if !current.Known || err != nil || duration > int64(^uint64(0)>>1)-previous {
-		m.state[slot] = UnknownValue()
-		return
-	}
-	m.state[slot] = KnownValue(strconv.FormatInt(previous+duration, 10))
-	m.active[slot] = owner{index: m.tagIndex - 1, start: m.position, proven: true}
-}
-
 func (m *evaluator) invalidate(slots []string) {
 	for _, slot := range slots {
 		m.state[slot] = UnknownValue()
@@ -452,41 +362,6 @@ func (m *evaluator) invalidateAll() {
 	// at a later Style reset, because the reset preserves them.
 	m.state["drawing_scale"] = UnknownValue()
 	m.state["karaoke_cursor"] = UnknownValue()
-}
-
-func (m *evaluator) transitionHasNoEffect(tag ass.Tag) bool {
-	if len(tag.Children) == 0 {
-		return true
-	}
-	for _, child := range tag.Children {
-		if child.RepeatedSlashes > 0 || !safeTransformStateTag(child.Name) || RelativeFontSize(child) {
-			return false
-		}
-		tagSpec := spec.TagSpecs[child.Name]
-		slots := tagSpec.Slots
-		if child.Name == "clip" || child.Name == "iclip" {
-			if len(child.Args) != 4 {
-				return false
-			}
-			slots = []string{"clip_rect"}
-		}
-		values, known := CanonicalTagState(child, tagSpec, slots)
-		if !known || !m.sameSlotValues(slots, values) {
-			return false
-		}
-	}
-	return true
-}
-
-func safeTransformStateTag(name string) bool {
-	switch name {
-	case "fs", "fscx", "fscy", "fsp", "frx", "fry", "frz", "fr", "fax", "fay",
-		"bord", "xbord", "ybord", "shad", "xshad", "yshad", "blur", "be",
-		"c", "1c", "2c", "3c", "4c", "alpha", "1a", "2a", "3a", "4a", "clip", "iclip":
-		return true
-	default:
-		return false
-	}
 }
 
 // revokeProofs is a dialogue-wide fence: no prior or subsequent no-effect
@@ -515,40 +390,4 @@ func (m *evaluator) tagAt(index int) ass.Tag {
 		return m.allTags[index]
 	}
 	return ass.Tag{}
-}
-
-func (m *evaluator) resetStyle(tag ass.Tag) {
-	target := m.originalStyle
-	if len(tag.Args) > 0 && strings.TrimSpace(strings.Join(tag.Args, ",")) != "" {
-		target = strings.TrimSpace(strings.Join(tag.Args, ","))
-	}
-	// Reset clears explicit overrides, exposing the new Style defaults. It
-	// cannot clear first-wins slots nor state explicitly kept across resets.
-	for slot, previous := range m.active {
-		if spec.KeepOnStyleReset[slot] {
-			continue
-		}
-		if _, latched := m.latched[slot]; latched {
-			continue
-		}
-		if previous.index >= 0 && previous.start == m.position && previous.proven && !m.proofsDisabled {
-			m.markCandidate(previous.index, m.tagAt(previous.index), ResetBeforeUse, -1, false)
-		}
-		delete(m.active, slot)
-	}
-	for slot := range m.state {
-		if spec.KeepOnStyleReset[slot] {
-			continue
-		}
-		if _, latched := m.latched[slot]; latched {
-			continue
-		}
-		delete(m.state, slot)
-	}
-	m.activeStyle = target
-	_, known := m.options.Styles[target]
-	m.baseValid = len(m.options.Styles) == 0 || known
-	if len(m.options.Styles) > 0 && !known {
-		m.proofsDisabled = true
-	}
 }
