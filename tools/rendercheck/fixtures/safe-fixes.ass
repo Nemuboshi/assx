@@ -18,3 +18,4 @@ Dialogue: 0,0:00:04.00,0:00:06.00,Default,{\xshad-2\yshad-2\shad-2}Shadow clamp
 Dialogue: 0,0:00:06.00,0:00:08.00,Default,{\i1}A{\iabc\i1}B
 Dialogue: 0,0:00:08.00,0:00:10.00,Default,{\1c&HFFFFFF&}A{\1c(&HFFFFFF&)}B
 Dialogue: 0,0:00:10.00,0:00:12.00,Default,{\1a&H80&}A{\1a(&H80&)}B
+Dialogue: 0,0:00:12.00,0:00:14.00,Default,{\an7\an8}First-wins check

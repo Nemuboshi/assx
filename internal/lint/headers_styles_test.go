@@ -20,8 +20,9 @@ func TestStylePrecisionFindingsAndFixClasses(t *testing.T) {
 	if diagnostics[1].ID != IssueStyleFloat || diagnostics[1].Field != "Default.fontsize" || diagnostics[1].FixSafety != UnsafeFix {
 		t.Fatalf("float precision diagnostic = %#v", diagnostics[1])
 	}
-	if diagnostics[2].ID != IssueStyleInteger || diagnostics[2].Field != "Default.italic" {
-		t.Fatalf("italic precision diagnostic = %#v", diagnostics[2])
+	if diagnostics[2].ID != IssueStyleInteger || diagnostics[2].Field != "Default.italic" ||
+		diagnostics[2].FixSafety != "" || len(diagnostics[2].Edits) != 0 {
+		t.Fatalf("unmodeled integer Style state remained fixable: %#v", diagnostics[2])
 	}
 	if diagnostics[3].ID != IssueStyleFloat || diagnostics[3].Field != "Default.scalex" {
 		t.Fatalf("scale precision diagnostic = %#v", diagnostics[3])
@@ -30,14 +31,14 @@ func TestStylePrecisionFindingsAndFixClasses(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if safeCount != 2 || !strings.Contains(safeOnly, "Default, 12, 20.123456789, 0, 100.00000000000001") {
+	if safeCount != 1 || !strings.Contains(safeOnly, "Default, 12, 20.123456789, 0.0, 100.00000000000001") {
 		t.Fatalf("safe-only result (%d): %s", safeCount, safeOnly)
 	}
 	all, allCount, err := ApplyFixes(text, diagnostics, true)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if allCount != 4 || !strings.Contains(all, "Default, 12, 20.123457, 0, 100") {
+	if allCount != 3 || !strings.Contains(all, "Default, 12, 20.123457, 0.0, 100") {
 		t.Fatalf("all-fixes result (%d): %s", allCount, all)
 	}
 }
@@ -69,8 +70,14 @@ func TestMatrixAndLayoutHeaderBoundaries(t *testing.T) {
 }
 
 func TestCountFixesSeparatesApplicableFromUnfixable(t *testing.T) {
+	proof := &FixProof{}
+	var err error
+	proof.ID, err = hashJSON(*proof)
+	if err != nil {
+		t.Fatal(err)
+	}
 	diagnostics := []Diagnostic{
-		{FixSafety: SafeFix, Edits: []TextEdit{{Start: 0, End: 0}}},
+		{FixSafety: SafeFix, FixProof: proof, Edits: []TextEdit{{Start: 0, End: 0}}},
 		{FixSafety: UnsafeFix, Edits: []TextEdit{{Start: 0, End: 0}}},
 		{FixSafety: UnsafeFix},
 		{},

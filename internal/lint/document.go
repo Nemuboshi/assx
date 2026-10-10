@@ -8,9 +8,13 @@ import (
 )
 
 func AnalyzeDocument(doc ass.Document) []Diagnostic {
+	return proveSafeFixes(doc, analyzeDocumentUnproved(doc), defaultFixTargets())
+}
+
+func analyzeDocumentUnproved(doc ass.Document) []Diagnostic {
 	diagnostics := AnalyzeHeaders(doc)
 	diagnostics = append(diagnostics, AnalyzeKeywords(doc)...)
-	diagnostics = append(diagnostics, AnalyzeStyles(doc)...)
+	diagnostics = append(diagnostics, analyzeStyles(doc)...)
 	diagnostics = append(diagnostics, AnalyzeEventFields(doc)...)
 	diagnostics = append(diagnostics, analyzeUndefinedStyleReferences(doc)...)
 	styles := semantic.StyleStatesByName(doc.StyleFields)

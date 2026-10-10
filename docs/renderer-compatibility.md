@@ -14,10 +14,13 @@ separate diagnostics. An empty target list selects libass + xy-VSFilter;
 VSFilterMod is explicit and retains its `_VSMOD`/`_LUA` build capabilities.
 Duplicate profiles are removed without changing caller order.
 
-The default CLI and existing `Analyze`/`AnalyzeDocument` APIs retain their
-frozen diagnostics, JSON, exit behavior, and fixes. Compatibility APIs provide
-no edits or fix safety classification. Renderer selection in the CLI belongs
-to P10; equivalence proofs for edits belong to P08.
+The default CLI and existing `Analyze`/`AnalyzeDocument` APIs retain the
+libass/xy-VSFilter default scope and their frozen exit behavior. P08 adds
+renderer-scoped proof metadata to `SafeFix` diagnostics and verifies each
+selected edit again before `ApplyFixes` changes the source. Keep a fix
+unavailable when any selected target lacks proof. Compatibility APIs provide no
+edits or fix safety classification. Renderer selection in the CLI belongs to
+P10; P08 implements equivalence proofs for edits.
 
 Syntax stays in `internal/ass`; source partitioning and renderer evidence stay
 in `internal/ass/renderer`; comparison of effective operations and scenario

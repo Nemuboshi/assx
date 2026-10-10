@@ -1,6 +1,7 @@
 package lint
 
 import (
+	"encoding/json"
 	"fmt"
 	"math"
 	"strconv"
@@ -22,6 +23,8 @@ type Diagnostic struct {
 	Description string     `json:"description"`
 	Fix         string     `json:"suggested_fix"`
 	FixSafety   FixSafety  `json:"fix_safety,omitempty"`
+	FixProof    *FixProof  `json:"fix_proof,omitempty"`
+	FixProofRef string     `json:"fix_proof_ref,omitempty"`
 	Edits       []TextEdit `json:"edits,omitempty"`
 	Line        int        `json:"line"`
 	Column      int        `json:"column"`
@@ -63,8 +66,34 @@ type dialogueAnalyzer struct {
 	hasVSFilterModTag bool
 }
 
+func (d Diagnostic) MarshalJSON() ([]byte, error) {
+	type diagnosticJSON Diagnostic
+	value := diagnosticJSON(d)
+	if d.FixProofRef != "" {
+		value.FixProof = nil
+	}
+	return json.Marshal(value)
+}
+
 func Analyze(dialogue ass.Dialogue) []Diagnostic {
-	return analyzeWithEffects(dialogue, semantic.EvaluateDialogue(dialogue.ParsedText()))
+	findings := analyzeWithEffects(dialogue, semantic.EvaluateDialogue(dialogue.ParsedText()))
+	if dialogue.TextStart != 0 {
+		return withoutSafeFixes(findings)
+	}
+	doc := ass.Document{Text: dialogue.Text, Dialogues: []ass.Dialogue{dialogue}}
+	return proveSafeFixes(doc, findings, defaultFixTargets())
+}
+
+func withoutSafeFixes(diagnostics []Diagnostic) []Diagnostic {
+	for i := range diagnostics {
+		if diagnostics[i].FixSafety == SafeFix {
+			diagnostics[i].FixSafety = ""
+			diagnostics[i].Edits = nil
+			diagnostics[i].FixProof = nil
+			diagnostics[i].FixProofRef = ""
+		}
+	}
+	return diagnostics
 }
 
 func analyzeWithEffects(dialogue ass.Dialogue, effects []semantic.NoEffect) []Diagnostic {

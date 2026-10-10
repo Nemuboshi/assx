@@ -11,7 +11,7 @@ import (
 // AnalyzeRedundantStyleOverrides retains the standalone entry point while
 // sharing the state transitions used by ASS006 and the font checker.
 func AnalyzeRedundantStyleOverrides(doc ass.Document) []Diagnostic {
-	return analyzeRedundantStyleOverrides(doc, nil)
+	return proveSafeFixes(doc, analyzeRedundantStyleOverrides(doc, nil), defaultFixTargets())
 }
 
 // AnalyzeRedundantStyleOverridesForRenderer reports renderer-local redundancy.

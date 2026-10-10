@@ -56,6 +56,38 @@ golden update. The independent policy tests cover default arity strictness
 and prohibit SafeFix across unresolved collisions. P01 makes no production
 parser, lint or fix changes.
 
+## SafeFix proof scope
+
+For each fix marked `safe`, assx records every target renderer ID, pinned
+version, build capability, source edit range, source hash, edited hash, and
+interpretation trace hash. It stores one full proof for an edit group and links
+each remaining diagnostic with `fix_proof_ref`. It also stores the
+interpretations next to the edits, including dispatch, signature citation,
+state, and source provenance. The proof ID hashes every proof field, including
+that audit metadata. `--fix` checks the submitted ID and edited-source hash,
+then rebuilds the evidence from the current source and complete edit group.
+
+`--fix` rechecks the proof against the current file and the selected edits. The
+default scope contains pinned libass and xy-VSFilter profiles. A proof for
+VSFilterMod alone cannot authorize a default fix. The default CLI does not
+select VSFilterMod.
+
+Use the libass `rendercheck` fixture to compare exact frames after safe fixes.
+Use pinned source evidence and independent renderer trace tests for
+xy-VSFilter. Do not treat assx diagnostics as an independent renderer oracle.
+The CI rendercheck job does not execute xy-VSFilter or VSFilterMod binaries.
+Keep a fix unavailable when a selected renderer, signature, build capability,
+or semantic operation is unresolved. Keep `\\t()` unavailable because the pinned
+matrix verifies only one-to-four-argument transform forms and records layout
+changes for the empty form. Keep parenthesized empty `\\b` and `\\i` forms
+unavailable until their signatures are verified for that exact form. Keep an
+integer Style edit unavailable when the semantic Style model cannot establish
+the same modeled value before and after the edit.
+
+The proof compares each renderer's interpretation before and after the edit.
+It does not claim cross-renderer pixel equality. It does not prove behavior for
+unlisted renderer versions, builds, Lua extensions, or forks.
+
 ## Pinned source revisions and build scope
 
 The authoritative machine-readable source pins are
@@ -182,6 +214,13 @@ When a later PR must correct previously accepted behavior:
    requested renderer and build capability scope.
 5. Compare benchmark samples using the *same* Go toolchain, CPU and
    workloads; benchmark noise is not a correctness failure.
+
+P08 adds renderer-scoped proofs to `SafeFix` diagnostics and rechecks each
+selected edit before `ApplyFixes` changes the source. Keep default proofs scoped
+to pinned libass and xy-VSFilter. Keep renderer-local analysis free of `SafeFix`
+metadata unless it proves every selected target. Review changed snapshots for
+proof scope, fix availability, output bytes, and summary text before updating
+the goldens.
 
 ## Performance baseline
 
