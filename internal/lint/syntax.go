@@ -65,44 +65,23 @@ func ignoredTagTail(tag ass.Tag) string {
 	if tag.Paren || len(tag.Args) != 1 {
 		return ""
 	}
-	tagSpec, ok := spec.TagSpecs[tag.Name]
-	if !ok {
+	ir := ass.DecodeTag(tag)
+	if !ir.Known {
 		return ""
 	}
-
-	arg := tag.Args[0]
-	var match []int
-	switch tagSpec.Value {
-	case spec.IntegerValue, spec.BoldValue:
-		match = integerPrefix.FindStringIndex(arg)
-	case spec.NumberValue:
-		match = numberPrefix.FindStringIndex(arg)
-	case spec.HexValue:
-		value := strings.TrimLeft(arg, " \t")
-		prefix := 0
-		if len(value) >= 2 && strings.EqualFold(value[:2], "&H") {
-			prefix = 2
-			value = value[2:]
-		}
-		hex := hexPrefix.FindStringIndex(value)
-		if hex == nil {
-			return ""
-		}
-		startSpaces := len(arg) - len(strings.TrimLeft(arg, " \t"))
-		match = []int{0, startSpaces + prefix + hex[1]}
+	switch ir.Spec.Value {
+	case spec.IntegerValue, spec.BoldValue, spec.NumberValue, spec.HexValue:
 	default:
 		return ""
 	}
-	if match == nil {
+	arg := tag.Args[0]
+	decoded := ir.Argument(0)
+	if decoded.Consumed == 0 || decoded.Consumed > len(arg) {
 		return ""
 	}
-	tail := strings.TrimSpace(arg[match[1]:])
-	if tail == "" {
-		return ""
-	}
-	if tagSpec.Value == spec.HexValue {
-		tail = strings.TrimPrefix(tail, "&")
-		tail = strings.TrimSpace(tail)
+	tail := strings.TrimSpace(arg[decoded.Consumed:])
+	if ir.Spec.Value == spec.HexValue {
+		tail = strings.TrimSpace(strings.TrimPrefix(tail, "&"))
 	}
 	return tail
 }
