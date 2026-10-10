@@ -40,6 +40,10 @@
           .note { color: #444; }
           .cite { font-family: ui-monospace, Consolas, monospace; font-size: .78rem; color: #666; }
           .desc { margin: .3rem 0 .6rem; color: #333; }
+          .evidence { display: block; margin-top: .2rem; font-size: .75rem; }
+          .evidence.verified { color: #14562c; }
+          .evidence.inferred { color: #6b4a10; }
+          .evidence.unchecked { color: #777; }
           table.params { font-size: .85rem; }
           table.params td[rowspan] { background: #fbfbfc; }
           .legend { background: #fafafa; border: 1px solid #e5e5e5; padding: .6rem .8rem; font-size: .85rem; }
@@ -53,6 +57,9 @@
             .S { background: #453413; color: #f2d59b; }
             .diff { background: #3a1f1f; }
             .same, .cite, .note, .desc { color: #b9b9b9; }
+            .evidence.verified { color: #a8e6ba; }
+            .evidence.inferred { color: #f2d59b; }
+            .evidence.unchecked { color: #b9b9b9; }
             table.params td[rowspan] { background: #202124; }
           }
         </style>
@@ -75,14 +82,18 @@
 
     <div class="legend">
       <strong>How to read a cell.</strong>
-      <code>base</code> is libass. A renderer column equal to the base is
-      <span class="same">grey</span>; a differing one is <span class="diff">highlighted</span>;
-      an absent value means that renderer was not separately read and is assumed to match the base.
-      A tag with no row for a scenario is assumed to match that scenario's
-      <strong>default</strong> below.
-      <span class="badge V">V</span> every asserted cell read at the pinned source ·
-      <span class="badge S">S</span> reported but not re-read, or an unverified stub.
-      A <code>SafeFix</code> may rest only on V rows covering every renderer it targets.
+      <code>base</code> is libass. Grey and highlighted results compare reported
+      behavior; those colors do not indicate source verification. Each renderer
+      cell separately says <strong>source verified</strong>,
+      <strong>source-inferred</strong>, or <strong>unchecked</strong>.
+      A missing renderer value is an unverified assumption of "same as base";
+      a missing scenario row inherits its unverified <strong>default</strong>.
+      <span class="badge V">V</span> at least one renderer cell was read at a pinned source;
+      <span class="badge S">S</span> assumed or reported but not verified.
+      The <code>verified</code> scope identifies exactly which renderers have
+      cited source evidence for that row. Source verification alone never
+      proves a <code>SafeFix</code>: each requested renderer and build capability
+      needs a separate edit-equivalence proof.
     </div>
 
     <h2>Scenario defaults</h2>
@@ -213,12 +224,18 @@
               <xsl:if test="@status = 'V'"> <span class="badge V">V</span></xsl:if>
               <xsl:if test="@status = 'S'"> <span class="badge S">S</span></xsl:if>
             </td>
-            <td><xsl:value-of select="@base"/></td>
-            <xsl:call-template name="cell">
+            <xsl:call-template name="scenario-cell">
+              <xsl:with-param name="renderer" select="'libass'"/>
+              <xsl:with-param name="value" select="@base"/>
+              <xsl:with-param name="base" select="@base"/>
+            </xsl:call-template>
+            <xsl:call-template name="scenario-cell">
+              <xsl:with-param name="renderer" select="'xy'"/>
               <xsl:with-param name="value" select="@vsfilter"/>
               <xsl:with-param name="base" select="@base"/>
             </xsl:call-template>
-            <xsl:call-template name="cell">
+            <xsl:call-template name="scenario-cell">
+              <xsl:with-param name="renderer" select="'vsm'"/>
               <xsl:with-param name="value" select="@vsfiltermod"/>
               <xsl:with-param name="base" select="@base"/>
             </xsl:call-template>
@@ -230,23 +247,40 @@
     </xsl:if>
   </xsl:template>
 
-  <xsl:template name="cell">
+  <!-- A row-level V is never a license to mark all three renderer cells V. -->
+  <xsl:template name="scenario-cell">
+    <xsl:param name="renderer"/>
     <xsl:param name="value"/>
     <xsl:param name="base"/>
-    <xsl:choose>
-      <xsl:when test="$value = ''">
-        <td class="same">same as base</td>
-      </xsl:when>
-      <xsl:when test="$value = 'unchecked'">
-        <td class="na">unchecked</td>
-      </xsl:when>
-      <xsl:when test="$value = $base">
-        <td class="same"><xsl:value-of select="$value"/></td>
-      </xsl:when>
-      <xsl:otherwise>
-        <td class="diff"><xsl:value-of select="$value"/></td>
-      </xsl:otherwise>
-    </xsl:choose>
+    <xsl:variable name="source-verified"
+                  select="@status = 'V' and contains(concat(' ', normalize-space(@verified), ' '), concat(' ', $renderer, ' '))"/>
+    <td>
+      <xsl:attribute name="class">
+        <xsl:choose>
+          <xsl:when test="$value = 'unchecked'">na</xsl:when>
+          <xsl:when test="$value = '' or $value = $base">same</xsl:when>
+          <xsl:otherwise>diff</xsl:otherwise>
+        </xsl:choose>
+      </xsl:attribute>
+      <xsl:choose>
+        <xsl:when test="$value = ''">same as base</xsl:when>
+        <xsl:otherwise><xsl:value-of select="$value"/></xsl:otherwise>
+      </xsl:choose>
+      <xsl:choose>
+        <xsl:when test="$value = 'unchecked'">
+          <span class="evidence unchecked">not source verified</span>
+        </xsl:when>
+        <xsl:when test="$value = ''">
+          <span class="evidence unchecked">inherited (unverified)</span>
+        </xsl:when>
+        <xsl:when test="$source-verified">
+          <span class="evidence verified">source verified</span>
+        </xsl:when>
+        <xsl:otherwise>
+          <span class="evidence inferred">source-inferred</span>
+        </xsl:otherwise>
+      </xsl:choose>
+    </td>
   </xsl:template>
 
   <xsl:template match="taggroup">
