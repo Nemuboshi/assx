@@ -725,12 +725,12 @@
         <p i="3" name="z" kind="number" range="VSFilterMod-only depth: stored as style.mod_z = z*80 (RTS.cpp:3539), assigned as every glyph point's z (611-612), then used by the frx/fry rotation and the perspective divide (640-653). Effect is only visible with a 3D rotation; libass and xy reject the 3-arg form entirely."/>
       </sig>
     </params>
-    <scen id="empty-components" status="V" verified="libass xy vsm" base="retain-empty" vsfilter="discard-empty" vsfiltermod="discard-empty"
+    <scen id="empty-components" status="V" verified="libass xy vsm" base="discard-empty" vsfilter="discard-empty" vsfiltermod="discard-empty"
           cite="libass:libass/ass_parse.c:53-60,310-341 xy:src/subtitles/RTS.cpp:2131-2149 vsm:src/subtitles/RTS.cpp:2455-2478">
-      Parenthesized argument splitting retains empty components in libass
-      but omits them in both VSFilter parsers. Thus \pos(1,,2) has three
-      arguments and is rejected by libass, while xy and Mod consume two
-      arguments and may claim the position latch. Raw source stays intact.
+      All three pinned parsers omit empty parenthesized components. Thus
+      \pos(1,,2) has two arguments and may claim the position latch in each
+      renderer. This parser observation is independent of the resulting
+      command's accepted arity. Raw source stays intact.
     </scen>
     <scen id="arg-count" status="V" verified="libass xy vsm" base="ignored" vsfilter="ignored" vsfiltermod="supported"
           cite="libass:libass/ass_parse.c:606-612 xy:src/subtitles/RTS.cpp:2615-2627 vsm:src/subtitles/RTS.cpp:3510-3543">

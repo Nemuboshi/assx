@@ -55,10 +55,12 @@ source spans, not tag indices that can differ between profile operation
 streams. Nested constructs absent from one stream remain unresolved.
 
 Verified signatures establish argument shapes, not complete state semantics.
-Application and ownership conclusions require verified first-wins behavior,
-accepted/rejected signatures, and certain transitions. Equal tracked state
-**never establishes rendering equivalence**. A known first-wins state
-difference can be reported, but state agreement remains unresolved. Even
+Application conclusions require accepted/rejected signatures and certain
+transitions. Operations with first-wins ownership additionally require verified
+repeat behavior; ordinary assignments do not depend on latch evidence. Equal
+tracked state **never establishes rendering equivalence**. A known state
+difference can be reported when those proof gates hold, but state agreement
+remains unresolved. Even
 an equivalent dispatch or documented behavior scenario does not guarantee
 pixel-identical output.
 
@@ -71,8 +73,14 @@ prove equivalence, and unknown builds cannot borrow an enabled branch's proof.
 Scenario `requires` metadata guards the VSFilterMod outcome even when the
 command itself is core, such as the optional argument-consuming `fsc` handler.
 Disabled branches stay unresolved unless separately verified.
-Scenario predicates select the documented domain rather than applying a row
-indiscriminately to every invocation. Distinct labels alone do not prove an
+Scenario candidates come from both interpretations. Each candidate's domain is
+checked independently on each side before its pinned outcomes are compared;
+reversing the renderer pair preserves dimensions and statuses. Rectangular
+rounding requires four fully parsed numeric coordinates on both sides, while
+empty-component normalization is a parser-level observation independent of
+accepted arity. A repeat outcome requires an occupied latch on each side.
+Missing or inapplicable evidence remains unresolved.
+Distinct labels alone do not prove an
 invocation difference: `zero` versus `restored` can produce the same value,
 and an integer relative `fs` argument does not reveal fractional truncation.
 Reset mechanism differences therefore remain unresolved; the font-size parser
@@ -85,10 +93,11 @@ comparison requires exact fractional input.
 - `\pos(1,2,3)` is source-verified rejected by traditional profiles and
   accepted by Mod with `_VSMOD` enabled. With a later `\pos(4,5)`, ownership
   and known position state differ. An unknown Mod build stays unresolved.
-- `\pos(1,,2)` retains the empty component in libass but discards it in both
-  VSFilter parsers. A subsequent valid position is compared against each
-  renderer's actual first owner. The shared resolver normalizes parameters
-  while retaining every surviving raw argument's original source span.
+- `\pos(1,,2)` discards the empty component in all three pinned parsers.
+  Each consumes two arguments and can claim the position latch; a subsequent
+  valid position has the same source-aligned first owner. The shared resolver
+  normalizes parameters while retaining every surviving raw argument's
+  original source span.
 - `\blend(add)` reaches Mod's **blend** branch when enabled. Issue #22's
   statement that `be` shadows it contradicts the pinned source: `blend`
   begins with `bl`, not `be`. Traditional profiles select `b`; parenthesized
@@ -99,6 +108,12 @@ comparison requires exact fractional input.
   rectangular clip rounding, charset effects, and reversed move windows.
   For example, `\be200` remains unresolved across traditional profiles
   because the relevant xy scenario cell is unverified.
+- `\clip(1.5,,0,10,10)` and `\iclip(1.5,,0,10,10)` become verified
+  rectangles in both traditional parsers after empty-component removal, so
+  their rounding difference remains visible in either profile order. A true
+  five-argument shape or malformed/partially parsed coordinates cannot borrow
+  the rounding proof. Conversion overflow and exponent forms that Mod's
+  `wcstol` does not fully consume also remain unresolved.
 
 ## Document and Style scope
 
@@ -139,9 +154,10 @@ first-wins ownership and state, empty-component consumption, verified and
 unverified scenarios, unknown builds, nested transforms, malformed clips,
 resets, drawing, karaoke, detached observations, source spans, deduplication,
 custom document layouts, physical lines, and the absence of compatibility
-fixes. Both VSFilter parsers' empty-component behavior and first-wins differences are
-source-pinned in the matrix. Build-guard and mechanism-label regressions prevent
-unsupported scenario conclusions after the independent review.
+fixes. All three pinned parsers' empty-component removal and the first-wins
+arity differences are source-pinned in the matrix. Profile-order, invocation
+domain, scalar-application, build-guard, and mechanism-label regressions
+prevent unsupported scenario conclusions.
 
 On Windows amd64, the one-iteration `long_10000` compatibility benchmark's
 cumulative allocation fell from 1,627,355,952 to 368,625,184 bytes (77.3%)

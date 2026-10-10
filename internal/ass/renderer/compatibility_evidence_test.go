@@ -14,13 +14,7 @@ func TestParenthesizedEmptyComponentConsumption(t *testing.T) {
 		source := `{\pos(1,,2)}`
 		var result Result
 		p.WalkDialogue(ass.ParseConcreteDialogue(source), func(r Result, _ bool) bool { result = r; return true })
-		count := 2
-		signature := SignatureVerified
-		if kind == Libass {
-			count = 3
-			signature = SignatureRejected
-		}
-		if len(result.Args) != count || result.Signature != signature {
+		if len(result.Args) != 2 || result.Signature != SignatureVerified || !result.EmptyComponents {
 			t.Fatalf("%s: %#v", kind, result)
 		}
 		for _, arg := range result.Args {

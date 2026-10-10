@@ -202,9 +202,15 @@ func compareInterpretations(span ass.ConcreteSpan, a, b *Interpretation) []Compa
 		add("ownership", ownership, fmt.Sprintf("%s owners: %s; %s owners: %s.", a.Profile.Kind(), ownersDescription(a.Owners), b.Profile.Kind(), ownersDescription(b.Owners)), ar.Citation, br.Citation)
 	}
 	if ar.Name == br.Name && ar.Status == renderer.Matched && br.Status == renderer.Matched {
-		for _, scenario := range applicableScenarios(a) {
-			av, bv := scenarioEvidence(a.Profile, ar, scenario), scenarioEvidence(b.Profile, br, scenario)
+		as, bs := candidateScenarios(a), candidateScenarios(b)
+		scenarios := append(slices.Clone(as), bs...)
+		slices.Sort(scenarios)
+		for _, scenario := range slices.Compact(scenarios) {
+			av, bv := scenarioEvidence(a, scenario, as), scenarioEvidence(b, scenario, bs)
 			status := compareScenarioOutcomes(ar.Name, scenario, av, bv)
+			if scenario == "coord-round" && !slices.Equal(ar.Args, br.Args) {
+				status = CompatibilityUnresolved
+			}
 			add("behavior/"+scenario, status, fmt.Sprintf("%s: %s; %s: %s.", a.Profile.Kind(), behaviorDescription(av), b.Profile.Kind(), behaviorDescription(bv)), av.Citation, bv.Citation)
 		}
 	}
@@ -219,10 +225,10 @@ func compareInterpretations(span ass.ConcreteSpan, a, b *Interpretation) []Compa
 }
 
 func firstWinsEvidence(o *Interpretation) bool {
-	if o.Resolution.Signature == renderer.SignatureRejected {
+	if o.Resolution.Signature == renderer.SignatureRejected || o.Event.Policy != spec.FirstWins {
 		return true
 	}
-	return o.Event.Policy == spec.FirstWins && o.Profile.Behavior(o.Resolution.Name, "repeat").Verified
+	return o.Profile.Behavior(o.Resolution.Name, "repeat").Verified
 }
 
 func knownStateDifference(a, b TagEvent) bool {

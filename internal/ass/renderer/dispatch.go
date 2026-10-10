@@ -117,17 +117,15 @@ func (p Profile) Resolve(expr ass.ConcreteExpression, source string) Result {
 					r.EmptyComponents = true
 				}
 			}
-			// Both VSFilter parsers omit empty parenthesized components;
-			// libass push_arg retains them. Keep surviving raw source spans.
-			if p.kind != Libass {
-				filtered := r.Args[:0]
-				for _, arg := range r.Args {
-					if strings.TrimSpace(arg.Raw) != "" {
-						filtered = append(filtered, arg)
-					}
+			// All pinned parsers omit empty parenthesized components.
+			// Keep each surviving argument's original raw bytes and source span.
+			filtered := r.Args[:0]
+			for _, arg := range r.Args {
+				if strings.TrimSpace(arg.Raw) != "" {
+					filtered = append(filtered, arg)
 				}
-				r.Args = filtered
 			}
+			r.Args = filtered
 		}
 	}
 	if expr.SlashSpan.End-expr.SlashSpan.Start != 1 || !expr.Closed() {

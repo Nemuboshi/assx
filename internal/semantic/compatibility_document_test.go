@@ -17,14 +17,19 @@ func TestDocumentCompatibilitySourceAlignedLayoutsAndTags(t *testing.T) {
 		if f.Dimension == "document/dialogue-layout" && f.Status == CompatibilityDivergent {
 			event = true
 		}
-		if f.Dimension == "arguments" && f.Status == CompatibilityDivergent {
+		if f.Dimension == "arguments" && f.Status == CompatibilityEquivalent && f.Left.Resolution.Raw == `\pos(1,,2)` {
 			args = true
 			if source[f.Source.Start:f.Source.End] != `\pos(1,,2)` {
 				t.Fatal("dialogue span is not absolute document source")
 			}
 		}
-		if f.Dimension == "ownership" && f.Status == CompatibilityDivergent {
+		if f.Dimension == "ownership" && f.Status == CompatibilityEquivalent && f.Source.Start == strings.Index(source, `\pos(4,5)`) {
 			ownership = true
+			for _, interpretation := range []*Interpretation{f.Left, f.Right} {
+				if owner, ok := interpretation.Owners["position"]; !ok || owner.Start != strings.Index(source, `\pos(1,,2)`) {
+					t.Fatalf("lost absolute first owner: %#v", interpretation.Owners)
+				}
+			}
 		}
 	}
 	if !style || !event || !args || !ownership {

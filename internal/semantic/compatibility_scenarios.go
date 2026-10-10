@@ -10,9 +10,9 @@ import (
 	"assx/internal/ass/spec"
 )
 
-// Scenario selection is semantic, not lint policy. Each condition must match
-// the documented row's domain; matrix defaults and prose are never executable.
-func applicableScenarios(observation *Interpretation) []string {
+// Candidate selection discovers relevant comparisons, not evidence of their
+// applicability. Each side's domain is checked before certifying its outcome.
+func candidateScenarios(observation *Interpretation) []string {
 	r, e := observation.Resolution, observation.Event
 	var scenarios []string
 	if r.EmptyComponents {
@@ -39,7 +39,7 @@ func applicableScenarios(observation *Interpretation) []string {
 	ir := ass.DecodeTagWithSpec(e.Tag, r.Policy, true)
 	value := ir.Argument(0)
 	if (value.Status == ass.ValueValid || value.Status == ass.ValueAmbiguous) && value.Consumed == len(value.Raw) {
-		if value.Number < 0 && r.Name != "fs" {
+		if value.Number < 0 && r.Name != "fs" && r.Name != "move" {
 			scenarios = append(scenarios, "negative")
 		}
 		switch r.Name {
@@ -94,7 +94,7 @@ func applicableScenarios(observation *Interpretation) []string {
 	}
 	if r.Name == "move" && len(r.Args) == 6 {
 		t1, t2 := ir.Argument(4), ir.Argument(5)
-		if t1.Status == ass.ValueValid && t2.Status == ass.ValueValid && t1.Number > t2.Number {
+		if t1.Status == ass.ValueValid && t2.Status == ass.ValueValid && t1.Consumed == len(t1.Raw) && t2.Consumed == len(t2.Raw) && t1.Number > t2.Number {
 			scenarios = append(scenarios, "out-of-range")
 		}
 	}
@@ -145,10 +145,62 @@ func compareScenarioOutcomes(name, scenario string, a, b renderer.BehaviorEviden
 
 // Resolution status and scenario evidence deliberately remain independent. A
 // conditional build cannot inherit a verified outcome of an enabled branch.
-func scenarioEvidence(profile renderer.Profile, result renderer.Result, scenario string) renderer.BehaviorEvidence {
-	evidence := profile.Behavior(result.Name, scenario)
-	if result.Status != renderer.Matched || result.ParametersUnresolved {
+func scenarioEvidence(observation *Interpretation, scenario string, candidates []string) renderer.BehaviorEvidence {
+	r, e := observation.Resolution, observation.Event
+	evidence := observation.Profile.Behavior(r.Name, scenario)
+	applicable := slices.Contains(candidates, scenario) && r.Signature == renderer.SignatureVerified
+	switch scenario {
+	case "empty-components":
+		// Splitting precedes the handler's arity check, including rejection.
+		applicable = r.Form == renderer.Paren && r.EmptyComponents
+	case "coord-round":
+		applicable = rectangleRoundingDomain(observation)
+	case "repeat":
+		applicable = applicable && e.Ignored && transitionCertain(e)
+		for _, owner := range observation.Owners {
+			applicable = applicable && owner.End <= r.Source.Start
+		}
+	case "arg-form":
+		if r.Name == "fsc" {
+			// The explicit behavior row proves that traditional handlers ignore
+			// this argument, even though their signature lists only bare reset.
+			applicable = len(r.Args) == 1 && ass.DecodeExactNumber(r.Args[0].Raw).Status == ass.ValueValid &&
+				(r.Signature == renderer.SignatureVerified || observation.Profile.Kind() == renderer.Libass || observation.Profile.Kind() == renderer.XYVSFilter)
+		}
+	case "out-of-range":
+		if r.Name == "move" {
+			for _, arg := range r.Args {
+				applicable = applicable && ass.DecodeExactNumber(arg.Raw).Status == ass.ValueValid
+			}
+		}
+	}
+	if r.Status != renderer.Matched || !r.Closed || r.ParametersUnresolved || !applicable {
 		evidence.Verified = false
 	}
 	return evidence
+}
+
+func rectangleRoundingDomain(observation *Interpretation) bool {
+	r := observation.Resolution
+	if (r.Name != "clip" && r.Name != "iclip") || r.Form != renderer.Paren || r.Signature != renderer.SignatureVerified || len(r.Args) != 4 {
+		return false
+	}
+	for _, arg := range r.Args {
+		value := ass.DecodeExactNumber(arg.Raw)
+		if value.Status != ass.ValueValid || math.Trunc(value.Number) < math.MinInt32 || math.Trunc(value.Number) > math.MaxInt32 {
+			return false
+		}
+		switch observation.Profile.Kind() {
+		case renderer.XYVSFilter:
+			if n := math.Trunc(value.Number + 0.5); n < math.MinInt32 || n > math.MaxInt32 {
+				return false
+			}
+		case renderer.VSFilterMod:
+			// wcstol stops at an exponent; the row proves decimal truncation.
+			if strings.ContainsAny(value.Raw, "eE") {
+				return false
+			}
+		}
+	}
+	return true
 }
