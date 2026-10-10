@@ -195,7 +195,9 @@ func TestRunJSONStaysValidAndReportsUnknownTagsAsSuggestion(t *testing.T) {
 
 func TestPlainDoesNotCountUnknownSeverityAsSuggestion(t *testing.T) {
 	var stdout strings.Builder
-	plain.Render(&stdout, "sample.ass", []lint.Diagnostic{{ID: "ASS999", Severity: lint.Severity("future"), Title: "Unknown severity"}}, 0, "")
+	if err := plain.Render(&stdout, "sample.ass", []lint.Diagnostic{{ID: "ASS999", Severity: lint.Severity("future"), Title: "Unknown severity"}}, 0, ""); err != nil {
+		t.Fatal(err)
+	}
 	if !strings.Contains(stdout.String(), "Summary: 1 diagnostics (0 errors, 0 warnings, 0 suggestions).") {
 		t.Fatalf("summary = %q", stdout.String())
 	}
