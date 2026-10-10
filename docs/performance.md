@@ -43,8 +43,12 @@ construction, and prerequisite parsing are outside timed regions. Go reports
 
 ## Reproduce and compare
 
-Use the same machine and Go toolchain, preferably with background processes
-minimized. Record the full commit, Go version, architecture and CPU.
+Use the same benchmark environment and Go toolchain, preferably with background
+processes minimized. Record the full commit, Go version, and OS/architecture.
+Before publishing benchmark samples, replace host-specific CPU metadata
+with the value 'undisclosed' and omit processor models, core counts, and
+other device details.
+Keep hardware-specific notes outside the repository.
 
 ~~~sh
 go test ./...
@@ -69,8 +73,7 @@ no fixed performance threshold: shared CI runners are noisy.
 ## Initial baseline
 
 - **Measured commit:** `b3080c8c22591f0aa28532d501c3970d7b8b2df3`
-- **Environment:** Windows/amd64, Intel Core i5-9300H @ 2.40 GHz,
-  Go 1.27.0, 8 logical CPUs
+- **Environment:** Windows/amd64, Go 1.27.0
 - **Flags:** `-benchmem -benchtime=250ms -count=5`
 - **All 125 raw samples:** [baseline-b3080c8-windows-amd64.txt](performance/baseline-b3080c8-windows-amd64.txt)
 - The rows below show the median of five samples for each workload/stage.
@@ -126,7 +129,7 @@ and should be compared against this baseline with `benchstat`.
 The renderer-aware migration freezes the original `main@6ba745336615f102d5de39f76550f0a45da7bbb6` performance separately from the issue #2 optimization baseline.
 
 - Raw benchstat input: [baseline-6ba7453-windows-amd64.txt](performance/baseline-6ba7453-windows-amd64.txt)
-- Environment: Windows/amd64, Intel Core i5-9300H, Go 1.27.0, eight logical CPUs
+- Environment: Windows/amd64, Go 1.27.0
 - Sample settings: `-benchmem -benchtime=250ms -count=5`
 - Workloads and timed regions: unchanged from the table above
 - Detailed regression and evidence contract: [renderer-contracts.md](renderer-contracts.md)

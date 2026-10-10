@@ -99,7 +99,7 @@ introduce a full snapshot allocation for each individual tag.
 
 ## Issue #4 benchmark comparison
 
-Measured on the same Windows/amd64 laptop (Intel Core i5-9300H), using
+Measured in the same Windows/amd64 benchmark environment, using
 Go's `-benchmem -benchtime=250ms -count=3`. Baseline was a temporary,
 unmodified worktree at `d8006e2` (PR #10 merged). Each number below is
 the median of three runs; CI noise and normal host variation still apply.

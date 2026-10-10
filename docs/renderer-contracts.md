@@ -188,7 +188,7 @@ When a later PR must correct previously accepted behavior:
 The raw, benchstat-compatible input is
 `docs/performance/baseline-6ba7453-windows-amd64.txt` (source code at
 `6ba7453`, plus P01 tests/documentation only). The run used
-Windows/amd64, Go 1.27.0, Intel Core i5-9300H, 8 logical CPUs,
+Windows/amd64, Go 1.27.0,
 `-benchmem -benchtime=250ms -count=5`, without `-race`.
 The fixture-driven parse, AST, state, lint-only and parse-plus-lint
 benchmarks include both short files and the synthetic 10,000-dialogue

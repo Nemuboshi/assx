@@ -99,7 +99,7 @@ verified renderer-aware replacement exists.
 ## Non-regression performance note
 
 The P01 pinned baseline (`main@6ba7453`) and P02/P03 runs were measured
-on the same Windows/amd64 i5-9300H with Go 1.27.0. The implementation runs
+in the same Windows/amd64 benchmark environment with Go 1.27.0. The implementation runs
 used `-benchmem -count=3` with 100 ms (dialogue) and 200 ms (document)
 benchtimes, versus 250 ms and 5 samples in P01. Hence the short-run timings
 are not used as a CI performance gate; allocation metrics are reproducible.
