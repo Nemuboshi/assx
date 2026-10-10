@@ -6,6 +6,17 @@ Issue: [#4](https://github.com/Nemuboshi/assx/issues/4)
 the ASS006 no-effect rule, the ASS013 Style-default rule and font analysis.
 Future formatters can consume the same state view without depending on lint.
 
+## Declarative special-tag dispatch (Issue #5, part 1)
+
+TagSpec owns the static SemanticKind dispatch policy. Generic assignments
+continue to use declared value kinds, affected slots and precedence rules;
+a small set of special forms (transforms, clipping, Style resets, karaoke,
+drawing mode and relative font sizes) are delegated to
+internal/semantic/handlers.go. TransformComparable declares the existing
+set of transform targets eligible for no-effect comparison without a
+separate tag-name whitelist. This change is a behavior-preserving relocation;
+unknown-state handling, observer output and SafeFix policy remain unchanged.
+
 ## Inputs and outputs
 
 A caller supplies a lossless `ass.DialogueText`, optional canonical Style
@@ -56,6 +67,22 @@ one inside a transform, revokes all automatic fixes for that Dialogue.
 `SkipNoEffectProofs` permits consumers such as font analysis to use the
 state stream without allocating no-effect provenance and liveness results.
 Plain Dialogue lines bypass semantic analysis in the document lint pipeline.
+
+## Explicit uncertainty and proof safety (Issue #5, part 2)
+
+TagEvent.Uncertainty reports malformed input, unsupported semantics,
+unresolved values, renderer-dependent interpretations and time-dependent
+transforms as distinct cases. UncertaintyNone means no ambiguity was
+reported for this event; TagEvent.Known still describes canonical assignment
+values, not every special operation. Time-dependent transforms invalidate
+effective state without automatically becoming global SafeFix barriers.
+
+Actual proof barriers are marked by TagEvent.Barrier and flow through a
+shared proof-revocation path. Unresolved named Style resets, unsupported
+absolute karaoke timing and invalid karaoke durations now revoke prior
+no-effect proofs and block later automated edits. Numeric prefixes with
+trailing junk are no longer accepted as canonical karaoke durations.
+Known valid tags retain their existing proof and edit behavior.
 
 ## Testing and measurement
 
