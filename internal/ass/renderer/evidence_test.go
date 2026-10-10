@@ -1,6 +1,7 @@
 package renderer
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/xml"
 	"fmt"
@@ -23,7 +24,11 @@ func TestGeneratedMatrixHasNoEvidenceDrift(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	actual := fmt.Sprintf("%x", sha256.Sum256(data))
+	// Git may materialize XML using CRLF on Windows and LF on CI.
+	// Evidence checksums deliberately ignore physical newline style.
+	canonical := bytes.ReplaceAll(data, []byte("\r\n"), []byte("\n"))
+	canonical = bytes.ReplaceAll(canonical, []byte("\r"), []byte("\n"))
+	actual := fmt.Sprintf("%x", sha256.Sum256(canonical))
 	if actual != matrixSHA256 {
 		t.Fatalf("evidence matrix changed without regenerating metadata: want %s, have %s; run go generate ./internal/ass/renderer", actual, matrixSHA256)
 	}

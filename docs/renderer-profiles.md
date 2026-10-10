@@ -69,8 +69,11 @@ semantics and scoped lint migration in later PRs.
 docs/ass-tags.xml is the authoritative per-signature evidence source.
 go generate ./internal/ass/renderer produces matrix_generated.go with
 applicability and independently verified renderer masks, citations and raw
-signature shapes. Unverified tag groups become explicit stubs, without
-inventing signatures. A test pins the XML digest to generated code and
+signature shapes. The source digest canonicalizes CRLF and standalone CR to LF
+before hashing, so different Git checkout settings cannot invalidate the
+evidence hash. The generator's -check mode compares canonical line endings;
+.gitattributes also pins the XML and generated Go file to LF on checkout.
+Unverified tag groups become explicit stubs, without inventing signatures. A test pins the XML digest to generated code and
 compares source revision hashes to Profile.Version. Existing
 internal/ass/spec evidence validators remain authoritative.
 
