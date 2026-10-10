@@ -65,8 +65,13 @@ func ignoredTagTail(tag ass.Tag) string {
 	if tag.Paren || len(tag.Args) != 1 {
 		return ""
 	}
-	ir := ass.DecodeTag(tag)
-	if !ir.Known {
+	return ignoredTagTailIR(tag, ass.DecodeTag(tag))
+}
+
+// ignoredTagTailIR never resolves names. Renderer-scoped consumers supply the
+// precise policy already chosen by their Profile.
+func ignoredTagTailIR(tag ass.Tag, ir ass.TagIR) string {
+	if tag.Paren || len(tag.Args) != 1 || !ir.Known {
 		return ""
 	}
 	switch ir.Spec.Value {

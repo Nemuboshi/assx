@@ -31,6 +31,7 @@ const (
 	IssueEventLayer              = "ASS028"
 	IssueEffectField             = "ASS029"
 	IssueKaraoke                 = "ASS030"
+	IssueRendererUnresolved      = "ASS031"
 )
 
 type Severity string
@@ -59,6 +60,11 @@ const (
 )
 
 var Rules = map[string]Rule{
+	IssueRendererUnresolved: {
+		ID: IssueRendererUnresolved, Severity: Warning, Title: "Renderer command interpretation is unresolved",
+		Description: "The selected renderer rejects, ignores, or cannot conclusively interpret this invocation.",
+		Fix:         "Check the exact command and target build before changing the source.",
+	},
 	IssueArgumentCount: {
 		ID: IssueArgumentCount, Severity: Error, Title: "Invalid argument count",
 		Description: "A tag has an argument count outside the checked forms.", Fix: "Correct the tag's argument list.",
