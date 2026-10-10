@@ -37,6 +37,10 @@ var (
 )
 
 func AnalyzeStyles(doc ass.Document) []Diagnostic {
+	return proveSafeFixes(doc, analyzeStyles(doc), defaultFixTargets())
+}
+
+func analyzeStyles(doc ass.Document) []Diagnostic {
 	var out []Diagnostic
 	for _, field := range doc.StyleFields {
 		fieldName := field.StyleName + "." + field.Name

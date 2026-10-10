@@ -1776,6 +1776,680 @@
         "description": "Style-backed override tags leave the corresponding Style properties unchanged across dialogue text.",
         "suggested_fix": "Remove the redundant override tags.",
         "fix_safety": "safe",
+        "fix_proof": {
+          "id": "4bfa42c3bd03b0551e4b998669581dfdf4ec06ea5e9673216fc9a1a7e9bf9c1f",
+          "source_sha256": "7c5425d6cf69b7215c1b6e258ee742a0d9d2a04b735613d6feb14b3356607dfa",
+          "edited_sha256": "0b9cfc6ed431341aba4ed5db0bedef5bda80ba12af1bc0bcc827e57845fd7805",
+          "source_edits": [
+            {
+              "id": "ASS013",
+              "edit": {
+                "start": 423,
+                "end": 443,
+                "replacement": ""
+              }
+            },
+            {
+              "id": "ASS006",
+              "edit": {
+                "start": 682,
+                "end": 695,
+                "replacement": ""
+              }
+            }
+          ],
+          "targets": [
+            {
+              "renderer": "libass",
+              "version": "f61db567e6593df3470e91594bcd4ad2d0473aff",
+              "capabilities": {
+                "vsfiltermod": "not-applicable",
+                "lua": "not-applicable"
+              }
+            },
+            {
+              "renderer": "xy-VSFilter",
+              "version": "135a30153a38fa846cb5c39df0f258403e92096e",
+              "capabilities": {
+                "vsfiltermod": "not-applicable",
+                "lua": "not-applicable"
+              }
+            }
+          ],
+          "interpretations": [
+            {
+              "target": {
+                "renderer": "libass",
+                "version": "f61db567e6593df3470e91594bcd4ad2d0473aff",
+                "capabilities": {
+                  "vsfiltermod": "not-applicable",
+                  "lua": "not-applicable"
+                }
+              },
+              "dialogues": [
+                {
+                  "line": 15,
+                  "before_trace_sha256": "93c59b5cd0ffba3ad2a0f6067e699f4b496f018c65d0b986d9507043403bdcdb",
+                  "after_trace_sha256": "1906a9ede6ab1f2e888807c7a5a9f3ee078ccc3d44997e7c38416b45fd66a38d",
+                  "before_interpretations": [
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 1,
+                        "End": 14
+                      },
+                      "tag": "fn",
+                      "raw": "\\fnGo Regular",
+                      "arguments": [
+                        "Go Regular"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:556-565 xy:src/subtitles/RTS.cpp:2447-2453 vsm:src/subtitles/RTS.cpp:3102-3106",
+                      "policy": "assign",
+                      "slots": [
+                        "fontname"
+                      ],
+                      "before": {
+                        "fontname": {
+                          "value": "Go Regular",
+                          "known": true
+                        }
+                      },
+                      "after": {
+                        "fontname": {
+                          "value": "Go Regular",
+                          "known": true
+                        }
+                      },
+                      "known": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {
+                          "fontname": {
+                            "value": "Go Regular",
+                            "known": true
+                          },
+                          "fontsize": {
+                            "value": "24:24",
+                            "known": true
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 14,
+                        "End": 19
+                      },
+                      "index": 1,
+                      "tag": "fs",
+                      "raw": "\\fs24",
+                      "arguments": [
+                        "24"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:465-475 xy:src/subtitles/RTS.cpp:2506-2525 vsm:src/subtitles/RTS.cpp:3188-3206",
+                      "policy": "assign",
+                      "slots": [
+                        "fontsize"
+                      ],
+                      "before": {
+                        "fontsize": {
+                          "value": "24:24",
+                          "known": true
+                        }
+                      },
+                      "after": {
+                        "fontsize": {
+                          "value": "24:24",
+                          "known": true
+                        }
+                      },
+                      "known": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {
+                          "fontname": {
+                            "value": "Go Regular",
+                            "known": true
+                          },
+                          "fontsize": {
+                            "value": "24:24",
+                            "known": true
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "kind": "text",
+                      "source": {
+                        "Start": 20,
+                        "End": 30
+                      },
+                      "text": "ASCII text",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {
+                          "fontname": {
+                            "value": "Go Regular",
+                            "known": true
+                          },
+                          "fontsize": {
+                            "value": "24:24",
+                            "known": true
+                          }
+                        }
+                      }
+                    }
+                  ],
+                  "after_interpretations": [
+                    {
+                      "kind": "text",
+                      "source": {
+                        "Start": 0,
+                        "End": 10
+                      },
+                      "text": "ASCII text",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {}
+                      }
+                    }
+                  ]
+                },
+                {
+                  "line": 18,
+                  "before_trace_sha256": "44ea343bc1be286464b34ca0bd7eb1ff48e901786f76411fa6a6e6eb714a4eec",
+                  "after_trace_sha256": "ade439926f50de19e9b64c392e3e55b750f96b600defafcee1bda2316a9cba65",
+                  "before_interpretations": [
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 1,
+                        "End": 6
+                      },
+                      "tag": "r",
+                      "raw": "\\rAlt",
+                      "arguments": [
+                        "Alt"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:805-811 xy:src/subtitles/RTS.cpp:2643-2647",
+                      "policy": "style-reset",
+                      "applied": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Alt",
+                        "values": {
+                          "fontname": {
+                            "value": "Go Regular",
+                            "known": true
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 6,
+                        "End": 19
+                      },
+                      "index": 1,
+                      "tag": "fn",
+                      "raw": "\\fnGo Regular",
+                      "arguments": [
+                        "Go Regular"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:556-565 xy:src/subtitles/RTS.cpp:2447-2453 vsm:src/subtitles/RTS.cpp:3102-3106",
+                      "policy": "assign",
+                      "slots": [
+                        "fontname"
+                      ],
+                      "before": {
+                        "fontname": {
+                          "value": "Go Regular",
+                          "known": true
+                        }
+                      },
+                      "after": {
+                        "fontname": {
+                          "value": "Go Regular",
+                          "known": true
+                        }
+                      },
+                      "known": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Alt",
+                        "values": {
+                          "fontname": {
+                            "value": "Go Regular",
+                            "known": true
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 19,
+                        "End": 28
+                      },
+                      "index": 2,
+                      "tag": "r",
+                      "raw": "\\rDefault",
+                      "arguments": [
+                        "Default"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:805-811 xy:src/subtitles/RTS.cpp:2643-2647",
+                      "policy": "style-reset",
+                      "applied": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {
+                          "fontname": {
+                            "value": "Go Regular",
+                            "known": true
+                          }
+                        }
+                      }
+                    }
+                  ],
+                  "after_interpretations": [
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 1,
+                        "End": 6
+                      },
+                      "tag": "r",
+                      "raw": "\\rAlt",
+                      "arguments": [
+                        "Alt"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:805-811 xy:src/subtitles/RTS.cpp:2643-2647",
+                      "policy": "style-reset",
+                      "applied": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Alt",
+                        "values": {}
+                      }
+                    },
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 6,
+                        "End": 15
+                      },
+                      "index": 1,
+                      "tag": "r",
+                      "raw": "\\rDefault",
+                      "arguments": [
+                        "Default"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:805-811 xy:src/subtitles/RTS.cpp:2643-2647",
+                      "policy": "style-reset",
+                      "applied": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {}
+                      }
+                    },
+                    {
+                      "kind": "text",
+                      "source": {
+                        "Start": 16,
+                        "End": 21
+                      },
+                      "text": "Again",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {}
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "target": {
+                "renderer": "xy-VSFilter",
+                "version": "135a30153a38fa846cb5c39df0f258403e92096e",
+                "capabilities": {
+                  "vsfiltermod": "not-applicable",
+                  "lua": "not-applicable"
+                }
+              },
+              "dialogues": [
+                {
+                  "line": 15,
+                  "before_trace_sha256": "93c59b5cd0ffba3ad2a0f6067e699f4b496f018c65d0b986d9507043403bdcdb",
+                  "after_trace_sha256": "1906a9ede6ab1f2e888807c7a5a9f3ee078ccc3d44997e7c38416b45fd66a38d",
+                  "before_interpretations": [
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 1,
+                        "End": 14
+                      },
+                      "tag": "fn",
+                      "raw": "\\fnGo Regular",
+                      "arguments": [
+                        "Go Regular"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:556-565 xy:src/subtitles/RTS.cpp:2447-2453 vsm:src/subtitles/RTS.cpp:3102-3106",
+                      "policy": "assign",
+                      "slots": [
+                        "fontname"
+                      ],
+                      "before": {
+                        "fontname": {
+                          "value": "Go Regular",
+                          "known": true
+                        }
+                      },
+                      "after": {
+                        "fontname": {
+                          "value": "Go Regular",
+                          "known": true
+                        }
+                      },
+                      "known": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {
+                          "fontname": {
+                            "value": "Go Regular",
+                            "known": true
+                          },
+                          "fontsize": {
+                            "value": "24:24",
+                            "known": true
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 14,
+                        "End": 19
+                      },
+                      "index": 1,
+                      "tag": "fs",
+                      "raw": "\\fs24",
+                      "arguments": [
+                        "24"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:465-475 xy:src/subtitles/RTS.cpp:2506-2525 vsm:src/subtitles/RTS.cpp:3188-3206",
+                      "policy": "assign",
+                      "slots": [
+                        "fontsize"
+                      ],
+                      "before": {
+                        "fontsize": {
+                          "value": "24:24",
+                          "known": true
+                        }
+                      },
+                      "after": {
+                        "fontsize": {
+                          "value": "24:24",
+                          "known": true
+                        }
+                      },
+                      "known": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {
+                          "fontname": {
+                            "value": "Go Regular",
+                            "known": true
+                          },
+                          "fontsize": {
+                            "value": "24:24",
+                            "known": true
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "kind": "text",
+                      "source": {
+                        "Start": 20,
+                        "End": 30
+                      },
+                      "text": "ASCII text",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {
+                          "fontname": {
+                            "value": "Go Regular",
+                            "known": true
+                          },
+                          "fontsize": {
+                            "value": "24:24",
+                            "known": true
+                          }
+                        }
+                      }
+                    }
+                  ],
+                  "after_interpretations": [
+                    {
+                      "kind": "text",
+                      "source": {
+                        "Start": 0,
+                        "End": 10
+                      },
+                      "text": "ASCII text",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {}
+                      }
+                    }
+                  ]
+                },
+                {
+                  "line": 18,
+                  "before_trace_sha256": "44ea343bc1be286464b34ca0bd7eb1ff48e901786f76411fa6a6e6eb714a4eec",
+                  "after_trace_sha256": "ade439926f50de19e9b64c392e3e55b750f96b600defafcee1bda2316a9cba65",
+                  "before_interpretations": [
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 1,
+                        "End": 6
+                      },
+                      "tag": "r",
+                      "raw": "\\rAlt",
+                      "arguments": [
+                        "Alt"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:805-811 xy:src/subtitles/RTS.cpp:2643-2647",
+                      "policy": "style-reset",
+                      "applied": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Alt",
+                        "values": {
+                          "fontname": {
+                            "value": "Go Regular",
+                            "known": true
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 6,
+                        "End": 19
+                      },
+                      "index": 1,
+                      "tag": "fn",
+                      "raw": "\\fnGo Regular",
+                      "arguments": [
+                        "Go Regular"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:556-565 xy:src/subtitles/RTS.cpp:2447-2453 vsm:src/subtitles/RTS.cpp:3102-3106",
+                      "policy": "assign",
+                      "slots": [
+                        "fontname"
+                      ],
+                      "before": {
+                        "fontname": {
+                          "value": "Go Regular",
+                          "known": true
+                        }
+                      },
+                      "after": {
+                        "fontname": {
+                          "value": "Go Regular",
+                          "known": true
+                        }
+                      },
+                      "known": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Alt",
+                        "values": {
+                          "fontname": {
+                            "value": "Go Regular",
+                            "known": true
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 19,
+                        "End": 28
+                      },
+                      "index": 2,
+                      "tag": "r",
+                      "raw": "\\rDefault",
+                      "arguments": [
+                        "Default"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:805-811 xy:src/subtitles/RTS.cpp:2643-2647",
+                      "policy": "style-reset",
+                      "applied": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {
+                          "fontname": {
+                            "value": "Go Regular",
+                            "known": true
+                          }
+                        }
+                      }
+                    }
+                  ],
+                  "after_interpretations": [
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 1,
+                        "End": 6
+                      },
+                      "tag": "r",
+                      "raw": "\\rAlt",
+                      "arguments": [
+                        "Alt"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:805-811 xy:src/subtitles/RTS.cpp:2643-2647",
+                      "policy": "style-reset",
+                      "applied": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Alt",
+                        "values": {}
+                      }
+                    },
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 6,
+                        "End": 15
+                      },
+                      "index": 1,
+                      "tag": "r",
+                      "raw": "\\rDefault",
+                      "arguments": [
+                        "Default"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:805-811 xy:src/subtitles/RTS.cpp:2643-2647",
+                      "policy": "style-reset",
+                      "applied": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {}
+                      }
+                    },
+                    {
+                      "kind": "text",
+                      "source": {
+                        "Start": 16,
+                        "End": 21
+                      },
+                      "text": "Again",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {}
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "verification_basis": [
+            "Compare interpretations within every pinned target renderer.",
+            "Require verified signatures and citations for every command affected by a semantic edit.",
+            "Compare the full trace when an edit removes only an empty override block.",
+            "Compare visible text, tracked state values, and source provenance before and after the edit.",
+            "Reject edits that change document parsing or an unresolved semantic operation.",
+            "Compare integer Style fields by the exact integer consumed before and after the edit.",
+            "Use libass rendercheck for pixel regression fixtures; use pinned-source and trace evidence for xy-VSFilter."
+          ]
+        },
         "edits": [
           {
             "start": 423,
@@ -1823,6 +2497,7 @@
         "description": "An override is replaced, reset, or ignored before it affects dialogue text, or repeats the value already active in every affected state slot.",
         "suggested_fix": "Remove it or move it to the intended text boundary.",
         "fix_safety": "safe",
+        "fix_proof_ref": "4bfa42c3bd03b0551e4b998669581dfdf4ec06ea5e9673216fc9a1a7e9bf9c1f",
         "edits": [
           {
             "start": 682,
@@ -1859,6 +2534,680 @@
         "description": "Style-backed override tags leave the corresponding Style properties unchanged across dialogue text.",
         "suggested_fix": "Remove the redundant override tags.",
         "fix_safety": "safe",
+        "fix_proof": {
+          "id": "4bfa42c3bd03b0551e4b998669581dfdf4ec06ea5e9673216fc9a1a7e9bf9c1f",
+          "source_sha256": "7c5425d6cf69b7215c1b6e258ee742a0d9d2a04b735613d6feb14b3356607dfa",
+          "edited_sha256": "0b9cfc6ed431341aba4ed5db0bedef5bda80ba12af1bc0bcc827e57845fd7805",
+          "source_edits": [
+            {
+              "id": "ASS013",
+              "edit": {
+                "start": 423,
+                "end": 443,
+                "replacement": ""
+              }
+            },
+            {
+              "id": "ASS006",
+              "edit": {
+                "start": 682,
+                "end": 695,
+                "replacement": ""
+              }
+            }
+          ],
+          "targets": [
+            {
+              "renderer": "libass",
+              "version": "f61db567e6593df3470e91594bcd4ad2d0473aff",
+              "capabilities": {
+                "vsfiltermod": "not-applicable",
+                "lua": "not-applicable"
+              }
+            },
+            {
+              "renderer": "xy-VSFilter",
+              "version": "135a30153a38fa846cb5c39df0f258403e92096e",
+              "capabilities": {
+                "vsfiltermod": "not-applicable",
+                "lua": "not-applicable"
+              }
+            }
+          ],
+          "interpretations": [
+            {
+              "target": {
+                "renderer": "libass",
+                "version": "f61db567e6593df3470e91594bcd4ad2d0473aff",
+                "capabilities": {
+                  "vsfiltermod": "not-applicable",
+                  "lua": "not-applicable"
+                }
+              },
+              "dialogues": [
+                {
+                  "line": 15,
+                  "before_trace_sha256": "93c59b5cd0ffba3ad2a0f6067e699f4b496f018c65d0b986d9507043403bdcdb",
+                  "after_trace_sha256": "1906a9ede6ab1f2e888807c7a5a9f3ee078ccc3d44997e7c38416b45fd66a38d",
+                  "before_interpretations": [
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 1,
+                        "End": 14
+                      },
+                      "tag": "fn",
+                      "raw": "\\fnGo Regular",
+                      "arguments": [
+                        "Go Regular"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:556-565 xy:src/subtitles/RTS.cpp:2447-2453 vsm:src/subtitles/RTS.cpp:3102-3106",
+                      "policy": "assign",
+                      "slots": [
+                        "fontname"
+                      ],
+                      "before": {
+                        "fontname": {
+                          "value": "Go Regular",
+                          "known": true
+                        }
+                      },
+                      "after": {
+                        "fontname": {
+                          "value": "Go Regular",
+                          "known": true
+                        }
+                      },
+                      "known": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {
+                          "fontname": {
+                            "value": "Go Regular",
+                            "known": true
+                          },
+                          "fontsize": {
+                            "value": "24:24",
+                            "known": true
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 14,
+                        "End": 19
+                      },
+                      "index": 1,
+                      "tag": "fs",
+                      "raw": "\\fs24",
+                      "arguments": [
+                        "24"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:465-475 xy:src/subtitles/RTS.cpp:2506-2525 vsm:src/subtitles/RTS.cpp:3188-3206",
+                      "policy": "assign",
+                      "slots": [
+                        "fontsize"
+                      ],
+                      "before": {
+                        "fontsize": {
+                          "value": "24:24",
+                          "known": true
+                        }
+                      },
+                      "after": {
+                        "fontsize": {
+                          "value": "24:24",
+                          "known": true
+                        }
+                      },
+                      "known": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {
+                          "fontname": {
+                            "value": "Go Regular",
+                            "known": true
+                          },
+                          "fontsize": {
+                            "value": "24:24",
+                            "known": true
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "kind": "text",
+                      "source": {
+                        "Start": 20,
+                        "End": 30
+                      },
+                      "text": "ASCII text",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {
+                          "fontname": {
+                            "value": "Go Regular",
+                            "known": true
+                          },
+                          "fontsize": {
+                            "value": "24:24",
+                            "known": true
+                          }
+                        }
+                      }
+                    }
+                  ],
+                  "after_interpretations": [
+                    {
+                      "kind": "text",
+                      "source": {
+                        "Start": 0,
+                        "End": 10
+                      },
+                      "text": "ASCII text",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {}
+                      }
+                    }
+                  ]
+                },
+                {
+                  "line": 18,
+                  "before_trace_sha256": "44ea343bc1be286464b34ca0bd7eb1ff48e901786f76411fa6a6e6eb714a4eec",
+                  "after_trace_sha256": "ade439926f50de19e9b64c392e3e55b750f96b600defafcee1bda2316a9cba65",
+                  "before_interpretations": [
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 1,
+                        "End": 6
+                      },
+                      "tag": "r",
+                      "raw": "\\rAlt",
+                      "arguments": [
+                        "Alt"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:805-811 xy:src/subtitles/RTS.cpp:2643-2647",
+                      "policy": "style-reset",
+                      "applied": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Alt",
+                        "values": {
+                          "fontname": {
+                            "value": "Go Regular",
+                            "known": true
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 6,
+                        "End": 19
+                      },
+                      "index": 1,
+                      "tag": "fn",
+                      "raw": "\\fnGo Regular",
+                      "arguments": [
+                        "Go Regular"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:556-565 xy:src/subtitles/RTS.cpp:2447-2453 vsm:src/subtitles/RTS.cpp:3102-3106",
+                      "policy": "assign",
+                      "slots": [
+                        "fontname"
+                      ],
+                      "before": {
+                        "fontname": {
+                          "value": "Go Regular",
+                          "known": true
+                        }
+                      },
+                      "after": {
+                        "fontname": {
+                          "value": "Go Regular",
+                          "known": true
+                        }
+                      },
+                      "known": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Alt",
+                        "values": {
+                          "fontname": {
+                            "value": "Go Regular",
+                            "known": true
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 19,
+                        "End": 28
+                      },
+                      "index": 2,
+                      "tag": "r",
+                      "raw": "\\rDefault",
+                      "arguments": [
+                        "Default"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:805-811 xy:src/subtitles/RTS.cpp:2643-2647",
+                      "policy": "style-reset",
+                      "applied": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {
+                          "fontname": {
+                            "value": "Go Regular",
+                            "known": true
+                          }
+                        }
+                      }
+                    }
+                  ],
+                  "after_interpretations": [
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 1,
+                        "End": 6
+                      },
+                      "tag": "r",
+                      "raw": "\\rAlt",
+                      "arguments": [
+                        "Alt"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:805-811 xy:src/subtitles/RTS.cpp:2643-2647",
+                      "policy": "style-reset",
+                      "applied": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Alt",
+                        "values": {}
+                      }
+                    },
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 6,
+                        "End": 15
+                      },
+                      "index": 1,
+                      "tag": "r",
+                      "raw": "\\rDefault",
+                      "arguments": [
+                        "Default"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:805-811 xy:src/subtitles/RTS.cpp:2643-2647",
+                      "policy": "style-reset",
+                      "applied": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {}
+                      }
+                    },
+                    {
+                      "kind": "text",
+                      "source": {
+                        "Start": 16,
+                        "End": 21
+                      },
+                      "text": "Again",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {}
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "target": {
+                "renderer": "xy-VSFilter",
+                "version": "135a30153a38fa846cb5c39df0f258403e92096e",
+                "capabilities": {
+                  "vsfiltermod": "not-applicable",
+                  "lua": "not-applicable"
+                }
+              },
+              "dialogues": [
+                {
+                  "line": 15,
+                  "before_trace_sha256": "93c59b5cd0ffba3ad2a0f6067e699f4b496f018c65d0b986d9507043403bdcdb",
+                  "after_trace_sha256": "1906a9ede6ab1f2e888807c7a5a9f3ee078ccc3d44997e7c38416b45fd66a38d",
+                  "before_interpretations": [
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 1,
+                        "End": 14
+                      },
+                      "tag": "fn",
+                      "raw": "\\fnGo Regular",
+                      "arguments": [
+                        "Go Regular"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:556-565 xy:src/subtitles/RTS.cpp:2447-2453 vsm:src/subtitles/RTS.cpp:3102-3106",
+                      "policy": "assign",
+                      "slots": [
+                        "fontname"
+                      ],
+                      "before": {
+                        "fontname": {
+                          "value": "Go Regular",
+                          "known": true
+                        }
+                      },
+                      "after": {
+                        "fontname": {
+                          "value": "Go Regular",
+                          "known": true
+                        }
+                      },
+                      "known": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {
+                          "fontname": {
+                            "value": "Go Regular",
+                            "known": true
+                          },
+                          "fontsize": {
+                            "value": "24:24",
+                            "known": true
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 14,
+                        "End": 19
+                      },
+                      "index": 1,
+                      "tag": "fs",
+                      "raw": "\\fs24",
+                      "arguments": [
+                        "24"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:465-475 xy:src/subtitles/RTS.cpp:2506-2525 vsm:src/subtitles/RTS.cpp:3188-3206",
+                      "policy": "assign",
+                      "slots": [
+                        "fontsize"
+                      ],
+                      "before": {
+                        "fontsize": {
+                          "value": "24:24",
+                          "known": true
+                        }
+                      },
+                      "after": {
+                        "fontsize": {
+                          "value": "24:24",
+                          "known": true
+                        }
+                      },
+                      "known": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {
+                          "fontname": {
+                            "value": "Go Regular",
+                            "known": true
+                          },
+                          "fontsize": {
+                            "value": "24:24",
+                            "known": true
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "kind": "text",
+                      "source": {
+                        "Start": 20,
+                        "End": 30
+                      },
+                      "text": "ASCII text",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {
+                          "fontname": {
+                            "value": "Go Regular",
+                            "known": true
+                          },
+                          "fontsize": {
+                            "value": "24:24",
+                            "known": true
+                          }
+                        }
+                      }
+                    }
+                  ],
+                  "after_interpretations": [
+                    {
+                      "kind": "text",
+                      "source": {
+                        "Start": 0,
+                        "End": 10
+                      },
+                      "text": "ASCII text",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {}
+                      }
+                    }
+                  ]
+                },
+                {
+                  "line": 18,
+                  "before_trace_sha256": "44ea343bc1be286464b34ca0bd7eb1ff48e901786f76411fa6a6e6eb714a4eec",
+                  "after_trace_sha256": "ade439926f50de19e9b64c392e3e55b750f96b600defafcee1bda2316a9cba65",
+                  "before_interpretations": [
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 1,
+                        "End": 6
+                      },
+                      "tag": "r",
+                      "raw": "\\rAlt",
+                      "arguments": [
+                        "Alt"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:805-811 xy:src/subtitles/RTS.cpp:2643-2647",
+                      "policy": "style-reset",
+                      "applied": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Alt",
+                        "values": {
+                          "fontname": {
+                            "value": "Go Regular",
+                            "known": true
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 6,
+                        "End": 19
+                      },
+                      "index": 1,
+                      "tag": "fn",
+                      "raw": "\\fnGo Regular",
+                      "arguments": [
+                        "Go Regular"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:556-565 xy:src/subtitles/RTS.cpp:2447-2453 vsm:src/subtitles/RTS.cpp:3102-3106",
+                      "policy": "assign",
+                      "slots": [
+                        "fontname"
+                      ],
+                      "before": {
+                        "fontname": {
+                          "value": "Go Regular",
+                          "known": true
+                        }
+                      },
+                      "after": {
+                        "fontname": {
+                          "value": "Go Regular",
+                          "known": true
+                        }
+                      },
+                      "known": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Alt",
+                        "values": {
+                          "fontname": {
+                            "value": "Go Regular",
+                            "known": true
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 19,
+                        "End": 28
+                      },
+                      "index": 2,
+                      "tag": "r",
+                      "raw": "\\rDefault",
+                      "arguments": [
+                        "Default"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:805-811 xy:src/subtitles/RTS.cpp:2643-2647",
+                      "policy": "style-reset",
+                      "applied": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {
+                          "fontname": {
+                            "value": "Go Regular",
+                            "known": true
+                          }
+                        }
+                      }
+                    }
+                  ],
+                  "after_interpretations": [
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 1,
+                        "End": 6
+                      },
+                      "tag": "r",
+                      "raw": "\\rAlt",
+                      "arguments": [
+                        "Alt"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:805-811 xy:src/subtitles/RTS.cpp:2643-2647",
+                      "policy": "style-reset",
+                      "applied": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Alt",
+                        "values": {}
+                      }
+                    },
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 6,
+                        "End": 15
+                      },
+                      "index": 1,
+                      "tag": "r",
+                      "raw": "\\rDefault",
+                      "arguments": [
+                        "Default"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:805-811 xy:src/subtitles/RTS.cpp:2643-2647",
+                      "policy": "style-reset",
+                      "applied": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {}
+                      }
+                    },
+                    {
+                      "kind": "text",
+                      "source": {
+                        "Start": 16,
+                        "End": 21
+                      },
+                      "text": "Again",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {}
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "verification_basis": [
+            "Compare interpretations within every pinned target renderer.",
+            "Require verified signatures and citations for every command affected by a semantic edit.",
+            "Compare the full trace when an edit removes only an empty override block.",
+            "Compare visible text, tracked state values, and source provenance before and after the edit.",
+            "Reject edits that change document parsing or an unresolved semantic operation.",
+            "Compare integer Style fields by the exact integer consumed before and after the edit.",
+            "Use libass rendercheck for pixel regression fixtures; use pinned-source and trace evidence for xy-VSFilter."
+          ]
+        },
         "edits": [
           {
             "start": 423,
@@ -1918,6 +3267,7 @@
         "description": "An override is replaced, reset, or ignored before it affects dialogue text, or repeats the value already active in every affected state slot.",
         "suggested_fix": "Remove it or move it to the intended text boundary.",
         "fix_safety": "safe",
+        "fix_proof_ref": "4bfa42c3bd03b0551e4b998669581dfdf4ec06ea5e9673216fc9a1a7e9bf9c1f",
         "edits": [
           {
             "start": 682,

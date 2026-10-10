@@ -19,6 +19,7 @@ type resolvedOperation struct {
 	match     renderer.MatchStatus
 	signature renderer.SignatureStatus
 	shadowed  string
+	citation  string
 	// unclosed preserves a malformed parenthesized expression even when the
 	// renderer resolver cannot assign a command name or signature.
 	unclosed bool
@@ -100,7 +101,8 @@ func resolveTokens(tree ass.ConcreteDialogue, profile renderer.Profile) ([]seman
 					op: resolvedOperation{
 						tag: tag, policy: result.Policy, known: result.HasPolicy,
 						match: result.Status, signature: result.Signature,
-						shadowed: result.Shadowed, unclosed: current.expr.Parenthesized && !current.expr.Closed(),
+						shadowed: result.Shadowed, citation: result.Citation,
+						unclosed: current.expr.Parenthesized && !current.expr.Closed(),
 					},
 					parent: current.parent,
 				})
