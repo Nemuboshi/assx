@@ -119,6 +119,8 @@ func TestLibassUsesASCIIWhitespaceForEmptyComponents(t *testing.T) {
 	}{
 		{"empty", "", 2, SignatureVerified, true},
 		{"ascii spaces", " ", 2, SignatureVerified, true},
+		{"ascii tab", "\t", 2, SignatureVerified, true},
+		{"letter t", "t", 3, SignatureRejected, false},
 		{"nonbreaking space", "\u00a0", 3, SignatureRejected, false},
 		{"em space", "\u2003", 3, SignatureRejected, false},
 	} {
