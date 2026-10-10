@@ -193,25 +193,27 @@ func canonicalStyleValues(property, raw string, slots []string) ([]string, bool)
 
 func canonicalStyleColour(raw string) (colour, alpha string, ok bool) {
 	raw = strings.TrimSpace(raw)
-	if len(raw) >= 2 && strings.EqualFold(raw[:2], "&H") {
-		raw = raw[2:]
+	digits := raw
+	if len(digits) >= 2 && strings.EqualFold(digits[:2], "&H") {
+		digits = digits[2:]
 	}
-	if strings.HasSuffix(raw, "&") {
-		raw = raw[:len(raw)-1]
+	if strings.HasSuffix(digits, "&") {
+		digits = digits[:len(digits)-1]
 	}
-	if len(raw) != 8 {
+	if len(digits) != 8 {
 		return "", "", false
 	}
-	value, err := strconv.ParseUint(raw, 16, 32)
-	if err != nil {
+	parsed := ass.DecodeExactHex(raw)
+	if parsed.Status != ass.ValueValid {
 		return "", "", false
 	}
+	value := uint64(parsed.Hex)
 	return strconv.FormatUint(value&0xffffff, 16), strconv.FormatUint((value>>24)&0xff, 16), true
 }
 
 func parseStyleInteger(raw string) (int, bool) {
-	value, err := strconv.Atoi(strings.TrimSpace(raw))
-	return value, err == nil
+	value := ass.DecodeExactInteger(raw)
+	return int(value.Integer), value.Status == ass.ValueValid
 }
 
 func StyleTagState(tag ass.Tag, tagSpec spec.TagSpec, slots []string, base, original map[string]StateValue) ([]string, bool) {

@@ -3,8 +3,6 @@ package lint
 import (
 	"fmt"
 	"math"
-	"regexp"
-	"slices"
 	"strconv"
 	"strings"
 
@@ -32,12 +30,6 @@ type Diagnostic struct {
 	Detail      string     `json:"detail,omitempty"`
 	Sources     []string   `json:"sources"`
 }
-
-var (
-	integerPrefix = regexp.MustCompile(`^\s*([+-]?\d+)`)
-	numberPrefix  = regexp.MustCompile(`^\s*([+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?)`)
-	hexPrefix     = regexp.MustCompile(`^\s*([+-]?[0-9a-fA-F]+)`)
-)
 
 func analyzeUnterminatedBlocks(dialogue ass.Dialogue) []Diagnostic {
 	text := dialogue.Text
@@ -155,14 +147,15 @@ func (a *dialogueAnalyzer) consumeTag(tag ass.Tag) {
 }
 
 func (a *dialogueAnalyzer) validate(tag ass.Tag) {
-	tagSpec, known := spec.TagSpecs[tag.Name]
-	if !known {
+	ir := ass.DecodeTag(tag)
+	if !ir.Known {
 		return
 	}
+	tagSpec := ir.Spec
 	if tag.Paren && len(tag.Args) == 0 {
 		return // Empty parenthesized expressions are ignored by the renderers.
 	}
-	if tagSpec.Counts != nil && !slices.Contains(tagSpec.Counts, len(tag.Args)) {
+	if tagSpec.Counts != nil && !ir.HasExpectedArity() {
 		a.add(IssueArgumentCount, tag, fmt.Sprintf("Found %d arguments; expected %s.", len(tag.Args), countsText(tagSpec.Counts)))
 		return
 	}
@@ -171,30 +164,29 @@ func (a *dialogueAnalyzer) validate(tag ass.Tag) {
 	}
 
 	arg := tag.Args[0]
+	decoded := ir.Argument(0)
+	usable := decoded.Status == ass.ValueValid || decoded.Status == ass.ValueAmbiguous
 	invalid := func(detail string) { a.add(IssueInvalidValue, tag, detail) }
 
 	switch tagSpec.Value {
 	case spec.IntegerValue:
-		value, ok := parseInteger(arg)
-		if !ok {
+		if !usable {
 			invalid(fmt.Sprintf("Expected an integer, found %q.", arg))
-		} else if (tagSpec.Min != 0 || tagSpec.Max != 0) && (value < tagSpec.Min || value > tagSpec.Max) {
-			invalid(fmt.Sprintf("Value %d is outside the accepted range %d..%d.", value, tagSpec.Min, tagSpec.Max))
-		} else if tag.Name == "a" && (value == 4 || value == 8) {
-			a.add(IssueRendererDiff, tag, fmt.Sprintf("libass treats \\a%d as middle-center like \\a5; xy-VSFilter and VSFilterMod bit-map it to a different alignment.", value))
+		} else if (tagSpec.Min != 0 || tagSpec.Max != 0) && (decoded.Integer < int64(tagSpec.Min) || decoded.Integer > int64(tagSpec.Max)) {
+			invalid(fmt.Sprintf("Value %d is outside the accepted range %d..%d.", decoded.Integer, tagSpec.Min, tagSpec.Max))
+		} else if tag.Name == "a" && (decoded.Integer == 4 || decoded.Integer == 8) {
+			a.add(IssueRendererDiff, tag, fmt.Sprintf("libass treats \\a%d as middle-center like \\a5; xy-VSFilter and VSFilterMod bit-map it to a different alignment.", decoded.Integer))
 		}
 	case spec.NumberValue:
-		if !numberPrefix.MatchString(arg) {
+		if decoded.Consumed == 0 {
 			invalid(fmt.Sprintf("Expected a number, found %q.", arg))
 		}
-		if tag.Name == "blur" {
-			if value, ok := parseNumber(arg); ok && value > 100 {
-				a.add(IssueRendererDiff, tag, "Values above 100 are clamped by libass but have no matching upper clamp in VSFilter.")
-			}
+		if tag.Name == "blur" && usable && decoded.Number > 100 {
+			a.add(IssueRendererDiff, tag, "Values above 100 are clamped by libass but have no matching upper clamp in VSFilter.")
 		}
 	case spec.BoldValue:
-		value, ok := parseInteger(arg)
-		if !ok || (value != 0 && value != 1 && value < 100) {
+		value := decoded.Integer
+		if !usable || (value != 0 && value != 1 && value < 100) {
 			invalid(fmt.Sprintf("Bold value %q must be 0, 1, or at least 100.", arg))
 		}
 	case spec.FontNameValue:
@@ -202,20 +194,14 @@ func (a *dialogueAnalyzer) validate(tag ass.Tag) {
 			a.add(IssueFontComma, tag, "A comma inside parenthesized \\fn syntax separates arguments.")
 		}
 	case spec.HexValue:
-		value := arg
-		if !tag.Paren {
-			value = strings.Trim(value, "&H")
-		} else {
-			value = strings.TrimLeft(value, "&H")
-		}
-		if !hexPrefix.MatchString(value) {
+		if decoded.Consumed == 0 {
 			invalid(fmt.Sprintf("Expected a hexadecimal value, found %q.", arg))
 		} else if tag.Paren && strings.HasPrefix(strings.ToUpper(arg), "&H") {
 			a.add(IssueRendererDiff, tag, "VSFilter and libass treat an &H prefix in parenthesized color/alpha arguments differently.")
 		}
 	case spec.NumberListValue:
-		for _, value := range tag.Args {
-			if !numberPrefix.MatchString(value) {
+		for i, value := range tag.Args {
+			if ir.Argument(i).Consumed == 0 {
 				invalid(fmt.Sprintf("Expected numeric arguments; found %q.", value))
 				break
 			}
@@ -223,12 +209,13 @@ func (a *dialogueAnalyzer) validate(tag ass.Tag) {
 	case spec.RectValue:
 		if len(tag.Args) == 4 {
 			rendererDiff := false
-			for _, value := range tag.Args {
-				if !numberPrefix.MatchString(value) {
+			for i, value := range tag.Args {
+				component := ir.Argument(i)
+				if component.Consumed == 0 {
 					invalid(fmt.Sprintf("Expected numeric rectangle arguments; found %q.", value))
 					break
 				}
-				if number, ok := parseNumber(value); ok && math.Trunc(number) != math.Trunc(number+0.5) {
+				if usableFloat := component.Status == ass.ValueValid || component.Status == ass.ValueAmbiguous; usableFloat && math.Trunc(component.Number) != math.Trunc(component.Number+0.5) {
 					rendererDiff = true
 				}
 			}
@@ -289,22 +276,4 @@ func countsText(values []int) string {
 		parts[i] = strconv.Itoa(value)
 	}
 	return strings.Join(parts, " or ")
-}
-
-func parseInteger(value string) (int, bool) {
-	match := integerPrefix.FindStringSubmatch(value)
-	if len(match) == 0 {
-		return 0, false
-	}
-	parsed, err := strconv.Atoi(match[1])
-	return parsed, err == nil
-}
-
-func parseNumber(value string) (float64, bool) {
-	match := numberPrefix.FindStringSubmatch(value)
-	if len(match) == 0 {
-		return 0, false
-	}
-	parsed, err := strconv.ParseFloat(match[1], 64)
-	return parsed, err == nil
 }
