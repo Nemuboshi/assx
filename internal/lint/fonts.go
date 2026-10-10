@@ -12,6 +12,7 @@ import (
 	"unicode/utf8"
 
 	"assx/internal/ass"
+	"assx/internal/ass/renderer"
 	"assx/internal/semantic"
 	"golang.org/x/image/font/sfnt"
 )
@@ -301,6 +302,16 @@ func styleDistance(face fontFace, context fontContext) int {
 
 // AnalyzeFonts reports missing font families and missing glyphs in dialogue text.
 func AnalyzeFonts(doc ass.Document, checker *FontChecker) ([]Diagnostic, error) {
+	return analyzeFonts(doc, checker, nil)
+}
+
+// AnalyzeFontsForRenderer reads text-state boundaries from the same evaluator
+// as lint while interpreting each override against one pinned renderer.
+func AnalyzeFontsForRenderer(doc ass.Document, checker *FontChecker, profile renderer.Profile) ([]Diagnostic, error) {
+	return analyzeFonts(doc, checker, &profile)
+}
+
+func analyzeFonts(doc ass.Document, checker *FontChecker, profile *renderer.Profile) ([]Diagnostic, error) {
 	definitions := semantic.StyleDefinitionsByName(doc.StyleFields)
 	styles := semantic.StyleStatesByName(doc.StyleFields)
 	// ASS defaults for missing bold/italic fields are known to the font
@@ -324,6 +335,7 @@ func AnalyzeFonts(doc ass.Document, checker *FontChecker) ([]Diagnostic, error) 
 		usageByContext := make(map[fontContext]*fontUsage)
 		semantic.Evaluate(dialogue.ParsedText(), semantic.EvaluationOptions{
 			Styles: styles, DialogueStyle: dialogue.Style, SkipNoEffectProofs: true,
+			Profile: profile,
 			Observer: semantic.Observer{
 				Text: func(text string, start int, state semantic.StateView) {
 					family := state.Value("fontname")
