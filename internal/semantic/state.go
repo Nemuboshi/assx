@@ -30,7 +30,7 @@ func CanonicalTagState(tag ass.Tag, tagSpec spec.TagSpec, slots []string) ([]str
 	if len(slots) == 0 {
 		return nil, false
 	}
-	ir := ass.DecodeTag(tag)
+	ir := ass.DecodeTagWithSpec(tag, tagSpec, true)
 	var value string
 	var ok bool
 	switch tagSpec.Value {

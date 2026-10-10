@@ -4,12 +4,24 @@ import (
 	"sort"
 
 	"assx/internal/ass"
+	"assx/internal/ass/renderer"
 	"assx/internal/semantic"
 )
 
 // AnalyzeRedundantStyleOverrides retains the standalone entry point while
 // sharing the state transitions used by ASS006 and the font checker.
 func AnalyzeRedundantStyleOverrides(doc ass.Document) []Diagnostic {
+	return analyzeRedundantStyleOverrides(doc, nil)
+}
+
+// AnalyzeRedundantStyleOverridesForRenderer reports renderer-local redundancy.
+// It deliberately provides no edits: a single-profile observation is not the
+// all-target equivalence proof required by SafeFix (P08).
+func AnalyzeRedundantStyleOverridesForRenderer(doc ass.Document, profile renderer.Profile) []Diagnostic {
+	return analyzeRedundantStyleOverrides(doc, &profile)
+}
+
+func analyzeRedundantStyleOverrides(doc ass.Document, profile *renderer.Profile) []Diagnostic {
 	styles := semantic.StyleStatesByName(doc.StyleFields)
 	var diagnostics []Diagnostic
 	for _, dialogue := range doc.Dialogues {
@@ -17,8 +29,9 @@ func AnalyzeRedundantStyleOverrides(doc ass.Document) []Diagnostic {
 		if collector == nil {
 			continue
 		}
+		collector.allowEdits = profile == nil
 		semantic.Evaluate(dialogue.ParsedText(), semantic.EvaluationOptions{
-			Styles: styles, DialogueStyle: dialogue.Style,
+			Styles: styles, DialogueStyle: dialogue.Style, Profile: profile,
 			Observer: semantic.Observer{Tag: collector.onTag, Text: collector.onText},
 		})
 		if diagnostic, ok := collector.diagnostic(); ok {
@@ -40,6 +53,7 @@ type styleRunCollector struct {
 	runTags    []ass.Tag
 	runStart   map[string]semantic.StateValue
 	runTouched map[string]bool
+	allowEdits bool
 }
 
 func newStyleRunCollector(dialogue ass.Dialogue, styles map[string]semantic.StyleState) *styleRunCollector {
@@ -54,6 +68,7 @@ func newStyleRunCollector(dialogue ass.Dialogue, styles map[string]semantic.Styl
 		dialogue: dialogue, tree: dialogue.ParsedText(), styles: styles,
 		runStart:   make(map[string]semantic.StateValue),
 		runTouched: make(map[string]bool),
+		allowEdits: true,
 	}
 }
 
@@ -108,7 +123,7 @@ func (c *styleRunCollector) onTag(event semantic.TagEvent, state semantic.StateV
 		}
 		return
 	}
-	if event.Barrier || !semantic.SafeIndependentStyleTag(tag) {
+	if event.Barrier || !semantic.SafeIndependentStyleEvent(event) {
 		c.flush(false, state)
 		c.stopped = true
 		return
@@ -146,14 +161,19 @@ func (c *styleRunCollector) diagnostic() (Diagnostic, bool) {
 	if !c.hasTags || len(c.candidates) == 0 {
 		return Diagnostic{}, false
 	}
-	edits := redundantStyleEdits(c.dialogue, c.tree, c.candidates)
-	if len(edits) == 0 {
-		return Diagnostic{}, false
+	var edits []TextEdit
+	var safety FixSafety
+	if c.allowEdits {
+		edits = redundantStyleEdits(c.dialogue, c.tree, c.candidates)
+		if len(edits) == 0 {
+			return Diagnostic{}, false
+		}
+		safety = Rules[IssueRedundantStyleOverrides].FixSafety
 	}
 	first := c.candidates[0]
 	rule := Rules[IssueRedundantStyleOverrides]
 	return Diagnostic{
-		ID: rule.ID, Severity: rule.Severity, FixSafety: rule.FixSafety,
+		ID: rule.ID, Severity: rule.Severity, FixSafety: safety,
 		Title: rule.Title, Description: rule.Description, Fix: rule.Fix, Sources: rule.Sources,
 		Line: c.dialogue.Line, Column: first.Column, Tag: first.Name,
 		Detail: "The override tags leave the active Style properties unchanged across dialogue text.",
