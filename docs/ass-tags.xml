@@ -975,15 +975,16 @@
   <tag name="blend" status="V">
     <params status="V" verified="vsm" cite="vsm:src/subtitles/RTS.cpp:3716-3730">
       <sig n="1" form="paren" renderer="vsm" status="V" verified="vsm" cite="vsm:src/subtitles/RTS.cpp:3716-3730">
-        <p i="1" name="mode" kind="int" range="over|add|sub|mult|scr|diff|rsub|isub or integer; accepted by the apply branch but UNREACHABLE — see scen"/>
+        <p i="1" name="mode" kind="int" range="over|add|sub|mult|scr|diff|rsub|isub or integer; normalized and handled by the apply branch"/>
       </sig>
     </params>
-    \blend is VSFilterMod-only (vpatch v003) and is shadowed inside its own
-    renderer: the normalization chain tests Find("be") at RTS.cpp:2548 before
-    Find("blend") at 2551, so \blend(...) becomes \be with inline arg "nd";
-    the apply branch cmd == L"blend" at 3716 is unreachable.
-    <scen id="name-match" status="V" verified="libass xy vsm" base="unsupported" vsfilter="unsupported" vsfiltermod="shadowed"
-          cite="libass:libass/ass_parse.c:281-917 xy:src/subtitles/RTS.cpp:1716-1769 vsm:src/subtitles/RTS.cpp:2548,2551,3716"/>
+    \blend is VSFilterMod-only (vpatch v003) as a distinct command.
+    The pinned normalization chain checks "be" before "blend", but "blend"
+    starts with "bl", not "be", so it reaches the blend branch at 2551 and
+    the apply branch at 3716. Traditional renderers instead match its "b"
+    prefix and consume "lend" as the remaining bare argument.
+    <scen id="name-match" status="V" verified="libass xy vsm" base="shadowed" vsfilter="shadowed" vsfiltermod="matched"
+          cite="libass:libass/ass_parse.c:68-78,825-829 xy:src/subtitles/RTS.cpp:1716-1769,2155-2163 vsm:src/subtitles/RTS.cpp:2548-2557,3716-3730"/>
   </tag>
 
   <tag name="frs" status="V">
