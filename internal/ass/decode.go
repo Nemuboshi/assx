@@ -64,7 +64,13 @@ type TagIR struct {
 
 func DecodeTag(tag Tag) TagIR {
 	s, ok := spec.TagSpecs[tag.Name]
-	return TagIR{Tag: tag, Spec: s, Known: ok}
+	return DecodeTagWithSpec(tag, s, ok)
+}
+
+// DecodeTagWithSpec decodes an already resolved command. The caller owns the
+// renderer-specific policy; lexical decoding never selects a renderer.
+func DecodeTagWithSpec(tag Tag, policy spec.TagSpec, recognized bool) TagIR {
+	return TagIR{Tag: tag, Spec: policy, Known: recognized}
 }
 
 // HasExpectedArity checks the declared structured argument signature.
