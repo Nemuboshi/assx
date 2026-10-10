@@ -1,63 +1,61 @@
 package lint
 
 import (
-	"math"
+	"strconv"
 
 	"assx/internal/ass"
 	"assx/internal/ass/renderer"
+	"assx/internal/semantic"
 )
 
-// karaokeCursorResolved follows independently dispatched operations. An
-// unmodeled/conditional command cannot justify a timing claim, while a
-// source-verified rejected shape never advances the cursor.
+// resolvedKaraokeCursor observes P05's authoritative state machine. It never
+// re-parses a duration or independently applies timing arithmetic.
+//
+// P05 can establish a known accumulated value for a form whose signature is
+// merely inferred. Lint additionally requires a source-verified signature for
+// every contributing syllable before presenting ASS030 as a definite finding.
+type resolvedKaraokeCursor struct {
+	value      semantic.StateValue
+	saw        bool
+	unverified bool
+}
+
+func (c *resolvedKaraokeCursor) onTag(event semantic.TagEvent, state semantic.StateView) {
+	c.value = state.Value("karaoke_cursor")
+	if event.Ignored || event.Match != renderer.Matched {
+		return
+	}
+	switch event.Tag.Name {
+	case "k", "K", "kf", "ko":
+		c.saw = true
+		if event.Signature != renderer.SignatureVerified {
+			c.unverified = true
+		}
+	}
+}
+
+func (c *resolvedKaraokeCursor) onText(_ string, _ int, state semantic.StateView) {
+	c.value = state.Value("karaoke_cursor")
+}
+
+func (c *resolvedKaraokeCursor) duration() (int64, bool) {
+	if !c.saw || c.unverified || !c.value.Known {
+		return 0, false
+	}
+	value, err := strconv.ParseInt(c.value.Value, 10, 64)
+	return value, err == nil && value >= 0
+}
+
+// karaokeCursorResolved is the standalone event-field entry point. The full
+// scoped document analyzer attaches the same observer to its existing P05
+// evaluation, avoiding another state-engine pass per dialogue.
 func karaokeCursorResolved(tree ass.ConcreteDialogue, profile renderer.Profile) (int64, bool) {
-	const defaultSyllable = int64(1000)
-	var cursor int64
-	var saw, certain bool
-	certain = true
-	profile.WalkDialogue(tree, func(result renderer.Result, nested bool) bool {
-		if result.Status != renderer.Matched || !result.Closed {
-			certain = false
-			return false
-		}
-		if result.Signature == renderer.SignatureRejected {
-			return true
-		}
-		if !result.HasPolicy {
-			certain = false
-			return false
-		}
-		switch result.Name {
-		case "kt":
-			certain = false
-			return false
-		case "k", "K", "kf", "ko":
-			if nested || result.Signature == renderer.SignatureUnknown {
-				certain = false
-				return false
-			}
-			saw = true
-			duration := defaultSyllable
-			switch len(result.Args) {
-			case 0:
-			case 1:
-				value := ass.DecodeNumber(result.Args[0].Raw)
-				if value.Status != ass.ValueValid || value.Number < 0 || value.Number > float64(math.MaxInt64/10) {
-					certain = false
-					return false
-				}
-				duration = int64(value.Number) * 10
-			default:
-				certain = false
-				return false
-			}
-			if cursor > math.MaxInt64-duration {
-				certain = false
-				return false
-			}
-			cursor += duration
-		}
-		return true
+	var cursor resolvedKaraokeCursor
+	semantic.EvaluateResolved(tree, profile, semantic.EvaluationOptions{
+		SkipNoEffectProofs: true,
+		Observer: semantic.Observer{
+			Tag: cursor.onTag, Text: cursor.onText,
+		},
 	})
-	return cursor, certain && saw
+	return cursor.duration()
 }

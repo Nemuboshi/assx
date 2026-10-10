@@ -32,16 +32,18 @@ var eventTimeShape = regexp.MustCompile(`^[+-]?\d+:[+-]?\d+:[+-]?\d+\.[+-]?\d+$`
 // AnalyzeEventFields checks the Events Format line and every parsed event
 // field against what libass and VSFilter actually do with it.
 func AnalyzeEventFields(doc ass.Document) []Diagnostic {
-	return analyzeEventFields(doc, nil)
+	return analyzeEventFields(doc, nil, true)
 }
 
 // AnalyzeEventFieldsForRenderer keeps the shared document-level checks while
 // obtaining karaoke timing from the selected profile, not the legacy tags.
 func AnalyzeEventFieldsForRenderer(doc ass.Document, profile renderer.Profile) []Diagnostic {
-	return analyzeEventFields(doc, &profile)
+	return scopeDiagnostics(analyzeEventFields(doc, &profile, true), profile)
 }
 
-func analyzeEventFields(doc ass.Document, profile *renderer.Profile) []Diagnostic {
+// includeKaraoke is false only when the document's single shared P05
+// evaluation has a karaoke observer attached in analyzeResolvedDialogue.
+func analyzeEventFields(doc ass.Document, profile *renderer.Profile, includeKaraoke bool) []Diagnostic {
 	diagnostics := eventFormatFindings(doc)
 	for _, dialogue := range doc.Dialogues {
 		if dialogue.MissingFields {
@@ -64,10 +66,12 @@ func analyzeEventFields(doc ass.Document, profile *renderer.Profile) []Diagnosti
 		diagnostics = append(diagnostics, analyzeEventDuration(dialogue)...)
 		diagnostics = append(diagnostics, analyzeLayer(dialogue)...)
 		diagnostics = append(diagnostics, analyzeEffect(dialogue)...)
-		if profile == nil {
-			diagnostics = append(diagnostics, analyzeKaraoke(dialogue)...)
-		} else {
-			diagnostics = append(diagnostics, analyzeKaraokeForRenderer(dialogue, *profile)...)
+		if includeKaraoke {
+			if profile == nil {
+				diagnostics = append(diagnostics, analyzeKaraoke(dialogue)...)
+			} else {
+				diagnostics = append(diagnostics, analyzeKaraokeForRenderer(dialogue, *profile)...)
+			}
 		}
 	}
 	return diagnostics

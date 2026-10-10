@@ -41,6 +41,13 @@ list to legalize VSFilterMod-only shapes.
   whose extension is enabled. Unknown build capabilities remain unresolved.
   First-wins effects and reset/style provenance are produced by the P05
   semantic evaluator, with no alternate lint state engine.
+- Renderer-scoped **ASS030** reads the P05 `karaoke_cursor` state from the
+  same semantic observer used for other dialogue findings. It also requires
+  source-verified signatures for every contributing karaoke tag. Partially
+  consumed arguments (such as `\\k200junk`) and inferred-only VSFilterMod
+  signatures cannot produce a definitive timing warning. Standalone event
+  analysis uses the same evaluator and proof checks; the default CLI's
+  historical karaoke behavior remains unchanged.
 
 The optional `renderer` JSON field is present only in explicit per-profile
 findings; the default JSON shape, rule IDs, severities, ordering policy, and

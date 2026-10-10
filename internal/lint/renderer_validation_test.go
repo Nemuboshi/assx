@@ -137,19 +137,21 @@ func TestScopedDocumentConsumersAndJSON(t *testing.T) {
 	source := "[Script Info]\nPlayResX: 1920\nPlayResY: 1080\nLayoutResX: 1920\nLayoutResY: 1080\nYCbCr Matrix: None\n" +
 		"[V4+ Styles]\nFormat: Name, Fontname, Fontsize\nStyle: Default,Arial,20\n" +
 		"[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n" +
-		`Dialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{\pos(1,2,3)\rMissing\k200}Text` + "\n"
+		`Dialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{\pos(1,2,3)\rMissing}Text` + "\n" +
+		`Dialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{\k200}Text` + "\n"
 	doc := ass.Parse(source)
 	traditional := AnalyzeDocumentForRenderer(doc, lib)
 	modern := AnalyzeDocumentForRenderer(doc, mod)
 	for _, tt := range []struct {
-		name     string
-		ds       []Diagnostic
-		hasArity bool
+		name                 string
+		ds                   []Diagnostic
+		hasArity, hasKaraoke bool
 	}{
-		{"libass", traditional, true}, {"VSFilterMod", modern, false},
+		{"libass", traditional, true, true}, {"VSFilterMod", modern, false, false},
 	} {
 		if hasIssue(tt.ds, IssueArgumentCount) != tt.hasArity ||
-			!hasIssue(tt.ds, IssueUndefinedStyle) || !hasIssue(tt.ds, IssueKaraoke) {
+			!hasIssue(tt.ds, IssueUndefinedStyle) ||
+			hasIssue(tt.ds, IssueKaraoke) != tt.hasKaraoke {
 			t.Fatalf("%s document checks missing: %#v", tt.name, tt.ds)
 		}
 		for _, d := range tt.ds {

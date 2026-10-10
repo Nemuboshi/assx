@@ -26,7 +26,7 @@ func AnalyzeDocumentForRenderer(doc ass.Document, profile renderer.Profile) []Di
 	diagnostics := AnalyzeHeaders(doc)
 	diagnostics = append(diagnostics, AnalyzeKeywords(doc)...)
 	diagnostics = append(diagnostics, AnalyzeStyles(doc)...)
-	diagnostics = append(diagnostics, AnalyzeEventFieldsForRenderer(doc, profile)...)
+	diagnostics = append(diagnostics, analyzeEventFields(doc, &profile, false)...)
 	diagnostics = append(diagnostics, analyzeUndefinedStyleReferencesForRenderer(doc, profile)...)
 
 	styles := semantic.StyleStatesByName(doc.StyleFields)
@@ -114,15 +114,18 @@ func analyzeResolvedDialogue(dialogue ass.Dialogue, profile renderer.Profile, st
 	analyzer.diagnostics = append(analyzer.diagnostics, analyzeUnterminatedBlocks(dialogue)...)
 
 	drawing := resolvedDrawingCollector{dialogue: dialogue}
+	var karaoke resolvedKaraokeCursor
 	options := semantic.EvaluationOptions{
 		Styles: styles, DialogueStyle: dialogue.Style,
 		Observer: semantic.Observer{
 			Tag: func(event semantic.TagEvent, state semantic.StateView) {
+				karaoke.onTag(event, state)
 				if collector != nil {
 					collector.onTag(event, state)
 				}
 			},
 			Text: func(text string, start int, state semantic.StateView) {
+				karaoke.onText(text, start, state)
 				drawing.onText(text, start, state)
 				if collector != nil {
 					collector.onText(text, start, state)
@@ -135,6 +138,10 @@ func analyzeResolvedDialogue(dialogue ass.Dialogue, profile renderer.Profile, st
 		analyzer.add(IssueNoEffect, effect.Tag, noEffectDetail(effect))
 	}
 	analyzer.diagnostics = append(analyzer.diagnostics, drawing.diagnostics()...)
+	if !dialogue.MissingFields {
+		analyzer.diagnostics = append(analyzer.diagnostics,
+			analyzeKaraokeWithCursor(dialogue, karaoke.duration)...)
+	}
 	if collector != nil {
 		if finding, ok := collector.diagnostic(); ok {
 			return analyzer.diagnostics, &finding
