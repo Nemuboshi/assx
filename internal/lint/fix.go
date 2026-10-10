@@ -24,7 +24,7 @@ func ApplyFixes(text string, diagnostics []Diagnostic, includeUnsafe bool) (stri
 	var edits []edit.TextEdit
 	fixes := 0
 	for _, diagnostic := range diagnostics {
-		if diagnostic.FixSafety != SafeFix && !(includeUnsafe && diagnostic.FixSafety == UnsafeFix) {
+		if diagnostic.FixSafety != SafeFix && (!includeUnsafe || diagnostic.FixSafety != UnsafeFix) {
 			continue
 		}
 		if len(diagnostic.Edits) == 0 {
