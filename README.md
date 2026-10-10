@@ -17,6 +17,7 @@ assx [--format pretty|plain|json] [--fix] [--unsafe-fix] [--check-fonts] [--font
 Font indexing is cached under the operating system's user cache directory. Font files are still discovered on every run, so added or removed fonts take effect immediately; cached metadata is reused only while a file's size and modification time match.
 
 For diagnostic IDs and explanations, see the [lint rules](docs/rules.md).
+For reproducible performance benchmarks, profiling, and the pinned baseline, see [performance benchmarks](docs/performance.md).
 
 ## Development
 
