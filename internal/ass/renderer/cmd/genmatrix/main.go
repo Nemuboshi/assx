@@ -24,9 +24,21 @@ type signature struct {
 	Requires string `xml:"requires,attr"`
 	Cite     string `xml:"cite,attr"`
 }
+type scenario struct {
+	ID       string `xml:"id,attr"`
+	Status   string `xml:"status,attr"`
+	Verified string `xml:"verified,attr"`
+	Base     string `xml:"base,attr"`
+	XY       string `xml:"vsfilter,attr"`
+	Mod      string `xml:"vsfiltermod,attr"`
+	Requires string `xml:"requires,attr"`
+	Cite     string `xml:"cite,attr"`
+}
+
 type tag struct {
-	Name   string `xml:"name,attr"`
-	Params struct {
+	Name      string     `xml:"name,attr"`
+	Scenarios []scenario `xml:"scen"`
+	Params    struct {
 		Exhaustive     string      `xml:"exhaustive,attr"`
 		ExhaustiveCite string      `xml:"exhaustive-cite,attr"`
 		Signatures     []signature `xml:"sig"`
@@ -116,7 +128,27 @@ func run() error {
 			return fmt.Errorf("duplicate or unnamed tag %q", t.Name)
 		}
 		seen[t.Name] = true
-		fmt.Fprintf(&out, "%q:{signatures: []generatedSignature{", t.Name)
+		fmt.Fprintf(&out, "%q:{scenarios: []generatedScenario{", t.Name)
+		for _, s := range t.Scenarios {
+			v, err := mask(s.Verified)
+			if err != nil {
+				return fmt.Errorf("%s/%s: %w", t.Name, s.ID, err)
+			}
+			if s.Status != "V" && v != 0 {
+				return fmt.Errorf("%s/%s: unverified scenario declares verified scope", t.Name, s.ID)
+			}
+			for i, value := range []string{s.Base, s.XY, s.Mod} {
+				if v&(1<<i) != 0 && (value == "" || value == "unchecked" || s.Cite == "") {
+					return fmt.Errorf("%s/%s: missing verified outcome or citation", t.Name, s.ID)
+				}
+			}
+			requires, err := requirementMask(s.Requires)
+			if err != nil {
+				return fmt.Errorf("%s/%s: %w", t.Name, s.ID, err)
+			}
+			fmt.Fprintf(&out, "{id:%q,verified:%d,outcomes:[3]string{%q,%q,%q},requires:%d,citation:%q},", s.ID, v, s.Base, s.XY, s.Mod, requires, s.Cite)
+		}
+		fmt.Fprint(&out, "},signatures: []generatedSignature{")
 		for _, s := range t.Params.Signatures {
 			n, e := strconv.Atoi(s.N)
 			if e != nil || n < 0 {

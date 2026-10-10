@@ -112,6 +112,25 @@ func (p Profile) Resolve(expr ass.ConcreteExpression, source string) Result {
 				start = comma + 1
 			}
 			r.Args = append(r.Args, Argument{Span: ass.ConcreteSpan{Start: start, End: expr.ContentSpan.End}, Raw: source[start:expr.ContentSpan.End]})
+			isEmpty := func(raw string) bool {
+				if p.kind == Libass {
+					return strings.Trim(raw, " \t") == ""
+				}
+				return strings.TrimSpace(raw) == ""
+			}
+			for _, arg := range r.Args {
+				if isEmpty(arg.Raw) {
+					r.EmptyComponents = true
+				}
+			}
+			// Keep each surviving argument's original raw bytes and source span.
+			filtered := r.Args[:0]
+			for _, arg := range r.Args {
+				if !isEmpty(arg.Raw) {
+					filtered = append(filtered, arg)
+				}
+			}
+			r.Args = filtered
 		}
 	}
 	if expr.SlashSpan.End-expr.SlashSpan.Start != 1 || !expr.Closed() {
@@ -183,7 +202,23 @@ func (p Profile) Resolve(expr ass.ConcreteExpression, source string) Result {
 	}
 	// Parenthesized suffixes have parser-specific consumption semantics; do
 	// not promote an arity match into evidence for this unmodeled combination.
-	if expr.Parenthesized && r.Suffix != "" {
+	// Nested parentheses and commas after a modifier backslash require
+	// renderer-specific parameter scanning beyond this CST partition. An
+	// arity match cannot verify that both parsers consumed the same input.
+	unmodeledParameters := false
+	for _, arg := range r.Args {
+		if strings.ContainsAny(arg.Raw, "()") {
+			unmodeledParameters = true
+		}
+	}
+	if expr.Parenthesized && expr.ContentSpan.Start >= 0 && expr.ContentSpan.End <= len(source) {
+		content := source[expr.ContentSpan.Start:expr.ContentSpan.End]
+		if slash := strings.IndexByte(content, '\\'); slash >= 0 && strings.Contains(content[slash:], ",") {
+			unmodeledParameters = true
+		}
+	}
+	r.ParametersUnresolved = expr.Parenthesized && (r.Suffix != "" || unmodeledParameters)
+	if r.ParametersUnresolved {
 		r.Signature = SignatureUnknown
 		r.Citation = ""
 	}

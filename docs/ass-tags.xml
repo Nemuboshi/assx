@@ -42,6 +42,9 @@
   Missing or inferred completeness evidence must prevent SignatureRejected.
   Optional requires="_VSMOD" (or "_VSMOD _LUA") binds validity of an
   individual signature to compile-time guards rather than command dispatch.
+  For <scen>, requires guards only the VSFilterMod outcome, including
+  optional behavior inside an otherwise core command. Disabled or unknown
+  guards cannot inherit the enabled branch's verified outcome.
   Unknown build flags cannot prove validity or a rejected-arity result.
   A shared <params> citation never proves every child signature. "inferred"
   explicitly records applicability asserted without per-signature verification
@@ -75,6 +78,7 @@
       <scenario id="name-match"  default="matched"/>
       <scenario id="arg-count"   default="ignored"/>
       <scenario id="arg-form"    default="both-forms"/>
+      <scenario id="empty-components" default="unchecked"/>
       <scenario id="empty-arg"   default="style-reset"/>
       <scenario id="non-numeric" default="zero"/>
       <scenario id="negative"    default="assign"/>
@@ -95,6 +99,7 @@
       <result name="clamp-low"/> <result name="clamp-high"/> <result name="swap"/>
       <result name="accumulate"/> <result name="latch-blocked"/> <result name="kept"/>
       <result name="restored"/> <result name="supported"/> <result name="both-forms"/>
+      <result name="retain-empty"/> <result name="discard-empty"/>
       <result name="bare-only"/> <result name="default-full"/>
       <result name="quirk-a5"/> <result name="bit-map"/>
     </vocab>
@@ -275,7 +280,7 @@
     \fsc is a reset of BOTH scale slots to the style values and its argument is
     ignored by libass and xy-VSFilter. VSFilterMod patch f004 consumes
     \fsc(value). This is todo item 1; assx's style.go:230-238 mirrors it.
-    <scen id="arg-form" status="V" verified="libass xy vsm" base="bare-only" vsfilter="bare-only" vsfiltermod="assign"
+    <scen id="arg-form" status="V" verified="libass xy vsm" requires="_VSMOD" base="bare-only" vsfilter="bare-only" vsfiltermod="assign"
           cite="libass:libass/ass_parse.c:454-456 xy:src/subtitles/RTS.cpp:2493-2497 vsm:src/subtitles/RTS.cpp:3150-3165"/>
   </tag>
 
@@ -720,6 +725,13 @@
         <p i="3" name="z" kind="number" range="VSFilterMod-only depth: stored as style.mod_z = z*80 (RTS.cpp:3539), assigned as every glyph point's z (611-612), then used by the frx/fry rotation and the perspective divide (640-653). Effect is only visible with a 3D rotation; libass and xy reject the 3-arg form entirely."/>
       </sig>
     </params>
+    <scen id="empty-components" status="V" verified="libass xy vsm" base="discard-empty" vsfilter="discard-empty" vsfiltermod="discard-empty"
+          cite="libass:libass/ass_parse.c:53-60,310-341 xy:src/subtitles/RTS.cpp:2131-2149 vsm:src/subtitles/RTS.cpp:2455-2478">
+      All three pinned parsers omit empty parenthesized components. Thus
+      \pos(1,,2) has two arguments and may claim the position latch in each
+      renderer. This parser observation is independent of the resulting
+      command's accepted arity. Raw source stays intact.
+    </scen>
     <scen id="arg-count" status="V" verified="libass xy vsm" base="ignored" vsfilter="ignored" vsfiltermod="supported"
           cite="libass:libass/ass_parse.c:606-612 xy:src/subtitles/RTS.cpp:2615-2627 vsm:src/subtitles/RTS.cpp:3510-3543">
       libass/xy accept exactly 2 args, else `continue` with NO latch set — a
