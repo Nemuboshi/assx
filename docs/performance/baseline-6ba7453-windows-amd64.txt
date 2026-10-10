@@ -1,7 +1,7 @@
 goos: windows
 goarch: amd64
 pkg: assx/internal/ass
-cpu: Intel(R) Core(TM) i5-9300H CPU @ 2.40GHz
+cpu: undisclosed
 BenchmarkParseDialogueTextFixtures/dialogue-8         	   41803	      5984 ns/op	 634.33 MB/s	    4608 B/op	      96 allocs/op
 BenchmarkParseDialogueTextFixtures/dialogue-8         	   53106	      5620 ns/op	 675.39 MB/s	    4608 B/op	      96 allocs/op
 BenchmarkParseDialogueTextFixtures/dialogue-8         	   56572	      6037 ns/op	 628.80 MB/s	    4608 B/op	      96 allocs/op
@@ -57,7 +57,7 @@ ok  	assx/internal/ass	18.391s
 goos: windows
 goarch: amd64
 pkg: assx/internal/semantic
-cpu: Intel(R) Core(TM) i5-9300H CPU @ 2.40GHz
+cpu: undisclosed
 BenchmarkEvaluateDialogue/dialogue-8         	  545572	       552.4 ns/op	6871.67 MB/s	       0 B/op	       0 allocs/op
 BenchmarkEvaluateDialogue/dialogue-8         	  582105	       535.9 ns/op	7083.85 MB/s	       0 B/op	       0 allocs/op
 BenchmarkEvaluateDialogue/dialogue-8         	  608013	       532.3 ns/op	7130.86 MB/s	       0 B/op	       0 allocs/op
@@ -88,7 +88,7 @@ ok  	assx/internal/semantic	9.777s
 goos: windows
 goarch: amd64
 pkg: assx/internal/lint
-cpu: Intel(R) Core(TM) i5-9300H CPU @ 2.40GHz
+cpu: undisclosed
 BenchmarkAnalyzeDocumentFixtures/dialogue-8  	     715	    365203 ns/op	  26.31 MB/s	   66388 B/op	     863 allocs/op
 BenchmarkAnalyzeDocumentFixtures/dialogue-8  	     856	    361043 ns/op	  26.61 MB/s	   66590 B/op	     863 allocs/op
 BenchmarkAnalyzeDocumentFixtures/dialogue-8  	     877	    352807 ns/op	  27.24 MB/s	   66388 B/op	     863 allocs/op
