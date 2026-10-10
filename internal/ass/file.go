@@ -142,14 +142,11 @@ func Parse(text string) Document {
 	}
 	section := ""
 	var styleFormat []string
-	offset, line := 0, 0
-	for _, chunk := range strings.SplitAfter(text, "\n") {
-		if chunk == "" {
-			continue
-		}
+	line := 0
+	walkConcreteLines(text, func(offset, end, contentEnd int) {
 		line++
-		raw := strings.TrimSuffix(chunk, "\n")
-		content := strings.TrimSuffix(raw, "\r")
+		chunk := text[offset:end]
+		content := text[offset:contentEnd]
 		doc.Lines = append(doc.Lines, RawLine{Line: line, Offset: offset, Content: content, Section: section})
 		trimmed := strings.TrimSpace(content)
 		if strings.HasPrefix(trimmed, "[") && strings.HasSuffix(trimmed, "]") {
@@ -164,8 +161,7 @@ func Parse(text string) Document {
 				doc.ScriptInfoLine = line
 				doc.ScriptInfoInsert = offset + len(chunk)
 			}
-			offset += len(chunk)
-			continue
+			return
 		}
 		if section == "v4+ styles" || section == "v4 styles" || section == "v4++ styles" {
 			lower := strings.ToLower(trimmed)
@@ -212,8 +208,7 @@ func Parse(text string) Document {
 				}
 			}
 		}
-		offset += len(chunk)
-	}
+	})
 	return doc
 }
 
