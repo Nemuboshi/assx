@@ -138,22 +138,28 @@ type Signature struct {
 	Citation     string
 }
 type Result struct {
-	Renderer  Kind
-	Source    ass.ConcreteSpan
-	Raw       string
-	Head      string
-	Name      string
-	Suffix    string
-	Shadowed  string
-	Status    MatchStatus
-	Fallback  string
-	Args      []Argument
-	Form      Form
-	Closed    bool
-	Signature SignatureStatus
-	Citation  string
-	Policy    spec.TagSpec
-	HasPolicy bool
+	Renderer Kind
+	Source   ass.ConcreteSpan
+	Raw      string
+	Head     string
+	Name     string
+	Suffix   string
+	Shadowed string
+	Status   MatchStatus
+	Fallback string
+	Args     []Argument
+	Form     Form
+	Closed   bool
+	// EmptyComponents records neutral parenthesized empties before the
+	// profile's parameter normalization; Raw and Source remain lossless.
+	EmptyComponents bool
+	// ParametersUnresolved prevents an apparent CST arity from certifying
+	// parser-specific scans of nested arguments or parenthesized suffixes.
+	ParametersUnresolved bool
+	Signature            SignatureStatus
+	Citation             string
+	Policy               spec.TagSpec
+	HasPolicy            bool
 }
 
 // Signatures returns detached copies of XML-generated evidence rows.
