@@ -112,6 +112,68 @@ func TestGroupedProofSerializesOnceWithReferences(t *testing.T) {
 	if inline != 1 || references != 1 || proofID == "" {
 		t.Fatalf("group proof JSON has %d inline proofs and %d references: %s", inline, references, data)
 	}
+	var decoded []Diagnostic
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		t.Fatal(err)
+	}
+	if safe, unsafe, unfixable := CountFixes(decoded); safe != 2 || unsafe != 0 || unfixable != 0 {
+		t.Fatalf("round-tripped fixes = safe %d, unsafe %d, unfixable %d", safe, unsafe, unfixable)
+	}
+	fixed, count, err := ApplyFixes(doc.Text, decoded, false)
+	want := strings.ReplaceAll(doc.Text, `\fs21\fs21`, `\fs21`)
+	want = strings.ReplaceAll(want, `\fs22\fs22`, `\fs22`)
+	if err != nil || count != 2 || fixed != want {
+		t.Fatalf("round-tripped proof application = (%q, %d, %v)", fixed, count, err)
+	}
+	proofs := fixProofsByID(decoded)
+	for i := range decoded {
+		if decoded[i].FixProofRef == "" {
+			continue
+		}
+		conflicting := *proofs[decoded[i].FixProofRef]
+		conflicting.VerificationBasis = append([]string(nil), conflicting.VerificationBasis...)
+		conflicting.VerificationBasis[0] = "conflicting child evidence"
+		decoded[i].FixProof = &conflicting
+		if safe, _, unfixable := CountFixes(decoded); safe != 1 || unfixable != 1 {
+			t.Fatalf("conflicting reference counts = safe %d, unfixable %d", safe, unfixable)
+		}
+		if _, _, err := ApplyFixes(doc.Text, decoded, false); err == nil {
+			t.Fatal("ApplyFixes accepted conflicting inline proof evidence")
+		}
+		return
+	}
+	t.Fatal("round-tripped diagnostics have no proof reference")
+}
+
+func TestApplyFixesRejectsDanglingProofReference(t *testing.T) {
+	diagnostics := []Diagnostic{{
+		ID: IssueNoEffect, FixSafety: SafeFix, FixProofRef: "missing",
+		Edits: []TextEdit{{Start: 1, End: 2}},
+	}}
+	if safe, _, unfixable := CountFixes(diagnostics); safe != 0 || unfixable != 1 {
+		t.Fatalf("dangling reference counts = safe %d, unfixable %d", safe, unfixable)
+	}
+	if _, _, err := ApplyFixes("abc", diagnostics, false); err == nil {
+		t.Fatal("ApplyFixes accepted a dangling proof reference")
+	}
+}
+
+func TestSafeFixRejectsModifiedProofEvidence(t *testing.T) {
+	doc := parseFontOverrideText(`{\fs21\fs21}A`)
+	diagnostics := AnalyzeDocument(doc)
+	for i := range diagnostics {
+		if diagnostics[i].FixProof != nil {
+			diagnostics[i].FixProof.VerificationBasis[0] = "modified evidence"
+			if safe, _, _ := CountFixes(diagnostics); safe != 0 {
+				t.Fatal("CountFixes counted modified proof evidence as applicable")
+			}
+			if _, _, err := ApplyFixes(doc.Text, diagnostics, false); err == nil {
+				t.Fatal("ApplyFixes accepted modified proof evidence")
+			}
+			return
+		}
+	}
+	t.Fatal("test document has no proof")
 }
 
 func TestSafeFixCannotUseAModOnlyPrefixProofInDefaultMode(t *testing.T) {
@@ -156,6 +218,26 @@ func TestDefaultFixApplicationRejectsModOnlyProof(t *testing.T) {
 	}
 	if _, _, err := ApplyFixes(source, []Diagnostic{diagnostic}, false); err == nil {
 		t.Fatal("default ApplyFixes accepted a VSFilterMod-only proof")
+	}
+}
+
+func TestSafeFixRejectsEditOutsideItsRuleSource(t *testing.T) {
+	source := fontOverrideDocument(`{\fs21\fs21}A`, "")
+	fieldStart := strings.Index(source, "PlayResX: 640") + len("PlayResX: ")
+	edit := TextEdit{Start: fieldStart, End: fieldStart + 3, Replacement: "1280"}
+	candidate := FixEditProof{ID: IssueNoEffect, Edit: edit}
+	if _, err := buildFixProof(source, []FixEditProof{candidate}, defaultFixTargets()); err == nil {
+		t.Fatal("ASS006 proof accepted a PlayResX edit")
+	}
+	forged := Diagnostic{
+		ID: IssueNoEffect, FixSafety: SafeFix, Edits: []TextEdit{edit},
+		FixProof: &FixProof{
+			ID: "forged", SourceSHA256: hashSource(source),
+			SourceEdits: []FixEditProof{candidate}, Targets: fixTargets(defaultFixTargets()),
+		},
+	}
+	if _, _, err := ApplyFixes(source, []Diagnostic{forged}, false); err == nil {
+		t.Fatal("ApplyFixes accepted a caller-supplied ASS006 header edit")
 	}
 }
 

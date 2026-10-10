@@ -269,7 +269,7 @@ func proofTraceUncertainty(trace ProofTrace) string {
 func retainProofSteps(steps []ProofStep, removed []ass.ConcreteSpan) []ProofStep {
 	out := make([]ProofStep, 0, len(steps))
 	for _, step := range steps {
-		if step.Kind == "tag" && spanOverlapsAny(step.Source, removed) {
+		if step.Kind == "tag" && spanContainedByAny(step.Source, removed) {
 			continue
 		}
 		out = append(out, step)
@@ -277,9 +277,9 @@ func retainProofSteps(steps []ProofStep, removed []ass.ConcreteSpan) []ProofStep
 	return out
 }
 
-func spanOverlapsAny(span ass.ConcreteSpan, ranges []ass.ConcreteSpan) bool {
+func spanContainedByAny(span ass.ConcreteSpan, ranges []ass.ConcreteSpan) bool {
 	for _, candidate := range ranges {
-		if span.Start < candidate.End && candidate.Start < span.End {
+		if candidate.Start <= span.Start && span.End <= candidate.End {
 			return true
 		}
 	}

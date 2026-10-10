@@ -8,6 +8,10 @@ import (
 )
 
 func AnalyzeDocument(doc ass.Document) []Diagnostic {
+	return proveSafeFixes(doc, analyzeDocumentUnproved(doc), defaultFixTargets())
+}
+
+func analyzeDocumentUnproved(doc ass.Document) []Diagnostic {
 	diagnostics := AnalyzeHeaders(doc)
 	diagnostics = append(diagnostics, AnalyzeKeywords(doc)...)
 	diagnostics = append(diagnostics, analyzeStyles(doc)...)
@@ -45,7 +49,7 @@ func AnalyzeDocument(doc ass.Document) []Diagnostic {
 		}
 		return diagnostics[i].Line < diagnostics[j].Line
 	})
-	return proveSafeFixes(doc, diagnostics, defaultFixTargets())
+	return diagnostics
 }
 
 func suppressOverlappingNoEffect(diagnostics, redundant []Diagnostic) []Diagnostic {

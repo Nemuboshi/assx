@@ -37,6 +37,42 @@ func TestCompareResolvedProofPerPinnedRenderer(t *testing.T) {
 	}
 }
 
+func TestNestedTransformChildEditRetainsParentEvidence(t *testing.T) {
+	profile := mustProofProfile(t, renderer.Libass)
+	before := `{\fs20\t(0,100,\fs20\bord2)}A`
+	after := `{\fs20\t(0,100,\bord2)}A`
+	child := resolvedTagSpan(t, profile, before, "fs", 1)
+	trace := observeProofTrace(ass.ParseConcreteDialogue(before), profile, EvaluationOptions{})
+	retained := retainProofSteps(trace.Steps, []ass.ConcreteSpan{child})
+	foundParent, foundOwner, foundChild := false, false, false
+	for _, step := range retained {
+		if step.Kind != "tag" {
+			continue
+		}
+		if step.Tag == "t" && step.Source.Start < child.Start && step.Source.End > child.End {
+			foundParent = true
+		}
+		if step.Tag == "fs" && step.Source.End < child.Start {
+			if source, ok := step.State.Sources["fontsize"]; ok && source == 0 {
+				foundOwner = true
+			}
+		}
+		if step.Source == child {
+			foundChild = true
+		}
+	}
+	if !foundParent || !foundOwner || foundChild {
+		t.Fatalf("retained trace lost parent ownership or outer source provenance: %#v", retained)
+	}
+	comparison := CompareResolvedProof(
+		ass.ParseConcreteDialogue(before), ass.ParseConcreteDialogue(after), profile,
+		EvaluationOptions{}, []ass.ConcreteSpan{child},
+	)
+	if comparison.Equivalent {
+		t.Fatal("child-only transform edit bypassed its parent interpretation")
+	}
+}
+
 func TestCompareResolvedProofRejectsChangedFirstWinsOwner(t *testing.T) {
 	profile := mustProofProfile(t, renderer.Libass)
 	before := `{\an7\an8}A`

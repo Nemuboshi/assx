@@ -473,7 +473,7 @@
         "suggested_fix": "Remove it or move it to the intended text boundary.",
         "fix_safety": "safe",
         "fix_proof": {
-          "id": "d767050a166d0f58b659b9ec1214beae23f0e81cc7f9d7f878dd8c692013e325",
+          "id": "aa98dfac73917e141a359bb638e18f2e8ea8b3c5677914c61520b4b26cbed393",
           "source_sha256": "26de9d5eae6d7377c54b7e7a87db22da799e7f33bcbafb36625ebba26bb1f21c",
           "edited_sha256": "5aa011d0e8f2d40b9f79464d98999ca523e108b7c08af58a2221be84aed1cc8f",
           "source_edits": [
@@ -913,7 +913,7 @@
         "suggested_fix": "Remove it or move it to the intended text boundary.",
         "fix_safety": "safe",
         "fix_proof": {
-          "id": "d767050a166d0f58b659b9ec1214beae23f0e81cc7f9d7f878dd8c692013e325",
+          "id": "aa98dfac73917e141a359bb638e18f2e8ea8b3c5677914c61520b4b26cbed393",
           "source_sha256": "26de9d5eae6d7377c54b7e7a87db22da799e7f33bcbafb36625ebba26bb1f21c",
           "edited_sha256": "5aa011d0e8f2d40b9f79464d98999ca523e108b7c08af58a2221be84aed1cc8f",
           "source_edits": [
