@@ -217,3 +217,135 @@ func TestRendererScopedRepeatedSlashesRemainUnresolved(t *testing.T) {
 		t.Fatalf("ambiguous slash-run was treated as harmless: %#v", event)
 	}
 }
+
+func TestRendererScopedUnclosedClipInvalidatesStateAndProvenance(t *testing.T) {
+	for _, profile := range []renderer.Profile{
+		mustProfile(t, renderer.Libass),
+		mustProfile(t, renderer.XYVSFilter),
+		mustMod(t, renderer.FeatureEnabled),
+	} {
+		for _, command := range []string{"clip", "iclip"} {
+			t.Run(profile.Kind().String()+"/"+command, func(t *testing.T) {
+				source := "{\\fs20\\clip(0,0,10,10)\\" + command + "(1,2,3}A"
+				var malformed bool
+				var checkedText bool
+				assertInvalid := func(where string, state StateView) {
+					t.Helper()
+					for _, slot := range []string{"clip_rect", "clip_vector"} {
+						if value := state.Value(slot); value.Known {
+							t.Errorf("%s: malformed %s retained known %s: %#v", where, command, slot, value)
+						}
+						if source := state.Source(slot); source != -1 {
+							t.Errorf("%s: malformed %s retained source for %s: %d", where, command, slot, source)
+						}
+					}
+					if fontSize := state.Value("fontsize"); !fontSize.Known {
+						t.Errorf("%s: malformed clip invalidated unrelated font size", where)
+					}
+				}
+				EvaluateResolved(ass.ParseConcreteDialogue(source), profile, EvaluationOptions{
+					Observer: Observer{
+						Tag: func(event TagEvent, state StateView) {
+							if event.Tag.Name != command || event.Index != 2 {
+								return
+							}
+							malformed = true
+							if event.Ignored || !event.Barrier || event.Uncertainty != UncertaintyMalformed {
+								t.Errorf("unclosed %s event incorrectly ignored: %#v", command, event)
+							}
+							assertInvalid("tag", state)
+						},
+						Text: func(text string, _ int, state StateView) {
+							if text == "A" {
+								checkedText = true
+								assertInvalid("text", state)
+							}
+						},
+					},
+				})
+				if !malformed || !checkedText {
+					t.Fatalf("missing malformed tag/text observations: %q", source)
+				}
+			})
+		}
+	}
+}
+
+func TestRendererScopedUnclosedTransformInvalidatesAllState(t *testing.T) {
+	for _, profile := range []renderer.Profile{
+		mustProfile(t, renderer.Libass),
+		mustProfile(t, renderer.XYVSFilter),
+		mustMod(t, renderer.FeatureEnabled),
+	} {
+		t.Run(profile.Kind().String(), func(t *testing.T) {
+			var sawMalformed, sawText bool
+			EvaluateResolved(ass.ParseConcreteDialogue("{\\fs20\\t(0,100,\\fs30}A"), profile, EvaluationOptions{
+				Observer: Observer{
+					Tag: func(event TagEvent, state StateView) {
+						if event.Tag.Name == "t" {
+							sawMalformed = true
+							if event.Ignored || !event.Barrier || event.Uncertainty != UncertaintyMalformed {
+								t.Errorf("unclosed transform lacks malformed barrier: %#v", event)
+							}
+							if state.Value("fontsize").Known || state.Source("fontsize") != -1 {
+								t.Errorf("transform retained font size or provenance")
+							}
+						}
+					},
+					Text: func(text string, _ int, state StateView) {
+						if text == "A" {
+							sawText = true
+							if state.Value("fontsize").Known || state.Source("fontsize") != -1 {
+								t.Errorf("malformed transform recovered unproved state at text")
+							}
+						}
+					},
+				},
+			})
+			if !sawMalformed || !sawText {
+				t.Fatal("missing transform or text callback")
+			}
+		})
+	}
+}
+
+func TestRendererScopedUnclosedSyntaxRevokesEarlierNoEffectProofs(t *testing.T) {
+	for _, profile := range []renderer.Profile{
+		mustProfile(t, renderer.Libass),
+		mustProfile(t, renderer.XYVSFilter),
+		mustMod(t, renderer.FeatureEnabled),
+	} {
+		t.Run(profile.Kind().String(), func(t *testing.T) {
+			evaluation := EvaluateResolved(ass.ParseConcreteDialogue("{\\fs20\\fs20\\clip(1,2,3}A"), profile, EvaluationOptions{})
+			if len(evaluation.NoEffects) != 1 || !evaluation.NoEffects[0].ProofRevoked {
+				t.Fatalf("unclosed clip did not retroactively revoke no-effect proof: %#v", evaluation.NoEffects)
+			}
+		})
+	}
+}
+
+func TestRendererScopedClosedUnknownCommandsRemainIgnored(t *testing.T) {
+	profile := mustProfile(t, renderer.Libass)
+	for _, source := range []string{
+		"{\\fs20\\fs20\\mystery}A",
+		"{\\fs20\\fs20\\mystery(1,2)}A",
+	} {
+		t.Run(source, func(t *testing.T) {
+			var unknown *TagEvent
+			evaluation := EvaluateResolved(ass.ParseConcreteDialogue(source), profile, EvaluationOptions{
+				Observer: Observer{Tag: func(event TagEvent, _ StateView) {
+					if event.Tag.Name == "mystery" {
+						copy := event
+						unknown = &copy
+					}
+				}},
+			})
+			if unknown == nil || !unknown.Ignored || unknown.Barrier {
+				t.Fatalf("well-formed unknown command became a syntax barrier: %#v", unknown)
+			}
+			if len(evaluation.NoEffects) != 1 || evaluation.NoEffects[0].ProofRevoked {
+				t.Fatalf("well-formed unknown command revoked supported no-effect proof: %#v", evaluation.NoEffects)
+			}
+		})
+	}
+}
