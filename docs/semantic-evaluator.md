@@ -87,3 +87,22 @@ respectively, while memory use decreases by approximately 8.4% and
 6.9%. The longer workload sees approximately 5.7% fewer allocations.
 The comparison measures the complete document lint pipeline, including
 ASS006 and ASS013, without document parsing.
+
+## Retroactive SafeFix proof revocation
+
+An unrecognized tag, VSFilterMod-only extension, malformed or
+renderer-ambiguous assignment, unsupported transform child, or malformed
+structured arity is a dialogue-wide SafeFix proof barrier. Once encountered,
+`semantic.Evaluate` marks all previously collected no-effect candidates as
+`ProofRevoked` and stops producing new proofs. ASS006 retains those earlier
+findings as non-auto-fixable diagnostics with no edits. The ASS013 collector
+instead discards its accumulated Style-equivalence edit candidates, even when
+the barrier appears inside a transform or after ASS013 already stopped
+collecting a run. Known and fully modeled tags retain normal behavior.
+
+Dedicated regressions in `internal/semantic/safefix_barriers_test.go` and
+`internal/lint/safefix_barriers_test.go` cover the reported example
+`{\fs20\fs20\mystery}A`, extension tags, nested transforms, malformed
+arguments, and later text boundaries. This is intentionally conservative:
+there may be safe fixes in some specific renderers that are left for manual
+review when cross-renderer behavior is uncertain.

@@ -4,7 +4,6 @@ import (
 	"sort"
 
 	"assx/internal/ass"
-	"assx/internal/ass/spec"
 	"assx/internal/semantic"
 )
 
@@ -89,10 +88,12 @@ func (c *styleRunCollector) onText(text string, _ int, state semantic.StateView)
 
 func (c *styleRunCollector) onTag(event semantic.TagEvent, state semantic.StateView) {
 	tag := event.Tag
-	// Visit transform children as well, even when their parent already stopped
-	// ASS013's local proof. A late VSFilterMod operation revokes earlier fixes.
-	if tagSpec, known := spec.TagSpecs[tag.Name]; known && tagSpec.VSFilterModOnly {
+	// A semantic proof barrier revokes candidates collected before it.
+	// Check even after stopping ASS013's local run: unsupported tags can
+	// occur inside later transforms, after earlier valid text boundaries.
+	if event.Barrier {
 		c.candidates = nil
+		c.runTags = nil
 		c.stopped = true
 		return
 	}
