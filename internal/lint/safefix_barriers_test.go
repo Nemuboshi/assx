@@ -19,6 +19,12 @@ func TestLateUnmodeledTagsRevokeLintSafeFixes(t *testing.T) {
 		{"VSFilterMod inside transform", `{\fs20}A{\t(\1img)}B`},
 		{"unknown numeric assignment", `{\fs20}A{\fsabc}B`},
 		{"unknown numeric transform child", `{\fs20}A{\t(\fsabc)}B`},
+		{"unknown named Style reset", `{\fs20}A{\rMissing}B`},
+		{"unknown named reset after ASS006", `{\fs20\fs20}A{\rMissing}B`},
+		{"absolute karaoke timing", `{\fs20}A{\kt20}B`},
+		{"malformed karaoke duration", `{\fs20}A{\k20junk}B`},
+		{"renderer-dependent clipping", `{\fs20}A{\clip(1.5,0,10,10)}B`},
+		{"unmodeled vector clipping", `{\fs20}A{\clip(m 0 0 l 10 10)}B`},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
