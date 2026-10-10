@@ -2,7 +2,6 @@ package ass
 
 import (
 	"sort"
-	"strconv"
 	"strings"
 
 	"assx/internal/ass/spec"
@@ -105,23 +104,8 @@ func (tag Tag) IntegerArgument() (int32, bool) {
 	if !known {
 		return 0, false
 	}
-	raw = strings.TrimLeft(raw, " \t\r\n\v\f")
-	if len(raw) > 0 && raw[0] >= 0x80 {
-		return 0, false
-	}
-	end := 0
-	if len(raw) > 0 && (raw[0] == '+' || raw[0] == '-') {
-		end++
-	}
-	start := end
-	for end < len(raw) && raw[end] >= '0' && raw[end] <= '9' {
-		end++
-	}
-	if end == start {
-		return 0, true
-	}
-	value, err := strconv.ParseInt(raw[:end], 10, 32)
-	return int32(value), err == nil
+	value := DecodeRendererInteger(raw)
+	return int32(value.Integer), value.Status == ValueValid
 }
 
 type Token struct {

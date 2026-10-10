@@ -29,6 +29,13 @@ func CanonicalTagState(tag ass.Tag, tagSpec spec.TagSpec, slots []string) ([]str
 	}
 	var value string
 	var ok bool
+	decodedTag := ass.DecodeTag(tag)
+	// Renderer-dependent values cannot prove equivalence for automatic fixes.
+	for i := range tag.Args {
+		if decodedTag.Argument(i).Status == ass.ValueAmbiguous {
+			return nil, false
+		}
+	}
 	switch tagSpec.Value {
 	case spec.IntegerValue, spec.NumberValue, spec.BoldValue, spec.FontNameValue, spec.HexValue, spec.NoValue:
 		if len(tag.Args) != 1 {
@@ -73,8 +80,9 @@ func CanonicalTagState(tag ass.Tag, tagSpec spec.TagSpec, slots []string) ([]str
 			if len(raw) >= 2 && strings.EqualFold(raw[:2], "&H") && (tag.Paren || raw[:2] != "&H") {
 				return nil, false
 			}
-			parsed, valid := ParseHex(raw)
-			if valid {
+			decoded := decodedTag.Argument(0)
+			if decoded.Status == ass.ValueValid && decoded.Consumed == len(raw) {
+				parsed := uint64(decoded.Hex)
 				values := make([]string, len(slots))
 				for i, slot := range slots {
 					if strings.HasPrefix(slot, "a") {
@@ -125,22 +133,26 @@ func RelativeFontSize(tag ass.Tag) bool {
 }
 
 func CanonicalInteger(raw string) (string, bool) {
-	value, err := strconv.Atoi(strings.TrimSpace(raw))
-	if err != nil {
+	value := ass.DecodeExactInteger(raw)
+	if value.Status != ass.ValueValid {
 		return "", false
 	}
-	return strconv.Itoa(value), true
+	return strconv.FormatInt(value.Integer, 10), true
 }
 
 func CanonicalBold(raw string, style bool) (string, bool) {
-	value, err := strconv.Atoi(strings.TrimSpace(raw))
-	if err != nil || (value != 0 && value != 1 && value < 100 && !(style && value == -1)) {
+	decoded := ass.DecodeExactInteger(raw)
+	if decoded.Status != ass.ValueValid {
+		return "", false
+	}
+	value := decoded.Integer
+	if value != 0 && value != 1 && value < 100 && !(style && value == -1) {
 		return "", false
 	}
 	if value == -1 || value == 1 {
 		value = 1
 	}
-	return strconv.Itoa(value), true
+	return strconv.FormatInt(value, 10), true
 }
 
 func CanonicalNumber(raw string) (string, bool) {
@@ -162,23 +174,13 @@ func CanonicalNumber(raw string) (string, bool) {
 }
 
 func ParseFloat(raw string) (float64, bool) {
-	value, err := strconv.ParseFloat(strings.TrimSpace(raw), 64)
-	return value, err == nil && !math.IsNaN(value) && !math.IsInf(value, 0)
+	value := ass.DecodeExactNumber(raw)
+	return value.Number, value.Status == ass.ValueValid
 }
 
 func ParseHex(raw string) (uint64, bool) {
-	raw = strings.TrimSpace(raw)
-	if len(raw) >= 2 && strings.EqualFold(raw[:2], "&H") {
-		raw = raw[2:]
-	}
-	if strings.HasSuffix(raw, "&") {
-		raw = raw[:len(raw)-1]
-	}
-	if raw == "" || len(raw) > 8 {
-		return 0, false
-	}
-	value, err := strconv.ParseUint(raw, 16, 32)
-	return value, err == nil
+	value := ass.DecodeExactHex(raw)
+	return uint64(value.Hex), value.Status == ass.ValueValid
 }
 
 func SameSlotValues(state map[string]StateValue, slots, values []string) bool {

@@ -42,14 +42,14 @@ func AnalyzeStyles(doc ass.Document) []Diagnostic {
 		fieldName := field.StyleName + "." + field.Name
 		if integerStyleFields[field.Name] {
 			value := strings.TrimSpace(field.Value)
-			match := integerPrefix.FindStringSubmatch(value)
-			if !strings.Contains(value, ".") || len(match) == 0 || value == match[1] {
+			decoded := ass.DecodeInteger(value)
+			replacement := strings.TrimSpace(value[:decoded.Consumed])
+			if !strings.Contains(value, ".") || decoded.Consumed == 0 || value == replacement {
 				continue
 			}
 			if _, err := strconv.ParseFloat(value, 64); err != nil {
 				continue
 			}
-			replacement := match[1]
 			if _, err := strconv.ParseInt(replacement, 10, 32); err == nil {
 				out = append(out, styleDiagnostic(IssueStyleInteger, field, fieldName, replacement))
 			} else {
