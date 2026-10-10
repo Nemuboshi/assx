@@ -27,7 +27,9 @@ type signature struct {
 type tag struct {
 	Name   string `xml:"name,attr"`
 	Params struct {
-		Signatures []signature `xml:"sig"`
+		Exhaustive     string      `xml:"exhaustive,attr"`
+		ExhaustiveCite string      `xml:"exhaustive-cite,attr"`
+		Signatures     []signature `xml:"sig"`
 	} `xml:"params"`
 }
 type matrix struct {
@@ -155,7 +157,59 @@ func run() error {
 			}
 			fmt.Fprintf(&out, "citation:%q},", s.Cite)
 		}
-		fmt.Fprintln(&out, "}},")
+		complete, e := mask(t.Params.Exhaustive)
+		if e != nil {
+			return fmt.Errorf("%s: exhaustive signature scope: %w", t.Name, e)
+		}
+		if complete == 0 && t.Params.ExhaustiveCite != "" {
+			return fmt.Errorf("%s: exhaustive source citation without an exhaustive scope", t.Name)
+		}
+		if complete != 0 {
+			if t.Params.ExhaustiveCite == "" {
+				return fmt.Errorf("%s: exhaustive signature scope needs independent source citation", t.Name)
+			}
+			for _, renderer := range []struct {
+				mask uint8
+				name string
+			}{{1, "libass"}, {2, "xy"}, {4, "vsm"}} {
+				if complete&renderer.mask == 0 {
+					continue
+				}
+				cited := false
+				for _, token := range strings.Fields(t.Params.ExhaustiveCite) {
+					if strings.HasPrefix(token, renderer.name+":") {
+						cited = true
+					}
+				}
+				if !cited {
+					return fmt.Errorf("%s: missing exhaustive source citation for %s", t.Name, renderer.name)
+				}
+				found := false
+				for _, s := range t.Params.Signatures {
+					sc, err := mask(s.Scope)
+					if err != nil {
+						return err
+					}
+					if sc&renderer.mask == 0 {
+						continue
+					}
+					found = true
+					verified, err := mask(s.Verified)
+					if err != nil {
+						return err
+					}
+					if verified&renderer.mask == 0 {
+						return fmt.Errorf("%s: incomplete %s evidence cannot prove exhaustive arities", t.Name, renderer.name)
+					}
+				}
+				if !found {
+					return fmt.Errorf("%s: no applicable signatures for exhaustive %s scope", t.Name, renderer.name)
+				}
+			}
+			fmt.Fprintf(&out, "}, exhaustive:%d, exhaustiveCitation:%q},\n", complete, t.Params.ExhaustiveCite)
+		} else {
+			fmt.Fprintln(&out, "}},")
+		}
 	}
 	fmt.Fprintln(&out, "}")
 	formatted, err := format.Source(out.Bytes())

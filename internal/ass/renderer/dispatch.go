@@ -173,8 +173,13 @@ func (p Profile) Resolve(expr ass.ConcreteExpression, source string) Result {
 			r.Signature, r.Citation = s.Evidence, s.Citation
 		}
 	}
+	// Verified entries prove accepted forms, not that all forms were listed.
+	// Reject only when the pinned evidence separately proves completeness.
 	if r.Signature == SignatureUnknown && hasAvailable && fullyVerified {
-		r.Signature = SignatureRejected
+		if meta := matrixTags[r.Name]; meta.exhaustive&bit(p.kind) != 0 {
+			r.Signature = SignatureRejected
+			r.Citation = meta.exhaustiveCitation
+		}
 	}
 	// Parenthesized suffixes have parser-specific consumption semantics; do
 	// not promote an arity match into evidence for this unmodeled combination.
