@@ -1,0 +1,2541 @@
+{
+  "source_commit": "6ba745336615f102d5de39f76550f0a45da7bbb6",
+  "fixture_sha256": "4d7e4753ce5de74d0e9b357ffba6e0fe2b3979720349372859cb1669030c7e88",
+  "lossless_round_trip": true,
+  "newline": "\n",
+  "dialogues": [
+    {
+      "line": 15,
+      "style": "Default",
+      "text_start": 423,
+      "missing_fields": false,
+      "fields": [
+        {
+          "Name": "layer",
+          "Value": "0",
+          "Start": 383,
+          "End": 384
+        },
+        {
+          "Name": "start",
+          "Value": "0:00:00.00",
+          "Start": 385,
+          "End": 395
+        },
+        {
+          "Name": "end",
+          "Value": "0:00:02.00",
+          "Start": 396,
+          "End": 406
+        },
+        {
+          "Name": "style",
+          "Value": "Default",
+          "Start": 407,
+          "End": 414
+        },
+        {
+          "Name": "name",
+          "Value": "",
+          "Start": 415,
+          "End": 415
+        },
+        {
+          "Name": "marginl",
+          "Value": "0",
+          "Start": 416,
+          "End": 417
+        },
+        {
+          "Name": "marginr",
+          "Value": "0",
+          "Start": 418,
+          "End": 419
+        },
+        {
+          "Name": "marginv",
+          "Value": "0",
+          "Start": 420,
+          "End": 421
+        },
+        {
+          "Name": "effect",
+          "Value": "",
+          "Start": 422,
+          "End": 422
+        },
+        {
+          "Name": "text",
+          "Value": "{\\fsvp6\\frs\\blend(add)\\pos(1,2,3)\\pos(4,5)}A",
+          "Start": 423,
+          "End": 467
+        }
+      ],
+      "nodes": [
+        {
+          "kind": 2,
+          "raw": "{\\fsvp6\\frs\\blend(add)\\pos(1,2,3)\\pos(4,5)}",
+          "start": 0,
+          "end": 43,
+          "items": [
+            {
+              "kind": 1,
+              "raw": "",
+              "start": 1,
+              "end": 7,
+              "tag": {
+                "name": "fsvp",
+                "raw": "\\fsvp6",
+                "args": [
+                  "6"
+                ],
+                "start": 1,
+                "end": 7,
+                "column": 3
+              }
+            },
+            {
+              "kind": 1,
+              "raw": "",
+              "start": 7,
+              "end": 11,
+              "tag": {
+                "name": "frs",
+                "raw": "\\frs",
+                "start": 7,
+                "end": 11,
+                "column": 9
+              }
+            },
+            {
+              "kind": 1,
+              "raw": "",
+              "start": 11,
+              "end": 22,
+              "tag": {
+                "name": "blend",
+                "raw": "\\blend(add)",
+                "args": [
+                  "add"
+                ],
+                "start": 11,
+                "end": 22,
+                "column": 13,
+                "paren": true
+              }
+            },
+            {
+              "kind": 1,
+              "raw": "",
+              "start": 22,
+              "end": 33,
+              "tag": {
+                "name": "pos",
+                "raw": "\\pos(1,2,3)",
+                "args": [
+                  "1",
+                  "2",
+                  "3"
+                ],
+                "start": 22,
+                "end": 33,
+                "column": 24,
+                "paren": true
+              }
+            },
+            {
+              "kind": 1,
+              "raw": "",
+              "start": 33,
+              "end": 42,
+              "tag": {
+                "name": "pos",
+                "raw": "\\pos(4,5)",
+                "args": [
+                  "4",
+                  "5"
+                ],
+                "start": 33,
+                "end": 42,
+                "column": 35,
+                "paren": true
+              }
+            }
+          ]
+        },
+        {
+          "kind": 0,
+          "raw": "A",
+          "start": 43,
+          "end": 44
+        }
+      ],
+      "events": [
+        {
+          "tag": {
+            "name": "fsvp",
+            "raw": "\\fsvp6",
+            "args": [
+              "6"
+            ],
+            "start": 1,
+            "end": 7,
+            "column": 3
+          },
+          "index": 0,
+          "policy": 0,
+          "applied": false,
+          "known": false,
+          "barrier": true,
+          "uncertainty": 4,
+          "active_style": "Default",
+          "state": [
+            {
+              "name": "fontname",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "fontsize",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "position",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "origin",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "alignment",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "frz",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_rect",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_vector",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "karaoke_cursor",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "drawing_scale",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            }
+          ]
+        },
+        {
+          "tag": {
+            "name": "frs",
+            "raw": "\\frs",
+            "start": 7,
+            "end": 11,
+            "column": 9
+          },
+          "index": 1,
+          "policy": 0,
+          "applied": false,
+          "known": false,
+          "barrier": true,
+          "uncertainty": 4,
+          "active_style": "Default",
+          "state": [
+            {
+              "name": "fontname",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "fontsize",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "position",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "origin",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "alignment",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "frz",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_rect",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_vector",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "karaoke_cursor",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "drawing_scale",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            }
+          ]
+        },
+        {
+          "tag": {
+            "name": "blend",
+            "raw": "\\blend(add)",
+            "args": [
+              "add"
+            ],
+            "start": 11,
+            "end": 22,
+            "column": 13,
+            "paren": true
+          },
+          "index": 2,
+          "policy": 0,
+          "applied": false,
+          "known": false,
+          "barrier": true,
+          "uncertainty": 4,
+          "active_style": "Default",
+          "state": [
+            {
+              "name": "fontname",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "fontsize",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "position",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "origin",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "alignment",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "frz",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_rect",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_vector",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "karaoke_cursor",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "drawing_scale",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            }
+          ]
+        },
+        {
+          "tag": {
+            "name": "pos",
+            "raw": "\\pos(1,2,3)",
+            "args": [
+              "1",
+              "2",
+              "3"
+            ],
+            "start": 22,
+            "end": 33,
+            "column": 24,
+            "paren": true
+          },
+          "index": 3,
+          "policy": 0,
+          "applied": false,
+          "known": false,
+          "barrier": true,
+          "uncertainty": 1,
+          "active_style": "Default",
+          "state": [
+            {
+              "name": "fontname",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "fontsize",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "position",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "origin",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "alignment",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "frz",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_rect",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_vector",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "karaoke_cursor",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "drawing_scale",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            }
+          ]
+        },
+        {
+          "tag": {
+            "name": "pos",
+            "raw": "\\pos(4,5)",
+            "args": [
+              "4",
+              "5"
+            ],
+            "start": 33,
+            "end": 42,
+            "column": 35,
+            "paren": true
+          },
+          "index": 4,
+          "policy": 1,
+          "slots": [
+            "position"
+          ],
+          "before": [
+            {
+              "Value": "",
+              "Known": false
+            }
+          ],
+          "after": [
+            {
+              "Value": "4:4,5:5",
+              "Known": true
+            }
+          ],
+          "applied": true,
+          "known": true,
+          "barrier": false,
+          "uncertainty": 0,
+          "active_style": "Default",
+          "state": [
+            {
+              "name": "fontname",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "fontsize",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "position",
+              "value": {
+                "Value": "4:4,5:5",
+                "Known": true
+              },
+              "source": 4
+            },
+            {
+              "name": "origin",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "alignment",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "frz",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_rect",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_vector",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "karaoke_cursor",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "drawing_scale",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            }
+          ]
+        }
+      ],
+      "text_boundaries": [
+        {
+          "text": "A",
+          "start": 43,
+          "active_style": "Default",
+          "state": [
+            {
+              "name": "fontname",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "fontsize",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "position",
+              "value": {
+                "Value": "4:4,5:5",
+                "Known": true
+              },
+              "source": 4
+            },
+            {
+              "name": "origin",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "alignment",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "frz",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_rect",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_vector",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "karaoke_cursor",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "drawing_scale",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "line": 16,
+      "style": "Default",
+      "text_start": 518,
+      "missing_fields": false,
+      "fields": [
+        {
+          "Name": "layer",
+          "Value": "0",
+          "Start": 478,
+          "End": 479
+        },
+        {
+          "Name": "start",
+          "Value": "0:00:02.00",
+          "Start": 480,
+          "End": 490
+        },
+        {
+          "Name": "end",
+          "Value": "0:00:04.00",
+          "Start": 491,
+          "End": 501
+        },
+        {
+          "Name": "style",
+          "Value": "Default",
+          "Start": 502,
+          "End": 509
+        },
+        {
+          "Name": "name",
+          "Value": "",
+          "Start": 510,
+          "End": 510
+        },
+        {
+          "Name": "marginl",
+          "Value": "0",
+          "Start": 511,
+          "End": 512
+        },
+        {
+          "Name": "marginr",
+          "Value": "0",
+          "Start": 513,
+          "End": 514
+        },
+        {
+          "Name": "marginv",
+          "Value": "0",
+          "Start": 515,
+          "End": 516
+        },
+        {
+          "Name": "effect",
+          "Value": "",
+          "Start": 517,
+          "End": 517
+        },
+        {
+          "Name": "text",
+          "Value": "{\\pos(1,2,3)\\pos(4,5)\\move(1,2,3,4)}B",
+          "Start": 518,
+          "End": 555
+        }
+      ],
+      "nodes": [
+        {
+          "kind": 2,
+          "raw": "{\\pos(1,2,3)\\pos(4,5)\\move(1,2,3,4)}",
+          "start": 0,
+          "end": 36,
+          "items": [
+            {
+              "kind": 1,
+              "raw": "",
+              "start": 1,
+              "end": 12,
+              "tag": {
+                "name": "pos",
+                "raw": "\\pos(1,2,3)",
+                "args": [
+                  "1",
+                  "2",
+                  "3"
+                ],
+                "start": 1,
+                "end": 12,
+                "column": 3,
+                "paren": true
+              }
+            },
+            {
+              "kind": 1,
+              "raw": "",
+              "start": 12,
+              "end": 21,
+              "tag": {
+                "name": "pos",
+                "raw": "\\pos(4,5)",
+                "args": [
+                  "4",
+                  "5"
+                ],
+                "start": 12,
+                "end": 21,
+                "column": 14,
+                "paren": true
+              }
+            },
+            {
+              "kind": 1,
+              "raw": "",
+              "start": 21,
+              "end": 35,
+              "tag": {
+                "name": "move",
+                "raw": "\\move(1,2,3,4)",
+                "args": [
+                  "1",
+                  "2",
+                  "3",
+                  "4"
+                ],
+                "start": 21,
+                "end": 35,
+                "column": 23,
+                "paren": true
+              }
+            }
+          ]
+        },
+        {
+          "kind": 0,
+          "raw": "B",
+          "start": 36,
+          "end": 37
+        }
+      ],
+      "events": [
+        {
+          "tag": {
+            "name": "pos",
+            "raw": "\\pos(1,2,3)",
+            "args": [
+              "1",
+              "2",
+              "3"
+            ],
+            "start": 1,
+            "end": 12,
+            "column": 3,
+            "paren": true
+          },
+          "index": 0,
+          "policy": 0,
+          "applied": false,
+          "known": false,
+          "barrier": true,
+          "uncertainty": 1,
+          "active_style": "Default",
+          "state": [
+            {
+              "name": "fontname",
+              "value": {
+                "Value": "Go Regular",
+                "Known": true
+              },
+              "source": -1
+            },
+            {
+              "name": "fontsize",
+              "value": {
+                "Value": "24:24",
+                "Known": true
+              },
+              "source": -1
+            },
+            {
+              "name": "position",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "origin",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "alignment",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "frz",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_rect",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_vector",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "karaoke_cursor",
+              "value": {
+                "Value": "0",
+                "Known": true
+              },
+              "source": -1
+            },
+            {
+              "name": "drawing_scale",
+              "value": {
+                "Value": "0",
+                "Known": true
+              },
+              "source": -1
+            }
+          ]
+        },
+        {
+          "tag": {
+            "name": "pos",
+            "raw": "\\pos(4,5)",
+            "args": [
+              "4",
+              "5"
+            ],
+            "start": 12,
+            "end": 21,
+            "column": 14,
+            "paren": true
+          },
+          "index": 1,
+          "policy": 1,
+          "slots": [
+            "position"
+          ],
+          "before": [
+            {
+              "Value": "",
+              "Known": false
+            }
+          ],
+          "after": [
+            {
+              "Value": "4:4,5:5",
+              "Known": true
+            }
+          ],
+          "applied": true,
+          "known": true,
+          "barrier": false,
+          "uncertainty": 0,
+          "active_style": "Default",
+          "state": [
+            {
+              "name": "fontname",
+              "value": {
+                "Value": "Go Regular",
+                "Known": true
+              },
+              "source": -1
+            },
+            {
+              "name": "fontsize",
+              "value": {
+                "Value": "24:24",
+                "Known": true
+              },
+              "source": -1
+            },
+            {
+              "name": "position",
+              "value": {
+                "Value": "4:4,5:5",
+                "Known": true
+              },
+              "source": 1
+            },
+            {
+              "name": "origin",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "alignment",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "frz",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_rect",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_vector",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "karaoke_cursor",
+              "value": {
+                "Value": "0",
+                "Known": true
+              },
+              "source": -1
+            },
+            {
+              "name": "drawing_scale",
+              "value": {
+                "Value": "0",
+                "Known": true
+              },
+              "source": -1
+            }
+          ]
+        },
+        {
+          "tag": {
+            "name": "move",
+            "raw": "\\move(1,2,3,4)",
+            "args": [
+              "1",
+              "2",
+              "3",
+              "4"
+            ],
+            "start": 21,
+            "end": 35,
+            "column": 23,
+            "paren": true
+          },
+          "index": 2,
+          "policy": 1,
+          "slots": [
+            "position"
+          ],
+          "before": [
+            {
+              "Value": "4:4,5:5",
+              "Known": true
+            }
+          ],
+          "after": [
+            {
+              "Value": "4:4,5:5",
+              "Known": true
+            }
+          ],
+          "applied": false,
+          "known": true,
+          "barrier": false,
+          "uncertainty": 0,
+          "active_style": "Default",
+          "state": [
+            {
+              "name": "fontname",
+              "value": {
+                "Value": "Go Regular",
+                "Known": true
+              },
+              "source": -1
+            },
+            {
+              "name": "fontsize",
+              "value": {
+                "Value": "24:24",
+                "Known": true
+              },
+              "source": -1
+            },
+            {
+              "name": "position",
+              "value": {
+                "Value": "4:4,5:5",
+                "Known": true
+              },
+              "source": 1
+            },
+            {
+              "name": "origin",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "alignment",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "frz",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_rect",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_vector",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "karaoke_cursor",
+              "value": {
+                "Value": "0",
+                "Known": true
+              },
+              "source": -1
+            },
+            {
+              "name": "drawing_scale",
+              "value": {
+                "Value": "0",
+                "Known": true
+              },
+              "source": -1
+            }
+          ]
+        }
+      ],
+      "text_boundaries": [
+        {
+          "text": "B",
+          "start": 36,
+          "active_style": "Default",
+          "state": [
+            {
+              "name": "fontname",
+              "value": {
+                "Value": "Go Regular",
+                "Known": true
+              },
+              "source": -1
+            },
+            {
+              "name": "fontsize",
+              "value": {
+                "Value": "24:24",
+                "Known": true
+              },
+              "source": -1
+            },
+            {
+              "name": "position",
+              "value": {
+                "Value": "4:4,5:5",
+                "Known": true
+              },
+              "source": 1
+            },
+            {
+              "name": "origin",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "alignment",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "frz",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_rect",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_vector",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "karaoke_cursor",
+              "value": {
+                "Value": "0",
+                "Known": true
+              },
+              "source": -1
+            },
+            {
+              "name": "drawing_scale",
+              "value": {
+                "Value": "0",
+                "Known": true
+              },
+              "source": -1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "line": 17,
+      "style": "Alt",
+      "text_start": 602,
+      "missing_fields": false,
+      "fields": [
+        {
+          "Name": "layer",
+          "Value": "0",
+          "Start": 566,
+          "End": 567
+        },
+        {
+          "Name": "start",
+          "Value": "0:00:04.00",
+          "Start": 568,
+          "End": 578
+        },
+        {
+          "Name": "end",
+          "Value": "0:00:06.00",
+          "Start": 579,
+          "End": 589
+        },
+        {
+          "Name": "style",
+          "Value": "Alt",
+          "Start": 590,
+          "End": 593
+        },
+        {
+          "Name": "name",
+          "Value": "",
+          "Start": 594,
+          "End": 594
+        },
+        {
+          "Name": "marginl",
+          "Value": "0",
+          "Start": 595,
+          "End": 596
+        },
+        {
+          "Name": "marginr",
+          "Value": "0",
+          "Start": 597,
+          "End": 598
+        },
+        {
+          "Name": "marginv",
+          "Value": "0",
+          "Start": 599,
+          "End": 600
+        },
+        {
+          "Name": "effect",
+          "Value": "",
+          "Start": 601,
+          "End": 601
+        },
+        {
+          "Name": "text",
+          "Value": "{\\be1\\blend(add)\\fs10\\fs20}C",
+          "Start": 602,
+          "End": 630
+        }
+      ],
+      "nodes": [
+        {
+          "kind": 2,
+          "raw": "{\\be1\\blend(add)\\fs10\\fs20}",
+          "start": 0,
+          "end": 27,
+          "items": [
+            {
+              "kind": 1,
+              "raw": "",
+              "start": 1,
+              "end": 5,
+              "tag": {
+                "name": "be",
+                "raw": "\\be1",
+                "args": [
+                  "1"
+                ],
+                "start": 1,
+                "end": 5,
+                "column": 3
+              }
+            },
+            {
+              "kind": 1,
+              "raw": "",
+              "start": 5,
+              "end": 16,
+              "tag": {
+                "name": "blend",
+                "raw": "\\blend(add)",
+                "args": [
+                  "add"
+                ],
+                "start": 5,
+                "end": 16,
+                "column": 7,
+                "paren": true
+              }
+            },
+            {
+              "kind": 1,
+              "raw": "",
+              "start": 16,
+              "end": 21,
+              "tag": {
+                "name": "fs",
+                "raw": "\\fs10",
+                "args": [
+                  "10"
+                ],
+                "start": 16,
+                "end": 21,
+                "column": 18
+              }
+            },
+            {
+              "kind": 1,
+              "raw": "",
+              "start": 21,
+              "end": 26,
+              "tag": {
+                "name": "fs",
+                "raw": "\\fs20",
+                "args": [
+                  "20"
+                ],
+                "start": 21,
+                "end": 26,
+                "column": 23
+              }
+            }
+          ]
+        },
+        {
+          "kind": 0,
+          "raw": "C",
+          "start": 27,
+          "end": 28
+        }
+      ],
+      "events": [
+        {
+          "tag": {
+            "name": "be",
+            "raw": "\\be1",
+            "args": [
+              "1"
+            ],
+            "start": 1,
+            "end": 5,
+            "column": 3
+          },
+          "index": 0,
+          "policy": 0,
+          "slots": [
+            "be"
+          ],
+          "before": [
+            {
+              "Value": "",
+              "Known": false
+            }
+          ],
+          "after": [
+            {
+              "Value": "1:1",
+              "Known": true
+            }
+          ],
+          "applied": true,
+          "known": true,
+          "barrier": false,
+          "uncertainty": 0,
+          "active_style": "Alt",
+          "state": [
+            {
+              "name": "fontname",
+              "value": {
+                "Value": "Go Regular",
+                "Known": true
+              },
+              "source": -1
+            },
+            {
+              "name": "fontsize",
+              "value": {
+                "Value": "32:32",
+                "Known": true
+              },
+              "source": -1
+            },
+            {
+              "name": "position",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "origin",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "alignment",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "frz",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_rect",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_vector",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "karaoke_cursor",
+              "value": {
+                "Value": "0",
+                "Known": true
+              },
+              "source": -1
+            },
+            {
+              "name": "drawing_scale",
+              "value": {
+                "Value": "0",
+                "Known": true
+              },
+              "source": -1
+            }
+          ]
+        },
+        {
+          "tag": {
+            "name": "blend",
+            "raw": "\\blend(add)",
+            "args": [
+              "add"
+            ],
+            "start": 5,
+            "end": 16,
+            "column": 7,
+            "paren": true
+          },
+          "index": 1,
+          "policy": 0,
+          "applied": false,
+          "known": false,
+          "barrier": true,
+          "uncertainty": 4,
+          "active_style": "Alt",
+          "state": [
+            {
+              "name": "fontname",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "fontsize",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "position",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "origin",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "alignment",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "frz",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_rect",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_vector",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "karaoke_cursor",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "drawing_scale",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            }
+          ]
+        },
+        {
+          "tag": {
+            "name": "fs",
+            "raw": "\\fs10",
+            "args": [
+              "10"
+            ],
+            "start": 16,
+            "end": 21,
+            "column": 18
+          },
+          "index": 2,
+          "policy": 0,
+          "slots": [
+            "fontsize"
+          ],
+          "before": [
+            {
+              "Value": "",
+              "Known": false
+            }
+          ],
+          "after": [
+            {
+              "Value": "10:10",
+              "Known": true
+            }
+          ],
+          "applied": true,
+          "known": true,
+          "barrier": false,
+          "uncertainty": 0,
+          "active_style": "Alt",
+          "state": [
+            {
+              "name": "fontname",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "fontsize",
+              "value": {
+                "Value": "10:10",
+                "Known": true
+              },
+              "source": 2
+            },
+            {
+              "name": "position",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "origin",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "alignment",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "frz",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_rect",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_vector",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "karaoke_cursor",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "drawing_scale",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            }
+          ]
+        },
+        {
+          "tag": {
+            "name": "fs",
+            "raw": "\\fs20",
+            "args": [
+              "20"
+            ],
+            "start": 21,
+            "end": 26,
+            "column": 23
+          },
+          "index": 3,
+          "policy": 0,
+          "slots": [
+            "fontsize"
+          ],
+          "before": [
+            {
+              "Value": "10:10",
+              "Known": true
+            }
+          ],
+          "after": [
+            {
+              "Value": "20:20",
+              "Known": true
+            }
+          ],
+          "applied": true,
+          "known": true,
+          "barrier": false,
+          "uncertainty": 0,
+          "active_style": "Alt",
+          "state": [
+            {
+              "name": "fontname",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "fontsize",
+              "value": {
+                "Value": "20:20",
+                "Known": true
+              },
+              "source": 3
+            },
+            {
+              "name": "position",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "origin",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "alignment",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "frz",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_rect",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_vector",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "karaoke_cursor",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "drawing_scale",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            }
+          ]
+        }
+      ],
+      "text_boundaries": [
+        {
+          "text": "C",
+          "start": 27,
+          "active_style": "Alt",
+          "state": [
+            {
+              "name": "fontname",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "fontsize",
+              "value": {
+                "Value": "20:20",
+                "Known": true
+              },
+              "source": 3
+            },
+            {
+              "name": "position",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "origin",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "alignment",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "frz",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_rect",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_vector",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "karaoke_cursor",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "drawing_scale",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "cli": {
+    "exit_code": 1,
+    "diagnostics": [
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS005",
+        "severity": "warning",
+        "title": "VSFilterMod tag may be unsupported by libass/VSFilter",
+        "description": "This VSFilterMod-only tag may not be supported by libass or original VSFilter. Content using it cannot be safely auto-fixed.",
+        "suggested_fix": "Verify support and rendering in the target renderer; no safe automatic fix is available for content using this tag.",
+        "line": 15,
+        "column": 3,
+        "tag": "fsvp",
+        "detail": "This tag is specific to VSFilterMod and is not shared by libass and VSFilter. Automatic fixes are disabled for this dialogue.",
+        "sources": [
+          "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2745-L3717",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L1716-L1769",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L281-L888"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS005",
+        "severity": "warning",
+        "title": "VSFilterMod tag may be unsupported by libass/VSFilter",
+        "description": "This VSFilterMod-only tag may not be supported by libass or original VSFilter. Content using it cannot be safely auto-fixed.",
+        "suggested_fix": "Verify support and rendering in the target renderer; no safe automatic fix is available for content using this tag.",
+        "line": 15,
+        "column": 9,
+        "tag": "frs",
+        "detail": "This tag is specific to VSFilterMod and is not shared by libass and VSFilter. Automatic fixes are disabled for this dialogue.",
+        "sources": [
+          "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2745-L3717",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L1716-L1769",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L281-L888"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS005",
+        "severity": "warning",
+        "title": "VSFilterMod tag may be unsupported by libass/VSFilter",
+        "description": "This VSFilterMod-only tag may not be supported by libass or original VSFilter. Content using it cannot be safely auto-fixed.",
+        "suggested_fix": "Verify support and rendering in the target renderer; no safe automatic fix is available for content using this tag.",
+        "line": 15,
+        "column": 13,
+        "tag": "blend",
+        "detail": "This tag is specific to VSFilterMod and is not shared by libass and VSFilter. Automatic fixes are disabled for this dialogue.",
+        "sources": [
+          "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2745-L3717",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L1716-L1769",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L281-L888"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS001",
+        "severity": "error",
+        "title": "Invalid argument count",
+        "description": "A tag has an argument count outside the checked forms.",
+        "suggested_fix": "Correct the tag's argument list.",
+        "line": 15,
+        "column": 24,
+        "tag": "pos",
+        "detail": "Found 3 arguments; expected 2.",
+        "sources": [
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L405",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L494",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L608",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L625",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L730",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2352",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2396",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2575",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2615"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS001",
+        "severity": "error",
+        "title": "Invalid argument count",
+        "description": "A tag has an argument count outside the checked forms.",
+        "suggested_fix": "Correct the tag's argument list.",
+        "line": 16,
+        "column": 3,
+        "tag": "pos",
+        "detail": "Found 3 arguments; expected 2.",
+        "sources": [
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L405",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L494",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L608",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L625",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L730",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2352",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2396",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2575",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2615"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS005",
+        "severity": "warning",
+        "title": "VSFilterMod tag may be unsupported by libass/VSFilter",
+        "description": "This VSFilterMod-only tag may not be supported by libass or original VSFilter. Content using it cannot be safely auto-fixed.",
+        "suggested_fix": "Verify support and rendering in the target renderer; no safe automatic fix is available for content using this tag.",
+        "line": 17,
+        "column": 7,
+        "tag": "blend",
+        "detail": "This tag is specific to VSFilterMod and is not shared by libass and VSFilter. Automatic fixes are disabled for this dialogue.",
+        "sources": [
+          "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2745-L3717",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L1716-L1769",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L281-L888"
+        ]
+      }
+    ],
+    "summary": "Fixes available: 0 safe, 0 unsafe, 6 not auto-fixable.",
+    "output_sha256": "4d7e4753ce5de74d0e9b357ffba6e0fe2b3979720349372859cb1669030c7e88",
+    "changed": false
+  },
+  "cli_fonts": {
+    "exit_code": 1,
+    "diagnostics": [
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS005",
+        "severity": "warning",
+        "title": "VSFilterMod tag may be unsupported by libass/VSFilter",
+        "description": "This VSFilterMod-only tag may not be supported by libass or original VSFilter. Content using it cannot be safely auto-fixed.",
+        "suggested_fix": "Verify support and rendering in the target renderer; no safe automatic fix is available for content using this tag.",
+        "line": 15,
+        "column": 3,
+        "tag": "fsvp",
+        "detail": "This tag is specific to VSFilterMod and is not shared by libass and VSFilter. Automatic fixes are disabled for this dialogue.",
+        "sources": [
+          "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2745-L3717",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L1716-L1769",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L281-L888"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS005",
+        "severity": "warning",
+        "title": "VSFilterMod tag may be unsupported by libass/VSFilter",
+        "description": "This VSFilterMod-only tag may not be supported by libass or original VSFilter. Content using it cannot be safely auto-fixed.",
+        "suggested_fix": "Verify support and rendering in the target renderer; no safe automatic fix is available for content using this tag.",
+        "line": 15,
+        "column": 9,
+        "tag": "frs",
+        "detail": "This tag is specific to VSFilterMod and is not shared by libass and VSFilter. Automatic fixes are disabled for this dialogue.",
+        "sources": [
+          "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2745-L3717",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L1716-L1769",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L281-L888"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS005",
+        "severity": "warning",
+        "title": "VSFilterMod tag may be unsupported by libass/VSFilter",
+        "description": "This VSFilterMod-only tag may not be supported by libass or original VSFilter. Content using it cannot be safely auto-fixed.",
+        "suggested_fix": "Verify support and rendering in the target renderer; no safe automatic fix is available for content using this tag.",
+        "line": 15,
+        "column": 13,
+        "tag": "blend",
+        "detail": "This tag is specific to VSFilterMod and is not shared by libass and VSFilter. Automatic fixes are disabled for this dialogue.",
+        "sources": [
+          "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2745-L3717",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L1716-L1769",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L281-L888"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS001",
+        "severity": "error",
+        "title": "Invalid argument count",
+        "description": "A tag has an argument count outside the checked forms.",
+        "suggested_fix": "Correct the tag's argument list.",
+        "line": 15,
+        "column": 24,
+        "tag": "pos",
+        "detail": "Found 3 arguments; expected 2.",
+        "sources": [
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L405",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L494",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L608",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L625",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L730",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2352",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2396",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2575",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2615"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS001",
+        "severity": "error",
+        "title": "Invalid argument count",
+        "description": "A tag has an argument count outside the checked forms.",
+        "suggested_fix": "Correct the tag's argument list.",
+        "line": 16,
+        "column": 3,
+        "tag": "pos",
+        "detail": "Found 3 arguments; expected 2.",
+        "sources": [
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L405",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L494",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L608",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L625",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L730",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2352",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2396",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2575",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2615"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS005",
+        "severity": "warning",
+        "title": "VSFilterMod tag may be unsupported by libass/VSFilter",
+        "description": "This VSFilterMod-only tag may not be supported by libass or original VSFilter. Content using it cannot be safely auto-fixed.",
+        "suggested_fix": "Verify support and rendering in the target renderer; no safe automatic fix is available for content using this tag.",
+        "line": 17,
+        "column": 7,
+        "tag": "blend",
+        "detail": "This tag is specific to VSFilterMod and is not shared by libass and VSFilter. Automatic fixes are disabled for this dialogue.",
+        "sources": [
+          "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2745-L3717",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L1716-L1769",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L281-L888"
+        ]
+      }
+    ],
+    "summary": "Fixes available: 0 safe, 0 unsafe, 6 not auto-fixable.",
+    "output_sha256": "4d7e4753ce5de74d0e9b357ffba6e0fe2b3979720349372859cb1669030c7e88",
+    "changed": false
+  },
+  "cli_safe_fix": {
+    "exit_code": 1,
+    "diagnostics": [
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS005",
+        "severity": "warning",
+        "title": "VSFilterMod tag may be unsupported by libass/VSFilter",
+        "description": "This VSFilterMod-only tag may not be supported by libass or original VSFilter. Content using it cannot be safely auto-fixed.",
+        "suggested_fix": "Verify support and rendering in the target renderer; no safe automatic fix is available for content using this tag.",
+        "line": 15,
+        "column": 3,
+        "tag": "fsvp",
+        "detail": "This tag is specific to VSFilterMod and is not shared by libass and VSFilter. Automatic fixes are disabled for this dialogue.",
+        "sources": [
+          "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2745-L3717",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L1716-L1769",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L281-L888"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS005",
+        "severity": "warning",
+        "title": "VSFilterMod tag may be unsupported by libass/VSFilter",
+        "description": "This VSFilterMod-only tag may not be supported by libass or original VSFilter. Content using it cannot be safely auto-fixed.",
+        "suggested_fix": "Verify support and rendering in the target renderer; no safe automatic fix is available for content using this tag.",
+        "line": 15,
+        "column": 9,
+        "tag": "frs",
+        "detail": "This tag is specific to VSFilterMod and is not shared by libass and VSFilter. Automatic fixes are disabled for this dialogue.",
+        "sources": [
+          "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2745-L3717",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L1716-L1769",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L281-L888"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS005",
+        "severity": "warning",
+        "title": "VSFilterMod tag may be unsupported by libass/VSFilter",
+        "description": "This VSFilterMod-only tag may not be supported by libass or original VSFilter. Content using it cannot be safely auto-fixed.",
+        "suggested_fix": "Verify support and rendering in the target renderer; no safe automatic fix is available for content using this tag.",
+        "line": 15,
+        "column": 13,
+        "tag": "blend",
+        "detail": "This tag is specific to VSFilterMod and is not shared by libass and VSFilter. Automatic fixes are disabled for this dialogue.",
+        "sources": [
+          "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2745-L3717",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L1716-L1769",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L281-L888"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS001",
+        "severity": "error",
+        "title": "Invalid argument count",
+        "description": "A tag has an argument count outside the checked forms.",
+        "suggested_fix": "Correct the tag's argument list.",
+        "line": 15,
+        "column": 24,
+        "tag": "pos",
+        "detail": "Found 3 arguments; expected 2.",
+        "sources": [
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L405",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L494",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L608",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L625",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L730",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2352",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2396",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2575",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2615"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS001",
+        "severity": "error",
+        "title": "Invalid argument count",
+        "description": "A tag has an argument count outside the checked forms.",
+        "suggested_fix": "Correct the tag's argument list.",
+        "line": 16,
+        "column": 3,
+        "tag": "pos",
+        "detail": "Found 3 arguments; expected 2.",
+        "sources": [
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L405",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L494",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L608",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L625",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L730",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2352",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2396",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2575",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2615"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS005",
+        "severity": "warning",
+        "title": "VSFilterMod tag may be unsupported by libass/VSFilter",
+        "description": "This VSFilterMod-only tag may not be supported by libass or original VSFilter. Content using it cannot be safely auto-fixed.",
+        "suggested_fix": "Verify support and rendering in the target renderer; no safe automatic fix is available for content using this tag.",
+        "line": 17,
+        "column": 7,
+        "tag": "blend",
+        "detail": "This tag is specific to VSFilterMod and is not shared by libass and VSFilter. Automatic fixes are disabled for this dialogue.",
+        "sources": [
+          "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2745-L3717",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L1716-L1769",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L281-L888"
+        ]
+      }
+    ],
+    "summary": "Fixes available: 0 safe, 0 unsafe, 6 not auto-fixable.",
+    "output_sha256": "4d7e4753ce5de74d0e9b357ffba6e0fe2b3979720349372859cb1669030c7e88",
+    "changed": false
+  },
+  "cli_unsafe_fix": {
+    "exit_code": 1,
+    "diagnostics": [
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS005",
+        "severity": "warning",
+        "title": "VSFilterMod tag may be unsupported by libass/VSFilter",
+        "description": "This VSFilterMod-only tag may not be supported by libass or original VSFilter. Content using it cannot be safely auto-fixed.",
+        "suggested_fix": "Verify support and rendering in the target renderer; no safe automatic fix is available for content using this tag.",
+        "line": 15,
+        "column": 3,
+        "tag": "fsvp",
+        "detail": "This tag is specific to VSFilterMod and is not shared by libass and VSFilter. Automatic fixes are disabled for this dialogue.",
+        "sources": [
+          "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2745-L3717",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L1716-L1769",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L281-L888"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS005",
+        "severity": "warning",
+        "title": "VSFilterMod tag may be unsupported by libass/VSFilter",
+        "description": "This VSFilterMod-only tag may not be supported by libass or original VSFilter. Content using it cannot be safely auto-fixed.",
+        "suggested_fix": "Verify support and rendering in the target renderer; no safe automatic fix is available for content using this tag.",
+        "line": 15,
+        "column": 9,
+        "tag": "frs",
+        "detail": "This tag is specific to VSFilterMod and is not shared by libass and VSFilter. Automatic fixes are disabled for this dialogue.",
+        "sources": [
+          "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2745-L3717",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L1716-L1769",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L281-L888"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS005",
+        "severity": "warning",
+        "title": "VSFilterMod tag may be unsupported by libass/VSFilter",
+        "description": "This VSFilterMod-only tag may not be supported by libass or original VSFilter. Content using it cannot be safely auto-fixed.",
+        "suggested_fix": "Verify support and rendering in the target renderer; no safe automatic fix is available for content using this tag.",
+        "line": 15,
+        "column": 13,
+        "tag": "blend",
+        "detail": "This tag is specific to VSFilterMod and is not shared by libass and VSFilter. Automatic fixes are disabled for this dialogue.",
+        "sources": [
+          "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2745-L3717",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L1716-L1769",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L281-L888"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS001",
+        "severity": "error",
+        "title": "Invalid argument count",
+        "description": "A tag has an argument count outside the checked forms.",
+        "suggested_fix": "Correct the tag's argument list.",
+        "line": 15,
+        "column": 24,
+        "tag": "pos",
+        "detail": "Found 3 arguments; expected 2.",
+        "sources": [
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L405",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L494",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L608",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L625",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L730",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2352",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2396",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2575",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2615"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS001",
+        "severity": "error",
+        "title": "Invalid argument count",
+        "description": "A tag has an argument count outside the checked forms.",
+        "suggested_fix": "Correct the tag's argument list.",
+        "line": 16,
+        "column": 3,
+        "tag": "pos",
+        "detail": "Found 3 arguments; expected 2.",
+        "sources": [
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L405",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L494",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L608",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L625",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L730",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2352",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2396",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2575",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2615"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS005",
+        "severity": "warning",
+        "title": "VSFilterMod tag may be unsupported by libass/VSFilter",
+        "description": "This VSFilterMod-only tag may not be supported by libass or original VSFilter. Content using it cannot be safely auto-fixed.",
+        "suggested_fix": "Verify support and rendering in the target renderer; no safe automatic fix is available for content using this tag.",
+        "line": 17,
+        "column": 7,
+        "tag": "blend",
+        "detail": "This tag is specific to VSFilterMod and is not shared by libass and VSFilter. Automatic fixes are disabled for this dialogue.",
+        "sources": [
+          "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2745-L3717",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L1716-L1769",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L281-L888"
+        ]
+      }
+    ],
+    "summary": "Fixes available: 0 safe, 0 unsafe, 6 not auto-fixable.",
+    "output_sha256": "4d7e4753ce5de74d0e9b357ffba6e0fe2b3979720349372859cb1669030c7e88",
+    "changed": false
+  }
+}

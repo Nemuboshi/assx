@@ -1,0 +1,2014 @@
+{
+  "source_commit": "6ba745336615f102d5de39f76550f0a45da7bbb6",
+  "fixture_sha256": "7c5425d6cf69b7215c1b6e258ee742a0d9d2a04b735613d6feb14b3356607dfa",
+  "lossless_round_trip": true,
+  "newline": "\n",
+  "dialogues": [
+    {
+      "line": 15,
+      "style": "Default",
+      "text_start": 423,
+      "missing_fields": false,
+      "fields": [
+        {
+          "Name": "layer",
+          "Value": "0",
+          "Start": 383,
+          "End": 384
+        },
+        {
+          "Name": "start",
+          "Value": "0:00:00.00",
+          "Start": 385,
+          "End": 395
+        },
+        {
+          "Name": "end",
+          "Value": "0:00:02.00",
+          "Start": 396,
+          "End": 406
+        },
+        {
+          "Name": "style",
+          "Value": "Default",
+          "Start": 407,
+          "End": 414
+        },
+        {
+          "Name": "name",
+          "Value": "",
+          "Start": 415,
+          "End": 415
+        },
+        {
+          "Name": "marginl",
+          "Value": "0",
+          "Start": 416,
+          "End": 417
+        },
+        {
+          "Name": "marginr",
+          "Value": "0",
+          "Start": 418,
+          "End": 419
+        },
+        {
+          "Name": "marginv",
+          "Value": "0",
+          "Start": 420,
+          "End": 421
+        },
+        {
+          "Name": "effect",
+          "Value": "",
+          "Start": 422,
+          "End": 422
+        },
+        {
+          "Name": "text",
+          "Value": "{\\fnGo Regular\\fs24}ASCII text",
+          "Start": 423,
+          "End": 453
+        }
+      ],
+      "nodes": [
+        {
+          "kind": 2,
+          "raw": "{\\fnGo Regular\\fs24}",
+          "start": 0,
+          "end": 20,
+          "items": [
+            {
+              "kind": 1,
+              "raw": "",
+              "start": 1,
+              "end": 14,
+              "tag": {
+                "name": "fn",
+                "raw": "\\fnGo Regular",
+                "args": [
+                  "Go Regular"
+                ],
+                "start": 1,
+                "end": 14,
+                "column": 3
+              }
+            },
+            {
+              "kind": 1,
+              "raw": "",
+              "start": 14,
+              "end": 19,
+              "tag": {
+                "name": "fs",
+                "raw": "\\fs24",
+                "args": [
+                  "24"
+                ],
+                "start": 14,
+                "end": 19,
+                "column": 16
+              }
+            }
+          ]
+        },
+        {
+          "kind": 0,
+          "raw": "ASCII text",
+          "start": 20,
+          "end": 30
+        }
+      ],
+      "events": [
+        {
+          "tag": {
+            "name": "fn",
+            "raw": "\\fnGo Regular",
+            "args": [
+              "Go Regular"
+            ],
+            "start": 1,
+            "end": 14,
+            "column": 3
+          },
+          "index": 0,
+          "policy": 0,
+          "slots": [
+            "fontname"
+          ],
+          "before": [
+            {
+              "Value": "Go Regular",
+              "Known": true
+            }
+          ],
+          "after": [
+            {
+              "Value": "Go Regular",
+              "Known": true
+            }
+          ],
+          "applied": false,
+          "known": true,
+          "barrier": false,
+          "uncertainty": 0,
+          "active_style": "Default",
+          "state": [
+            {
+              "name": "fontname",
+              "value": {
+                "Value": "Go Regular",
+                "Known": true
+              },
+              "source": -1
+            },
+            {
+              "name": "fontsize",
+              "value": {
+                "Value": "24:24",
+                "Known": true
+              },
+              "source": -1
+            },
+            {
+              "name": "position",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "origin",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "alignment",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "frz",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_rect",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_vector",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "karaoke_cursor",
+              "value": {
+                "Value": "0",
+                "Known": true
+              },
+              "source": -1
+            },
+            {
+              "name": "drawing_scale",
+              "value": {
+                "Value": "0",
+                "Known": true
+              },
+              "source": -1
+            }
+          ]
+        },
+        {
+          "tag": {
+            "name": "fs",
+            "raw": "\\fs24",
+            "args": [
+              "24"
+            ],
+            "start": 14,
+            "end": 19,
+            "column": 16
+          },
+          "index": 1,
+          "policy": 0,
+          "slots": [
+            "fontsize"
+          ],
+          "before": [
+            {
+              "Value": "24:24",
+              "Known": true
+            }
+          ],
+          "after": [
+            {
+              "Value": "24:24",
+              "Known": true
+            }
+          ],
+          "applied": false,
+          "known": true,
+          "barrier": false,
+          "uncertainty": 0,
+          "active_style": "Default",
+          "state": [
+            {
+              "name": "fontname",
+              "value": {
+                "Value": "Go Regular",
+                "Known": true
+              },
+              "source": -1
+            },
+            {
+              "name": "fontsize",
+              "value": {
+                "Value": "24:24",
+                "Known": true
+              },
+              "source": -1
+            },
+            {
+              "name": "position",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "origin",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "alignment",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "frz",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_rect",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_vector",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "karaoke_cursor",
+              "value": {
+                "Value": "0",
+                "Known": true
+              },
+              "source": -1
+            },
+            {
+              "name": "drawing_scale",
+              "value": {
+                "Value": "0",
+                "Known": true
+              },
+              "source": -1
+            }
+          ]
+        }
+      ],
+      "text_boundaries": [
+        {
+          "text": "ASCII text",
+          "start": 20,
+          "active_style": "Default",
+          "state": [
+            {
+              "name": "fontname",
+              "value": {
+                "Value": "Go Regular",
+                "Known": true
+              },
+              "source": -1
+            },
+            {
+              "name": "fontsize",
+              "value": {
+                "Value": "24:24",
+                "Known": true
+              },
+              "source": -1
+            },
+            {
+              "name": "position",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "origin",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "alignment",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "frz",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_rect",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_vector",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "karaoke_cursor",
+              "value": {
+                "Value": "0",
+                "Known": true
+              },
+              "source": -1
+            },
+            {
+              "name": "drawing_scale",
+              "value": {
+                "Value": "0",
+                "Known": true
+              },
+              "source": -1
+            }
+          ]
+        }
+      ],
+      "no_effects": [
+        {
+          "tag": {
+            "name": "fn",
+            "raw": "\\fnGo Regular",
+            "args": [
+              "Go Regular"
+            ],
+            "start": 1,
+            "end": 14,
+            "column": 3
+          },
+          "reason": 0,
+          "owner": -1,
+          "revoked": false
+        },
+        {
+          "tag": {
+            "name": "fs",
+            "raw": "\\fs24",
+            "args": [
+              "24"
+            ],
+            "start": 14,
+            "end": 19,
+            "column": 16
+          },
+          "reason": 0,
+          "owner": -1,
+          "revoked": false
+        }
+      ]
+    },
+    {
+      "line": 16,
+      "style": "Alt",
+      "text_start": 500,
+      "missing_fields": false,
+      "fields": [
+        {
+          "Name": "layer",
+          "Value": "0",
+          "Start": 464,
+          "End": 465
+        },
+        {
+          "Name": "start",
+          "Value": "0:00:02.00",
+          "Start": 466,
+          "End": 476
+        },
+        {
+          "Name": "end",
+          "Value": "0:00:04.00",
+          "Start": 477,
+          "End": 487
+        },
+        {
+          "Name": "style",
+          "Value": "Alt",
+          "Start": 488,
+          "End": 491
+        },
+        {
+          "Name": "name",
+          "Value": "",
+          "Start": 492,
+          "End": 492
+        },
+        {
+          "Name": "marginl",
+          "Value": "0",
+          "Start": 493,
+          "End": 494
+        },
+        {
+          "Name": "marginr",
+          "Value": "0",
+          "Start": 495,
+          "End": 496
+        },
+        {
+          "Name": "marginv",
+          "Value": "0",
+          "Start": 497,
+          "End": 498
+        },
+        {
+          "Name": "effect",
+          "Value": "",
+          "Start": 499,
+          "End": 499
+        },
+        {
+          "Name": "text",
+          "Value": "{\\fnDefinitely Missing Font}欠けた字",
+          "Start": 500,
+          "End": 540
+        }
+      ],
+      "nodes": [
+        {
+          "kind": 2,
+          "raw": "{\\fnDefinitely Missing Font}",
+          "start": 0,
+          "end": 28,
+          "items": [
+            {
+              "kind": 1,
+              "raw": "",
+              "start": 1,
+              "end": 27,
+              "tag": {
+                "name": "fn",
+                "raw": "\\fnDefinitely Missing Font",
+                "args": [
+                  "Definitely Missing Font"
+                ],
+                "start": 1,
+                "end": 27,
+                "column": 3
+              }
+            }
+          ]
+        },
+        {
+          "kind": 0,
+          "raw": "欠けた字",
+          "start": 28,
+          "end": 40
+        }
+      ],
+      "events": [
+        {
+          "tag": {
+            "name": "fn",
+            "raw": "\\fnDefinitely Missing Font",
+            "args": [
+              "Definitely Missing Font"
+            ],
+            "start": 1,
+            "end": 27,
+            "column": 3
+          },
+          "index": 0,
+          "policy": 0,
+          "slots": [
+            "fontname"
+          ],
+          "before": [
+            {
+              "Value": "Go Regular",
+              "Known": true
+            }
+          ],
+          "after": [
+            {
+              "Value": "Definitely Missing Font",
+              "Known": true
+            }
+          ],
+          "applied": true,
+          "known": true,
+          "barrier": false,
+          "uncertainty": 0,
+          "active_style": "Alt",
+          "state": [
+            {
+              "name": "fontname",
+              "value": {
+                "Value": "Definitely Missing Font",
+                "Known": true
+              },
+              "source": 0
+            },
+            {
+              "name": "fontsize",
+              "value": {
+                "Value": "32:32",
+                "Known": true
+              },
+              "source": -1
+            },
+            {
+              "name": "position",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "origin",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "alignment",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "frz",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_rect",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_vector",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "karaoke_cursor",
+              "value": {
+                "Value": "0",
+                "Known": true
+              },
+              "source": -1
+            },
+            {
+              "name": "drawing_scale",
+              "value": {
+                "Value": "0",
+                "Known": true
+              },
+              "source": -1
+            }
+          ]
+        }
+      ],
+      "text_boundaries": [
+        {
+          "text": "欠けた字",
+          "start": 28,
+          "active_style": "Alt",
+          "state": [
+            {
+              "name": "fontname",
+              "value": {
+                "Value": "Definitely Missing Font",
+                "Known": true
+              },
+              "source": 0
+            },
+            {
+              "name": "fontsize",
+              "value": {
+                "Value": "32:32",
+                "Known": true
+              },
+              "source": -1
+            },
+            {
+              "name": "position",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "origin",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "alignment",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "frz",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_rect",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_vector",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "karaoke_cursor",
+              "value": {
+                "Value": "0",
+                "Known": true
+              },
+              "source": -1
+            },
+            {
+              "name": "drawing_scale",
+              "value": {
+                "Value": "0",
+                "Known": true
+              },
+              "source": -1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "line": 17,
+      "style": "NotDefined",
+      "text_start": 594,
+      "missing_fields": false,
+      "fields": [
+        {
+          "Name": "layer",
+          "Value": "0",
+          "Start": 551,
+          "End": 552
+        },
+        {
+          "Name": "start",
+          "Value": "0:00:04.00",
+          "Start": 553,
+          "End": 563
+        },
+        {
+          "Name": "end",
+          "Value": "0:00:06.00",
+          "Start": 564,
+          "End": 574
+        },
+        {
+          "Name": "style",
+          "Value": "NotDefined",
+          "Start": 575,
+          "End": 585
+        },
+        {
+          "Name": "name",
+          "Value": "",
+          "Start": 586,
+          "End": 586
+        },
+        {
+          "Name": "marginl",
+          "Value": "0",
+          "Start": 587,
+          "End": 588
+        },
+        {
+          "Name": "marginr",
+          "Value": "0",
+          "Start": 589,
+          "End": 590
+        },
+        {
+          "Name": "marginv",
+          "Value": "0",
+          "Start": 591,
+          "End": 592
+        },
+        {
+          "Name": "effect",
+          "Value": "",
+          "Start": 593,
+          "End": 593
+        },
+        {
+          "Name": "text",
+          "Value": "{\\rNonexistent\\b1}Missing style",
+          "Start": 594,
+          "End": 625
+        }
+      ],
+      "nodes": [
+        {
+          "kind": 2,
+          "raw": "{\\rNonexistent\\b1}",
+          "start": 0,
+          "end": 18,
+          "items": [
+            {
+              "kind": 1,
+              "raw": "",
+              "start": 1,
+              "end": 14,
+              "tag": {
+                "name": "r",
+                "raw": "\\rNonexistent",
+                "args": [
+                  "Nonexistent"
+                ],
+                "start": 1,
+                "end": 14,
+                "column": 3
+              }
+            },
+            {
+              "kind": 1,
+              "raw": "",
+              "start": 14,
+              "end": 17,
+              "tag": {
+                "name": "b",
+                "raw": "\\b1",
+                "args": [
+                  "1"
+                ],
+                "start": 14,
+                "end": 17,
+                "column": 16
+              }
+            }
+          ]
+        },
+        {
+          "kind": 0,
+          "raw": "Missing style",
+          "start": 18,
+          "end": 31
+        }
+      ],
+      "events": [
+        {
+          "tag": {
+            "name": "r",
+            "raw": "\\rNonexistent",
+            "args": [
+              "Nonexistent"
+            ],
+            "start": 1,
+            "end": 14,
+            "column": 3
+          },
+          "index": 0,
+          "policy": 4,
+          "applied": true,
+          "known": false,
+          "barrier": true,
+          "uncertainty": 3,
+          "active_style": "Nonexistent",
+          "state": [
+            {
+              "name": "fontname",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "fontsize",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "position",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "origin",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "alignment",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "frz",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_rect",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_vector",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "karaoke_cursor",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "drawing_scale",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            }
+          ]
+        },
+        {
+          "tag": {
+            "name": "b",
+            "raw": "\\b1",
+            "args": [
+              "1"
+            ],
+            "start": 14,
+            "end": 17,
+            "column": 16
+          },
+          "index": 1,
+          "policy": 0,
+          "slots": [
+            "bold"
+          ],
+          "before": [
+            {
+              "Value": "",
+              "Known": false
+            }
+          ],
+          "after": [
+            {
+              "Value": "1",
+              "Known": true
+            }
+          ],
+          "applied": true,
+          "known": true,
+          "barrier": false,
+          "uncertainty": 0,
+          "active_style": "Nonexistent",
+          "state": [
+            {
+              "name": "fontname",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "fontsize",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "position",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "origin",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "alignment",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "frz",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_rect",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_vector",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "karaoke_cursor",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "drawing_scale",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            }
+          ]
+        }
+      ],
+      "text_boundaries": [
+        {
+          "text": "Missing style",
+          "start": 18,
+          "active_style": "Nonexistent",
+          "state": [
+            {
+              "name": "fontname",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "fontsize",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "position",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "origin",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "alignment",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "frz",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_rect",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_vector",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "karaoke_cursor",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "drawing_scale",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "line": 18,
+      "style": "Default",
+      "text_start": 676,
+      "missing_fields": false,
+      "fields": [
+        {
+          "Name": "layer",
+          "Value": "0",
+          "Start": 636,
+          "End": 637
+        },
+        {
+          "Name": "start",
+          "Value": "0:00:06.00",
+          "Start": 638,
+          "End": 648
+        },
+        {
+          "Name": "end",
+          "Value": "0:00:08.00",
+          "Start": 649,
+          "End": 659
+        },
+        {
+          "Name": "style",
+          "Value": "Default",
+          "Start": 660,
+          "End": 667
+        },
+        {
+          "Name": "name",
+          "Value": "",
+          "Start": 668,
+          "End": 668
+        },
+        {
+          "Name": "marginl",
+          "Value": "0",
+          "Start": 669,
+          "End": 670
+        },
+        {
+          "Name": "marginr",
+          "Value": "0",
+          "Start": 671,
+          "End": 672
+        },
+        {
+          "Name": "marginv",
+          "Value": "0",
+          "Start": 673,
+          "End": 674
+        },
+        {
+          "Name": "effect",
+          "Value": "",
+          "Start": 675,
+          "End": 675
+        },
+        {
+          "Name": "text",
+          "Value": "{\\rAlt\\fnGo Regular\\rDefault}Again",
+          "Start": 676,
+          "End": 710
+        }
+      ],
+      "nodes": [
+        {
+          "kind": 2,
+          "raw": "{\\rAlt\\fnGo Regular\\rDefault}",
+          "start": 0,
+          "end": 29,
+          "items": [
+            {
+              "kind": 1,
+              "raw": "",
+              "start": 1,
+              "end": 6,
+              "tag": {
+                "name": "r",
+                "raw": "\\rAlt",
+                "args": [
+                  "Alt"
+                ],
+                "start": 1,
+                "end": 6,
+                "column": 3
+              }
+            },
+            {
+              "kind": 1,
+              "raw": "",
+              "start": 6,
+              "end": 19,
+              "tag": {
+                "name": "fn",
+                "raw": "\\fnGo Regular",
+                "args": [
+                  "Go Regular"
+                ],
+                "start": 6,
+                "end": 19,
+                "column": 8
+              }
+            },
+            {
+              "kind": 1,
+              "raw": "",
+              "start": 19,
+              "end": 28,
+              "tag": {
+                "name": "r",
+                "raw": "\\rDefault",
+                "args": [
+                  "Default"
+                ],
+                "start": 19,
+                "end": 28,
+                "column": 21
+              }
+            }
+          ]
+        },
+        {
+          "kind": 0,
+          "raw": "Again",
+          "start": 29,
+          "end": 34
+        }
+      ],
+      "events": [
+        {
+          "tag": {
+            "name": "r",
+            "raw": "\\rAlt",
+            "args": [
+              "Alt"
+            ],
+            "start": 1,
+            "end": 6,
+            "column": 3
+          },
+          "index": 0,
+          "policy": 4,
+          "applied": true,
+          "known": false,
+          "barrier": false,
+          "uncertainty": 0,
+          "active_style": "Alt",
+          "state": [
+            {
+              "name": "fontname",
+              "value": {
+                "Value": "Go Regular",
+                "Known": true
+              },
+              "source": -1
+            },
+            {
+              "name": "fontsize",
+              "value": {
+                "Value": "32:32",
+                "Known": true
+              },
+              "source": -1
+            },
+            {
+              "name": "position",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "origin",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "alignment",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "frz",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_rect",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_vector",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "karaoke_cursor",
+              "value": {
+                "Value": "0",
+                "Known": true
+              },
+              "source": -1
+            },
+            {
+              "name": "drawing_scale",
+              "value": {
+                "Value": "0",
+                "Known": true
+              },
+              "source": -1
+            }
+          ]
+        },
+        {
+          "tag": {
+            "name": "fn",
+            "raw": "\\fnGo Regular",
+            "args": [
+              "Go Regular"
+            ],
+            "start": 6,
+            "end": 19,
+            "column": 8
+          },
+          "index": 1,
+          "policy": 0,
+          "slots": [
+            "fontname"
+          ],
+          "before": [
+            {
+              "Value": "Go Regular",
+              "Known": true
+            }
+          ],
+          "after": [
+            {
+              "Value": "Go Regular",
+              "Known": true
+            }
+          ],
+          "applied": false,
+          "known": true,
+          "barrier": false,
+          "uncertainty": 0,
+          "active_style": "Alt",
+          "state": [
+            {
+              "name": "fontname",
+              "value": {
+                "Value": "Go Regular",
+                "Known": true
+              },
+              "source": -1
+            },
+            {
+              "name": "fontsize",
+              "value": {
+                "Value": "32:32",
+                "Known": true
+              },
+              "source": -1
+            },
+            {
+              "name": "position",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "origin",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "alignment",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "frz",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_rect",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_vector",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "karaoke_cursor",
+              "value": {
+                "Value": "0",
+                "Known": true
+              },
+              "source": -1
+            },
+            {
+              "name": "drawing_scale",
+              "value": {
+                "Value": "0",
+                "Known": true
+              },
+              "source": -1
+            }
+          ]
+        },
+        {
+          "tag": {
+            "name": "r",
+            "raw": "\\rDefault",
+            "args": [
+              "Default"
+            ],
+            "start": 19,
+            "end": 28,
+            "column": 21
+          },
+          "index": 2,
+          "policy": 4,
+          "applied": true,
+          "known": false,
+          "barrier": false,
+          "uncertainty": 0,
+          "active_style": "Default",
+          "state": [
+            {
+              "name": "fontname",
+              "value": {
+                "Value": "Go Regular",
+                "Known": true
+              },
+              "source": -1
+            },
+            {
+              "name": "fontsize",
+              "value": {
+                "Value": "24:24",
+                "Known": true
+              },
+              "source": -1
+            },
+            {
+              "name": "position",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "origin",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "alignment",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "frz",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_rect",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_vector",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "karaoke_cursor",
+              "value": {
+                "Value": "0",
+                "Known": true
+              },
+              "source": -1
+            },
+            {
+              "name": "drawing_scale",
+              "value": {
+                "Value": "0",
+                "Known": true
+              },
+              "source": -1
+            }
+          ]
+        }
+      ],
+      "text_boundaries": [
+        {
+          "text": "Again",
+          "start": 29,
+          "active_style": "Default",
+          "state": [
+            {
+              "name": "fontname",
+              "value": {
+                "Value": "Go Regular",
+                "Known": true
+              },
+              "source": -1
+            },
+            {
+              "name": "fontsize",
+              "value": {
+                "Value": "24:24",
+                "Known": true
+              },
+              "source": -1
+            },
+            {
+              "name": "position",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "origin",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "alignment",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "frz",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_rect",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "clip_vector",
+              "value": {
+                "Value": "",
+                "Known": false
+              },
+              "source": -1
+            },
+            {
+              "name": "karaoke_cursor",
+              "value": {
+                "Value": "0",
+                "Known": true
+              },
+              "source": -1
+            },
+            {
+              "name": "drawing_scale",
+              "value": {
+                "Value": "0",
+                "Known": true
+              },
+              "source": -1
+            }
+          ]
+        }
+      ],
+      "no_effects": [
+        {
+          "tag": {
+            "name": "fn",
+            "raw": "\\fnGo Regular",
+            "args": [
+              "Go Regular"
+            ],
+            "start": 6,
+            "end": 19,
+            "column": 8
+          },
+          "reason": 0,
+          "owner": -1,
+          "revoked": false
+        }
+      ]
+    }
+  ],
+  "cli": {
+    "exit_code": 0,
+    "diagnostics": [
+      {
+        "file": "style-fonts.ass",
+        "id": "ASS013",
+        "severity": "suggestion",
+        "title": "Overrides match style",
+        "description": "Style-backed override tags leave the corresponding Style properties unchanged across dialogue text.",
+        "suggested_fix": "Remove the redundant override tags.",
+        "fix_safety": "safe",
+        "edits": [
+          {
+            "start": 423,
+            "end": 443,
+            "replacement": ""
+          }
+        ],
+        "line": 15,
+        "column": 3,
+        "tag": "fn",
+        "detail": "The override tags leave the active Style properties unchanged across dialogue text.",
+        "sources": null
+      },
+      {
+        "file": "style-fonts.ass",
+        "id": "ASS017",
+        "severity": "warning",
+        "title": "Undefined style reference",
+        "description": "A dialogue or override tag references a style that is not defined in the script.",
+        "suggested_fix": "Correct the style name or define the referenced style.",
+        "line": 17,
+        "column": 3,
+        "tag": "r",
+        "detail": "Override tag references undefined style \"Nonexistent\".",
+        "sources": null
+      },
+      {
+        "file": "style-fonts.ass",
+        "id": "ASS017",
+        "severity": "warning",
+        "title": "Undefined style reference",
+        "description": "A dialogue or override tag references a style that is not defined in the script.",
+        "suggested_fix": "Correct the style name or define the referenced style.",
+        "line": 17,
+        "column": 35,
+        "field": "Style",
+        "detail": "Dialogue references undefined style \"NotDefined\".",
+        "sources": null
+      },
+      {
+        "file": "style-fonts.ass",
+        "id": "ASS006",
+        "severity": "suggestion",
+        "title": "Override has no effect",
+        "description": "An override is replaced, reset, or ignored before it affects dialogue text, or repeats the value already active in every affected state slot.",
+        "suggested_fix": "Remove it or move it to the intended text boundary.",
+        "fix_safety": "safe",
+        "edits": [
+          {
+            "start": 682,
+            "end": 695,
+            "replacement": ""
+          }
+        ],
+        "line": 18,
+        "column": 8,
+        "tag": "fn",
+        "detail": "Assigns the value already active in every affected state slot.",
+        "sources": [
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_render.c#L1075",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2301",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2396",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2575",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2643"
+        ]
+      }
+    ],
+    "summary": "Fixes available: 2 safe, 0 unsafe, 2 not auto-fixable.",
+    "output_sha256": "7c5425d6cf69b7215c1b6e258ee742a0d9d2a04b735613d6feb14b3356607dfa",
+    "changed": false
+  },
+  "cli_fonts": {
+    "exit_code": 0,
+    "diagnostics": [
+      {
+        "file": "style-fonts.ass",
+        "id": "ASS013",
+        "severity": "suggestion",
+        "title": "Overrides match style",
+        "description": "Style-backed override tags leave the corresponding Style properties unchanged across dialogue text.",
+        "suggested_fix": "Remove the redundant override tags.",
+        "fix_safety": "safe",
+        "edits": [
+          {
+            "start": 423,
+            "end": 443,
+            "replacement": ""
+          }
+        ],
+        "line": 15,
+        "column": 3,
+        "tag": "fn",
+        "detail": "The override tags leave the active Style properties unchanged across dialogue text.",
+        "sources": null
+      },
+      {
+        "file": "style-fonts.ass",
+        "id": "ASS015",
+        "severity": "suggestion",
+        "title": "Subtitle font is missing",
+        "description": "The font family used by subtitle text was not found in the selected font set.",
+        "suggested_fix": "Install the font or point --font-dir at a folder containing it.",
+        "line": 16,
+        "column": 29,
+        "detail": "Font family \"Definitely Missing Font\" was not found in the scanned fonts.",
+        "sources": null
+      },
+      {
+        "file": "style-fonts.ass",
+        "id": "ASS017",
+        "severity": "warning",
+        "title": "Undefined style reference",
+        "description": "A dialogue or override tag references a style that is not defined in the script.",
+        "suggested_fix": "Correct the style name or define the referenced style.",
+        "line": 17,
+        "column": 3,
+        "tag": "r",
+        "detail": "Override tag references undefined style \"Nonexistent\".",
+        "sources": null
+      },
+      {
+        "file": "style-fonts.ass",
+        "id": "ASS017",
+        "severity": "warning",
+        "title": "Undefined style reference",
+        "description": "A dialogue or override tag references a style that is not defined in the script.",
+        "suggested_fix": "Correct the style name or define the referenced style.",
+        "line": 17,
+        "column": 35,
+        "field": "Style",
+        "detail": "Dialogue references undefined style \"NotDefined\".",
+        "sources": null
+      },
+      {
+        "file": "style-fonts.ass",
+        "id": "ASS006",
+        "severity": "suggestion",
+        "title": "Override has no effect",
+        "description": "An override is replaced, reset, or ignored before it affects dialogue text, or repeats the value already active in every affected state slot.",
+        "suggested_fix": "Remove it or move it to the intended text boundary.",
+        "fix_safety": "safe",
+        "edits": [
+          {
+            "start": 682,
+            "end": 695,
+            "replacement": ""
+          }
+        ],
+        "line": 18,
+        "column": 8,
+        "tag": "fn",
+        "detail": "Assigns the value already active in every affected state slot.",
+        "sources": [
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_render.c#L1075",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2301",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2396",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2575",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2643"
+        ]
+      }
+    ],
+    "summary": "Fixes available: 2 safe, 0 unsafe, 3 not auto-fixable.",
+    "output_sha256": "7c5425d6cf69b7215c1b6e258ee742a0d9d2a04b735613d6feb14b3356607dfa",
+    "changed": false
+  },
+  "cli_safe_fix": {
+    "exit_code": 0,
+    "diagnostics": [
+      {
+        "file": "style-fonts.ass",
+        "id": "ASS017",
+        "severity": "warning",
+        "title": "Undefined style reference",
+        "description": "A dialogue or override tag references a style that is not defined in the script.",
+        "suggested_fix": "Correct the style name or define the referenced style.",
+        "line": 17,
+        "column": 3,
+        "tag": "r",
+        "detail": "Override tag references undefined style \"Nonexistent\".",
+        "sources": null
+      },
+      {
+        "file": "style-fonts.ass",
+        "id": "ASS017",
+        "severity": "warning",
+        "title": "Undefined style reference",
+        "description": "A dialogue or override tag references a style that is not defined in the script.",
+        "suggested_fix": "Correct the style name or define the referenced style.",
+        "line": 17,
+        "column": 35,
+        "field": "Style",
+        "detail": "Dialogue references undefined style \"NotDefined\".",
+        "sources": null
+      }
+    ],
+    "summary": "Applied fixes: 2 safe, 0 unsafe. Fixes available: 0 safe, 0 unsafe, 2 not auto-fixable.",
+    "output_sha256": "0b9cfc6ed431341aba4ed5db0bedef5bda80ba12af1bc0bcc827e57845fd7805",
+    "changed": true
+  },
+  "cli_unsafe_fix": {
+    "exit_code": 0,
+    "diagnostics": [
+      {
+        "file": "style-fonts.ass",
+        "id": "ASS017",
+        "severity": "warning",
+        "title": "Undefined style reference",
+        "description": "A dialogue or override tag references a style that is not defined in the script.",
+        "suggested_fix": "Correct the style name or define the referenced style.",
+        "line": 17,
+        "column": 3,
+        "tag": "r",
+        "detail": "Override tag references undefined style \"Nonexistent\".",
+        "sources": null
+      },
+      {
+        "file": "style-fonts.ass",
+        "id": "ASS017",
+        "severity": "warning",
+        "title": "Undefined style reference",
+        "description": "A dialogue or override tag references a style that is not defined in the script.",
+        "suggested_fix": "Correct the style name or define the referenced style.",
+        "line": 17,
+        "column": 35,
+        "field": "Style",
+        "detail": "Dialogue references undefined style \"NotDefined\".",
+        "sources": null
+      }
+    ],
+    "summary": "Applied fixes: 2 safe, 0 unsafe. Fixes available: 0 safe, 0 unsafe, 2 not auto-fixable.",
+    "output_sha256": "0b9cfc6ed431341aba4ed5db0bedef5bda80ba12af1bc0bcc827e57845fd7805",
+    "changed": true
+  }
+}

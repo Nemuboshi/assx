@@ -16,23 +16,31 @@
     xy-VSFilter 135a3015  ref/renderers/xy-VSFilter
     VSFilterMod 7a00567   ref/renderers/VSFilterMod
 
-  status="V" means every asserted cell in that element was read at the pinned
-  source. status="S" means reported-but-not-re-read, or assumed-tag-default.
-  A SafeFix may rest only on V rows covering every renderer the fix targets
-  (AGENTS.md SafeFix rule).
+  status="V" means this row contains at least one pinned-source-verified
+  renderer cell; verified="libass xy vsm" explicitly scopes those cells.
+  Assertions without a renderer-specific source citation are source-inferred,
+  not verified. status="S" is assumed or reported-but-not-re-read and may not
+  declare verified renderers. An "unchecked" result is never verified.
+  A SafeFix requires separately verified equivalence for EVERY target renderer;
+  this matrix alone is evidence, never a sufficient proof (AGENTS.md).
 
   "patch mNNN" / "vpatch vNNN" are VSFilterMod's internal ids for its private
   extensions, from its own source comments (e.g. "patch m002. Z-coord",
   src/subtitles/STS.h:237). They are not ASS specification terms.
 
+  Each <sig> also declares mandatory renderer applicability and separate
+  status, verified, inferred, cite metadata for that exact arity/form.
+  A shared <params> citation never proves every child signature. "inferred"
+  explicitly records applicability asserted without per-signature verification
+  and cannot justify SafeFix. Missing renderer scope is invalid (never "all").
   A tag element without scen rows is a stub: it is assumed to match every
   scenario default below, unverified (tag status="S").
 -->
 <matrix>
   <meta>
-    <pin renderer="libass" commit="f61db56" path="ref/renderers/libass"/>
-    <pin renderer="xy-VSFilter" commit="135a3015" path="ref/renderers/xy-VSFilter"/>
-    <pin renderer="VSFilterMod" commit="7a00567" path="ref/renderers/VSFilterMod"/>
+    <pin renderer="libass" commit="f61db567e6593df3470e91594bcd4ad2d0473aff" path="ref/renderers/libass"/>
+    <pin renderer="xy-VSFilter" commit="135a30153a38fa846cb5c39df0f258403e92096e" path="ref/renderers/xy-VSFilter"/>
+    <pin renderer="VSFilterMod" commit="7a00567e4a49b6310691b9a6791646b2a018bfa2" path="ref/renderers/VSFilterMod"/>
 
     <matching>
       libass: byte-wise case-sensitive prefix match (mystrcmp,
@@ -97,12 +105,12 @@
   <!-- ===== bold / italic / underline / strikeout / wrap / charset ===== -->
 
   <tag name="b" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:825-829 xy:src/subtitles/RTS.cpp:2344-2350 vsm:src/subtitles/RTS.cpp:2946-2952">
-      <sig n="1" form="both">
+    <params status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:825-829 xy:src/subtitles/RTS.cpp:2344-2350 vsm:src/subtitles/RTS.cpp:2946-2952">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:825-829 xy:src/subtitles/RTS.cpp:2344-2350 vsm:src/subtitles/RTS.cpp:2946-2952">
         <p i="1" name="weight" kind="int" range="0, 1, or &gt;=100; any other integer selects the style Bold"/>
       </sig>
     </params>
-    <scen id="out-of-range" status="V" base="style-reset" vsfilter="style-reset" vsfiltermod="style-reset"
+    <scen id="out-of-range" status="V" verified="libass xy vsm" base="style-reset" vsfilter="style-reset" vsfiltermod="style-reset"
           cite="libass:libass/ass_parse.c:825-829 xy:src/subtitles/RTS.cpp:2344-2350 vsm:src/subtitles/RTS.cpp:2946-2952">
       Any value that is not 0, 1, or &gt;= 100 restores the style Bold in all
       three (libass 827-828; xy/vsm 2348/2950 fall to org at n==2..99).
@@ -111,50 +119,50 @@
   </tag>
 
   <tag name="i" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:831-835 xy:src/subtitles/RTS.cpp:2527-2533">
-      <sig n="1" form="both">
+    <params status="V" verified="libass xy" cite="libass:libass/ass_parse.c:831-835 xy:src/subtitles/RTS.cpp:2527-2533">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass xy" inferred="vsm" cite="libass:libass/ass_parse.c:831-835 xy:src/subtitles/RTS.cpp:2527-2533">
         <p i="1" name="flag" kind="int" range="0 or 1; any other integer selects the style Italic"/>
       </sig>
     </params>
-    <scen id="out-of-range" status="V" base="style-reset" vsfilter="style-reset" vsfiltermod="unchecked"
+    <scen id="out-of-range" status="V" verified="libass xy" base="style-reset" vsfilter="style-reset" vsfiltermod="unchecked"
           cite="libass:libass/ass_parse.c:831-835 xy:src/subtitles/RTS.cpp:2527-2533">
       Values other than 0/1 restore style Italic (xy n==0?false:n==1?true:org).
     </scen>
   </tag>
 
   <tag name="u" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:890-897 xy:src/subtitles/RTS.cpp:2702-2708">
-      <sig n="1" form="both">
+    <params status="V" verified="libass xy" cite="libass:libass/ass_parse.c:890-897 xy:src/subtitles/RTS.cpp:2702-2708">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass xy" inferred="vsm" cite="libass:libass/ass_parse.c:890-897 xy:src/subtitles/RTS.cpp:2702-2708">
         <p i="1" name="flag" kind="int" range="0 or 1; any other integer selects the style Underline"/>
       </sig>
     </params>
-    <scen id="out-of-range" status="V" base="style-reset" vsfilter="style-reset" vsfiltermod="unchecked"
+    <scen id="out-of-range" status="V" verified="libass xy" base="style-reset" vsfilter="style-reset" vsfiltermod="unchecked"
           cite="libass:libass/ass_parse.c:890-897 xy:src/subtitles/RTS.cpp:2702-2708"/>
   </tag>
 
   <tag name="s" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:882-889 xy:src/subtitles/RTS.cpp:2662-2668 vsm:src/subtitles/RTS.cpp:3606-3611">
-      <sig n="1" form="both">
+    <params status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:882-889 xy:src/subtitles/RTS.cpp:2662-2668 vsm:src/subtitles/RTS.cpp:3606-3611">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:882-889 xy:src/subtitles/RTS.cpp:2662-2668 vsm:src/subtitles/RTS.cpp:3606-3611">
         <p i="1" name="flag" kind="int" range="0 or 1; any other integer selects the style StrikeOut"/>
       </sig>
     </params>
-    <scen id="out-of-range" status="V" base="style-reset" vsfilter="style-reset" vsfiltermod="style-reset"
+    <scen id="out-of-range" status="V" verified="libass xy vsm" base="style-reset" vsfilter="style-reset" vsfiltermod="style-reset"
           cite="libass:libass/ass_parse.c:882-889 xy:src/subtitles/RTS.cpp:2662-2668 vsm:src/subtitles/RTS.cpp:3606-3611"/>
   </tag>
 
   <tag name="q" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:905-909 xy:src/subtitles/RTS.cpp:2635-2641 vsm:src/subtitles/RTS.cpp:3549-3554">
-      <sig n="1" form="both">
+    <params status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:905-909 xy:src/subtitles/RTS.cpp:2635-2641 vsm:src/subtitles/RTS.cpp:3549-3554">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:905-909 xy:src/subtitles/RTS.cpp:2635-2641 vsm:src/subtitles/RTS.cpp:3549-3554">
         <p i="1" name="style" kind="int" range="0..3; outside selects the script WrapStyle"/>
       </sig>
     </params>
-    <scen id="out-of-range" status="V" base="style-reset" vsfilter="style-reset" vsfiltermod="style-reset"
+    <scen id="out-of-range" status="V" verified="libass xy vsm" base="style-reset" vsfilter="style-reset" vsfiltermod="style-reset"
           cite="libass:libass/ass_parse.c:905-909 xy:src/subtitles/RTS.cpp:2635-2641 vsm:src/subtitles/RTS.cpp:3549-3554">
       libass falls back to the script WrapStyle header (render_priv track);
       xy/vsm fall back to m_defaultWrapStyle (header WrapStyle, reset per line
       at RTS.cpp:2932). Same intent, different storage.
     </scen>
-    <scen id="style-reset" status="V" base="kept" vsfilter="kept" vsfiltermod="unchecked"
+    <scen id="style-reset" status="V" verified="libass xy" base="kept" vsfilter="kept" vsfiltermod="unchecked"
           cite="libass:libass/ass_render.c:1075-1111 xy:src/subtitles/RTS.cpp:2643-2647">
       \r does not restore wrap style: ass_reset_render_context has no
       wrap_style line; xy \r replaces the style struct only, m_wrapStyle is
@@ -163,8 +171,8 @@
   </tag>
 
   <tag name="fe" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:910-916 xy:src/subtitles/RTS.cpp:2439-2445 vsm:src/subtitles/RTS.cpp:3095-3100">
-      <sig n="1" form="both">
+    <params status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:910-916 xy:src/subtitles/RTS.cpp:2439-2445 vsm:src/subtitles/RTS.cpp:3095-3100">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:910-916 xy:src/subtitles/RTS.cpp:2439-2445 vsm:src/subtitles/RTS.cpp:3095-3100">
         <p i="1" name="charset" kind="int" range="Windows charset id; empty selects the style Encoding; unclamped"/>
       </sig>
     </params>
@@ -172,25 +180,25 @@
     (ass_render.c:2829 -&gt; ass_shaper.c:1137-1145: -1 autodetect, anything
     else LTR); it does not choose a font charset. In xy-VSFilter/VSFilterMod it
     sets style.charSet, consumed by the GDI font selection.
-    <scen id="effect-note" status="V" base="unsupported" vsfilter="supported" vsfiltermod="supported"
+    <scen id="effect-note" status="V" verified="libass xy vsm" base="unsupported" vsfilter="supported" vsfiltermod="supported"
           cite="libass:libass/ass_parse.c:910-916 libass:libass/ass_shaper.c:1137-1145 xy:src/subtitles/RTS.cpp:2439-2445 vsm:src/subtitles/RTS.cpp:3095-3100"/>
   </tag>
 
   <!-- ===== font name / size / scale / spacing ===== -->
 
   <tag name="fn" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:556-565 xy:src/subtitles/RTS.cpp:2447-2453 vsm:src/subtitles/RTS.cpp:3102-3106">
-      <sig n="1" form="both">
+    <params status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:556-565 xy:src/subtitles/RTS.cpp:2447-2453 vsm:src/subtitles/RTS.cpp:3102-3106">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:556-565 xy:src/subtitles/RTS.cpp:2447-2453 vsm:src/subtitles/RTS.cpp:3102-3106">
         <p i="1" name="family" kind="name" range="any text; empty or 0 selects the style Fontname; commas in the parenthesized form split the argument (ASS004)"/>
       </sig>
     </params>
-    <scen id="value-map" status="V" base="style-reset" vsfilter="style-reset" vsfiltermod="style-reset"
+    <scen id="value-map" status="V" verified="libass xy vsm" base="style-reset" vsfilter="style-reset" vsfiltermod="style-reset"
           cite="libass:libass/ass_parse.c:556-565 xy:src/subtitles/RTS.cpp:2447-2453 vsm:src/subtitles/RTS.cpp:3102-3106">
       The argument "0" resets to the style font name in all three (libass
       strncmp against "0" 558; xy 2449 `p != L'0'` — a CString-vs-wchar
       comparison that works by accident; vsm 3104 `p != '0'`).
     </scen>
-    <scen id="arg-form" status="V" base="both-forms" vsfilter="both-forms" vsfiltermod="both-forms"
+    <scen id="arg-form" status="V" verified="libass xy vsm" base="both-forms" vsfilter="both-forms" vsfiltermod="both-forms"
           cite="libass:libass/ass_parse.c:302-349 xy:src/subtitles/RTS.cpp:2110-2152 vsm:src/subtitles/RTS.cpp:2447-2462">
       Commas inside \fn(...) split arguments everywhere (ASS004): the name
       becomes the piece before the first comma; the remainder is a second arg
@@ -199,18 +207,18 @@
   </tag>
 
   <tag name="fs" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:465-475 xy:src/subtitles/RTS.cpp:2506-2525 vsm:src/subtitles/RTS.cpp:3188-3206">
-      <sig n="1" form="bare">
+    <params status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:465-475 xy:src/subtitles/RTS.cpp:2506-2525 vsm:src/subtitles/RTS.cpp:3188-3206">
+      <sig n="1" form="bare" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:465-475 xy:src/subtitles/RTS.cpp:2506-2525 vsm:src/subtitles/RTS.cpp:3188-3206">
         <p i="1" name="size" kind="number" range="leading + or - makes it relative (size*val/10); result &lt;=0 selects the style FontSize; empty \fs selects the style"/>
       </sig>
     </params>
-    <scen id="negative" status="V" base="style-reset" vsfilter="style-reset" vsfiltermod="style-reset"
+    <scen id="negative" status="V" verified="libass xy vsm" base="style-reset" vsfilter="style-reset" vsfiltermod="style-reset"
           cite="libass:libass/ass_parse.c:465-475 xy:src/subtitles/RTS.cpp:2506-2525 vsm:src/subtitles/RTS.cpp:3188-3206">
       Any computed size &lt;= 0 restores the style font size (libass 473-474,
       xy 2513/2518, vsm 3195/3200). Empty \fs0 is a style reset, not invisible
       text (todo item 3).
     </scen>
-    <scen id="arg-form" status="V" base="both-forms" vsfilter="both-forms" vsfiltermod="assign-int"
+    <scen id="arg-form" status="V" verified="libass xy vsm" base="both-forms" vsfilter="both-forms" vsfiltermod="assign-int"
           cite="libass:libass/ass_parse.c:465-472 xy:src/subtitles/RTS.cpp:2512-2517 vsm:src/subtitles/RTS.cpp:3194-3199">
       Relative \fs+/-. forms exist in all three; xy/vsm read the delta, and
       VSFilterMod converts with wcstol (integer truncation of fractional
@@ -219,28 +227,28 @@
   </tag>
 
   <tag name="fsc" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:454-456 xy:src/subtitles/RTS.cpp:2493-2497 vsm:src/subtitles/RTS.cpp:3150-3165">
-      <sig n="0" form="bare">
+    <params status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:454-456 xy:src/subtitles/RTS.cpp:2493-2497 vsm:src/subtitles/RTS.cpp:3150-3165">
+      <sig n="0" form="bare" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:454-456 xy:src/subtitles/RTS.cpp:2493-2497 vsm:src/subtitles/RTS.cpp:3150-3165">
         <p i="1" name="none" kind="none" range="resets ScaleX and ScaleY to the style; arguments after \fsc are ignored by libass and xy-VSFilter"/>
       </sig>
-      <sig n="1" form="both" renderer="vsm">
+      <sig n="1" form="both" renderer="vsm" status="V" verified="vsm" cite="vsm:src/subtitles/RTS.cpp:3150-3165">
         <p i="1" name="scale" kind="number" range="&lt;=0 clamps to 0; patch f004 applies the value to both scale slots"/>
       </sig>
     </params>
     \fsc is a reset of BOTH scale slots to the style values and its argument is
     ignored by libass and xy-VSFilter. VSFilterMod patch f004 consumes
     \fsc(value). This is todo item 1; assx's style.go:230-238 mirrors it.
-    <scen id="arg-form" status="V" base="bare-only" vsfilter="bare-only" vsfiltermod="assign"
+    <scen id="arg-form" status="V" verified="libass xy vsm" base="bare-only" vsfilter="bare-only" vsfiltermod="assign"
           cite="libass:libass/ass_parse.c:454-456 xy:src/subtitles/RTS.cpp:2493-2497 vsm:src/subtitles/RTS.cpp:3150-3165"/>
   </tag>
 
   <tag name="fscx" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:436-444 xy:src/subtitles/RTS.cpp:2477-2484 vsm:src/subtitles/RTS.cpp:3136-3142">
-      <sig n="1" form="both">
+    <params status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:436-444 xy:src/subtitles/RTS.cpp:2477-2484 vsm:src/subtitles/RTS.cpp:3136-3142">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:436-444 xy:src/subtitles/RTS.cpp:2477-2484 vsm:src/subtitles/RTS.cpp:3136-3142">
         <p i="1" name="percent" kind="number" range="&lt;0 clamps to 0; empty selects the style ScaleX; VSFilterMod reads wcstol, truncating fractions"/>
       </sig>
     </params>
-    <scen id="negative" status="V" base="clamp-low" vsfilter="clamp-low" vsfiltermod="clamp-low"
+    <scen id="negative" status="V" verified="libass xy vsm" base="clamp-low" vsfilter="clamp-low" vsfiltermod="clamp-low"
           cite="libass:libass/ass_parse.c:436-444 xy:src/subtitles/RTS.cpp:2477-2484 vsm:src/subtitles/RTS.cpp:3136-3142">
       Negative scale clamps to 0 after blending (assx canonicalizes negative
       fscx/fscy to "0", semantic/state.go).
@@ -248,64 +256,64 @@
   </tag>
 
   <tag name="fscy" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:445-453 xy:src/subtitles/RTS.cpp:2485-2492 vsm:src/subtitles/RTS.cpp:3143-3149">
-      <sig n="1" form="both">
+    <params status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:445-453 xy:src/subtitles/RTS.cpp:2485-2492 vsm:src/subtitles/RTS.cpp:3143-3149">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:445-453 xy:src/subtitles/RTS.cpp:2485-2492 vsm:src/subtitles/RTS.cpp:3143-3149">
         <p i="1" name="percent" kind="number" range="&lt;0 clamps to 0; empty selects the style ScaleY; VSFilterMod reads wcstol, truncating fractions"/>
       </sig>
     </params>
-    <scen id="negative" status="V" base="clamp-low" vsfilter="clamp-low" vsfiltermod="clamp-low"
+    <scen id="negative" status="V" verified="libass xy" base="clamp-low" vsfilter="clamp-low" vsfiltermod="clamp-low"
           cite="libass:libass/ass_parse.c:445-453 xy:src/subtitles/RTS.cpp:2485-2492"/>
   </tag>
 
   <tag name="fsp" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:457-464 xy:src/subtitles/RTS.cpp:2499-2504">
-      <sig n="1" form="both">
+    <params status="V" verified="libass xy" cite="libass:libass/ass_parse.c:457-464 xy:src/subtitles/RTS.cpp:2499-2504">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass xy" inferred="vsm" cite="libass:libass/ass_parse.c:457-464 xy:src/subtitles/RTS.cpp:2499-2504">
         <p i="1" name="spacing" kind="number" range="unclamped, negative allowed; empty selects the style Spacing; VSFilterMod range unchecked"/>
       </sig>
     </params>
-    <scen id="empty-arg" status="V" base="style-reset" vsfilter="style-reset" vsfiltermod="unchecked"
+    <scen id="empty-arg" status="V" verified="libass xy" base="style-reset" vsfilter="style-reset" vsfiltermod="unchecked"
           cite="libass:libass/ass_parse.c:457-464 xy:src/subtitles/RTS.cpp:2499-2504"/>
   </tag>
 
   <!-- ===== borders / shadows / blur ===== -->
 
   <tag name="bord" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:477-488 xy:src/subtitles/RTS.cpp:2323-2334 vsm:src/subtitles/RTS.cpp:2927-2937">
-      <sig n="1" form="both">
+    <params status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:477-488 xy:src/subtitles/RTS.cpp:2323-2334 vsm:src/subtitles/RTS.cpp:2927-2937">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:477-488 xy:src/subtitles/RTS.cpp:2323-2334 vsm:src/subtitles/RTS.cpp:2927-2937">
         <p i="1" name="width" kind="number" range="&lt;0 clamps to 0; empty selects the style Outline; applies to both x and y"/>
       </sig>
     </params>
-    <scen id="negative" status="V" base="clamp-low" vsfilter="clamp-low" vsfiltermod="clamp-low"
+    <scen id="negative" status="V" verified="libass xy vsm" base="clamp-low" vsfilter="clamp-low" vsfiltermod="clamp-low"
           cite="libass:libass/ass_parse.c:477-488 xy:src/subtitles/RTS.cpp:2323-2334 vsm:src/subtitles/RTS.cpp:2927-2937"/>
   </tag>
 
   <tag name="xbord" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:355-363 xy:src/subtitles/RTS.cpp:2710-2717">
-      <sig n="1" form="both">
+    <params status="V" verified="libass xy" cite="libass:libass/ass_parse.c:355-363 xy:src/subtitles/RTS.cpp:2710-2717">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass xy" inferred="vsm" cite="libass:libass/ass_parse.c:355-363 xy:src/subtitles/RTS.cpp:2710-2717">
         <p i="1" name="width" kind="number" range="&lt;0 clamps to 0; empty selects the style Outline; VSFilterMod unchecked"/>
       </sig>
     </params>
-    <scen id="negative" status="V" base="clamp-low" vsfilter="clamp-low" vsfiltermod="unchecked"
+    <scen id="negative" status="V" verified="libass xy" base="clamp-low" vsfilter="clamp-low" vsfiltermod="unchecked"
           cite="libass:libass/ass_parse.c:355-363 xy:src/subtitles/RTS.cpp:2710-2717"/>
   </tag>
 
   <tag name="ybord" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:364-372 xy:src/subtitles/RTS.cpp:2728-2735">
-      <sig n="1" form="both">
+    <params status="V" verified="libass xy" cite="libass:libass/ass_parse.c:364-372 xy:src/subtitles/RTS.cpp:2728-2735">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass xy" inferred="vsm" cite="libass:libass/ass_parse.c:364-372 xy:src/subtitles/RTS.cpp:2728-2735">
         <p i="1" name="width" kind="number" range="&lt;0 clamps to 0; empty selects the style Outline; VSFilterMod unchecked"/>
       </sig>
     </params>
-    <scen id="negative" status="V" base="clamp-low" vsfilter="clamp-low" vsfiltermod="unchecked"
+    <scen id="negative" status="V" verified="libass xy" base="clamp-low" vsfilter="clamp-low" vsfiltermod="unchecked"
           cite="libass:libass/ass_parse.c:364-372 xy:src/subtitles/RTS.cpp:2728-2735"/>
   </tag>
 
   <tag name="shad" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:869-881 xy:src/subtitles/RTS.cpp:2649-2660 vsm:src/subtitles/RTS.cpp:3594-3604">
-      <sig n="1" form="both">
+    <params status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:869-881 xy:src/subtitles/RTS.cpp:2649-2660 vsm:src/subtitles/RTS.cpp:3594-3604">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:869-881 xy:src/subtitles/RTS.cpp:2649-2660 vsm:src/subtitles/RTS.cpp:3594-3604">
         <p i="1" name="depth" kind="number" range="&lt;0 clamps to 0; empty selects the style Shadow; applies to both x and y"/>
       </sig>
     </params>
-    <scen id="negative" status="V" base="clamp-low" vsfilter="clamp-low" vsfiltermod="clamp-low"
+    <scen id="negative" status="V" verified="libass xy vsm" base="clamp-low" vsfilter="clamp-low" vsfiltermod="clamp-low"
           cite="libass:libass/ass_parse.c:869-881 xy:src/subtitles/RTS.cpp:2649-2660 vsm:src/subtitles/RTS.cpp:3594-3604">
       libass clamps \shad but deliberately not \xshad/\yshad
       ("VSFilter compatibility", ass_parse.c:875 comment).
@@ -313,60 +321,60 @@
   </tag>
 
   <tag name="xshad" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:373-380 xy:src/subtitles/RTS.cpp:2719-2726">
-      <sig n="1" form="both">
+    <params status="V" verified="libass xy" cite="libass:libass/ass_parse.c:373-380 xy:src/subtitles/RTS.cpp:2719-2726">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass xy" inferred="vsm" cite="libass:libass/ass_parse.c:373-380 xy:src/subtitles/RTS.cpp:2719-2726">
         <p i="1" name="depth" kind="number" range="unclamped, negative kept; empty selects the style Shadow; VSFilterMod unchecked"/>
       </sig>
     </params>
-    <scen id="negative" status="V" base="assign" vsfilter="assign" vsfiltermod="unchecked"
+    <scen id="negative" status="V" verified="libass xy" base="assign" vsfilter="assign" vsfiltermod="unchecked"
           cite="libass:libass/ass_parse.c:373-380 xy:src/subtitles/RTS.cpp:2719-2726">
       Negative x shadow stays negative (contrast with \shad above).
     </scen>
   </tag>
 
   <tag name="yshad" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:381-388 xy:src/subtitles/RTS.cpp:2737-2744">
-      <sig n="1" form="both">
+    <params status="V" verified="libass xy" cite="libass:libass/ass_parse.c:381-388 xy:src/subtitles/RTS.cpp:2737-2744">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass xy" inferred="vsm" cite="libass:libass/ass_parse.c:381-388 xy:src/subtitles/RTS.cpp:2737-2744">
         <p i="1" name="depth" kind="number" range="unclamped, negative kept; empty selects the style Shadow; VSFilterMod unchecked"/>
       </sig>
     </params>
-    <scen id="negative" status="V" base="assign" vsfilter="assign" vsfiltermod="unchecked"
+    <scen id="negative" status="V" verified="libass xy" base="assign" vsfilter="assign" vsfiltermod="unchecked"
           cite="libass:libass/ass_parse.c:381-388 xy:src/subtitles/RTS.cpp:2737-2744"/>
   </tag>
 
   <tag name="blur" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:425-434 xy:src/subtitles/RTS.cpp:2315-2321 vsm:src/subtitles/RTS.cpp:2915-2925">
-      <sig n="1" form="both">
+    <params status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:425-434 xy:src/subtitles/RTS.cpp:2315-2321 vsm:src/subtitles/RTS.cpp:2915-2925">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:425-434 xy:src/subtitles/RTS.cpp:2315-2321 vsm:src/subtitles/RTS.cpp:2915-2925">
         <p i="1" name="radius" kind="number" range="&lt;0 clamps to 0; libass upper-clamps to 100 (BLUR_MAX_RADIUS); forks have no upper clamp; empty differs per renderer (scen)"/>
       </sig>
     </params>
-    <scen id="empty-arg" status="V" base="zero" vsfilter="style-reset" vsfiltermod="style-reset"
+    <scen id="empty-arg" status="V" verified="libass xy vsm" base="zero" vsfilter="style-reset" vsfiltermod="style-reset"
           cite="libass:libass/ass_parse.c:425-434 xy:src/subtitles/RTS.cpp:2315-2321 vsm:src/subtitles/RTS.cpp:2915-2925">
       Empty \blur: libass sets 0.0, both forks restore the style Gaussian blur.
       Blocks any \blur=style equality proof (todo item 13).
     </scen>
-    <scen id="out-of-range" status="V" base="clamp-high" vsfilter="assign" vsfiltermod="assign"
+    <scen id="out-of-range" status="V" verified="libass xy vsm" base="clamp-high" vsfilter="assign" vsfiltermod="assign"
           cite="libass:libass/ass_parse.c:431 libass:libass/ass_parse.h:24 xy:src/subtitles/RTS.cpp:2317-2320 vsm:src/subtitles/RTS.cpp:2918-2925">
       libass clamps to BLUR_MAX_RADIUS 100.0; forks have no upper clamp.
     </scen>
-    <scen id="negative" status="V" base="clamp-low" vsfilter="clamp-low" vsfiltermod="clamp-low"
+    <scen id="negative" status="V" verified="libass xy vsm" base="clamp-low" vsfilter="clamp-low" vsfiltermod="clamp-low"
           cite="libass:libass/ass_parse.c:430 xy:src/subtitles/RTS.cpp:2319 vsm:src/subtitles/RTS.cpp:2920,2924"/>
   </tag>
 
   <tag name="be" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:812-824 xy:src/subtitles/RTS.cpp:2336-2342 vsm:src/subtitles/RTS.cpp:2939-2944">
-      <sig n="1" form="both">
+    <params status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:812-824 xy:src/subtitles/RTS.cpp:2336-2342 vsm:src/subtitles/RTS.cpp:2939-2944">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:812-824 xy:src/subtitles/RTS.cpp:2336-2342 vsm:src/subtitles/RTS.cpp:2939-2944">
         <p i="1" name="radius" kind="number" range="libass rounds +0.5 then clamps 0..127 (MAX_BE); xy/VSM pass through unclamped (VSM reads wcstol, integer only); empty differs per renderer (scen)"/>
       </sig>
     </params>
-    <scen id="empty-arg" status="V" base="zero" vsfilter="style-reset" vsfiltermod="style-reset"
+    <scen id="empty-arg" status="V" verified="libass xy vsm" base="zero" vsfilter="style-reset" vsfiltermod="style-reset"
           cite="libass:libass/ass_parse.c:812-824 xy:src/subtitles/RTS.cpp:2336-2342 vsm:src/subtitles/RTS.cpp:2939-2944"/>
-    <scen id="out-of-range" status="V" base="clamp-high" vsfilter="assign" vsfiltermod="assign"
+    <scen id="out-of-range" status="V" verified="libass" base="clamp-high" vsfilter="assign" vsfiltermod="assign"
           cite="libass:libass/ass_parse.c:819-821 libass:libass/ass_parse.c:32">
       libass clamps to MAX_BE 127 and always adds +0.5 rounding
       (ass_parse.c:817-818); xy/vsm clamp nothing.
     </scen>
-    <scen id="style-reset" status="V" base="zero" vsfilter="restored" vsfiltermod="restored"
+    <scen id="style-reset" status="V" verified="libass xy vsm" base="zero" vsfilter="restored" vsfiltermod="restored"
           cite="libass:libass/ass_render.c:1103 xy:src/subtitles/RTS.cpp:2341 vsm:src/subtitles/RTS.cpp:2944">
       \r sets be to 0 in libass but restores the style Blur field in both
       forks — the slot meaning of "reset" differs.
@@ -376,12 +384,12 @@
   <!-- ===== transforms (frx/fry/frz/fr/fax/fay) ===== -->
 
   <tag name="frx" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:531-538 xy:src/subtitles/RTS.cpp:2455-2461">
-      <sig n="1" form="both">
+    <params status="V" verified="libass xy" cite="libass:libass/ass_parse.c:531-538 xy:src/subtitles/RTS.cpp:2455-2461">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass xy" inferred="vsm" cite="libass:libass/ass_parse.c:531-538 xy:src/subtitles/RTS.cpp:2455-2461">
         <p i="1" name="angle" kind="number" range="unclamped, negative kept; empty selects 0 in libass / org in xy"/>
       </sig>
     </params>
-    <scen id="empty-arg" status="V" base="zero" vsfilter="restored" vsfiltermod="unchecked"
+    <scen id="empty-arg" status="V" verified="libass xy" base="zero" vsfilter="restored" vsfiltermod="unchecked"
           cite="libass:libass/ass_parse.c:531-538 xy:src/subtitles/RTS.cpp:2455-2461">
       libass resets to 0.0; xy restores org.fontAngleX (no Style field for it,
       so org is the initial 0 — same outcome, different mechanism).
@@ -389,32 +397,32 @@
   </tag>
 
   <tag name="fry" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:539-546 xy:src/subtitles/RTS.cpp:2462-2467">
-      <sig n="1" form="both">
+    <params status="V" verified="libass xy" cite="libass:libass/ass_parse.c:539-546 xy:src/subtitles/RTS.cpp:2462-2467">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass xy" inferred="vsm" cite="libass:libass/ass_parse.c:539-546 xy:src/subtitles/RTS.cpp:2462-2467">
         <p i="1" name="angle" kind="number" range="unclamped; empty selects 0 (libass) / org (xy)"/>
       </sig>
     </params>
-    <scen id="empty-arg" status="V" base="zero" vsfilter="restored" vsfiltermod="unchecked"
+    <scen id="empty-arg" status="V" verified="libass xy" base="zero" vsfilter="restored" vsfiltermod="unchecked"
           cite="libass:libass/ass_parse.c:539-546 xy:src/subtitles/RTS.cpp:2462-2467"/>
   </tag>
 
   <tag name="frz" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:547-555 xy:src/subtitles/RTS.cpp:2469-2475 vsm:src/subtitles/RTS.cpp:3130-3134">
-      <sig n="1" form="both">
+    <params status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:547-555 xy:src/subtitles/RTS.cpp:2469-2475 vsm:src/subtitles/RTS.cpp:3130-3134">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:547-555 xy:src/subtitles/RTS.cpp:2469-2475 vsm:src/subtitles/RTS.cpp:3130-3134">
         <p i="1" name="angle" kind="number" range="unclamped; empty selects the style Angle"/>
       </sig>
     </params>
-    <scen id="empty-arg" status="V" base="style-reset" vsfilter="style-reset" vsfiltermod="style-reset"
+    <scen id="empty-arg" status="V" verified="libass xy vsm" base="style-reset" vsfilter="style-reset" vsfiltermod="style-reset"
           cite="libass:libass/ass_parse.c:547-555 xy:src/subtitles/RTS.cpp:2469-2475 vsm:src/subtitles/RTS.cpp:3130-3134"/>
   </tag>
 
   <tag name="fr" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:547-555 xy:src/subtitles/RTS.cpp:2469-2475 vsm:src/subtitles/RTS.cpp:3130-3134">
-      <sig n="1" form="both">
+    <params status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:547-555 xy:src/subtitles/RTS.cpp:2469-2475 vsm:src/subtitles/RTS.cpp:3130-3134">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:547-555 xy:src/subtitles/RTS.cpp:2469-2475 vsm:src/subtitles/RTS.cpp:3130-3134">
         <p i="1" name="angle" kind="number" range="alias of \frz in all three renderers (one branch: tag(frz)||tag(fr)); same domain"/>
       </sig>
     </params>
-    <scen id="name-match" status="V" base="matched" vsfilter="matched" vsfiltermod="matched"
+    <scen id="name-match" status="V" verified="libass xy vsm" base="matched" vsfilter="matched" vsfiltermod="matched"
           cite="libass:libass/ass_parse.c:547 xy:src/subtitles/RTS.cpp:2469-2470 vsm:src/subtitles/RTS.cpp:3130">
       \fr and \frz share a branch in libass (547), a case pair in xy
       (2469-2470) and a || test in VSFilterMod (3130).
@@ -422,34 +430,34 @@
   </tag>
 
   <tag name="fax" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:389-396 xy:src/subtitles/RTS.cpp:2425-2431">
-      <sig n="1" form="both">
+    <params status="V" verified="libass xy" cite="libass:libass/ass_parse.c:389-396 xy:src/subtitles/RTS.cpp:2425-2431">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass xy" inferred="vsm" cite="libass:libass/ass_parse.c:389-396 xy:src/subtitles/RTS.cpp:2425-2431">
         <p i="1" name="shear" kind="number" range="unclamped; empty selects 0 (libass) / org (xy)"/>
       </sig>
     </params>
-    <scen id="empty-arg" status="V" base="zero" vsfilter="restored" vsfiltermod="unchecked"
+    <scen id="empty-arg" status="V" verified="libass xy" base="zero" vsfilter="restored" vsfiltermod="unchecked"
           cite="libass:libass/ass_parse.c:389-396 xy:src/subtitles/RTS.cpp:2425-2431"/>
   </tag>
 
   <tag name="fay" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:397-404 xy:src/subtitles/RTS.cpp:2432-2437">
-      <sig n="1" form="both">
+    <params status="V" verified="libass xy" cite="libass:libass/ass_parse.c:397-404 xy:src/subtitles/RTS.cpp:2432-2437">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass xy" inferred="vsm" cite="libass:libass/ass_parse.c:397-404 xy:src/subtitles/RTS.cpp:2432-2437">
         <p i="1" name="shear" kind="number" range="unclamped; empty selects 0 (libass) / org (xy)"/>
       </sig>
     </params>
-    <scen id="empty-arg" status="V" base="zero" vsfilter="restored" vsfiltermod="unchecked"
+    <scen id="empty-arg" status="V" verified="libass xy" base="zero" vsfilter="restored" vsfiltermod="unchecked"
           cite="libass:libass/ass_parse.c:397-404 xy:src/subtitles/RTS.cpp:2432-2437"/>
   </tag>
 
   <!-- ===== colors / alphas ===== -->
 
   <tag name="c" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:749-755 xy:src/subtitles/RTS.cpp:2386-2394">
-      <sig n="1" form="both">
+    <params status="V" verified="libass xy" cite="libass:libass/ass_parse.c:749-755 xy:src/subtitles/RTS.cpp:2386-2394">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass xy" inferred="vsm" cite="libass:libass/ass_parse.c:749-755 xy:src/subtitles/RTS.cpp:2386-2394">
         <p i="1" name="color" kind="hexcolor" range="BGR byte order; digits after skipped &amp;/H; no digit-count check in parsers (todo item 10); empty selects the style PrimaryColour; VSFilterMod unchecked"/>
       </sig>
     </params>
-    <scen id="name-match" status="V" base="matched" vsfilter="matched" vsfiltermod="matched"
+    <scen id="name-match" status="V" verified="libass xy vsm" base="matched" vsfilter="matched" vsfiltermod="matched"
           cite="libass:libass/ass_parse.c:749 xy:src/subtitles/RTS.cpp:1733 vsm:src/subtitles/RTS.cpp:2558">
       libass dispatches \c and \1c from one branch (749: tag("c") || tag("1c"));
       forks keep separate map entries that converge on the same handler body.
@@ -457,69 +465,69 @@
   </tag>
 
   <tag name="1c" status="S">
-    <params status="V" cite="libass:libass/ass_parse.c:749-755 xy:src/subtitles/RTS.cpp:1719 vsm:src/subtitles/RTS.cpp:2524-2525">
-      <sig n="1" form="both">
+    <params status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:749-755 xy:src/subtitles/RTS.cpp:1719 vsm:src/subtitles/RTS.cpp:2524-2525">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:749-755 xy:src/subtitles/RTS.cpp:1719 vsm:src/subtitles/RTS.cpp:2524-2525">
         <p i="1" name="color" kind="hexcolor" range="same domain as \c (alias, same slot)"/>
       </sig>
     </params>
   </tag>
   <tag name="2c" status="S">
-    <params status="V" cite="libass:libass/ass_parse.c:756-762 xy:src/subtitles/RTS.cpp:2259 vsm:src/subtitles/RTS.cpp:2524-2525">
-      <sig n="1" form="both">
+    <params status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:756-762 xy:src/subtitles/RTS.cpp:2259 vsm:src/subtitles/RTS.cpp:2524-2525">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:756-762 xy:src/subtitles/RTS.cpp:2259 vsm:src/subtitles/RTS.cpp:2524-2525">
         <p i="1" name="color" kind="hexcolor" range="SecondaryColour slot; empty selects style"/>
       </sig>
     </params>
   </tag>
   <tag name="3c" status="S">
-    <params status="V" cite="libass:libass/ass_parse.c:763-769 xy:src/subtitles/RTS.cpp:2260 vsm:src/subtitles/RTS.cpp:2524-2525">
-      <sig n="1" form="both">
+    <params status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:763-769 xy:src/subtitles/RTS.cpp:2260 vsm:src/subtitles/RTS.cpp:2524-2525">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:763-769 xy:src/subtitles/RTS.cpp:2260 vsm:src/subtitles/RTS.cpp:2524-2525">
         <p i="1" name="color" kind="hexcolor" range="OutlineColour slot; empty selects style"/>
       </sig>
     </params>
   </tag>
   <tag name="4c" status="S">
-    <params status="V" cite="libass:libass/ass_parse.c:770-776 xy:src/subtitles/RTS.cpp:2261 vsm:src/subtitles/RTS.cpp:2524-2525">
-      <sig n="1" form="both">
+    <params status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:770-776 xy:src/subtitles/RTS.cpp:2261 vsm:src/subtitles/RTS.cpp:2524-2525">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:770-776 xy:src/subtitles/RTS.cpp:2261 vsm:src/subtitles/RTS.cpp:2524-2525">
         <p i="1" name="color" kind="hexcolor" range="BackColour slot; empty selects style"/>
       </sig>
     </params>
   </tag>
   <tag name="1a" status="S">
-    <params status="V" cite="libass:libass/ass_parse.c:777-783">
-      <sig n="1" form="both">
+    <params status="V" verified="libass" cite="libass:libass/ass_parse.c:777-783">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass" inferred="xy vsm" cite="libass:libass/ass_parse.c:777-783">
         <p i="1" name="alpha" kind="hexalpha" range="replaces the alpha byte of c1; empty selects style PrimaryColour alpha"/>
       </sig>
     </params>
   </tag>
   <tag name="2a" status="S">
-    <params status="V" cite="libass:libass/ass_parse.c:784-790">
-      <sig n="1" form="both">
+    <params status="V" verified="libass" cite="libass:libass/ass_parse.c:784-790">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass" inferred="xy vsm" cite="libass:libass/ass_parse.c:784-790">
         <p i="1" name="alpha" kind="hexalpha" range="c2 slot; empty selects style"/>
       </sig>
     </params>
   </tag>
   <tag name="3a" status="S">
-    <params status="V" cite="libass:libass/ass_parse.c:791-797">
-      <sig n="1" form="both">
+    <params status="V" verified="libass" cite="libass:libass/ass_parse.c:791-797">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass" inferred="xy vsm" cite="libass:libass/ass_parse.c:791-797">
         <p i="1" name="alpha" kind="hexalpha" range="c3 slot; empty selects style"/>
       </sig>
     </params>
   </tag>
   <tag name="4a" status="S">
-    <params status="V" cite="libass:libass/ass_parse.c:798-804">
-      <sig n="1" form="both">
+    <params status="V" verified="libass" cite="libass:libass/ass_parse.c:798-804">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass" inferred="xy vsm" cite="libass:libass/ass_parse.c:798-804">
         <p i="1" name="alpha" kind="hexalpha" range="c4 slot; empty selects style"/>
       </sig>
     </params>
   </tag>
 
   <tag name="alpha" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:567-583 xy:src/subtitles/RTS.cpp:2291-2300">
-      <sig n="1" form="both">
+    <params status="V" verified="libass xy" cite="libass:libass/ass_parse.c:567-583 xy:src/subtitles/RTS.cpp:2291-2300">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass xy" inferred="vsm" cite="libass:libass/ass_parse.c:567-583 xy:src/subtitles/RTS.cpp:2291-2300">
         <p i="1" name="alpha" kind="hexalpha" range="applies the byte to all four color slots; empty restores each style alpha"/>
       </sig>
     </params>
-    <scen id="empty-arg" status="V" base="style-reset" vsfilter="style-reset" vsfiltermod="unchecked"
+    <scen id="empty-arg" status="V" verified="libass xy" base="style-reset" vsfilter="style-reset" vsfiltermod="unchecked"
           cite="libass:libass/ass_parse.c:567-583 xy:src/subtitles/RTS.cpp:2291-2300">
       All four alpha slots restore their per-color style alpha (libass
       574-581; xy org.alpha[i] loop).
@@ -529,24 +537,24 @@
   <!-- ===== alignment (an / a) ===== -->
 
   <tag name="an" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:584-593 xy:src/subtitles/RTS.cpp:2301-2306 vsm:src/subtitles/RTS.cpp:2903-2907">
-      <sig n="1" form="both">
+    <params status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:584-593 xy:src/subtitles/RTS.cpp:2301-2306 vsm:src/subtitles/RTS.cpp:2903-2907">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:584-593 xy:src/subtitles/RTS.cpp:2301-2306 vsm:src/subtitles/RTS.cpp:2903-2907">
         <p i="1" name="alignment" kind="int" range="numpad 1..9; outside selects the style Alignment; one latch per line"/>
       </sig>
     </params>
-    <scen id="repeat" status="V" base="latch-blocked" vsfilter="latch-blocked" vsfiltermod="latch-blocked"
+    <scen id="repeat" status="V" verified="libass xy vsm" base="latch-blocked" vsfilter="latch-blocked" vsfiltermod="latch-blocked"
           cite="libass:libass/ass_parse.c:584-593 xy:src/subtitles/RTS.cpp:2301-2306 vsm:src/subtitles/RTS.cpp:2903-2907">
       One latch per line: libass PARSED_A (586), xy/vsm m_scrAlignment
       negative-means-unset (2304/2906). \r does NOT re-arm the latch
       (ass_reset_render_context never clears parsed_tags, ass_render.c:1075-1111;
       xy \r at 2643-2647 touches only the style struct) — todo item 2.
     </scen>
-    <scen id="style-reset" status="V" base="kept" vsfilter="kept" vsfiltermod="unchecked"
+    <scen id="style-reset" status="V" verified="libass xy" base="kept" vsfilter="kept" vsfiltermod="unchecked"
           cite="libass:libass/ass_render.c:1075-1111 xy:src/subtitles/RTS.cpp:2643-2647">
       An applied \an value survives \r: alignment lives outside the
       style-reset field set.
     </scen>
-    <scen id="out-of-range" status="V" base="style-reset" vsfilter="style-reset" vsfiltermod="style-reset"
+    <scen id="out-of-range" status="V" verified="libass xy vsm" base="style-reset" vsfilter="style-reset" vsfiltermod="style-reset"
           cite="libass:libass/ass_parse.c:588-591 xy:src/subtitles/RTS.cpp:2305 vsm:src/subtitles/RTS.cpp:2907">
       Valid domain is 1..9; anything else selects the style alignment and
       still latches the slot.
@@ -554,19 +562,19 @@
   </tag>
 
   <tag name="a" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:594-604 xy:src/subtitles/RTS.cpp:2308-2313 vsm:src/subtitles/RTS.cpp:2909-2913">
-      <sig n="1" form="both">
+    <params status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:594-604 xy:src/subtitles/RTS.cpp:2308-2313 vsm:src/subtitles/RTS.cpp:2909-2913">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:594-604 xy:src/subtitles/RTS.cpp:2308-2313 vsm:src/subtitles/RTS.cpp:2909-2913">
         <p i="1" name="alignment" kind="int" range="1..11; 4/8 remapped per renderer (scen value-map); outside selects the style Alignment; shares the \an latch"/>
       </sig>
     </params>
-    <scen id="value-map" status="V" base="quirk-a5" vsfilter="bit-map" vsfiltermod="bit-map"
+    <scen id="value-map" status="V" verified="libass xy vsm" base="quirk-a5" vsfilter="bit-map" vsfiltermod="bit-map"
           cite="libass:libass/ass_parse.c:594-604 xy:src/subtitles/RTS.cpp:2308-2313 vsm:src/subtitles/RTS.cpp:2909-2913">
       libass maps every value with (val &amp; 3) == 0 — including \a4 and \a8 —
       to 5 (middle-center, "vsfilter quirk" comment at 599-600). xy/vsm bit-map:
       ((n-1)&amp;3)+1 + (n&amp;4?6:0) + (n&amp;8?3:0). \a4/\a8 therefore land
       on different alignments (ASS003, todo item 14).
     </scen>
-    <scen id="out-of-range" status="V" base="style-reset" vsfilter="style-reset" vsfiltermod="style-reset"
+    <scen id="out-of-range" status="V" verified="libass xy vsm" base="style-reset" vsfilter="style-reset" vsfiltermod="style-reset"
           cite="libass:libass/ass_parse.c:596-603 xy:src/subtitles/RTS.cpp:2312 vsm:src/subtitles/RTS.cpp:2913">
       libass domain 1..11, xy/vsm n in (0,12); outside falls to the style
       alignment and latches the shared slot (same PARSED_A/m_scrAlignment as
@@ -577,24 +585,24 @@
   <!-- ===== positioning (pos / move / org), first-wins family ===== -->
 
   <tag name="pos" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:606-621 xy:src/subtitles/RTS.cpp:2615-2627 vsm:src/subtitles/RTS.cpp:3510-3543">
-      <sig n="2" form="paren">
+    <params status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:606-621 xy:src/subtitles/RTS.cpp:2615-2627 vsm:src/subtitles/RTS.cpp:3510-3543">
+      <sig n="2" form="paren" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:606-621 xy:src/subtitles/RTS.cpp:2615-2627 vsm:src/subtitles/RTS.cpp:3510-3543">
         <p i="1" name="x" kind="coord" range="any; &gt;=0 expected, no clamp"/>
         <p i="2" name="y" kind="coord" range="any; no clamp"/>
       </sig>
-      <sig n="3" form="paren" renderer="vsm">
+      <sig n="3" form="paren" renderer="vsm" status="V" verified="vsm" cite="vsm:src/subtitles/RTS.cpp:3510-3543">
         <p i="1" name="x" kind="coord" range="screen x"/>
         <p i="2" name="y" kind="coord" range="screen y"/>
         <p i="3" name="z" kind="number" range="VSFilterMod-only depth: stored as style.mod_z = z*80 (RTS.cpp:3539), assigned as every glyph point's z (611-612), then used by the frx/fry rotation and the perspective divide (640-653). Effect is only visible with a 3D rotation; libass and xy reject the 3-arg form entirely."/>
       </sig>
     </params>
-    <scen id="arg-count" status="V" base="ignored" vsfilter="ignored" vsfiltermod="supported"
+    <scen id="arg-count" status="V" verified="libass xy vsm" base="ignored" vsfilter="ignored" vsfiltermod="supported"
           cite="libass:libass/ass_parse.c:606-612 xy:src/subtitles/RTS.cpp:2615-2627 vsm:src/subtitles/RTS.cpp:3510-3543">
       libass/xy accept exactly 2 args, else `continue` with NO latch set — a
       malformed \pos(1) does not disable a later valid \pos. VSFilterMod patch
       m002 additionally honors a 3rd Z argument (3530-3540).
     </scen>
-    <scen id="repeat" status="V" base="latch-blocked" vsfilter="latch-blocked" vsfiltermod="latch-blocked"
+    <scen id="repeat" status="V" verified="libass xy vsm" base="latch-blocked" vsfilter="latch-blocked" vsfiltermod="latch-blocked"
           cite="libass:libass/ass_parse.c:613-615 xy:src/subtitles/RTS.cpp:2617 vsm:src/subtitles/RTS.cpp:3510-3515">
       The latch is shared with \move: libass EVENT_POSITIONED gates both
       (ass_parse.c:525-530, 613-615); xy \pos itself creates the EF_MOVE
@@ -602,21 +610,21 @@
       all collide (todo item 4). \r does not re-arm (evt_type / m_effects are
       outside style-reset; ass_render.c:1075-1111, xy 2643-2647).
     </scen>
-    <scen id="style-reset" status="V" base="kept" vsfilter="kept" vsfiltermod="unchecked"
+    <scen id="style-reset" status="V" verified="libass xy" base="kept" vsfilter="kept" vsfiltermod="unchecked"
           cite="libass:libass/ass_render.c:1075-1111 xy:src/subtitles/RTS.cpp:2643-2647">
       A positioned line stays positioned through \r.
     </scen>
   </tag>
 
   <tag name="move" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:494-514 xy:src/subtitles/RTS.cpp:2575-2596">
-      <sig n="4" form="paren">
+    <params status="V" verified="libass xy" cite="libass:libass/ass_parse.c:494-514 xy:src/subtitles/RTS.cpp:2575-2596">
+      <sig n="4" form="paren" renderer="libass xy vsm" status="V" verified="libass xy" inferred="vsm" cite="libass:libass/ass_parse.c:494-514 xy:src/subtitles/RTS.cpp:2575-2596">
         <p i="1" name="x1" kind="coord" range="start position x"/>
         <p i="2" name="y1" kind="coord" range="start position y"/>
         <p i="3" name="x2" kind="coord" range="end position x"/>
         <p i="4" name="y2" kind="coord" range="end position y"/>
       </sig>
-      <sig n="6" form="paren">
+      <sig n="6" form="paren" renderer="libass xy vsm" status="V" verified="libass xy" inferred="vsm" cite="libass:libass/ass_parse.c:494-514 xy:src/subtitles/RTS.cpp:2575-2596">
         <p i="1" name="x1" kind="coord" range="start position x"/>
         <p i="2" name="y1" kind="coord" range="start position y"/>
         <p i="3" name="x2" kind="coord" range="end position x"/>
@@ -625,41 +633,41 @@
         <p i="6" name="t2" kind="ms" range="t1&gt;t2: libass swaps (503-507), xy does not (scen)"/>
       </sig>
     </params>
-    <scen id="arg-count" status="V" base="ignored" vsfilter="ignored" vsfiltermod="unchecked"
+    <scen id="arg-count" status="V" verified="libass xy" base="ignored" vsfilter="ignored" vsfiltermod="unchecked"
           cite="libass:libass/ass_parse.c:494-510 xy:src/subtitles/RTS.cpp:2577">
       4 or 6 args, else continue before any latch — a bad \move cannot block a
       later good one in libass (xy 2577 checks count inside the un-latched
       branch, same outcome).
     </scen>
-    <scen id="out-of-range" status="V" base="swap" vsfilter="assign" vsfiltermod="unchecked"
+    <scen id="out-of-range" status="V" verified="libass xy" base="swap" vsfilter="assign" vsfiltermod="unchecked"
           cite="libass:libass/ass_parse.c:500-508 xy:src/subtitles/RTS.cpp:2585-2590">
       t1 &gt; t2: libass swaps (503-507); xy keeps the reversed window and jumps
       to the end position at render time (todo item 15 [V]; xy render branch
       RTS.cpp:3255-3265).
     </scen>
-    <scen id="negative" status="V" base="default-full" vsfilter="unchecked" vsfiltermod="unchecked"
+    <scen id="negative" status="V" verified="libass" base="default-full" vsfilter="unchecked" vsfiltermod="unchecked"
           cite="libass:libass/ass_parse.c:511-514">
       libass: if both t1 and t2 are &lt;= 0, re-default to the whole event
       duration. Fork behavior unchecked.
     </scen>
-    <scen id="repeat" status="V" base="latch-blocked" vsfilter="latch-blocked" vsfiltermod="unchecked"
+    <scen id="repeat" status="V" verified="libass xy" base="latch-blocked" vsfilter="latch-blocked" vsfiltermod="unchecked"
           cite="libass:libass/ass_parse.c:525-530 xy:src/subtitles/RTS.cpp:2577"/>
   </tag>
 
   <tag name="org" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:657-668 xy:src/subtitles/RTS.cpp:2597-2607">
-      <sig n="2" form="paren">
+    <params status="V" verified="libass xy" cite="libass:libass/ass_parse.c:657-668 xy:src/subtitles/RTS.cpp:2597-2607">
+      <sig n="2" form="paren" renderer="libass xy vsm" status="V" verified="libass xy" inferred="vsm" cite="libass:libass/ass_parse.c:657-668 xy:src/subtitles/RTS.cpp:2597-2607">
         <p i="1" name="x" kind="coord" range="rotation origin; empty parens latch nothing (scen)"/>
         <p i="2" name="y" kind="coord" range="rotation origin; empty parens latch nothing (scen)"/>
       </sig>
     </params>
-    <scen id="empty-arg" status="V" base="ignored" vsfilter="unchecked" vsfiltermod="unchecked"
+    <scen id="empty-arg" status="V" verified="libass" base="ignored" vsfilter="unchecked" vsfiltermod="unchecked"
           cite="libass:libass/ass_parse.c:657-668">
       \org() with nargs != 2 continues before the have_origin latch is set —
       the empty form does NOT disable collision layout (todo item 2's
       collisionDisabled audit).
     </scen>
-    <scen id="repeat" status="V" base="latch-blocked" vsfilter="latch-blocked" vsfiltermod="unchecked"
+    <scen id="repeat" status="V" verified="libass xy" base="latch-blocked" vsfilter="latch-blocked" vsfiltermod="unchecked"
           cite="libass:libass/ass_parse.c:664-668 xy:src/subtitles/RTS.cpp:2597-2607">
       have_origin / EF_ORG latch; \r does not re-arm (not in
       ass_reset_render_context 1075-1111).
@@ -669,40 +677,40 @@
   <!-- ===== fade ===== -->
 
   <tag name="fade" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:622-655 xy:src/subtitles/RTS.cpp:2396-2423 vsm:src/subtitles/RTS.cpp:3055-3075">
-      <sig n="7" form="paren">
+    <params status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:622-655 xy:src/subtitles/RTS.cpp:2396-2423 vsm:src/subtitles/RTS.cpp:3055-3075">
+      <sig n="7" form="paren" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:622-655 xy:src/subtitles/RTS.cpp:2396-2423 vsm:src/subtitles/RTS.cpp:3055-3075">
         <p i="1" name="a1" kind="alpha8" range="start alpha; parsed as int, NOT range-checked by renderers"/>
         <p i="2" name="a2" kind="alpha8" range="mid alpha"/>
         <p i="3" name="a3" kind="alpha8" range="end alpha"/>
         <p i="4" name="t1" kind="ms" range="fade-in end"/> <p i="5" name="t2" kind="ms" range="solid-text start"/>
         <p i="6" name="t3" kind="ms" range="solid-text end"/> <p i="7" name="t4" kind="ms" range="fade-out end; offsets from the event start"/>
       </sig>
-      <sig n="2" form="paren">
+      <sig n="2" form="paren" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:622-655 xy:src/subtitles/RTS.cpp:2396-2423 vsm:src/subtitles/RTS.cpp:3055-3075">
         <p i="1" name="t_in" kind="ms" range="the \fad shape: a1/a3 = FF, a2 = 0 fixed"/>
         <p i="2" name="t_out" kind="ms" range="fade-out duration"/>
       </sig>
     </params>
-    <scen id="repeat" status="V" base="latch-blocked" vsfilter="latch-blocked" vsfiltermod="latch-blocked"
+    <scen id="repeat" status="V" verified="libass xy vsm" base="latch-blocked" vsfilter="latch-blocked" vsfiltermod="latch-blocked"
           cite="libass:libass/ass_parse.c:650-656 xy:src/subtitles/RTS.cpp:2400,2411 vsm:src/subtitles/RTS.cpp:3057,3069">
       PARSED_FADE / EF_FADE latch; second \fade or \fad ignored.
     </scen>
-    <scen id="arg-count" status="V" base="ignored" vsfilter="keep-previous" vsfiltermod="keep-previous"
+    <scen id="arg-count" status="V" verified="libass xy vsm" base="ignored" vsfilter="keep-previous" vsfiltermod="keep-previous"
           cite="libass:libass/ass_parse.c:625-644 xy:src/subtitles/RTS.cpp:2396-2423 vsm:src/subtitles/RTS.cpp:3055-3075">
       Wrong arity: libass continues silently; both forks have already raised
       m_fAnimated2 at 2399/3055-adjacent before the count check, so a malformed
       fade still marks the line animated.
     </scen>
-    <scen id="style-reset" status="V" base="kept" vsfilter="kept" vsfiltermod="unchecked"
+    <scen id="style-reset" status="V" verified="libass xy" base="kept" vsfilter="kept" vsfiltermod="unchecked"
           cite="libass:libass/ass_render.c:1075-1111 xy:src/subtitles/RTS.cpp:2643-2647"/>
   </tag>
 
   <tag name="fad" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:622-633 vsm:src/subtitles/RTS.cpp:3069-3075">
-      <sig n="2" form="paren">
+    <params status="V" verified="libass vsm" cite="libass:libass/ass_parse.c:622-633 vsm:src/subtitles/RTS.cpp:3069-3075">
+      <sig n="2" form="paren" renderer="libass xy vsm" status="V" verified="libass vsm" inferred="xy" cite="libass:libass/ass_parse.c:622-633 vsm:src/subtitles/RTS.cpp:3069-3075">
         <p i="1" name="t_in" kind="ms" range="primary form"/>
         <p i="2" name="t_out" kind="ms" range="fade-out duration"/>
       </sig>
-      <sig n="7" form="paren">
+      <sig n="7" form="paren" renderer="libass xy vsm" status="V" verified="libass vsm" inferred="xy" cite="libass:libass/ass_parse.c:622-633 vsm:src/subtitles/RTS.cpp:3069-3075">
         <p i="1" name="a1" kind="alpha8" range="reachable because libass dispatches fade||fad from one branch (622) and xy/vsm share one handler; \fade(t_in,t_out) works the same way"/>
         <p i="2" name="a2" kind="alpha8" range="mid alpha"/>
         <p i="3" name="a3" kind="alpha8" range="end alpha"/>
@@ -710,7 +718,7 @@
         <p i="6" name="t3" kind="ms" range="solid-text end"/> <p i="7" name="t4" kind="ms" range="fade-out end"/>
       </sig>
     </params>
-    <scen id="name-match" status="V" base="matched" vsfilter="matched" vsfiltermod="matched"
+    <scen id="name-match" status="V" verified="libass xy vsm" base="matched" vsfilter="matched" vsfiltermod="matched"
           cite="libass:libass/ass_parse.c:622 xy:src/subtitles/RTS.cpp:2396-2397 vsm:src/subtitles/RTS.cpp:3055">
       \fad is honored by all three. A research pass claimed VSFilterMod drops
       it because its prefix-normalization chain has only "fade"
@@ -719,7 +727,7 @@
       cmd == L"fad" explicitly (3055). This row is the worked example of why
       V requires re-reading the cited lines.
     </scen>
-    <scen id="arg-count" status="V" base="ignored" vsfilter="keep-previous" vsfiltermod="keep-previous"
+    <scen id="arg-count" status="V" verified="libass xy vsm" base="ignored" vsfilter="keep-previous" vsfiltermod="keep-previous"
           cite="libass:libass/ass_parse.c:625-644 xy:src/subtitles/RTS.cpp:2396-2423 vsm:src/subtitles/RTS.cpp:3055-3075">
       \fad is the 2-arg form; the 7-arg branch exists in all three but is
       reachable via \fad only in the forks' shared handler (libass names both
@@ -730,35 +738,35 @@
   <!-- ===== clip family ===== -->
 
   <tag name="clip" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:729-747,213-227 xy:src/subtitles/RTS.cpp:2352-2384 vsm:src/subtitles/RTS.cpp:2953-3000">
-      <sig n="4" form="paren">
+    <params status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:729-747,213-227 xy:src/subtitles/RTS.cpp:2352-2384 vsm:src/subtitles/RTS.cpp:2953-3000">
+      <sig n="4" form="paren" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:729-747,213-227 xy:src/subtitles/RTS.cpp:2352-2384 vsm:src/subtitles/RTS.cpp:2953-3000">
         <p i="1" name="x1" kind="coord" range="rectangle, no clamp; consumed as integers per coord-round scen"/>
         <p i="2" name="y1" kind="coord" range="top edge"/>
         <p i="3" name="x2" kind="coord" range="right edge"/>
         <p i="4" name="y2" kind="coord" range="bottom edge"/>
       </sig>
-      <sig n="1" form="paren">
+      <sig n="1" form="paren" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:729-747,213-227 xy:src/subtitles/RTS.cpp:2352-2384 vsm:src/subtitles/RTS.cpp:2953-3000">
         <p i="1" name="drawing" kind="drawing" range="vector clip body; first-wins slot shared with \iclip"/>
       </sig>
-      <sig n="2" form="paren">
+      <sig n="2" form="paren" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:729-747,213-227 xy:src/subtitles/RTS.cpp:2352-2384 vsm:src/subtitles/RTS.cpp:2953-3000">
         <p i="1" name="scale" kind="int" range="forced to &gt;=1 (FFMAX, libass 222)"/>
         <p i="2" name="drawing" kind="drawing" range="vector clip body"/>
       </sig>
     </params>
-    <scen id="coord-round" status="V" base="assign" vsfilter="assign-round" vsfiltermod="assign"
+    <scen id="coord-round" status="V" verified="libass xy vsm" base="assign" vsfilter="assign-round" vsfiltermod="assign"
           cite="libass:libass/ass_parse.c:729-744 xy:src/subtitles/RTS.cpp:2369-2383 vsm:src/subtitles/RTS.cpp:2974-2999">
       Rectangular clip: libass integer-converts each coordinate
       (argtoi32 732-735); xy adds +0.5 first (2374-2377); VSFilterMod uses
       wcstol (2981-2984). Fractional rectangles differ by up to one pixel —
       the ASS003 basis.
     </scen>
-    <scen id="repeat" status="V" base="latch-blocked" vsfilter="latch-blocked" vsfiltermod="latch-blocked"
+    <scen id="repeat" status="V" verified="libass xy vsm" base="latch-blocked" vsfilter="latch-blocked" vsfiltermod="latch-blocked"
           cite="libass:libass/ass_parse.c:745-747,421-423 xy:src/subtitles/RTS.cpp:2356,2362 vsm:src/subtitles/RTS.cpp:2957,2965">
       Vector clip is first-wins: libass refuses when clip_drawing_text is set
       (rectangular clip is NOT latched — a second 4-arg \clip overwrites,
       ass_parse.c:730-744); xy/vsm refuse when m_pClipper exists.
     </scen>
-    <scen id="style-reset" status="V" base="kept" vsfilter="kept" vsfiltermod="unchecked"
+    <scen id="style-reset" status="V" verified="libass xy" base="kept" vsfilter="kept" vsfiltermod="unchecked"
           cite="libass:libass/ass_render.c:1075-1111 xy:src/subtitles/RTS.cpp:2643-2647,2930">
       Neither the rect clip nor the vector clipper is restored by \r;
       assx's KeepOnStyleReset encodes exactly this (tags.go:80-85).
@@ -766,24 +774,24 @@
   </tag>
 
   <tag name="iclip" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:405-423 xy:src/subtitles/RTS.cpp:2353-2384 vsm:src/subtitles/RTS.cpp:2953-3000">
-      <sig n="4" form="paren">
+    <params status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:405-423 xy:src/subtitles/RTS.cpp:2353-2384 vsm:src/subtitles/RTS.cpp:2953-3000">
+      <sig n="4" form="paren" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:405-423 xy:src/subtitles/RTS.cpp:2353-2384 vsm:src/subtitles/RTS.cpp:2953-3000">
         <p i="1" name="x1" kind="coord" range="inverted rectangle; same domains as \clip"/>
         <p i="2" name="y1" kind="coord" range="top edge"/>
         <p i="3" name="x2" kind="coord" range="right edge"/>
         <p i="4" name="y2" kind="coord" range="bottom edge"/>
       </sig>
-      <sig n="1" form="paren">
+      <sig n="1" form="paren" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:405-423 xy:src/subtitles/RTS.cpp:2353-2384 vsm:src/subtitles/RTS.cpp:2953-3000">
         <p i="1" name="drawing" kind="drawing" range="vector clip body"/>
       </sig>
-      <sig n="2" form="paren">
+      <sig n="2" form="paren" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:405-423 xy:src/subtitles/RTS.cpp:2353-2384 vsm:src/subtitles/RTS.cpp:2953-3000">
         <p i="1" name="scale" kind="int" range="&gt;=1"/>
         <p i="2" name="drawing" kind="drawing" range="vector clip body"/>
       </sig>
     </params>
-    <scen id="coord-round" status="V" base="assign" vsfilter="assign-round" vsfiltermod="assign"
+    <scen id="coord-round" status="V" verified="libass xy vsm" base="assign" vsfilter="assign-round" vsfiltermod="assign"
           cite="libass:libass/ass_parse.c:405-424 xy:src/subtitles/RTS.cpp:2353-2383 vsm:src/subtitles/RTS.cpp:2953-2999"/>
-    <scen id="repeat" status="V" base="latch-blocked" vsfilter="latch-blocked" vsfiltermod="latch-blocked"
+    <scen id="repeat" status="V" verified="libass xy vsm" base="latch-blocked" vsfilter="latch-blocked" vsfiltermod="latch-blocked"
           cite="libass:libass/ass_parse.c:421-423,745 xy:src/subtitles/RTS.cpp:2356,2362 vsm:src/subtitles/RTS.cpp:2957,2965">
       \clip and \iclip fight over the one vector-clipper slot in every renderer
       (todo item 32; assx clip_vector FirstWins models it).
@@ -793,39 +801,39 @@
   <!-- ===== transitions and style reset ===== -->
 
   <tag name="t" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:670-727 xy:src/subtitles/RTS.cpp:2670-2700">
-      <sig n="1" form="paren">
+    <params status="V" verified="libass xy" cite="libass:libass/ass_parse.c:670-727 xy:src/subtitles/RTS.cpp:2670-2700">
+      <sig n="1" form="paren" renderer="libass xy vsm" status="V" verified="libass xy" inferred="vsm" cite="libass:libass/ass_parse.c:670-727 xy:src/subtitles/RTS.cpp:2670-2700">
         <p i="1" name="modifiers" kind="modifiers" range="full-duration transform, accel 1"/>
       </sig>
-      <sig n="2" form="paren">
+      <sig n="2" form="paren" renderer="libass xy vsm" status="V" verified="libass xy" inferred="vsm" cite="libass:libass/ass_parse.c:670-727 xy:src/subtitles/RTS.cpp:2670-2700">
         <p i="1" name="accel" kind="number" range="libass 681-684 reads TWO times (t1,t2, accel 1); xy 2681 reads the FIRST arg as accel — opposite meanings of \t(200,300,\c...) (scen value-map)"/>
         <p i="2" name="modifiers" kind="modifiers" range="transform body"/>
       </sig>
-      <sig n="3" form="paren">
+      <sig n="3" form="paren" renderer="libass xy vsm" status="V" verified="libass xy" inferred="vsm" cite="libass:libass/ass_parse.c:670-727 xy:src/subtitles/RTS.cpp:2670-2700">
         <p i="1" name="t1" kind="ms" range="libass: t1,t2,modifiers (677-680); xy: t1,t2,accel — no modifiers arg"/>
         <p i="2" name="t2" kind="ms" range="window end"/>
         <p i="3" name="modifiers" kind="modifiers" range="libass reads it as styles; xy reads it as accel"/>
       </sig>
-      <sig n="4" form="paren">
+      <sig n="4" form="paren" renderer="libass xy vsm" status="V" verified="libass xy" inferred="vsm" cite="libass:libass/ass_parse.c:670-727 xy:src/subtitles/RTS.cpp:2670-2700">
         <p i="1" name="t1" kind="ms" range="the only fully-agreeing shape"/>
         <p i="2" name="t2" kind="ms" range="window end"/>
         <p i="3" name="accel" kind="number" range="easing exponent, 1 = linear; unclamped"/>
         <p i="4" name="modifiers" kind="modifiers" range="libass rejects cnt&gt;3 (709-710); xy has no upper guard"/>
       </sig>
     </params>
-    <scen id="empty-arg" status="V" base="keep-previous" vsfilter="keep-previous" vsfiltermod="keep-previous"
+    <scen id="empty-arg" status="V" verified="libass xy vsm" base="keep-previous" vsfilter="keep-previous" vsfiltermod="keep-previous"
           cite="libass:libass/ass_parse.c:670-714 xy:src/subtitles/RTS.cpp:2670-2699 vsm:src/subtitles/RTS.cpp:3613">
       \t() with no usable body: libass still sets detect_collisions = 0 at 694
       before bailing at 710; xy still raises m_fAnimated/m_fAnimated2 at
       2698-2699. Empty transforms are NOT inert — they keep the line out of
       collision layout (ASS006 prose).
     </scen>
-    <scen id="arg-count" status="V" base="ignored" vsfilter="keep-previous" vsfiltermod="unchecked"
+    <scen id="arg-count" status="V" verified="libass xy" base="ignored" vsfilter="keep-previous" vsfiltermod="unchecked"
           cite="libass:libass/ass_parse.c:709-710 xy:src/subtitles/RTS.cpp:2675-2696">
       libass requires 1..4 arguments (cnt 0..3 after the tag-arg shift); xy has
       no guard for 5+ (falls through every case, animation flags still set).
     </scen>
-    <scen id="value-map" status="V" base="assign" vsfilter="assign" vsfiltermod="unchecked"
+    <scen id="value-map" status="V" verified="libass xy" base="assign" vsfilter="assign" vsfiltermod="unchecked"
           cite="libass:libass/ass_parse.c:677-693 xy:src/subtitles/RTS.cpp:2675-2696">
       Argument-shape mapping agrees on intent: trailing styles argument,
       preceding time/accel arguments parsed by count — 2 = t1,t2 (accel 1);
@@ -838,15 +846,15 @@
   </tag>
 
   <tag name="r" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:805-811 xy:src/subtitles/RTS.cpp:2643-2647">
-      <sig n="0" form="bare">
+    <params status="V" verified="libass xy" cite="libass:libass/ass_parse.c:805-811 xy:src/subtitles/RTS.cpp:2643-2647">
+      <sig n="0" form="bare" renderer="libass xy vsm" status="V" verified="libass xy" inferred="vsm" cite="libass:libass/ass_parse.c:805-811 xy:src/subtitles/RTS.cpp:2643-2647">
         <p i="1" name="none" kind="none" range="resets to the dialogue's base style"/>
       </sig>
-      <sig n="1" form="bare">
+      <sig n="1" form="bare" renderer="libass xy vsm" status="V" verified="libass xy" inferred="vsm" cite="libass:libass/ass_parse.c:805-811 xy:src/subtitles/RTS.cpp:2643-2647">
         <p i="1" name="style" kind="name" range="style name; libass strict lookup, xy falls back to org on miss"/>
       </sig>
     </params>
-    <scen id="value-map" status="V" base="style-reset" vsfilter="style-reset" vsfiltermod="unchecked"
+    <scen id="value-map" status="V" verified="libass xy" base="style-reset" vsfilter="style-reset" vsfiltermod="unchecked"
           cite="libass:libass/ass_parse.c:805-811 libass:libass/ass_render.c:1075-1111 xy:src/subtitles/RTS.cpp:2643-2647">
       The reset field set (libass 1081-1110): colors, decorations, size,
       family, bold/italic, border style/x/y, scales, spacing, be(0), blur,
@@ -856,7 +864,7 @@
       with org (or the looked-up style) — the forks re-point values libass
       leaves alone only where those live inside the style struct.
     </scen>
-    <scen id="arg-form" status="V" base="both-forms" vsfilter="both-forms" vsfiltermod="unchecked"
+    <scen id="arg-form" status="V" verified="libass xy" base="both-forms" vsfilter="both-forms" vsfiltermod="unchecked"
           cite="libass:libass/ass_parse.c:806-809 xy:src/subtitles/RTS.cpp:2645-2646">
       Named \rStyleName uses strict lookup in libass (ass_parse.c:808, missing
       style = reset to default render context with a lookup miss); xy falls
@@ -867,29 +875,29 @@
   <!-- ===== karaoke family ===== -->
 
   <tag name="k" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:861-868 xy:src/subtitles/RTS.cpp:2565-2571">
-      <sig n="1" form="both">
+    <params status="V" verified="libass xy" cite="libass:libass/ass_parse.c:861-868 xy:src/subtitles/RTS.cpp:2565-2571">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass xy" inferred="vsm" cite="libass:libass/ass_parse.c:861-868 xy:src/subtitles/RTS.cpp:2565-2571">
         <p i="1" name="duration" kind="cs" range="centiseconds (libass multiplies arg by 10 into ms, 864,852); empty defaults 100; negative accepted unclamped"/>
       </sig>
     </params>
-    <scen id="repeat" status="V" base="accumulate" vsfilter="accumulate" vsfiltermod="unchecked"
+    <scen id="repeat" status="V" verified="libass xy" base="accumulate" vsfilter="accumulate" vsfiltermod="unchecked"
           cite="libass:libass/ass_parse.c:861-868 xy:src/subtitles/RTS.cpp:2565-2571">
       effect_skip_timing += effect_timing (libass 866-867; xy m_kstart=m_kend;
       m_kend+=... 2568-2570): karaoke durations add, they do not overwrite.
     </scen>
-    <scen id="empty-arg" status="V" base="assign" vsfilter="assign" vsfiltermod="unchecked"
+    <scen id="empty-arg" status="V" verified="libass xy" base="assign" vsfilter="assign" vsfiltermod="unchecked"
           cite="libass:libass/ass_parse.c:862-864 xy:src/subtitles/RTS.cpp:2569-2571">
       Empty \k defaults to 100 frames (libass val=100; xy adds 1000 cs).
     </scen>
   </tag>
 
   <tag name="K" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:845-852 xy:src/subtitles/RTS.cpp:2544-2553">
-      <sig n="1" form="both">
+    <params status="V" verified="libass xy" cite="libass:libass/ass_parse.c:845-852 xy:src/subtitles/RTS.cpp:2544-2553">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass xy" inferred="vsm" cite="libass:libass/ass_parse.c:845-852 xy:src/subtitles/RTS.cpp:2544-2553">
         <p i="1" name="duration" kind="cs" range="same domain as \k; sets the fade sweep type (alias of \kf)"/>
       </sig>
     </params>
-    <scen id="name-match" status="V" base="matched" vsfilter="matched" vsfiltermod="unchecked"
+    <scen id="name-match" status="V" verified="libass xy" base="matched" vsfilter="matched" vsfiltermod="unchecked"
           cite="libass:libass/ass_parse.c:845 xy:src/subtitles/RTS.cpp:1750-1754">
       \K is an alias of \kf (both case-sensitive: libass registers K in the
       same branch as kf; xy registers K and k as distinct keys).
@@ -897,32 +905,32 @@
   </tag>
 
   <tag name="kf" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:845-852 xy:src/subtitles/RTS.cpp:2544-2553">
-      <sig n="1" form="both">
+    <params status="V" verified="libass xy" cite="libass:libass/ass_parse.c:845-852 xy:src/subtitles/RTS.cpp:2544-2553">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass xy" inferred="vsm" cite="libass:libass/ass_parse.c:845-852 xy:src/subtitles/RTS.cpp:2544-2553">
         <p i="1" name="duration" kind="cs" range="empty defaults 100"/>
       </sig>
     </params>
-    <scen id="repeat" status="V" base="accumulate" vsfilter="accumulate" vsfiltermod="unchecked"
+    <scen id="repeat" status="V" verified="libass xy" base="accumulate" vsfilter="accumulate" vsfiltermod="unchecked"
           cite="libass:libass/ass_parse.c:845-852 xy:src/subtitles/RTS.cpp:2544-2553"/>
   </tag>
 
   <tag name="ko" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:853-860 xy:src/subtitles/RTS.cpp:2555-2563">
-      <sig n="1" form="both">
+    <params status="V" verified="libass xy" cite="libass:libass/ass_parse.c:853-860 xy:src/subtitles/RTS.cpp:2555-2563">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass xy" inferred="vsm" cite="libass:libass/ass_parse.c:853-860 xy:src/subtitles/RTS.cpp:2555-2563">
         <p i="1" name="duration" kind="cs" range="empty defaults 100"/>
       </sig>
     </params>
-    <scen id="repeat" status="V" base="accumulate" vsfilter="accumulate" vsfiltermod="unchecked"
+    <scen id="repeat" status="V" verified="libass xy" base="accumulate" vsfilter="accumulate" vsfiltermod="unchecked"
           cite="libass:libass/ass_parse.c:853-860 xy:src/subtitles/RTS.cpp:2555-2563"/>
   </tag>
 
   <tag name="kt" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:837-844 xy:src/subtitles/RTS.cpp:2535-2542">
-      <sig n="1" form="both">
+    <params status="V" verified="libass xy" cite="libass:libass/ass_parse.c:837-844 xy:src/subtitles/RTS.cpp:2535-2542">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass xy" inferred="vsm" cite="libass:libass/ass_parse.c:837-844 xy:src/subtitles/RTS.cpp:2535-2542">
         <p i="1" name="time" kind="cs" range="absolute skip point; empty = 0"/>
       </sig>
     </params>
-    <scen id="empty-arg" status="V" base="zero" vsfilter="zero" vsfiltermod="unchecked"
+    <scen id="empty-arg" status="V" verified="libass xy" base="zero" vsfilter="zero" vsfiltermod="unchecked"
           cite="libass:libass/ass_parse.c:837-844 xy:src/subtitles/RTS.cpp:2535-2542">
       \kt is a jump, not an accumulate: effect_timing reset to 0 (libass 842-843;
       xy m_kstart = m_kend after the jump 2540).
@@ -932,41 +940,41 @@
   <!-- ===== drawing mode ===== -->
 
   <tag name="p" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:901-904 xy:src/subtitles/RTS.cpp:2629-2633 vsm:src/subtitles/RTS.cpp:3544-3547">
-      <sig n="1" form="both">
+    <params status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:901-904 xy:src/subtitles/RTS.cpp:2629-2633 vsm:src/subtitles/RTS.cpp:3544-3547">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:901-904 xy:src/subtitles/RTS.cpp:2629-2633 vsm:src/subtitles/RTS.cpp:3544-3547">
         <p i="1" name="scale" kind="int" range="&lt;0 clamps to 0; empty = \p0 (exit drawing)"/>
       </sig>
     </params>
-    <scen id="negative" status="V" base="clamp-low" vsfilter="clamp-low" vsfiltermod="clamp-low"
+    <scen id="negative" status="V" verified="libass xy vsm" base="clamp-low" vsfilter="clamp-low" vsfiltermod="clamp-low"
           cite="libass:libass/ass_parse.c:901-904 xy:src/subtitles/RTS.cpp:2629-2633 vsm:src/subtitles/RTS.cpp:3544-3547">
       \p-1 == \p0 (drawing off) in all three.
     </scen>
-    <scen id="style-reset" status="V" base="kept" vsfilter="kept" vsfiltermod="unchecked"
+    <scen id="style-reset" status="V" verified="libass xy" base="kept" vsfilter="kept" vsfiltermod="unchecked"
           cite="libass:libass/ass_render.c:1075-1111 xy:src/subtitles/RTS.cpp:2643-2647">
       \r does not leave drawing mode (KeepOnStyleReset drawing_scale).
     </scen>
   </tag>
 
   <tag name="pbo" status="V">
-    <params status="V" cite="libass:libass/ass_parse.c:898-900 xy:src/subtitles/RTS.cpp:2610-2613">
-      <sig n="1" form="both">
+    <params status="V" verified="libass xy" cite="libass:libass/ass_parse.c:898-900 xy:src/subtitles/RTS.cpp:2610-2613">
+      <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass xy" inferred="vsm" cite="libass:libass/ass_parse.c:898-900 xy:src/subtitles/RTS.cpp:2610-2613">
         <p i="1" name="offset" kind="number" range="unclamped; empty = 0 (no style reset form exists)"/>
       </sig>
     </params>
-    <scen id="empty-arg" status="V" base="zero" vsfilter="zero" vsfiltermod="unchecked"
+    <scen id="empty-arg" status="V" verified="libass xy" base="zero" vsfilter="zero" vsfiltermod="unchecked"
           cite="libass:libass/ass_parse.c:898-900 xy:src/subtitles/RTS.cpp:2610-2613">
       No style-reset branch: empty \pbo converts its missing argument to 0
       (libass argtod of empty arg; xy wcstol of empty).
     </scen>
-    <scen id="style-reset" status="V" base="kept" vsfilter="kept" vsfiltermod="unchecked"
+    <scen id="style-reset" status="V" verified="libass" base="kept" vsfilter="kept" vsfiltermod="unchecked"
           cite="libass:libass/ass_render.c:1075-1111"/>
   </tag>
 
   <!-- ===== name-shadowing family (dispatch mechanics) ===== -->
 
   <tag name="blend" status="V">
-    <params status="V" cite="vsm:src/subtitles/RTS.cpp:3716-3730">
-      <sig n="1" form="paren" renderer="vsm">
+    <params status="V" verified="vsm" cite="vsm:src/subtitles/RTS.cpp:3716-3730">
+      <sig n="1" form="paren" renderer="vsm" status="V" verified="vsm" cite="vsm:src/subtitles/RTS.cpp:3716-3730">
         <p i="1" name="mode" kind="int" range="over|add|sub|mult|scr|diff|rsub|isub or integer; accepted by the apply branch but UNREACHABLE — see scen"/>
       </sig>
     </params>
@@ -974,13 +982,13 @@
     renderer: the normalization chain tests Find("be") at RTS.cpp:2548 before
     Find("blend") at 2551, so \blend(...) becomes \be with inline arg "nd";
     the apply branch cmd == L"blend" at 3716 is unreachable.
-    <scen id="name-match" status="V" base="unsupported" vsfilter="unsupported" vsfiltermod="shadowed"
+    <scen id="name-match" status="V" verified="libass xy vsm" base="unsupported" vsfilter="unsupported" vsfiltermod="shadowed"
           cite="libass:libass/ass_parse.c:281-917 xy:src/subtitles/RTS.cpp:1716-1769 vsm:src/subtitles/RTS.cpp:2548,2551,3716"/>
   </tag>
 
   <tag name="frs" status="V">
-    <params status="V" cite="vsm:src/subtitles/RTS.cpp:3108-3115">
-      <sig n="1" form="both" renderer="vsm">
+    <params status="V" verified="vsm" cite="vsm:src/subtitles/RTS.cpp:3108-3115">
+      <sig n="1" form="both" renderer="vsm" status="V" verified="vsm" cite="vsm:src/subtitles/RTS.cpp:3108-3115">
         <p i="1" name="angle" kind="number" range="symbol-orientation angle x10; empty selects org; libass/xy read it as \fr with junk arg &quot;s&quot; (scen)"/>
       </sig>
     </params>
@@ -988,17 +996,17 @@
     the frs name is matched as \fr with remainder "s" (prefix tag() at
     ass_parse.c:547, mystrcmp byte prefix 68-78) — the arg is non-numeric so
     the value becomes 0, silently rotating the Z angle away.
-    <scen id="name-match" status="V" base="shadowed" vsfilter="shadowed" vsfiltermod="matched"
+    <scen id="name-match" status="V" verified="libass xy vsm" base="shadowed" vsfilter="shadowed" vsfiltermod="matched"
           cite="libass:libass/ass_parse.c:68-78,547-555 xy:src/subtitles/RTS.cpp:2155-2163,2203 vsm:src/subtitles/RTS.cpp:2573,3108-3115"/>
   </tag>
 
   <tag name="fsvp" status="S">
     <params status="S" cite="vsm:src/subtitles/RTS.cpp:2587,3174">
-      <sig n="1" form="both" renderer="vsm">
+      <sig n="1" form="both" renderer="vsm" status="S" inferred="vsm" cite="vsm:src/subtitles/RTS.cpp:2587,3174">
         <p i="1" name="vs" kind="number" range="unchecked (patch m001); libass/xy read it as \fs with junk arg &quot;vp&quot;"/>
       </sig>
     </params>
-    <scen id="name-match" status="V" base="shadowed" vsfilter="shadowed" vsfiltermod="matched"
+    <scen id="name-match" status="V" verified="libass xy vsm" base="shadowed" vsfilter="shadowed" vsfiltermod="matched"
           cite="libass:libass/ass_parse.c:68-78,465-476 xy:src/subtitles/RTS.cpp:2155-2163,2203 vsm:src/subtitles/RTS.cpp:2587">
       Same mechanism as frs: libass/xy match the "fs" prefix and pass the
       remainder "vp" as an argument; VSFilterMod normalizes fsvp before fs
