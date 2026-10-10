@@ -42,3 +42,61 @@ source-preserving document/event view, with the same decoded UTF-8 byte
 coordinate system. P04/P05 will resolve concrete candidates independently per
 pinned renderer and remove the compatibility resolver when migration is
 complete. No syntax-only evidence can authorize a SafeFix.
+
+
+## P03: parenthesized and document syntax
+
+`ConcreteExpression.Components(source)` exposes its comma-delimited top-level
+components lazily, preserving every component's exact byte span. Each component
+also has source-backed raw items and lexical candidates. For example,
+`\\t(0,100,\\clip(0,0,10,10)\\pos(1,2,3))` retains the nested clips,
+transform arguments and full source coordinates. This structural inspection is
+available for ANY parenthesized expression; it does not assert that the
+renderer recognizes a transform or that its children are valid tags.
+
+`ParseConcreteDocument` returns physical lines with exact terminators,
+unmodified section headers, unknown records and all raw comma offsets.
+`ConcreteRecord.Partition` requires the caller to specify an explicit field
+count and optional tail-consuming field, so the syntax layer does not bake
+in libass/xy-VSFilter/VSFilterMod field acceptance or `Text` semantics.
+Missing slots remain distinguishable from delimited empty slots.
+
+Both document parsing and the historical `Parse` now share the same
+allocation-free physical line scanner. The default parser retains its current
+Format mapping and diagnostic semantics. Renderer-specific field acceptance
+belongs in the later profile resolver, not in `ConcreteDocument`.
+
+### Coordinates and encoding
+
+All syntax spans are half-open byte offsets in the **decoded Go string**.
+An event field offset is document-relative, whereas a dialogue syntax offset
+is relative to that dialogue's text. `ConcreteSpan.AtDocumentOffset` maps
+the latter to the former without changing the edit coordinate system.
+
+For UTF-8 with BOM or UTF-16 inputs, `DecodeSource` removes the BOM and
+decodes UTF-16 before parsing. Therefore syntax spans refer to decoded UTF-8
+bytes, not the positions of UTF-16 code units in the input file.
+`Source.Encode` restores the original encoding and BOM when writing source.
+P01 fixture tests freeze the byte-for-byte round trip, including CRLF.
+
+Both P02 and P03 deliberately keep renderer-neutral syntax separate from the
+legacy default interpretation; do not introduce renderer-specific name
+prefixes or argument normalization here. Later migration PRs must preserve
+the golden default contract and remove the legacy resolver only after a
+verified renderer-aware replacement exists.
+
+## Non-regression performance note
+
+The P01 pinned baseline (`main@6ba7453`) and P02/P03 runs were measured
+on the same Windows/amd64 i5-9300H with Go 1.27.0. The implementation runs
+used `-benchmem -count=3` with 100 ms (dialogue) and 200 ms (document)
+benchtimes, versus 250 ms and 5 samples in P01. Hence the short-run timings
+are not used as a CI performance gate; allocation metrics are reproducible.
+
+| Default parse fixture | P01 B/op | P02/P03 B/op | P01 allocs/op | P02/P03 allocs/op |
+| --- | ---: | ---: | ---: | ---: |
+| `BenchmarkParseDialogueTextFixtures/typesetting` | 96,960 | 96,960 | 1,020 | 1,020 |
+| `BenchmarkASSDocumentParse/typesetting` | 255,032 | 253,882 | 1,496 | 1,495 |
+
+No additional concrete document or nested candidate tree is eagerly
+materialized by existing default lint, font or semantic analysis.
