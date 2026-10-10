@@ -1,0 +1,65 @@
+[Script Info]
+Title: assx representative benchmark fixture
+ScriptType: v4.00+
+PlayResX: 1920
+PlayResY: 1080
+ScaledBorderAndShadow: yes
+YCbCr Matrix: TV.709
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Default,Arial,40,&H00FFFFFF,&H0000FFFF,&H00101010,&H60000000,0,0,0,0,100,100,0,0,1,2,1,2,50,50,40,1
+Style: Sign,Arial,32,&H00F0EFEF,&H0000FFFF,&H00232323,&H64000000,0,0,0,0,100,100,0,0,1,1,0,8,24,24,20,1
+Style: Title,Arial,56,&H00FFFFFF,&H0000FFFF,&H00000000,&H60000000,-1,0,0,0,100,100,0,0,1,3,2,5,20,20,20,1
+Style: FX,Arial,36,&H00FFFFFF,&H0000FFFF,&H00000000,&H64000000,0,0,0,0,100,100,0,0,1,0,0,5,20,20,20,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+Dialogue: 1,0:00:00.00,0:00:02.40,Title,,0,0,0,,{\an8\pos(960,140)\blur0.6\bord2.5\fscx102\fscy98}CENTRAL STATION
+Dialogue: 1,0:00:01.17,0:00:03.57,Sign,,0,0,0,,{\an7\pos(145,190)\fs42\frz-7\shad0}Platform 3{\rSign}  —  Northbound
+Dialogue: 1,0:00:02.34,0:00:04.74,Sign,,0,0,0,,{\an5\pos(1240,426)\frz8\fax0.05\bord1.5}EXIT
+Dialogue: 1,0:00:03.51,0:00:05.91,Sign,,0,0,0,,{\an8\pos(970,240)\fnArial\b1\c&H44FFCC&}SPECIAL ANNOUNCEMENT
+Dialogue: 1,0:00:04.68,0:00:07.08,Title,,0,0,0,,{\an7\move(320,760,320,720,0,800)\fad(120,150)\blur1}NEXT EPISODE
+Dialogue: 1,0:00:05.85,0:00:08.25,Sign,,0,0,0,,{\an5\pos(960,550)\clip(380,340,1540,760)\fscx110\frz-4}Schedule updated
+Dialogue: 1,0:00:07.02,0:00:09.42,Sign,,0,0,0,,{\an5\pos(1200,480)\iclip(900,350,1550,620)\bord4\shad1}CAUTION
+Dialogue: 1,0:00:08.19,0:00:10.59,Sign,,0,0,0,,{\an1\pos(1420,940)\fs28\fnArial}Open daily{\rSign} 10:00–18:00
+Dialogue: 1,0:00:09.36,0:00:11.76,Title,,0,0,0,,{\an5\pos(990,380)\blur0.5\alpha&H22&\1c&HFFEEBB&}The Final Chapter
+Dialogue: 1,0:00:10.53,0:00:12.93,Sign,,0,0,0,,{\an5\pos(1100,360)\fscx95\fscy105\frz-12\bord0\shad0}NORTH GATE
+Dialogue: 1,0:00:11.70,0:00:14.10,Sign,,0,0,0,,{\an8\pos(960,110)\fad(300,200)\t(0,500,\fscx115\fscy115)\t(500,1000,\fscx100\fscy100)}TITLE
+Dialogue: 1,0:00:12.87,0:00:15.27,Sign,,0,0,0,,{\an2\pos(960,950)\k20}Ka{\k35}ra{\k42}o{\k60}ke
+Dialogue: 1,0:00:14.04,0:00:16.44,Title,,0,0,0,,{\an8\pos(960,140)\blur0.6\bord2.5\fscx102\fscy98}CENTRAL STATION
+Dialogue: 1,0:00:15.21,0:00:17.61,Sign,,0,0,0,,{\an7\pos(145,190)\fs42\frz-7\shad0}Platform 3{\rSign}  —  Northbound
+Dialogue: 1,0:00:16.38,0:00:18.78,Sign,,0,0,0,,{\an5\pos(1240,426)\frz8\fax0.05\bord1.5}EXIT
+Dialogue: 1,0:00:17.55,0:00:19.95,Sign,,0,0,0,,{\an8\pos(970,240)\fnArial\b1\c&H44FFCC&}SPECIAL ANNOUNCEMENT
+Dialogue: 1,0:00:18.72,0:00:21.12,Title,,0,0,0,,{\an7\move(320,760,320,720,0,800)\fad(120,150)\blur1}NEXT EPISODE
+Dialogue: 1,0:00:19.89,0:00:22.29,Sign,,0,0,0,,{\an5\pos(960,550)\clip(380,340,1540,760)\fscx110\frz-4}Schedule updated
+Dialogue: 1,0:00:21.06,0:00:23.46,Sign,,0,0,0,,{\an5\pos(1200,480)\iclip(900,350,1550,620)\bord4\shad1}CAUTION
+Dialogue: 1,0:00:22.23,0:00:24.63,Sign,,0,0,0,,{\an1\pos(1420,940)\fs28\fnArial}Open daily{\rSign} 10:00–18:00
+Dialogue: 1,0:00:23.40,0:00:25.80,Title,,0,0,0,,{\an5\pos(990,380)\blur0.5\alpha&H22&\1c&HFFEEBB&}The Final Chapter
+Dialogue: 1,0:00:24.57,0:00:26.97,Sign,,0,0,0,,{\an5\pos(1100,360)\fscx95\fscy105\frz-12\bord0\shad0}NORTH GATE
+Dialogue: 1,0:00:25.74,0:00:28.14,Sign,,0,0,0,,{\an8\pos(960,110)\fad(300,200)\t(0,500,\fscx115\fscy115)\t(500,1000,\fscx100\fscy100)}TITLE
+Dialogue: 1,0:00:26.91,0:00:29.31,Sign,,0,0,0,,{\an2\pos(960,950)\k20}Ka{\k35}ra{\k42}o{\k60}ke
+Dialogue: 1,0:00:28.08,0:00:30.48,Title,,0,0,0,,{\an8\pos(960,140)\blur0.6\bord2.5\fscx102\fscy98}CENTRAL STATION
+Dialogue: 1,0:00:29.25,0:00:31.65,Sign,,0,0,0,,{\an7\pos(145,190)\fs42\frz-7\shad0}Platform 3{\rSign}  —  Northbound
+Dialogue: 1,0:00:30.42,0:00:32.82,Sign,,0,0,0,,{\an5\pos(1240,426)\frz8\fax0.05\bord1.5}EXIT
+Dialogue: 1,0:00:31.59,0:00:33.99,Sign,,0,0,0,,{\an8\pos(970,240)\fnArial\b1\c&H44FFCC&}SPECIAL ANNOUNCEMENT
+Dialogue: 1,0:00:32.76,0:00:35.16,Title,,0,0,0,,{\an7\move(320,760,320,720,0,800)\fad(120,150)\blur1}NEXT EPISODE
+Dialogue: 1,0:00:33.93,0:00:36.33,Sign,,0,0,0,,{\an5\pos(960,550)\clip(380,340,1540,760)\fscx110\frz-4}Schedule updated
+Dialogue: 1,0:00:35.10,0:00:37.50,Sign,,0,0,0,,{\an5\pos(1200,480)\iclip(900,350,1550,620)\bord4\shad1}CAUTION
+Dialogue: 1,0:00:36.27,0:00:38.67,Sign,,0,0,0,,{\an1\pos(1420,940)\fs28\fnArial}Open daily{\rSign} 10:00–18:00
+Dialogue: 1,0:00:37.44,0:00:39.84,Title,,0,0,0,,{\an5\pos(990,380)\blur0.5\alpha&H22&\1c&HFFEEBB&}The Final Chapter
+Dialogue: 1,0:00:38.61,0:00:41.01,Sign,,0,0,0,,{\an5\pos(1100,360)\fscx95\fscy105\frz-12\bord0\shad0}NORTH GATE
+Dialogue: 1,0:00:39.78,0:00:42.18,Sign,,0,0,0,,{\an8\pos(960,110)\fad(300,200)\t(0,500,\fscx115\fscy115)\t(500,1000,\fscx100\fscy100)}TITLE
+Dialogue: 1,0:00:40.95,0:00:43.35,Sign,,0,0,0,,{\an2\pos(960,950)\k20}Ka{\k35}ra{\k42}o{\k60}ke
+Dialogue: 1,0:00:42.12,0:00:44.52,Title,,0,0,0,,{\an8\pos(960,140)\blur0.6\bord2.5\fscx102\fscy98}CENTRAL STATION
+Dialogue: 1,0:00:43.29,0:00:45.69,Sign,,0,0,0,,{\an7\pos(145,190)\fs42\frz-7\shad0}Platform 3{\rSign}  —  Northbound
+Dialogue: 1,0:00:44.46,0:00:46.86,Sign,,0,0,0,,{\an5\pos(1240,426)\frz8\fax0.05\bord1.5}EXIT
+Dialogue: 1,0:00:45.63,0:00:48.03,Sign,,0,0,0,,{\an8\pos(970,240)\fnArial\b1\c&H44FFCC&}SPECIAL ANNOUNCEMENT
+Dialogue: 1,0:00:46.80,0:00:49.20,Title,,0,0,0,,{\an7\move(320,760,320,720,0,800)\fad(120,150)\blur1}NEXT EPISODE
+Dialogue: 1,0:00:47.97,0:00:50.37,Sign,,0,0,0,,{\an5\pos(960,550)\clip(380,340,1540,760)\fscx110\frz-4}Schedule updated
+Dialogue: 1,0:00:49.14,0:00:51.54,Sign,,0,0,0,,{\an5\pos(1200,480)\iclip(900,350,1550,620)\bord4\shad1}CAUTION
+Dialogue: 1,0:00:50.31,0:00:52.71,Sign,,0,0,0,,{\an1\pos(1420,940)\fs28\fnArial}Open daily{\rSign} 10:00–18:00
+Dialogue: 1,0:00:51.48,0:00:53.88,Title,,0,0,0,,{\an5\pos(990,380)\blur0.5\alpha&H22&\1c&HFFEEBB&}The Final Chapter
+Dialogue: 1,0:00:52.65,0:00:55.05,Sign,,0,0,0,,{\an5\pos(1100,360)\fscx95\fscy105\frz-12\bord0\shad0}NORTH GATE
+Dialogue: 1,0:00:53.82,0:00:56.22,Sign,,0,0,0,,{\an8\pos(960,110)\fad(300,200)\t(0,500,\fscx115\fscy115)\t(500,1000,\fscx100\fscy100)}TITLE
+Dialogue: 1,0:00:54.99,0:00:57.39,Sign,,0,0,0,,{\an2\pos(960,950)\k20}Ka{\k35}ra{\k42}o{\k60}ke
