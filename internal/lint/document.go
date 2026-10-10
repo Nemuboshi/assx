@@ -4,6 +4,7 @@ import (
 	"sort"
 
 	"assx/internal/ass"
+	"assx/internal/semantic"
 )
 
 func AnalyzeDocument(doc ass.Document) []Diagnostic {
@@ -12,11 +13,28 @@ func AnalyzeDocument(doc ass.Document) []Diagnostic {
 	diagnostics = append(diagnostics, AnalyzeStyles(doc)...)
 	diagnostics = append(diagnostics, AnalyzeEventFields(doc)...)
 	diagnostics = append(diagnostics, analyzeUndefinedStyleReferences(doc)...)
+	styles := semantic.StyleStatesByName(doc.StyleFields)
+	var styleDiagnostics []Diagnostic
 	for _, dialogue := range doc.Dialogues {
-		diagnostics = append(diagnostics, Analyze(dialogue)...)
+		if !dialogue.ParsedText().HasTags() {
+			diagnostics = append(diagnostics, analyzeWithEffects(dialogue, nil)...)
+			continue
+		}
+		collector := newStyleRunCollector(dialogue, styles)
+		options := semantic.EvaluationOptions{
+			Styles: styles, DialogueStyle: dialogue.Style,
+		}
+		if collector != nil {
+			options.Observer = semantic.Observer{Tag: collector.onTag, Text: collector.onText}
+		}
+		evaluation := semantic.Evaluate(dialogue.ParsedText(), options)
+		diagnostics = append(diagnostics, analyzeWithEffects(dialogue, evaluation.NoEffects)...)
+		if collector != nil {
+			if diagnostic, ok := collector.diagnostic(); ok {
+				styleDiagnostics = append(styleDiagnostics, diagnostic)
+			}
+		}
 	}
-
-	styleDiagnostics := AnalyzeRedundantStyleOverrides(doc)
 	if len(styleDiagnostics) != 0 {
 		diagnostics = suppressOverlappingNoEffect(diagnostics, styleDiagnostics)
 		diagnostics = append(diagnostics, styleDiagnostics...)
