@@ -297,6 +297,25 @@ func (m *evaluator) consumeTag(tag ass.Tag) TagEvent {
 	if m.options.Profile != nil {
 		event.Renderer = m.options.Profile.Kind()
 		event.Match, event.Signature, event.Shadowed = op.match, op.signature, op.shadowed
+		// Resolution cannot name an unclosed parenthesized expression. It is
+		// malformed syntax, not a well-formed, harmless unknown command.
+		// Handle this before the UnknownName/Ignored fast path so malformed
+		// operations revoke earlier as well as subsequent SafeFix proofs.
+		if op.unclosed {
+			m.markActiveLive()
+			if tag.Name == "clip" || tag.Name == "iclip" {
+				// Either rectangular or vector clipping may have been affected.
+				// Keep unrelated Style/font state intact, but revoke both clip
+				// values, source owners and certainty of vector first-wins.
+				m.invalidateMalformedTag(spec.TagSpec{Semantic: spec.SemanticClip}, index)
+			} else {
+				// No trustworthy resolved policy exists for this incomplete
+				// command (notably an unclosed transform).
+				m.invalidateAll()
+			}
+			m.blockProofs(&event, UncertaintyMalformed)
+			return event
+		}
 		switch op.match {
 		case renderer.UnknownName, renderer.Ignored, renderer.Disabled:
 			event.Ignored = true
