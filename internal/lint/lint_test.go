@@ -100,21 +100,20 @@ func TestAnalyzeAssignFirstWinsAndTransitionBehavior(t *testing.T) {
 	}
 }
 
-func TestSafeFixRemovesExtraBackslashes(t *testing.T) {
-	for _, test := range []struct {
-		text string
-		want string
-	}{
-		{text: `{\\blur2}x`, want: `{\blur2}x`},
-		{text: `{\\\blur2}x`, want: `{\blur2}x`},
+func TestUnverifiedRepeatedSlashEditRemainsUnavailable(t *testing.T) {
+	for _, text := range []string{
+		`{\\blur2}x`,
+		`{\\\blur2}x`,
 	} {
-		diagnostics := Analyze(ass.Dialogue{Text: test.text})
-		fixed, count, err := ApplyFixes(test.text, diagnostics, false)
-		if err != nil {
-			t.Fatal(err)
+		diagnostics := Analyze(ass.Dialogue{Text: text})
+		for _, diagnostic := range diagnostics {
+			if diagnostic.ID == IssueRepeatedSlash && (diagnostic.FixSafety != "" || len(diagnostic.Edits) != 0) {
+				t.Fatalf("unverified parser-prefix edit remains available: %#v", diagnostic)
+			}
 		}
-		if count != 1 || fixed != test.want {
-			t.Errorf("safe fix = (%q, %d), want (%q, 1)", fixed, count, test.want)
+		fixed, count, err := ApplyFixes(text, diagnostics, false)
+		if err != nil || count != 0 || fixed != text {
+			t.Errorf("unverified parser-prefix edit changed the source: (%q, %d, %v)", fixed, count, err)
 		}
 	}
 }
@@ -170,7 +169,10 @@ func TestMissingMatrixUnsafeFixAddsExplicitNone(t *testing.T) {
 }
 
 func TestApplyFixesRejectsOverlappingEdits(t *testing.T) {
-	diagnostics := []Diagnostic{{FixSafety: SafeFix, Edits: []TextEdit{{Start: 1, End: 3}, {Start: 2, End: 4}}}}
+	diagnostics := []Diagnostic{{
+		FixSafety: SafeFix, FixProof: &FixProof{SourceSHA256: hashSource("abcdef"), Targets: fixTargets(defaultFixTargets())},
+		Edits: []TextEdit{{Start: 1, End: 3}, {Start: 2, End: 4}},
+	}}
 	if _, _, err := ApplyFixes("abcdef", diagnostics, false); err == nil {
 		t.Fatal("expected overlapping edit error")
 	}
@@ -202,13 +204,14 @@ func TestRuleRegistryHasStableMetadata(t *testing.T) {
 	}
 }
 
-func TestNoEffectTransformSafeFix(t *testing.T) {
+func TestNoEffectTransformFixRequiresVerifiedSignature(t *testing.T) {
 	cases := []struct {
-		text string
-		want string
+		text        string
+		want        string
+		wantSafeFix bool
 	}{
-		{text: `{\pos(100,100)\t()}A`, want: `{\pos(100,100)}A`},
-		{text: `{\pos(100,100)\bord2\t(\bord2)}A`, want: `{\pos(100,100)\bord2}A`},
+		{text: `{\pos(100,100)\t()}A`, want: `{\pos(100,100)\t()}A`},
+		{text: `{\pos(100,100)\bord2\t(\bord2)}A`, want: `{\pos(100,100)\bord2}A`, wantSafeFix: true},
 	}
 	for _, test := range cases {
 		dialogue := ass.Dialogue{Text: test.text, Line: 1, Syntax: ass.ParseDialogueText(test.text)}
@@ -219,15 +222,27 @@ func TestNoEffectTransformSafeFix(t *testing.T) {
 				transform = append(transform, diagnostic)
 			}
 		}
-		if len(transform) != 1 || transform[0].FixSafety != SafeFix {
+		if len(transform) != 1 {
 			t.Fatalf("%s: diagnostics = %#v", test.text, diagnostics)
 		}
-		fixed, count, err := ApplyFixes(test.text, transform, false)
-		if err != nil {
-			t.Fatal(err)
+		if !test.wantSafeFix {
+			if transform[0].FixSafety != "" || len(transform[0].Edits) != 0 {
+				t.Fatalf("unverified transform signature remained fixable: %#v", transform[0])
+			}
+			for _, includeUnsafe := range []bool{false, true} {
+				fixed, count, err := ApplyFixes(test.text, transform, includeUnsafe)
+				if err != nil || count != 0 || fixed != test.text {
+					t.Fatalf("unverified transform changed with unsafe=%t: (%q, %d, %v)", includeUnsafe, fixed, count, err)
+				}
+			}
+			continue
 		}
-		if count != 1 || fixed != test.want {
-			t.Fatalf("%s: fixed=%q count=%d, want %q", test.text, fixed, count, test.want)
+		if transform[0].FixSafety != SafeFix {
+			t.Fatalf("verified transform fix lacks proof: %#v", transform[0])
+		}
+		fixed, count, err := ApplyFixes(test.text, transform, false)
+		if err != nil || count != 1 || fixed != test.want {
+			t.Fatalf("%s: fixed=%q count=%d, want %q (%v)", test.text, fixed, count, test.want, err)
 		}
 	}
 }

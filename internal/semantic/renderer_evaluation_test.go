@@ -324,7 +324,7 @@ func TestRendererScopedUnclosedSyntaxRevokesEarlierNoEffectProofs(t *testing.T) 
 	}
 }
 
-func TestRendererScopedClosedUnknownCommandsRemainIgnored(t *testing.T) {
+func TestRendererScopedClosedUnknownCommandsRevokeProofs(t *testing.T) {
 	profile := mustProfile(t, renderer.Libass)
 	for _, source := range []string{
 		"{\\fs20\\fs20\\mystery}A",
@@ -340,11 +340,11 @@ func TestRendererScopedClosedUnknownCommandsRemainIgnored(t *testing.T) {
 					}
 				}},
 			})
-			if unknown == nil || !unknown.Ignored || unknown.Barrier {
-				t.Fatalf("well-formed unknown command became a syntax barrier: %#v", unknown)
+			if unknown == nil || !unknown.Ignored || !unknown.Barrier {
+				t.Fatalf("well-formed unknown command did not revoke proofs: %#v", unknown)
 			}
-			if len(evaluation.NoEffects) != 1 || evaluation.NoEffects[0].ProofRevoked {
-				t.Fatalf("well-formed unknown command revoked supported no-effect proof: %#v", evaluation.NoEffects)
+			if len(evaluation.NoEffects) != 1 || !evaluation.NoEffects[0].ProofRevoked {
+				t.Fatalf("well-formed unknown command retained a no-effect proof: %#v", evaluation.NoEffects)
 			}
 		})
 	}

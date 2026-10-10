@@ -148,10 +148,13 @@ func outcomeOf(d *lint.Diagnostic) FixOutcome {
 	}
 	switch d.FixSafety {
 	case lint.SafeFix:
-		return FixSafe
+		if d.FixProof != nil {
+			return FixSafe
+		}
 	case lint.UnsafeFix:
 		return FixUnsafe
 	default:
 		return FixNone
 	}
+	return FixNone
 }

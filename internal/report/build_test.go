@@ -47,7 +47,7 @@ func TestBuildUsesDocumentTextStartAndConcreteFixMetadata(t *testing.T) {
 		{Line: 2, LineStart: 28, Fields: []ass.EventField{{Name: "style", Start: 49, End: 54}}},
 	}}
 	got := Build("sample.ass", []lint.Diagnostic{
-		{ID: "safe", Line: 1, Column: 3, Tag: "fs", FixSafety: lint.SafeFix, Edits: []lint.TextEdit{{Start: 1, End: 2}}},
+		{ID: "safe", Line: 1, Column: 3, Tag: "fs", FixSafety: lint.SafeFix, FixProof: &lint.FixProof{}, Edits: []lint.TextEdit{{Start: 1, End: 2}}},
 		{ID: "suggestion", Line: 1, Column: 3, Tag: "bord", Fix: "change it"},
 		{ID: "field", Line: 2, Column: 12, Field: "Style"},
 	}, doc)
