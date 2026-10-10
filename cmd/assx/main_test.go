@@ -11,8 +11,37 @@ import (
 
 	"assx/internal/ass"
 	"assx/internal/lint"
+	"assx/internal/report/plain"
 	"golang.org/x/image/font/gofont/goregular"
 )
+
+func TestReportColorPolicy(t *testing.T) {
+	for _, tc := range []struct {
+		name    string
+		tty     bool
+		term    string
+		noColor string
+		want    bool
+	}{
+		{name: "interactive", tty: true, term: "xterm-256color", want: true},
+		{name: "redirected", term: "xterm-256color"},
+		{name: "dumb terminal", tty: true, term: "dumb"},
+		{name: "NO_COLOR", tty: true, term: "xterm-256color", noColor: "1"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := reportColorAllowed(tc.tty, tc.term, tc.noColor); got != tc.want {
+				t.Fatalf("colorAllowed = %t, want %t", got, tc.want)
+			}
+		})
+	}
+}
+
+func TestTerminalTextEscapesControls(t *testing.T) {
+	got := terminalText("bad\x1b[31m\x7f.ass")
+	if strings.Contains(got, "\x1b") || strings.ContainsRune(got, '\x7f') {
+		t.Fatalf("terminal path contains controls: %q", got)
+	}
+}
 
 func TestRunSafeFixAndConciseSummary(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "safe.ass")
@@ -164,11 +193,20 @@ func TestRunJSONStaysValidAndReportsUnknownTagsAsSuggestion(t *testing.T) {
 	}
 }
 
-func TestRenderHumanDoesNotCountUnknownSeverityAsSuggestion(t *testing.T) {
+func TestPlainDoesNotCountUnknownSeverityAsSuggestion(t *testing.T) {
 	var stdout strings.Builder
-	renderHuman(&stdout, "sample.ass", []lint.Diagnostic{{ID: "ASS999", Severity: lint.Severity("future"), Title: "Unknown severity"}}, 0, "", false)
+	plain.Render(&stdout, "sample.ass", []lint.Diagnostic{{ID: "ASS999", Severity: lint.Severity("future"), Title: "Unknown severity"}}, 0, "")
 	if !strings.Contains(stdout.String(), "Summary: 1 diagnostics (0 errors, 0 warnings, 0 suggestions).") {
 		t.Fatalf("summary = %q", stdout.String())
+	}
+}
+
+func TestRunPrettyKeepsRedirectedReportOnStdout(t *testing.T) {
+	path := filepath.Join("..", "..", "testdata", "redundant-font.ass")
+	var stdout, stderr strings.Builder
+	_ = run([]string{"--format", "pretty", path}, &stdout, &stderr)
+	if !strings.Contains(stdout.String(), "assx  ") || strings.Contains(stderr.String(), "Scanning ") {
+		t.Fatalf("redirected streams mixed: stdout=%q stderr=%q", stdout.String(), stderr.String())
 	}
 }
 
@@ -203,6 +241,28 @@ func TestRunPreservesUTF16EncodingWhenFixing(t *testing.T) {
 	decoded := source.Text
 	if strings.Contains(decoded, `\fs10`) || !strings.Contains(decoded, `{\fs20}text`) {
 		t.Fatalf("safe fix did not preserve UTF-16 content:\n%s", decoded)
+	}
+}
+
+func TestPrettyFramesDecodeUTF16Source(t *testing.T) {
+	text := "[Script Info]\nYCbCr Matrix: None\nPlayResX: 640\nPlayResY: 480\nLayoutResX: 640\nLayoutResY: 480\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{\\pos(1,2,3)}text\n"
+	path := filepath.Join(t.TempDir(), "utf16-report.ass")
+	words := utf16.Encode([]rune(text))
+	raw := []byte{0xff, 0xfe}
+	for _, word := range words {
+		var pair [2]byte
+		binary.LittleEndian.PutUint16(pair[:], word)
+		raw = append(raw, pair[:]...)
+	}
+	if err := os.WriteFile(path, raw, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	var stdout, stderr strings.Builder
+	if code := run([]string{"--format", "pretty", path}, &stdout, &stderr); code != 1 {
+		t.Fatalf("run returned %d: %s", code, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), `\pos(1,2,3)`) || !strings.Contains(stdout.String(), "^~~~~~~~~") {
+		t.Fatalf("UTF-16 source frame missing or misaligned: %s", stdout.String())
 	}
 }
 

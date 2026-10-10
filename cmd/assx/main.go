@@ -12,9 +12,15 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unicode"
+
+	"github.com/charmbracelet/x/term"
 
 	"assx/internal/ass"
 	"assx/internal/lint"
+	"assx/internal/report"
+	"assx/internal/report/plain"
+	"assx/internal/report/pretty"
 )
 
 func main() {
@@ -25,12 +31,13 @@ func run(args []string, stdout, stderr io.Writer) int {
 	flags := flag.NewFlagSet("assx", flag.ContinueOnError)
 	flags.SetOutput(stderr)
 	format := flags.String("format", "pretty", "diagnostic output: pretty, plain, or json")
+	explain := flags.Bool("explain", false, "include expanded rule explanations and evidence in pretty output")
 	fix := flags.Bool("fix", false, "apply safe fixes")
 	unsafeFix := flags.Bool("unsafe-fix", false, "apply safe and unsafe fixes")
 	checkFonts := flags.Bool("check-fonts", false, "check subtitle font availability and character coverage")
 	fontDir := flags.String("font-dir", "", "font folder to scan instead of system fonts (requires --check-fonts)")
 	flags.Usage = func() {
-		fmt.Fprintln(stderr, "Usage: assx [--format pretty|plain|json] [--fix] [--unsafe-fix] [--check-fonts] [--font-dir DIR] file.ass")
+		fmt.Fprintln(stderr, "Usage: assx [--format pretty|plain|json] [--explain] [--fix] [--unsafe-fix] [--check-fonts] [--font-dir DIR] file.ass")
 	}
 	if option := singleDashOption(args); option != "" {
 		fmt.Fprintf(stderr, "Options must use the -- prefix: %s\n", option)
@@ -168,9 +175,13 @@ func run(args []string, stdout, stderr io.Writer) int {
 			return 2
 		}
 		fmt.Fprintln(stderr, summary)
+	} else if *format == "plain" {
+		plain.Render(stdout, path, diagnostics, elapsed, summary)
 	} else {
-		color := *format == "pretty" && colorAllowed(stdout)
-		renderHuman(stdout, path, diagnostics, elapsed, summary, color)
+		view := report.Build(path, diagnostics, doc)
+		view.Explain = *explain
+		view.Applied.Safe, view.Applied.Unsafe = appliedSafe, appliedUnsafe
+		pretty.Render(stdout, view, doc.Text, colorAllowed(stdout), outputWidth(stdout))
 	}
 
 	for _, diagnostic := range diagnostics {
@@ -179,6 +190,15 @@ func run(args []string, stdout, stderr io.Writer) int {
 		}
 	}
 	return 0
+}
+
+func outputWidth(writer io.Writer) int {
+	if file, ok := writer.(*os.File); ok && isTerminal(writer) {
+		if width, _, err := term.GetSize(file.Fd()); err == nil && width > 0 {
+			return width
+		}
+	}
+	return 80
 }
 
 func singleDashOption(args []string) string {
@@ -223,7 +243,7 @@ func startScanProgress(writer io.Writer, path string, enabled bool) *scanProgres
 		frame := 0
 		draw := func() {
 			icon := colorText(colorAllowed(writer), "36", frames[frame])
-			fmt.Fprintf(writer, "\r\033[2K%s Scanning %s", icon, path)
+			fmt.Fprintf(writer, "\r\033[2K%s Scanning %s", icon, terminalText(path))
 			frame = (frame + 1) % len(frames)
 		}
 		draw()
@@ -255,7 +275,11 @@ func interactiveTerminal(writer io.Writer) bool {
 }
 
 func colorAllowed(writer io.Writer) bool {
-	return isTerminal(writer) && os.Getenv("TERM") != "dumb" && os.Getenv("NO_COLOR") == ""
+	return reportColorAllowed(isTerminal(writer), os.Getenv("TERM"), os.Getenv("NO_COLOR"))
+}
+
+func reportColorAllowed(tty bool, term, noColor string) bool {
+	return tty && term != "dumb" && noColor == ""
 }
 
 func isTerminal(writer io.Writer) bool {
@@ -267,72 +291,20 @@ func isTerminal(writer io.Writer) bool {
 	return err == nil && info.Mode()&os.ModeCharDevice != 0
 }
 
+func terminalText(s string) string {
+	return strings.Map(func(r rune) rune {
+		if unicode.IsControl(r) {
+			return '�'
+		}
+		return r
+	}, s)
+}
+
 func colorText(enabled bool, code, text string) string {
 	if !enabled {
 		return text
 	}
 	return "\033[" + code + "m" + text + "\033[0m"
-}
-
-func renderHuman(writer io.Writer, path string, diagnostics []lint.Diagnostic, elapsed time.Duration, fixSummary string, color bool) {
-	ordered := append([]lint.Diagnostic(nil), diagnostics...)
-	sort.SliceStable(ordered, func(i, j int) bool {
-		if ordered[i].Line == ordered[j].Line {
-			if ordered[i].Column == ordered[j].Column {
-				return ordered[i].ID < ordered[j].ID
-			}
-			return ordered[i].Column < ordered[j].Column
-		}
-		return ordered[i].Line < ordered[j].Line
-	})
-	if len(ordered) == 0 {
-		fmt.Fprintln(writer, colorText(color, "32;1", "No issues found."))
-	} else {
-		for i, diagnostic := range ordered {
-			label, code := strings.ToUpper(string(diagnostic.Severity)), "36"
-			switch diagnostic.Severity {
-			case lint.Error:
-				code = "31;1"
-			case lint.Warning:
-				code = "33;1"
-			}
-			fmt.Fprintf(writer, "%s[%s] %s:%d:%d\n", colorText(color, code, label), colorText(color, "2", diagnostic.ID), path, diagnostic.Line, diagnostic.Column)
-			fmt.Fprintf(writer, "    %s\n", diagnostic.Title)
-			if diagnostic.Tag != "" {
-				fmt.Fprintf(writer, "    tag: \\%s\n", diagnostic.Tag)
-			}
-			if diagnostic.Field != "" {
-				fmt.Fprintf(writer, "    field: %s\n", diagnostic.Field)
-			}
-			if diagnostic.Detail != "" {
-				fmt.Fprintf(writer, "    %s\n", diagnostic.Detail)
-			}
-			if i+1 < len(ordered) {
-				fmt.Fprintln(writer)
-			}
-		}
-	}
-
-	errors, warnings, suggestions := 0, 0, 0
-	for _, diagnostic := range ordered {
-		switch diagnostic.Severity {
-		case lint.Error:
-			errors++
-		case lint.Warning:
-			warnings++
-		case lint.Suggestion:
-			suggestions++
-		}
-	}
-	fmt.Fprintf(writer, "\nChecked %s in %s. Summary: %d diagnostics (%d errors, %d warnings, %d suggestions).\n", path, formatDuration(elapsed), len(ordered), errors, warnings, suggestions)
-	fmt.Fprintln(writer, fixSummary)
-}
-
-func formatDuration(elapsed time.Duration) string {
-	if elapsed < time.Millisecond {
-		return "<1ms"
-	}
-	return elapsed.Round(time.Millisecond).String()
 }
 
 func writeAtomically(path string, data []byte, mode os.FileMode) error {
