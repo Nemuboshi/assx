@@ -1,6 +1,7 @@
 package semantic
 
 import (
+	"maps"
 	"strconv"
 	"strings"
 
@@ -128,6 +129,34 @@ func StyleStatesByName(fields []ass.StyleField) map[string]StyleState {
 	states := make(map[string]StyleState, len(definitions))
 	for name, definition := range definitions {
 		states[name] = CanonicalStyleState(definition)
+	}
+	return states
+}
+
+// modStyleStates adds only the verified STSStyle::SetDefault fields.
+// Clone both maps so profile evaluation cannot change caller-owned Styles.
+func modStyleStates(styles map[string]StyleState) map[string]StyleState {
+	states := maps.Clone(styles)
+	for name, style := range states {
+		style.Slots = maps.Clone(style.Slots)
+		style.Values = maps.Clone(style.Values)
+		if style.Slots == nil {
+			style.Slots = make(map[string]bool)
+		}
+		if style.Values == nil {
+			style.Values = make(map[string]StateValue)
+		}
+		for _, slot := range []string{"z_depth", "font_orient", "vfont_space", "hfont_space", "ortho"} {
+			style.Slots[slot] = true
+			if _, exists := style.Values[slot]; !exists {
+				value := "0:0"
+				if slot == "ortho" {
+					value = "0"
+				}
+				style.Values[slot] = KnownValue(value)
+			}
+		}
+		states[name] = style
 	}
 	return states
 }

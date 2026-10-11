@@ -152,17 +152,25 @@ func TestCompatibilityUnicodeWhitespaceKeepsRendererOwnershipSeparate(t *testing
 	}
 }
 
-func TestCompatibilityRepeatBehaviorRequiresOccupiedLatch(t *testing.T) {
+func TestCompatibilityRepeatBehaviorRequiresProvenLatchOwner(t *testing.T) {
 	profiles := []renderer.Profile{mustMod(t, renderer.FeatureEnabled), mustProfile(t, renderer.Libass)}
+	seenOwnership := false
 	for _, f := range CompareDialogue(ass.ParseConcreteDialogue(`{\pos(1,2,3)\pos(4,5)}A`), profiles, EvaluationOptions{}) {
-		if f.Source.Start == 12 && f.Dimension == "behavior/repeat" {
-			if f.Status != CompatibilityUnresolved {
-				t.Fatalf("unoccupied latch inherited repeat outcome: %#v", f)
-			}
-			return
+		if f.Source.Start != 12 {
+			continue
+		}
+		if f.Dimension == "ownership" {
+			seenOwnership = true
+		}
+		// The defective first position has no proven source owner. No repeat
+		// candidate is required, but one must never certify equivalence.
+		if f.Dimension == "behavior/repeat" && f.Status != CompatibilityUnresolved {
+			t.Fatalf("defective position supplied a proved repeat outcome: %#v", f)
 		}
 	}
-	t.Fatal("missing repeat comparison")
+	if !seenOwnership {
+		t.Fatal("missing ownership comparison")
+	}
 }
 
 func TestCompatibilityVerifiedApplicationObservations(t *testing.T) {

@@ -27,7 +27,7 @@ func TestCompatibilityIndependentInterpretations(t *testing.T) {
 		{`{\blend(add)}A`, "dispatch", 1, CompatibilityDivergent, renderer.Libass, renderer.VSFilterMod, "b", "blend"},
 		{`{\pos(1,2,3)}A`, "signature", 1, CompatibilityDivergent, renderer.Libass, renderer.VSFilterMod, "pos", "pos"},
 		{`{\pos(1,2,3)\pos(4,5)}A`, "ownership", 12, CompatibilityDivergent, renderer.Libass, renderer.VSFilterMod, "pos", "pos"},
-		{`{\pos(1,2,3)\pos(4,5)}A`, "state", 12, CompatibilityDivergent, renderer.Libass, renderer.VSFilterMod, "pos", "pos"},
+		{`{\pos(1,2,3)\pos(4,5)}A`, "state", 12, CompatibilityUnresolved, renderer.Libass, renderer.VSFilterMod, "pos", "pos"},
 		{`{\pos(1,,2)\pos(4,5)}A`, "arguments", 1, CompatibilityEquivalent, renderer.Libass, renderer.XYVSFilter, "pos", "pos"},
 		{`{\pos(1,,2)\pos(4,5)}A`, "ownership", 11, CompatibilityEquivalent, renderer.Libass, renderer.XYVSFilter, "pos", "pos"},
 	}

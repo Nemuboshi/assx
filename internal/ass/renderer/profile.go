@@ -41,7 +41,7 @@ const (
 // Build models the independent optional VSFilterMod compile-time gates.
 type Build struct {
 	Mod Feature // _VSMOD
-	Lua Feature // _LUA, effective only with _VSMOD
+	Lua Feature // _LUA global dispatch; explicit lua also requires _VSMOD
 }
 
 // Profiles have value semantics. Shared tables are private and read-only.
@@ -59,9 +59,6 @@ func New(kind Kind, build Build) (Profile, error) {
 	}
 	if kind != VSFilterMod && build != (Build{}) {
 		return Profile{}, fmt.Errorf("%s does not have VSFilterMod build features", kind)
-	}
-	if build.Mod == FeatureDisabled && build.Lua == FeatureEnabled {
-		return Profile{}, fmt.Errorf("_LUA requires _VSMOD")
 	}
 	return Profile{kind: kind, build: build}, nil
 }
@@ -126,7 +123,7 @@ const (
 // FeatureRequirements describes the guards associated with one signature.
 type FeatureRequirements struct {
 	Mod bool // _VSMOD
-	Lua bool // _LUA, together with _VSMOD
+	Lua bool // _LUA; signatures can independently require _VSMOD
 }
 
 type Signature struct {

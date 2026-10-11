@@ -49,8 +49,8 @@
   A shared <params> citation never proves every child signature. "inferred"
   explicitly records applicability asserted without per-signature verification
   and cannot justify SafeFix. Missing renderer scope is invalid (never "all").
-  A tag element without scen rows is a stub: it is assumed to match every
-  scenario default below, unverified (tag status="S").
+  A tag without verified signatures or scenario rows is a stub (status="S").
+  Verified signatures do not verify unspecified scenario defaults.
 -->
 <matrix>
   <meta>
@@ -722,7 +722,7 @@
       <sig n="3" form="paren" renderer="vsm" status="V" verified="vsm" requires="_VSMOD" cite="vsm:src/subtitles/RTS.cpp:3510-3543">
         <p i="1" name="x" kind="coord" range="screen x"/>
         <p i="2" name="y" kind="coord" range="screen y"/>
-        <p i="3" name="z" kind="number" range="VSFilterMod-only depth: stored as style.mod_z = z*80 (RTS.cpp:3539), assigned as every glyph point's z (611-612), then used by the frx/fry rotation and the perspective divide (640-653). Effect is only visible with a 3D rotation; libass and xy reject the 3-arg form entirely."/>
+        <p i="3" name="z" kind="number" range="depth coordinate: style.mod_z=z*80 only after EF_MOVE latch success; libass and xy reject this form; pinned Mod position layout is defective"/>
       </sig>
     </params>
     <scen id="empty-components" status="V" verified="libass xy vsm" base="discard-empty" vsfilter="discard-empty" vsfiltermod="discard-empty"
@@ -746,21 +746,25 @@
       all collide (todo item 4). \r does not re-arm (evt_type / m_effects are
       outside style-reset; ass_render.c:1075-1111, xy 2643-2647).
     </scen>
-    <scen id="style-reset" status="V" verified="libass xy" base="kept" vsfilter="kept" vsfiltermod="unchecked"
-          cite="libass:libass/ass_render.c:1075-1111 xy:src/subtitles/RTS.cpp:2643-2647">
-      A positioned line stays positioned through \r.
+    <scen id="style-reset" status="V" verified="libass xy vsm" base="kept" vsfilter="kept" vsfiltermod="kept"
+          cite="libass:libass/ass_render.c:1075-1111 xy:src/subtitles/RTS.cpp:2643-2647 vsm:src/subtitles/RTS.cpp:3589-3593">
+      The position latch survives r. Mod depth is a Style field and resets separately.
     </scen>
+    Pinned Mod pos(x,y,z) uses the old Effect coordinate layout (3533-3534).
+    The enabled-Mod consumer reads param[0] as a move type (4238-4241).
+    Unfilled slots prevent a complete pixel-equivalence proof.
+    The depth write is not animated. A blocked latch prevents all writes (3530-3539).
   </tag>
 
   <tag name="move" status="V">
-    <params status="V" verified="libass xy" cite="libass:libass/ass_parse.c:494-514 xy:src/subtitles/RTS.cpp:2575-2596">
-      <sig n="4" form="paren" renderer="libass xy vsm" status="V" verified="libass xy" inferred="vsm" cite="libass:libass/ass_parse.c:494-514 xy:src/subtitles/RTS.cpp:2575-2596">
+    <params status="V" verified="libass xy vsm" exhaustive="libass xy vsm" exhaustive-cite="libass:libass/ass_parse.c:494-514 xy:src/subtitles/RTS.cpp:2575-2596 vsm:src/subtitles/RTS.cpp:3439-3464" cite="libass:libass/ass_parse.c:494-514 xy:src/subtitles/RTS.cpp:2575-2596 vsm:src/subtitles/RTS.cpp:3439-3464">
+      <sig n="4" form="paren" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:494-514 xy:src/subtitles/RTS.cpp:2575-2596 vsm:src/subtitles/RTS.cpp:3439-3464">
         <p i="1" name="x1" kind="coord" range="start position x"/>
         <p i="2" name="y1" kind="coord" range="start position y"/>
         <p i="3" name="x2" kind="coord" range="end position x"/>
         <p i="4" name="y2" kind="coord" range="end position y"/>
       </sig>
-      <sig n="6" form="paren" renderer="libass xy vsm" status="V" verified="libass xy" inferred="vsm" cite="libass:libass/ass_parse.c:494-514 xy:src/subtitles/RTS.cpp:2575-2596">
+      <sig n="6" form="paren" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:494-514 xy:src/subtitles/RTS.cpp:2575-2596 vsm:src/subtitles/RTS.cpp:3439-3464">
         <p i="1" name="x1" kind="coord" range="start position x"/>
         <p i="2" name="y1" kind="coord" range="start position y"/>
         <p i="3" name="x2" kind="coord" range="end position x"/>
@@ -769,11 +773,11 @@
         <p i="6" name="t2" kind="ms" range="t1&gt;t2: libass swaps (503-507), xy does not (scen)"/>
       </sig>
     </params>
-    <scen id="arg-count" status="V" verified="libass xy" base="ignored" vsfilter="ignored" vsfiltermod="unchecked"
-          cite="libass:libass/ass_parse.c:494-510 xy:src/subtitles/RTS.cpp:2577">
-      4 or 6 args, else continue before any latch — a bad \move cannot block a
-      later good one in libass (xy 2577 checks count inside the un-latched
-      branch, same outcome).
+    <scen id="arg-count" status="V" verified="libass xy vsm" base="ignored" vsfilter="ignored" vsfiltermod="supported"
+          cite="libass:libass/ass_parse.c:494-510 xy:src/subtitles/RTS.cpp:2577 vsm:src/subtitles/RTS.cpp:3439-3441">
+      All three accept exactly 4 or 6 non-empty arguments. Eight arguments are rejected.
+      A rejected form cannot claim the shared pos/move latch.
+      Mod extension movers share this latch; their complex effects remain unmodeled.
     </scen>
     <scen id="out-of-range" status="V" verified="libass xy" base="swap" vsfilter="assign" vsfiltermod="unchecked"
           cite="libass:libass/ass_parse.c:500-508 xy:src/subtitles/RTS.cpp:2585-2590">
@@ -786,8 +790,8 @@
       libass: if both t1 and t2 are &lt;= 0, re-default to the whole event
       duration. Fork behavior unchecked.
     </scen>
-    <scen id="repeat" status="V" verified="libass xy" base="latch-blocked" vsfilter="latch-blocked" vsfiltermod="unchecked"
-          cite="libass:libass/ass_parse.c:525-530 xy:src/subtitles/RTS.cpp:2577"/>
+    <scen id="repeat" status="V" verified="libass xy vsm" base="latch-blocked" vsfilter="latch-blocked" vsfiltermod="latch-blocked"
+          cite="libass:libass/ass_parse.c:525-530 xy:src/subtitles/RTS.cpp:2577 vsm:src/subtitles/RTS.cpp:3441,3510-3515"/>
   </tag>
 
   <tag name="org" status="V">
@@ -855,13 +859,9 @@
       </sig>
     </params>
     <scen id="name-match" status="V" verified="libass xy vsm" base="matched" vsfilter="matched" vsfiltermod="matched"
-          cite="libass:libass/ass_parse.c:622 xy:src/subtitles/RTS.cpp:2396-2397 vsm:src/subtitles/RTS.cpp:3055">
-      \fad is honored by all three. A research pass claimed VSFilterMod drops
-      it because its prefix-normalization chain has only "fade"
-      (RTS.cpp:2564); that is wrong — "fad" matches no normalization prefix,
-      survives the chain untouched (2668-2671), and the apply chain tests
-      cmd == L"fad" explicitly (3055). This row is the worked example of why
-      V requires re-reading the cited lines.
+          cite="libass:libass/ass_parse.c:622 xy:src/subtitles/RTS.cpp:2396-2397 vsm:src/subtitles/RTS.cpp:2668-2675,3055">
+      Exact fad survives normalization. The unrecognized-tag counter does not stop the apply chain.
+      The shared fade/fad handler remains reachable.
     </scen>
     <scen id="arg-count" status="V" verified="libass xy vsm" base="ignored" vsfilter="keep-previous" vsfiltermod="keep-previous"
           cite="libass:libass/ass_parse.c:625-644 xy:src/subtitles/RTS.cpp:2396-2423 vsm:src/subtitles/RTS.cpp:3055-3075">
@@ -1150,12 +1150,14 @@
   <tag name="frs" status="V">
     <params status="V" verified="vsm" cite="vsm:src/subtitles/RTS.cpp:3108-3115">
       <sig n="1" form="both" renderer="vsm" status="V" verified="vsm" requires="_VSMOD" cite="vsm:src/subtitles/RTS.cpp:3108-3115">
-        <p i="1" name="angle" kind="number" range="symbol-orientation angle x10; empty selects org; libass/xy read it as \fr with junk arg &quot;s&quot; (scen)"/>
+        <p i="1" name="angle" kind="number" range="font orientation: truncate(value*10) to signed int; bare restores original Dialogue Style; distinct from frz"/>
       </sig>
       <sig n="0" form="bare" renderer="vsm" status="V" verified="vsm" requires="_VSMOD" cite="vsm:src/subtitles/RTS.cpp:3108-3115">
         <p i="1" name="empty" kind="none" range="Empty bare suffix: renderer-defined reset, fallback, or zero value (pinned source citation)"/>
       </sig>
     </params>
+    The orientation field is a signed int (STS.h:244), with default zero (STS.cpp:3573).
+    Bare frs restores original Dialogue Style orientation. Assignment truncates after animation.
     \frs is VSFilterMod-only (patch m007, apply at 3108-3115 read). In libass
     the frs name is matched as \fr with remainder "s" (prefix tag() at
     ass_parse.c:547, mystrcmp byte prefix 68-78) — the arg is non-numeric so
@@ -1164,21 +1166,61 @@
           cite="libass:libass/ass_parse.c:68-78,547-555 xy:src/subtitles/RTS.cpp:2155-2163,2203 vsm:src/subtitles/RTS.cpp:2573,3108-3115"/>
   </tag>
 
-  <tag name="fsvp" status="S">
-    <params status="S" cite="vsm:src/subtitles/RTS.cpp:2587,3174">
-      <sig n="1" form="both" renderer="vsm" status="S" inferred="vsm" requires="_VSMOD" cite="vsm:src/subtitles/RTS.cpp:2587,3174">
-        <p i="1" name="vs" kind="number" range="unchecked (patch m001); libass/xy read it as \fs with junk arg &quot;vp&quot;"/>
+  <tag name="fsvp" status="V">
+    <params status="V" verified="vsm" cite="vsm:src/subtitles/RTS.cpp:2587,3173-3179">
+      <sig n="1" form="both" renderer="vsm" status="V" verified="vsm" requires="_VSMOD" cite="vsm:src/subtitles/RTS.cpp:2587,3174">
+        <p i="1" name="spacing" kind="number" range="vertical font spacing; wcstod(value)*8; bare resets to original Dialogue Style"/>
       </sig>
-      <sig n="0" form="bare" renderer="vsm" status="S" inferred="vsm" requires="_VSMOD" cite="vsm:src/subtitles/RTS.cpp:2587,3174">
+      <sig n="0" form="bare" renderer="vsm" status="V" verified="vsm" requires="_VSMOD" cite="vsm:src/subtitles/RTS.cpp:2587,3174">
         <p i="1" name="empty" kind="none" range="Empty bare suffix: renderer-defined reset, fallback, or zero value (pinned source citation)"/>
       </sig>
     </params>
+    Vertical spacing defaults to zero (STS.cpp:3563). The handler interpolates inside transforms.
+    Bare fsvp restores original Dialogue Style spacing. This tag is not a perspective scale.
     <scen id="name-match" status="V" verified="libass xy vsm" base="shadowed" vsfilter="shadowed" vsfiltermod="matched"
           cite="libass:libass/ass_parse.c:68-78,465-476 xy:src/subtitles/RTS.cpp:2155-2163,2203 vsm:src/subtitles/RTS.cpp:2587">
       Same mechanism as frs: libass/xy match the "fs" prefix and pass the
       remainder "vp" as an argument; VSFilterMod normalizes fsvp before fs
       (RTS.cpp:2587 before 2592).
     </scen>
+  </tag>
+
+  <tag name="fshp" status="V">
+    <params status="V" verified="vsm" cite="vsm:src/subtitles/RTS.cpp:2589,3180-3185">
+      <sig n="1" form="both" renderer="vsm" status="V" verified="vsm" requires="_VSMOD" cite="vsm:src/subtitles/RTS.cpp:2589,3180-3185">
+        <p i="1" name="spacing" kind="number" range="horizontal font spacing; wcstod(value)*8; interpolated inside transforms"/>
+      </sig>
+      <sig n="0" form="bare" renderer="vsm" status="V" verified="vsm" requires="_VSMOD" cite="vsm:src/subtitles/RTS.cpp:3180-3185">
+        <p i="1" name="empty" kind="none" range="restore original Dialogue Style horizontal font spacing"/>
+      </sig>
+    </params>
+    The field defaults to zero (STS.cpp:3565). Named r copies the selected Style.
+    Bare fshp restores org, not the named reset Style. This tag is not a hyperbolic scale.
+    libass and xy match the shorter fs prefix.
+  </tag>
+
+  <tag name="z" status="V">
+    <params status="V" verified="vsm" cite="vsm:src/subtitles/RTS.cpp:2663,3702-3708">
+      <sig n="1" form="both" renderer="vsm" status="V" verified="vsm" requires="_VSMOD" cite="vsm:src/subtitles/RTS.cpp:3702-3708">
+        <p i="1" name="depth" kind="number" range="depth coordinate; wcstod(value)*80; interpolated inside transforms; not frz rotation"/>
+      </sig>
+      <sig n="0" form="bare" renderer="vsm" status="V" verified="vsm" requires="_VSMOD" cite="vsm:src/subtitles/RTS.cpp:3702-3708">
+        <p i="1" name="empty" kind="none" range="restore original Dialogue Style depth"/>
+      </sig>
+    </params>
+    Depth defaults to zero (STS.cpp:3567). It affects rotation and perspective (RTS.cpp:611-654).
+  </tag>
+
+  <tag name="ortho" status="V">
+    <params status="V" verified="vsm" cite="vsm:src/subtitles/RTS.cpp:2665,3709-3715">
+      <sig n="1" form="both" renderer="vsm" status="V" verified="vsm" requires="_VSMOD" cite="vsm:src/subtitles/RTS.cpp:3709-3715">
+        <p i="1" name="enabled" kind="int" range="wcstol base10; 0=false, 1=true, other integers restore original Dialogue Style; discrete inside transforms"/>
+      </sig>
+      <sig n="0" form="bare" renderer="vsm" status="V" verified="vsm" requires="_VSMOD" cite="vsm:src/subtitles/RTS.cpp:3709-3715">
+        <p i="1" name="empty" kind="none" range="restore original Dialogue Style orthogonal projection flag"/>
+      </sig>
+    </params>
+    The flag defaults to false (STS.cpp:3575). It removes perspective depth (RTS.cpp:646-651).
   </tag>
 
   <!-- ===== remaining names: stubs (spec vocabulary coverage) =====
@@ -1191,13 +1233,15 @@
   <tag name="h" status="S"/>
 
   <taggroup kind="vsfiltermod-only" status="S"
-            names="1img 1va 1vc 2img 2va 2vc 3img 3va 3vc 4img 4va 4vc distort fshp jitter lua mover moves3 moves4 movevc ortho rnd rnds rndx rndy rndz xblur yblur z"
+            names="1img 1va 1vc 2img 2va 2vc 3img 3va 3vc 4img 4va 4vc distort jitter lua mover moves3 moves4 movevc rnd rnds rndx rndy rndz xblur yblur"
             cite="vsm:src/subtitles/RTS.cpp:2524-2669,2677-3716 libass:libass/ass_parse.c:281-917 xy:src/subtitles/RTS.cpp:1716-1769">
-    Absent from libass and xy-VSFilter entirely (ASS005). In VSFilterMod each
-    has a normalization prefix test and an exact apply branch; lua is compiled
-    in only under _LUA (RTS.cpp:2464-2471). Several normalization branches are
-    comment-disabled no-ops (1img 2529-2530, 1vc/1va 2533-2536), leaving those
-    names to fall through to unknown. blend, frs and fsvp are covered by
-    individual rows above; per-tag params for this set are Phase 2 work.
+    These families remain semantic proof barriers. No complete value model is claimed.
+    Exact image and gradient names reach apply handlers despite no-op normalization arms.
+    Images depend on external files. Gradients have cross-channel effects.
+    Random effects, distortion, jitter, and complex movement remain unmodeled.
+    xblur/yblur are ungated in Mod and overlap the blur axis fields.
+    Their overlap is not yet modeled. blend remains a barrier because mixer paths differ.
+    Explicit lua requires _VSMOD and _LUA. User-defined global dispatch needs only _LUA.
+    Globals can shadow core names before normalization (RTS.cpp:2466-2520).
   </taggroup>
 </matrix>

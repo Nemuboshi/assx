@@ -60,6 +60,17 @@ func CanonicalTagState(tag ass.Tag, tagSpec spec.TagSpec, slots []string) ([]str
 			ok = true
 		case spec.NumberValue:
 			number := decoded.Number
+			switch tag.Name {
+			case "frs":
+				number = math.Trunc(number * 10)
+				if math.IsNaN(number) || number < math.MinInt32 || number > math.MaxInt32 {
+					return nil, false
+				}
+			case "fsvp", "fshp":
+				number *= 8
+			case "z":
+				number *= 80
+			}
 			if tag.Name == "fs" && number <= 0 {
 				return nil, false
 			}
@@ -128,7 +139,7 @@ func CanonicalTagState(tag ass.Tag, tagSpec spec.TagSpec, slots []string) ([]str
 
 func canonicalFloat(value float64) (string, bool) {
 	value32 := float32(value)
-	if math.IsInf(float64(value32), 0) {
+	if math.IsNaN(value) || math.IsInf(float64(value32), 0) {
 		return "", false
 	}
 	if value == 0 {
