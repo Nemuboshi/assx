@@ -73,92 +73,164 @@
       ],
       "nodes": [
         {
-          "kind": 2,
+          "kind": 1,
           "raw": "{\\fsvp6\\frs\\blend(add)\\pos(1,2,3)\\pos(4,5)}",
           "start": 0,
           "end": 43,
           "items": [
             {
               "kind": 1,
-              "raw": "",
+              "raw": "\\fsvp6",
               "start": 1,
               "end": 7,
-              "tag": {
-                "name": "fsvp",
-                "raw": "\\fsvp6",
-                "args": [
-                  "6"
-                ],
-                "start": 1,
-                "end": 7,
-                "column": 3
+              "expression": {
+                "Span": {
+                  "Start": 1,
+                  "End": 7
+                },
+                "SlashSpan": {
+                  "Start": 1,
+                  "End": 2
+                },
+                "HeadSpan": {
+                  "Start": 2,
+                  "End": 7
+                },
+                "Head": "fsvp6",
+                "Parenthesized": false,
+                "Open": -1,
+                "Close": -1,
+                "ContentSpan": {
+                  "Start": 0,
+                  "End": 0
+                },
+                "Commas": null,
+                "Raw": "\\fsvp6"
               }
             },
             {
               "kind": 1,
-              "raw": "",
+              "raw": "\\frs",
               "start": 7,
               "end": 11,
-              "tag": {
-                "name": "frs",
-                "raw": "\\frs",
-                "start": 7,
-                "end": 11,
-                "column": 9
+              "expression": {
+                "Span": {
+                  "Start": 7,
+                  "End": 11
+                },
+                "SlashSpan": {
+                  "Start": 7,
+                  "End": 8
+                },
+                "HeadSpan": {
+                  "Start": 8,
+                  "End": 11
+                },
+                "Head": "frs",
+                "Parenthesized": false,
+                "Open": -1,
+                "Close": -1,
+                "ContentSpan": {
+                  "Start": 0,
+                  "End": 0
+                },
+                "Commas": null,
+                "Raw": "\\frs"
               }
             },
             {
               "kind": 1,
-              "raw": "",
+              "raw": "\\blend(add)",
               "start": 11,
               "end": 22,
-              "tag": {
-                "name": "blend",
-                "raw": "\\blend(add)",
-                "args": [
-                  "add"
-                ],
-                "start": 11,
-                "end": 22,
-                "column": 13,
-                "paren": true
+              "expression": {
+                "Span": {
+                  "Start": 11,
+                  "End": 22
+                },
+                "SlashSpan": {
+                  "Start": 11,
+                  "End": 12
+                },
+                "HeadSpan": {
+                  "Start": 12,
+                  "End": 17
+                },
+                "Head": "blend",
+                "Parenthesized": true,
+                "Open": 17,
+                "Close": 21,
+                "ContentSpan": {
+                  "Start": 18,
+                  "End": 21
+                },
+                "Commas": null,
+                "Raw": "\\blend(add)"
               }
             },
             {
               "kind": 1,
-              "raw": "",
+              "raw": "\\pos(1,2,3)",
               "start": 22,
               "end": 33,
-              "tag": {
-                "name": "pos",
-                "raw": "\\pos(1,2,3)",
-                "args": [
-                  "1",
-                  "2",
-                  "3"
+              "expression": {
+                "Span": {
+                  "Start": 22,
+                  "End": 33
+                },
+                "SlashSpan": {
+                  "Start": 22,
+                  "End": 23
+                },
+                "HeadSpan": {
+                  "Start": 23,
+                  "End": 26
+                },
+                "Head": "pos",
+                "Parenthesized": true,
+                "Open": 26,
+                "Close": 32,
+                "ContentSpan": {
+                  "Start": 27,
+                  "End": 32
+                },
+                "Commas": [
+                  28,
+                  30
                 ],
-                "start": 22,
-                "end": 33,
-                "column": 24,
-                "paren": true
+                "Raw": "\\pos(1,2,3)"
               }
             },
             {
               "kind": 1,
-              "raw": "",
+              "raw": "\\pos(4,5)",
               "start": 33,
               "end": 42,
-              "tag": {
-                "name": "pos",
-                "raw": "\\pos(4,5)",
-                "args": [
-                  "4",
-                  "5"
+              "expression": {
+                "Span": {
+                  "Start": 33,
+                  "End": 42
+                },
+                "SlashSpan": {
+                  "Start": 33,
+                  "End": 34
+                },
+                "HeadSpan": {
+                  "Start": 34,
+                  "End": 37
+                },
+                "Head": "pos",
+                "Parenthesized": true,
+                "Open": 37,
+                "Close": 41,
+                "ContentSpan": {
+                  "Start": 38,
+                  "End": 41
+                },
+                "Commas": [
+                  39
                 ],
-                "start": 33,
-                "end": 42,
-                "column": 35,
-                "paren": true
+                "Raw": "\\pos(4,5)"
               }
             }
           ]
@@ -173,10 +245,10 @@
       "events": [
         {
           "tag": {
-            "name": "fsvp",
+            "name": "fs",
             "raw": "\\fsvp6",
             "args": [
-              "6"
+              "vp6"
             ],
             "start": 1,
             "end": 7,
@@ -184,17 +256,32 @@
           },
           "index": 0,
           "policy": 0,
-          "applied": false,
+          "slots": [
+            "fontsize"
+          ],
+          "before": [
+            {
+              "Value": "24:24",
+              "Known": true
+            }
+          ],
+          "after": [
+            {
+              "Value": "",
+              "Known": false
+            }
+          ],
+          "applied": true,
           "known": false,
           "barrier": true,
-          "uncertainty": 4,
+          "uncertainty": 1,
           "active_style": "Default",
           "state": [
             {
               "name": "fontname",
               "value": {
-                "Value": "",
-                "Known": false
+                "Value": "Go Regular",
+                "Known": true
               },
               "source": -1
             },
@@ -257,16 +344,16 @@
             {
               "name": "karaoke_cursor",
               "value": {
-                "Value": "",
-                "Known": false
+                "Value": "0",
+                "Known": true
               },
               "source": -1
             },
             {
               "name": "drawing_scale",
               "value": {
-                "Value": "",
-                "Known": false
+                "Value": "0",
+                "Known": true
               },
               "source": -1
             }
@@ -274,25 +361,43 @@
         },
         {
           "tag": {
-            "name": "frs",
+            "name": "fr",
             "raw": "\\frs",
+            "args": [
+              "s"
+            ],
             "start": 7,
             "end": 11,
             "column": 9
           },
           "index": 1,
           "policy": 0,
-          "applied": false,
+          "slots": [
+            "frz"
+          ],
+          "before": [
+            {
+              "Value": "",
+              "Known": false
+            }
+          ],
+          "after": [
+            {
+              "Value": "",
+              "Known": false
+            }
+          ],
+          "applied": true,
           "known": false,
           "barrier": true,
-          "uncertainty": 4,
+          "uncertainty": 1,
           "active_style": "Default",
           "state": [
             {
               "name": "fontname",
               "value": {
-                "Value": "",
-                "Known": false
+                "Value": "Go Regular",
+                "Known": true
               },
               "source": -1
             },
@@ -355,16 +460,16 @@
             {
               "name": "karaoke_cursor",
               "value": {
-                "Value": "",
-                "Known": false
+                "Value": "0",
+                "Known": true
               },
               "source": -1
             },
             {
               "name": "drawing_scale",
               "value": {
-                "Value": "",
-                "Known": false
+                "Value": "0",
+                "Known": true
               },
               "source": -1
             }
@@ -372,7 +477,7 @@
         },
         {
           "tag": {
-            "name": "blend",
+            "name": "b",
             "raw": "\\blend(add)",
             "args": [
               "add"
@@ -384,17 +489,32 @@
           },
           "index": 2,
           "policy": 0,
-          "applied": false,
+          "slots": [
+            "bold"
+          ],
+          "before": [
+            {
+              "Value": "0",
+              "Known": true
+            }
+          ],
+          "after": [
+            {
+              "Value": "",
+              "Known": false
+            }
+          ],
+          "applied": true,
           "known": false,
           "barrier": true,
-          "uncertainty": 4,
+          "uncertainty": 1,
           "active_style": "Default",
           "state": [
             {
               "name": "fontname",
               "value": {
-                "Value": "",
-                "Known": false
+                "Value": "Go Regular",
+                "Known": true
               },
               "source": -1
             },
@@ -457,16 +577,16 @@
             {
               "name": "karaoke_cursor",
               "value": {
-                "Value": "",
-                "Known": false
+                "Value": "0",
+                "Known": true
               },
               "source": -1
             },
             {
               "name": "drawing_scale",
               "value": {
-                "Value": "",
-                "Known": false
+                "Value": "0",
+                "Known": true
               },
               "source": -1
             }
@@ -497,8 +617,8 @@
             {
               "name": "fontname",
               "value": {
-                "Value": "",
-                "Known": false
+                "Value": "Go Regular",
+                "Known": true
               },
               "source": -1
             },
@@ -561,16 +681,16 @@
             {
               "name": "karaoke_cursor",
               "value": {
-                "Value": "",
-                "Known": false
+                "Value": "0",
+                "Known": true
               },
               "source": -1
             },
             {
               "name": "drawing_scale",
               "value": {
-                "Value": "",
-                "Known": false
+                "Value": "0",
+                "Known": true
               },
               "source": -1
             }
@@ -615,8 +735,8 @@
             {
               "name": "fontname",
               "value": {
-                "Value": "",
-                "Known": false
+                "Value": "Go Regular",
+                "Known": true
               },
               "source": -1
             },
@@ -679,16 +799,16 @@
             {
               "name": "karaoke_cursor",
               "value": {
-                "Value": "",
-                "Known": false
+                "Value": "0",
+                "Known": true
               },
               "source": -1
             },
             {
               "name": "drawing_scale",
               "value": {
-                "Value": "",
-                "Known": false
+                "Value": "0",
+                "Known": true
               },
               "source": -1
             }
@@ -704,8 +824,8 @@
             {
               "name": "fontname",
               "value": {
-                "Value": "",
-                "Known": false
+                "Value": "Go Regular",
+                "Known": true
               },
               "source": -1
             },
@@ -768,16 +888,16 @@
             {
               "name": "karaoke_cursor",
               "value": {
-                "Value": "",
-                "Known": false
+                "Value": "0",
+                "Known": true
               },
               "source": -1
             },
             {
               "name": "drawing_scale",
               "value": {
-                "Value": "",
-                "Known": false
+                "Value": "0",
+                "Known": true
               },
               "source": -1
             }
@@ -854,66 +974,108 @@
       ],
       "nodes": [
         {
-          "kind": 2,
+          "kind": 1,
           "raw": "{\\pos(1,2,3)\\pos(4,5)\\move(1,2,3,4)}",
           "start": 0,
           "end": 36,
           "items": [
             {
               "kind": 1,
-              "raw": "",
+              "raw": "\\pos(1,2,3)",
               "start": 1,
               "end": 12,
-              "tag": {
-                "name": "pos",
-                "raw": "\\pos(1,2,3)",
-                "args": [
-                  "1",
-                  "2",
-                  "3"
+              "expression": {
+                "Span": {
+                  "Start": 1,
+                  "End": 12
+                },
+                "SlashSpan": {
+                  "Start": 1,
+                  "End": 2
+                },
+                "HeadSpan": {
+                  "Start": 2,
+                  "End": 5
+                },
+                "Head": "pos",
+                "Parenthesized": true,
+                "Open": 5,
+                "Close": 11,
+                "ContentSpan": {
+                  "Start": 6,
+                  "End": 11
+                },
+                "Commas": [
+                  7,
+                  9
                 ],
-                "start": 1,
-                "end": 12,
-                "column": 3,
-                "paren": true
+                "Raw": "\\pos(1,2,3)"
               }
             },
             {
               "kind": 1,
-              "raw": "",
+              "raw": "\\pos(4,5)",
               "start": 12,
               "end": 21,
-              "tag": {
-                "name": "pos",
-                "raw": "\\pos(4,5)",
-                "args": [
-                  "4",
-                  "5"
+              "expression": {
+                "Span": {
+                  "Start": 12,
+                  "End": 21
+                },
+                "SlashSpan": {
+                  "Start": 12,
+                  "End": 13
+                },
+                "HeadSpan": {
+                  "Start": 13,
+                  "End": 16
+                },
+                "Head": "pos",
+                "Parenthesized": true,
+                "Open": 16,
+                "Close": 20,
+                "ContentSpan": {
+                  "Start": 17,
+                  "End": 20
+                },
+                "Commas": [
+                  18
                 ],
-                "start": 12,
-                "end": 21,
-                "column": 14,
-                "paren": true
+                "Raw": "\\pos(4,5)"
               }
             },
             {
               "kind": 1,
-              "raw": "",
+              "raw": "\\move(1,2,3,4)",
               "start": 21,
               "end": 35,
-              "tag": {
-                "name": "move",
-                "raw": "\\move(1,2,3,4)",
-                "args": [
-                  "1",
-                  "2",
-                  "3",
-                  "4"
+              "expression": {
+                "Span": {
+                  "Start": 21,
+                  "End": 35
+                },
+                "SlashSpan": {
+                  "Start": 21,
+                  "End": 22
+                },
+                "HeadSpan": {
+                  "Start": 22,
+                  "End": 26
+                },
+                "Head": "move",
+                "Parenthesized": true,
+                "Open": 26,
+                "Close": 34,
+                "ContentSpan": {
+                  "Start": 27,
+                  "End": 34
+                },
+                "Commas": [
+                  28,
+                  30,
+                  32
                 ],
-                "start": 21,
-                "end": 35,
-                "column": 23,
-                "paren": true
+                "Raw": "\\move(1,2,3,4)"
               }
             }
           ]
@@ -1428,74 +1590,129 @@
       ],
       "nodes": [
         {
-          "kind": 2,
+          "kind": 1,
           "raw": "{\\be1\\blend(add)\\fs10\\fs20}",
           "start": 0,
           "end": 27,
           "items": [
             {
               "kind": 1,
-              "raw": "",
+              "raw": "\\be1",
               "start": 1,
               "end": 5,
-              "tag": {
-                "name": "be",
-                "raw": "\\be1",
-                "args": [
-                  "1"
-                ],
-                "start": 1,
-                "end": 5,
-                "column": 3
+              "expression": {
+                "Span": {
+                  "Start": 1,
+                  "End": 5
+                },
+                "SlashSpan": {
+                  "Start": 1,
+                  "End": 2
+                },
+                "HeadSpan": {
+                  "Start": 2,
+                  "End": 5
+                },
+                "Head": "be1",
+                "Parenthesized": false,
+                "Open": -1,
+                "Close": -1,
+                "ContentSpan": {
+                  "Start": 0,
+                  "End": 0
+                },
+                "Commas": null,
+                "Raw": "\\be1"
               }
             },
             {
               "kind": 1,
-              "raw": "",
+              "raw": "\\blend(add)",
               "start": 5,
               "end": 16,
-              "tag": {
-                "name": "blend",
-                "raw": "\\blend(add)",
-                "args": [
-                  "add"
-                ],
-                "start": 5,
-                "end": 16,
-                "column": 7,
-                "paren": true
+              "expression": {
+                "Span": {
+                  "Start": 5,
+                  "End": 16
+                },
+                "SlashSpan": {
+                  "Start": 5,
+                  "End": 6
+                },
+                "HeadSpan": {
+                  "Start": 6,
+                  "End": 11
+                },
+                "Head": "blend",
+                "Parenthesized": true,
+                "Open": 11,
+                "Close": 15,
+                "ContentSpan": {
+                  "Start": 12,
+                  "End": 15
+                },
+                "Commas": null,
+                "Raw": "\\blend(add)"
               }
             },
             {
               "kind": 1,
-              "raw": "",
+              "raw": "\\fs10",
               "start": 16,
               "end": 21,
-              "tag": {
-                "name": "fs",
-                "raw": "\\fs10",
-                "args": [
-                  "10"
-                ],
-                "start": 16,
-                "end": 21,
-                "column": 18
+              "expression": {
+                "Span": {
+                  "Start": 16,
+                  "End": 21
+                },
+                "SlashSpan": {
+                  "Start": 16,
+                  "End": 17
+                },
+                "HeadSpan": {
+                  "Start": 17,
+                  "End": 21
+                },
+                "Head": "fs10",
+                "Parenthesized": false,
+                "Open": -1,
+                "Close": -1,
+                "ContentSpan": {
+                  "Start": 0,
+                  "End": 0
+                },
+                "Commas": null,
+                "Raw": "\\fs10"
               }
             },
             {
               "kind": 1,
-              "raw": "",
+              "raw": "\\fs20",
               "start": 21,
               "end": 26,
-              "tag": {
-                "name": "fs",
-                "raw": "\\fs20",
-                "args": [
-                  "20"
-                ],
-                "start": 21,
-                "end": 26,
-                "column": 23
+              "expression": {
+                "Span": {
+                  "Start": 21,
+                  "End": 26
+                },
+                "SlashSpan": {
+                  "Start": 21,
+                  "End": 22
+                },
+                "HeadSpan": {
+                  "Start": 22,
+                  "End": 26
+                },
+                "Head": "fs20",
+                "Parenthesized": false,
+                "Open": -1,
+                "Close": -1,
+                "ContentSpan": {
+                  "Start": 0,
+                  "End": 0
+                },
+                "Commas": null,
+                "Raw": "\\fs20"
               }
             }
           ]
@@ -1626,7 +1843,7 @@
         },
         {
           "tag": {
-            "name": "blend",
+            "name": "b",
             "raw": "\\blend(add)",
             "args": [
               "add"
@@ -1638,25 +1855,40 @@
           },
           "index": 1,
           "policy": 0,
-          "applied": false,
+          "slots": [
+            "bold"
+          ],
+          "before": [
+            {
+              "Value": "0",
+              "Known": true
+            }
+          ],
+          "after": [
+            {
+              "Value": "",
+              "Known": false
+            }
+          ],
+          "applied": true,
           "known": false,
           "barrier": true,
-          "uncertainty": 4,
+          "uncertainty": 1,
           "active_style": "Alt",
           "state": [
             {
               "name": "fontname",
               "value": {
-                "Value": "",
-                "Known": false
+                "Value": "Go Regular",
+                "Known": true
               },
               "source": -1
             },
             {
               "name": "fontsize",
               "value": {
-                "Value": "",
-                "Known": false
+                "Value": "32:32",
+                "Known": true
               },
               "source": -1
             },
@@ -1711,16 +1943,16 @@
             {
               "name": "karaoke_cursor",
               "value": {
-                "Value": "",
-                "Known": false
+                "Value": "0",
+                "Known": true
               },
               "source": -1
             },
             {
               "name": "drawing_scale",
               "value": {
-                "Value": "",
-                "Known": false
+                "Value": "0",
+                "Known": true
               },
               "source": -1
             }
@@ -1744,8 +1976,8 @@
           ],
           "before": [
             {
-              "Value": "",
-              "Known": false
+              "Value": "32:32",
+              "Known": true
             }
           ],
           "after": [
@@ -1763,8 +1995,8 @@
             {
               "name": "fontname",
               "value": {
-                "Value": "",
-                "Known": false
+                "Value": "Go Regular",
+                "Known": true
               },
               "source": -1
             },
@@ -1827,16 +2059,16 @@
             {
               "name": "karaoke_cursor",
               "value": {
-                "Value": "",
-                "Known": false
+                "Value": "0",
+                "Known": true
               },
               "source": -1
             },
             {
               "name": "drawing_scale",
               "value": {
-                "Value": "",
-                "Known": false
+                "Value": "0",
+                "Known": true
               },
               "source": -1
             }
@@ -1879,8 +2111,8 @@
             {
               "name": "fontname",
               "value": {
-                "Value": "",
-                "Known": false
+                "Value": "Go Regular",
+                "Known": true
               },
               "source": -1
             },
@@ -1943,16 +2175,16 @@
             {
               "name": "karaoke_cursor",
               "value": {
-                "Value": "",
-                "Known": false
+                "Value": "0",
+                "Known": true
               },
               "source": -1
             },
             {
               "name": "drawing_scale",
               "value": {
-                "Value": "",
-                "Known": false
+                "Value": "0",
+                "Known": true
               },
               "source": -1
             }
@@ -1968,8 +2200,8 @@
             {
               "name": "fontname",
               "value": {
-                "Value": "",
-                "Known": false
+                "Value": "Go Regular",
+                "Known": true
               },
               "source": -1
             },
@@ -2032,16 +2264,16 @@
             {
               "name": "karaoke_cursor",
               "value": {
-                "Value": "",
-                "Known": false
+                "Value": "0",
+                "Known": true
               },
               "source": -1
             },
             {
               "name": "drawing_scale",
               "value": {
-                "Value": "",
-                "Known": false
+                "Value": "0",
+                "Known": true
               },
               "source": -1
             }
@@ -2055,6 +2287,105 @@
     "diagnostics": [
       {
         "file": "renderer-collisions.ass",
+        "id": "ASS003",
+        "severity": "warning",
+        "title": "Renderer behavior differs",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 11,
+        "column": 1,
+        "field": "document/style-layout",
+        "detail": "divergent: libass: name=\" Default\" at [214,222), fontname=\" Go Regular\" at [223,234), fontsize=\" 24\" at [235,238), bold=\" 0\" at [239,241), italic=\" 0\" at [242,244), alignment=\" 2\" at [245,247); xy-VSFilter: name=\" Default\" at [214,222), fontname=\" Go Regular\" at [223,234), fontsize=\" 24\" at [235,238), primarycolour=\" 0\" at [239,241), secondarycolour=\" 0\" at [242,244), outlinecolour=\" 2\" at [245,247), backcolour=\"\" at [247,247), bold=\"\" at [247,247), italic=\"\" at [247,247), underline=\"\" at [247,247), strikeout=\"\" at [247,247), scalex=\"\" at [247,247), scaley=\"\" at [247,247), spacing=\"\" at [247,247), angle=\"\" at [247,247), borderstyle=\"\" at [247,247), outline=\"\" at [247,247), shadow=\"\" at [247,247), alignment=\"\" at [247,247), marginl=\"\" at [247,247), marginr=\"\" at [247,247), marginv=\"\" at [247,247), encoding=\"\" at [247,247).",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 208,
+          "End": 247
+        },
+        "sources": [
+          "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
+          "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 11,
+        "column": 1,
+        "field": "document/style-values",
+        "detail": "unresolved: Style field layout is compared independently; renderer-specific value conversion and fallback compatibility remain unresolved.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 208,
+          "End": 247
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS003",
+        "severity": "warning",
+        "title": "Renderer behavior differs",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 12,
+        "column": 1,
+        "field": "document/style-layout",
+        "detail": "divergent: libass: name=\" Alt\" at [254,258), fontname=\" Go Regular\" at [259,270), fontsize=\" 32\" at [271,274), bold=\" 0\" at [275,277), italic=\" 0\" at [278,280), alignment=\" 7\" at [281,283); xy-VSFilter: name=\" Alt\" at [254,258), fontname=\" Go Regular\" at [259,270), fontsize=\" 32\" at [271,274), primarycolour=\" 0\" at [275,277), secondarycolour=\" 0\" at [278,280), outlinecolour=\" 7\" at [281,283), backcolour=\"\" at [283,283), bold=\"\" at [283,283), italic=\"\" at [283,283), underline=\"\" at [283,283), strikeout=\"\" at [283,283), scalex=\"\" at [283,283), scaley=\"\" at [283,283), spacing=\"\" at [283,283), angle=\"\" at [283,283), borderstyle=\"\" at [283,283), outline=\"\" at [283,283), shadow=\"\" at [283,283), alignment=\"\" at [283,283), marginl=\"\" at [283,283), marginr=\"\" at [283,283), marginv=\"\" at [283,283), encoding=\"\" at [283,283).",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 248,
+          "End": 283
+        },
+        "sources": [
+          "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
+          "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 12,
+        "column": 1,
+        "field": "document/style-values",
+        "detail": "unresolved: Style field layout is compared independently; renderer-specific value conversion and fallback compatibility remain unresolved.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 248,
+          "End": 283
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS002",
+        "severity": "error",
+        "title": "Invalid tag value",
+        "description": "A checked tag value is malformed or outside its supported integer range.",
+        "suggested_fix": "Replace it with a syntactically valid value in the accepted range.",
+        "line": 15,
+        "column": 3,
+        "tag": "fs",
+        "detail": "Expected a number, found \"vp6\".",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "sources": [
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L825",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L882",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2301",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2344",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2635"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
         "id": "ASS005",
         "severity": "warning",
         "title": "VSFilterMod tag may be unsupported by libass/VSFilter",
@@ -2063,11 +2394,33 @@
         "line": 15,
         "column": 3,
         "tag": "fsvp",
-        "detail": "This tag is specific to VSFilterMod and is not shared by libass and VSFilter. Automatic fixes are disabled for this dialogue.",
+        "detail": "This VSFilterMod-only name is not portable to the selected renderer targets. Its dispatch or effects can differ; automatic edits require proof for every requested target.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
         "sources": [
           "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2745-L3717",
           "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L1716-L1769",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L281-L888"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS002",
+        "severity": "error",
+        "title": "Invalid tag value",
+        "description": "A checked tag value is malformed or outside its supported integer range.",
+        "suggested_fix": "Replace it with a syntactically valid value in the accepted range.",
+        "line": 15,
+        "column": 9,
+        "tag": "fr",
+        "detail": "Expected a number, found \"s\".",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "sources": [
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L825",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L882",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2301",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2344",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2635"
         ]
       },
       {
@@ -2080,11 +2433,33 @@
         "line": 15,
         "column": 9,
         "tag": "frs",
-        "detail": "This tag is specific to VSFilterMod and is not shared by libass and VSFilter. Automatic fixes are disabled for this dialogue.",
+        "detail": "This VSFilterMod-only name is not portable to the selected renderer targets. Its dispatch or effects can differ; automatic edits require proof for every requested target.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
         "sources": [
           "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2745-L3717",
           "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L1716-L1769",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L281-L888"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS002",
+        "severity": "error",
+        "title": "Invalid tag value",
+        "description": "A checked tag value is malformed or outside its supported integer range.",
+        "suggested_fix": "Replace it with a syntactically valid value in the accepted range.",
+        "line": 15,
+        "column": 13,
+        "tag": "b",
+        "detail": "Bold value \"add\" must be 0, 1, or at least 100.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "sources": [
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L825",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L882",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2301",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2344",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2635"
         ]
       },
       {
@@ -2097,7 +2472,8 @@
         "line": 15,
         "column": 13,
         "tag": "blend",
-        "detail": "This tag is specific to VSFilterMod and is not shared by libass and VSFilter. Automatic fixes are disabled for this dialogue.",
+        "detail": "This VSFilterMod-only name is not portable to the selected renderer targets. Its dispatch or effects can differ; automatic edits require proof for every requested target.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
         "sources": [
           "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2745-L3717",
           "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L1716-L1769",
@@ -2114,7 +2490,8 @@
         "line": 15,
         "column": 24,
         "tag": "pos",
-        "detail": "Found 3 arguments; expected 2.",
+        "detail": "Found 3 arguments; expected 2 for libass.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
         "sources": [
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L405",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L494",
@@ -2129,6 +2506,221 @@
       },
       {
         "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 52,
+        "tag": "fs",
+        "field": "application",
+        "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 424,
+          "End": 430
+        },
+        "sources": [
+          "libass:libass/ass_parse.c:465-475 xy:src/subtitles/RTS.cpp:2506-2525 vsm:src/subtitles/RTS.cpp:3188-3206"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 52,
+        "tag": "fs",
+        "field": "state",
+        "detail": "unresolved: libass: fontsize=unresolved, active Style \"Default\"; xy-VSFilter: fontsize=unresolved, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 424,
+          "End": 430
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 58,
+        "tag": "fr",
+        "field": "application",
+        "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 430,
+          "End": 434
+        },
+        "sources": [
+          "libass:libass/ass_parse.c:547-555 xy:src/subtitles/RTS.cpp:2469-2475 vsm:src/subtitles/RTS.cpp:3130-3134"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 58,
+        "tag": "fr",
+        "field": "state",
+        "detail": "unresolved: libass: frz=unresolved, active Style \"Default\"; xy-VSFilter: frz=unresolved, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 430,
+          "End": 434
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 62,
+        "tag": "b",
+        "field": "arguments",
+        "detail": "unresolved: libass resolves 1 argument(s): \"add\" at [441,444); xy-VSFilter resolves 1 argument(s): \"add\" at [441,444).",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 434,
+          "End": 445
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 62,
+        "tag": "b",
+        "field": "signature",
+        "detail": "unresolved: libass: unresolved argument shape; xy-VSFilter: unresolved argument shape.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 434,
+          "End": 445
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 62,
+        "tag": "b",
+        "field": "application",
+        "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 434,
+          "End": 445
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 62,
+        "tag": "b",
+        "field": "state",
+        "detail": "unresolved: libass: bold=unresolved, active Style \"Default\"; xy-VSFilter: bold=unresolved, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 434,
+          "End": 445
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 73,
+        "tag": "pos",
+        "field": "signature",
+        "detail": "ignored-or-unsupported: libass: verified rejection; xy-VSFilter: verified rejection.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 445,
+          "End": 456
+        },
+        "sources": [
+          "libass:libass/ass_parse.c:606-612 xy:src/subtitles/RTS.cpp:2615-2627 vsm:src/subtitles/RTS.cpp:3510-3543"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 73,
+        "tag": "pos",
+        "field": "state",
+        "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 445,
+          "End": 456
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 84,
+        "tag": "pos",
+        "field": "state",
+        "detail": "unresolved: libass: position=4:4,5:5, active Style \"Default\"; xy-VSFilter: position=4:4,5:5, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 456,
+          "End": 465
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
         "id": "ASS001",
         "severity": "error",
         "title": "Invalid argument count",
@@ -2137,7 +2729,8 @@
         "line": 16,
         "column": 3,
         "tag": "pos",
-        "detail": "Found 3 arguments; expected 2.",
+        "detail": "Found 3 arguments; expected 2 for libass.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
         "sources": [
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L405",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L494",
@@ -2148,6 +2741,126 @@
           "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2396",
           "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2575",
           "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2615"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 16,
+        "column": 52,
+        "tag": "pos",
+        "field": "signature",
+        "detail": "ignored-or-unsupported: libass: verified rejection; xy-VSFilter: verified rejection.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 519,
+          "End": 530
+        },
+        "sources": [
+          "libass:libass/ass_parse.c:606-612 xy:src/subtitles/RTS.cpp:2615-2627 vsm:src/subtitles/RTS.cpp:3510-3543"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 16,
+        "column": 52,
+        "tag": "pos",
+        "field": "state",
+        "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 519,
+          "End": 530
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 16,
+        "column": 63,
+        "tag": "pos",
+        "field": "state",
+        "detail": "unresolved: libass: position=4:4,5:5, active Style \"Default\"; xy-VSFilter: position=4:4,5:5, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 530,
+          "End": 539
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 16,
+        "column": 72,
+        "tag": "move",
+        "field": "behavior/repeat",
+        "detail": "unresolved: libass: unresolved (no verified scenario outcome); xy-VSFilter: unresolved (no verified scenario outcome).",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 539,
+          "End": 553
+        },
+        "sources": [
+          "libass:libass/ass_parse.c:525-530 xy:src/subtitles/RTS.cpp:2577 vsm:src/subtitles/RTS.cpp:3441,3510-3515"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 16,
+        "column": 72,
+        "tag": "move",
+        "field": "state",
+        "detail": "unresolved: libass: position=4:4,5:5, active Style \"Default\"; xy-VSFilter: position=4:4,5:5, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 539,
+          "End": 553
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS002",
+        "severity": "error",
+        "title": "Invalid tag value",
+        "description": "A checked tag value is malformed or outside its supported integer range.",
+        "suggested_fix": "Replace it with a syntactically valid value in the accepted range.",
+        "line": 17,
+        "column": 7,
+        "tag": "b",
+        "detail": "Bold value \"add\" must be 0, 1, or at least 100.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "sources": [
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L825",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L882",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2301",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2344",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2635"
         ]
       },
       {
@@ -2160,15 +2873,149 @@
         "line": 17,
         "column": 7,
         "tag": "blend",
-        "detail": "This tag is specific to VSFilterMod and is not shared by libass and VSFilter. Automatic fixes are disabled for this dialogue.",
+        "detail": "This VSFilterMod-only name is not portable to the selected renderer targets. Its dispatch or effects can differ; automatic edits require proof for every requested target.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
         "sources": [
           "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2745-L3717",
           "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L1716-L1769",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L281-L888"
         ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 17,
+        "column": 48,
+        "tag": "be",
+        "field": "state",
+        "detail": "unresolved: libass: be=1:1, active Style \"Alt\"; xy-VSFilter: be=1:1, active Style \"Alt\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 603,
+          "End": 607
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 17,
+        "column": 52,
+        "tag": "b",
+        "field": "arguments",
+        "detail": "unresolved: libass resolves 1 argument(s): \"add\" at [614,617); xy-VSFilter resolves 1 argument(s): \"add\" at [614,617).",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 607,
+          "End": 618
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 17,
+        "column": 52,
+        "tag": "b",
+        "field": "signature",
+        "detail": "unresolved: libass: unresolved argument shape; xy-VSFilter: unresolved argument shape.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 607,
+          "End": 618
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 17,
+        "column": 52,
+        "tag": "b",
+        "field": "application",
+        "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 607,
+          "End": 618
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 17,
+        "column": 52,
+        "tag": "b",
+        "field": "state",
+        "detail": "unresolved: libass: bold=unresolved, active Style \"Alt\"; xy-VSFilter: bold=unresolved, active Style \"Alt\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 607,
+          "End": 618
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 17,
+        "column": 63,
+        "tag": "fs",
+        "field": "state",
+        "detail": "unresolved: libass: fontsize=10:10, active Style \"Alt\"; xy-VSFilter: fontsize=10:10, active Style \"Alt\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 618,
+          "End": 623
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 17,
+        "column": 68,
+        "tag": "fs",
+        "field": "state",
+        "detail": "unresolved: libass: fontsize=20:20, active Style \"Alt\"; xy-VSFilter: fontsize=20:20, active Style \"Alt\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 623,
+          "End": 628
+        },
+        "sources": []
       }
     ],
-    "summary": "Fixes available: 0 safe, 0 unsafe, 6 not auto-fixable.",
+    "summary": "Fixes available: 0 safe, 0 unsafe, 37 not auto-fixable.",
     "output_sha256": "4d7e4753ce5de74d0e9b357ffba6e0fe2b3979720349372859cb1669030c7e88",
     "changed": false
   },
@@ -2177,6 +3024,105 @@
     "diagnostics": [
       {
         "file": "renderer-collisions.ass",
+        "id": "ASS003",
+        "severity": "warning",
+        "title": "Renderer behavior differs",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 11,
+        "column": 1,
+        "field": "document/style-layout",
+        "detail": "divergent: libass: name=\" Default\" at [214,222), fontname=\" Go Regular\" at [223,234), fontsize=\" 24\" at [235,238), bold=\" 0\" at [239,241), italic=\" 0\" at [242,244), alignment=\" 2\" at [245,247); xy-VSFilter: name=\" Default\" at [214,222), fontname=\" Go Regular\" at [223,234), fontsize=\" 24\" at [235,238), primarycolour=\" 0\" at [239,241), secondarycolour=\" 0\" at [242,244), outlinecolour=\" 2\" at [245,247), backcolour=\"\" at [247,247), bold=\"\" at [247,247), italic=\"\" at [247,247), underline=\"\" at [247,247), strikeout=\"\" at [247,247), scalex=\"\" at [247,247), scaley=\"\" at [247,247), spacing=\"\" at [247,247), angle=\"\" at [247,247), borderstyle=\"\" at [247,247), outline=\"\" at [247,247), shadow=\"\" at [247,247), alignment=\"\" at [247,247), marginl=\"\" at [247,247), marginr=\"\" at [247,247), marginv=\"\" at [247,247), encoding=\"\" at [247,247).",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 208,
+          "End": 247
+        },
+        "sources": [
+          "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
+          "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 11,
+        "column": 1,
+        "field": "document/style-values",
+        "detail": "unresolved: Style field layout is compared independently; renderer-specific value conversion and fallback compatibility remain unresolved.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 208,
+          "End": 247
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS003",
+        "severity": "warning",
+        "title": "Renderer behavior differs",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 12,
+        "column": 1,
+        "field": "document/style-layout",
+        "detail": "divergent: libass: name=\" Alt\" at [254,258), fontname=\" Go Regular\" at [259,270), fontsize=\" 32\" at [271,274), bold=\" 0\" at [275,277), italic=\" 0\" at [278,280), alignment=\" 7\" at [281,283); xy-VSFilter: name=\" Alt\" at [254,258), fontname=\" Go Regular\" at [259,270), fontsize=\" 32\" at [271,274), primarycolour=\" 0\" at [275,277), secondarycolour=\" 0\" at [278,280), outlinecolour=\" 7\" at [281,283), backcolour=\"\" at [283,283), bold=\"\" at [283,283), italic=\"\" at [283,283), underline=\"\" at [283,283), strikeout=\"\" at [283,283), scalex=\"\" at [283,283), scaley=\"\" at [283,283), spacing=\"\" at [283,283), angle=\"\" at [283,283), borderstyle=\"\" at [283,283), outline=\"\" at [283,283), shadow=\"\" at [283,283), alignment=\"\" at [283,283), marginl=\"\" at [283,283), marginr=\"\" at [283,283), marginv=\"\" at [283,283), encoding=\"\" at [283,283).",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 248,
+          "End": 283
+        },
+        "sources": [
+          "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
+          "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 12,
+        "column": 1,
+        "field": "document/style-values",
+        "detail": "unresolved: Style field layout is compared independently; renderer-specific value conversion and fallback compatibility remain unresolved.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 248,
+          "End": 283
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS002",
+        "severity": "error",
+        "title": "Invalid tag value",
+        "description": "A checked tag value is malformed or outside its supported integer range.",
+        "suggested_fix": "Replace it with a syntactically valid value in the accepted range.",
+        "line": 15,
+        "column": 3,
+        "tag": "fs",
+        "detail": "Expected a number, found \"vp6\".",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "sources": [
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L825",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L882",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2301",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2344",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2635"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
         "id": "ASS005",
         "severity": "warning",
         "title": "VSFilterMod tag may be unsupported by libass/VSFilter",
@@ -2185,11 +3131,33 @@
         "line": 15,
         "column": 3,
         "tag": "fsvp",
-        "detail": "This tag is specific to VSFilterMod and is not shared by libass and VSFilter. Automatic fixes are disabled for this dialogue.",
+        "detail": "This VSFilterMod-only name is not portable to the selected renderer targets. Its dispatch or effects can differ; automatic edits require proof for every requested target.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
         "sources": [
           "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2745-L3717",
           "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L1716-L1769",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L281-L888"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS002",
+        "severity": "error",
+        "title": "Invalid tag value",
+        "description": "A checked tag value is malformed or outside its supported integer range.",
+        "suggested_fix": "Replace it with a syntactically valid value in the accepted range.",
+        "line": 15,
+        "column": 9,
+        "tag": "fr",
+        "detail": "Expected a number, found \"s\".",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "sources": [
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L825",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L882",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2301",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2344",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2635"
         ]
       },
       {
@@ -2202,11 +3170,33 @@
         "line": 15,
         "column": 9,
         "tag": "frs",
-        "detail": "This tag is specific to VSFilterMod and is not shared by libass and VSFilter. Automatic fixes are disabled for this dialogue.",
+        "detail": "This VSFilterMod-only name is not portable to the selected renderer targets. Its dispatch or effects can differ; automatic edits require proof for every requested target.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
         "sources": [
           "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2745-L3717",
           "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L1716-L1769",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L281-L888"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS002",
+        "severity": "error",
+        "title": "Invalid tag value",
+        "description": "A checked tag value is malformed or outside its supported integer range.",
+        "suggested_fix": "Replace it with a syntactically valid value in the accepted range.",
+        "line": 15,
+        "column": 13,
+        "tag": "b",
+        "detail": "Bold value \"add\" must be 0, 1, or at least 100.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "sources": [
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L825",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L882",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2301",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2344",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2635"
         ]
       },
       {
@@ -2219,7 +3209,8 @@
         "line": 15,
         "column": 13,
         "tag": "blend",
-        "detail": "This tag is specific to VSFilterMod and is not shared by libass and VSFilter. Automatic fixes are disabled for this dialogue.",
+        "detail": "This VSFilterMod-only name is not portable to the selected renderer targets. Its dispatch or effects can differ; automatic edits require proof for every requested target.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
         "sources": [
           "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2745-L3717",
           "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L1716-L1769",
@@ -2236,7 +3227,8 @@
         "line": 15,
         "column": 24,
         "tag": "pos",
-        "detail": "Found 3 arguments; expected 2.",
+        "detail": "Found 3 arguments; expected 2 for libass.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
         "sources": [
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L405",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L494",
@@ -2251,6 +3243,221 @@
       },
       {
         "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 52,
+        "tag": "fs",
+        "field": "application",
+        "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 424,
+          "End": 430
+        },
+        "sources": [
+          "libass:libass/ass_parse.c:465-475 xy:src/subtitles/RTS.cpp:2506-2525 vsm:src/subtitles/RTS.cpp:3188-3206"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 52,
+        "tag": "fs",
+        "field": "state",
+        "detail": "unresolved: libass: fontsize=unresolved, active Style \"Default\"; xy-VSFilter: fontsize=unresolved, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 424,
+          "End": 430
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 58,
+        "tag": "fr",
+        "field": "application",
+        "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 430,
+          "End": 434
+        },
+        "sources": [
+          "libass:libass/ass_parse.c:547-555 xy:src/subtitles/RTS.cpp:2469-2475 vsm:src/subtitles/RTS.cpp:3130-3134"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 58,
+        "tag": "fr",
+        "field": "state",
+        "detail": "unresolved: libass: frz=unresolved, active Style \"Default\"; xy-VSFilter: frz=unresolved, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 430,
+          "End": 434
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 62,
+        "tag": "b",
+        "field": "arguments",
+        "detail": "unresolved: libass resolves 1 argument(s): \"add\" at [441,444); xy-VSFilter resolves 1 argument(s): \"add\" at [441,444).",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 434,
+          "End": 445
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 62,
+        "tag": "b",
+        "field": "signature",
+        "detail": "unresolved: libass: unresolved argument shape; xy-VSFilter: unresolved argument shape.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 434,
+          "End": 445
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 62,
+        "tag": "b",
+        "field": "application",
+        "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 434,
+          "End": 445
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 62,
+        "tag": "b",
+        "field": "state",
+        "detail": "unresolved: libass: bold=unresolved, active Style \"Default\"; xy-VSFilter: bold=unresolved, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 434,
+          "End": 445
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 73,
+        "tag": "pos",
+        "field": "signature",
+        "detail": "ignored-or-unsupported: libass: verified rejection; xy-VSFilter: verified rejection.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 445,
+          "End": 456
+        },
+        "sources": [
+          "libass:libass/ass_parse.c:606-612 xy:src/subtitles/RTS.cpp:2615-2627 vsm:src/subtitles/RTS.cpp:3510-3543"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 73,
+        "tag": "pos",
+        "field": "state",
+        "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 445,
+          "End": 456
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 84,
+        "tag": "pos",
+        "field": "state",
+        "detail": "unresolved: libass: position=4:4,5:5, active Style \"Default\"; xy-VSFilter: position=4:4,5:5, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 456,
+          "End": 465
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
         "id": "ASS001",
         "severity": "error",
         "title": "Invalid argument count",
@@ -2259,7 +3466,8 @@
         "line": 16,
         "column": 3,
         "tag": "pos",
-        "detail": "Found 3 arguments; expected 2.",
+        "detail": "Found 3 arguments; expected 2 for libass.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
         "sources": [
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L405",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L494",
@@ -2270,6 +3478,126 @@
           "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2396",
           "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2575",
           "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2615"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 16,
+        "column": 52,
+        "tag": "pos",
+        "field": "signature",
+        "detail": "ignored-or-unsupported: libass: verified rejection; xy-VSFilter: verified rejection.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 519,
+          "End": 530
+        },
+        "sources": [
+          "libass:libass/ass_parse.c:606-612 xy:src/subtitles/RTS.cpp:2615-2627 vsm:src/subtitles/RTS.cpp:3510-3543"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 16,
+        "column": 52,
+        "tag": "pos",
+        "field": "state",
+        "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 519,
+          "End": 530
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 16,
+        "column": 63,
+        "tag": "pos",
+        "field": "state",
+        "detail": "unresolved: libass: position=4:4,5:5, active Style \"Default\"; xy-VSFilter: position=4:4,5:5, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 530,
+          "End": 539
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 16,
+        "column": 72,
+        "tag": "move",
+        "field": "behavior/repeat",
+        "detail": "unresolved: libass: unresolved (no verified scenario outcome); xy-VSFilter: unresolved (no verified scenario outcome).",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 539,
+          "End": 553
+        },
+        "sources": [
+          "libass:libass/ass_parse.c:525-530 xy:src/subtitles/RTS.cpp:2577 vsm:src/subtitles/RTS.cpp:3441,3510-3515"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 16,
+        "column": 72,
+        "tag": "move",
+        "field": "state",
+        "detail": "unresolved: libass: position=4:4,5:5, active Style \"Default\"; xy-VSFilter: position=4:4,5:5, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 539,
+          "End": 553
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS002",
+        "severity": "error",
+        "title": "Invalid tag value",
+        "description": "A checked tag value is malformed or outside its supported integer range.",
+        "suggested_fix": "Replace it with a syntactically valid value in the accepted range.",
+        "line": 17,
+        "column": 7,
+        "tag": "b",
+        "detail": "Bold value \"add\" must be 0, 1, or at least 100.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "sources": [
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L825",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L882",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2301",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2344",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2635"
         ]
       },
       {
@@ -2282,15 +3610,149 @@
         "line": 17,
         "column": 7,
         "tag": "blend",
-        "detail": "This tag is specific to VSFilterMod and is not shared by libass and VSFilter. Automatic fixes are disabled for this dialogue.",
+        "detail": "This VSFilterMod-only name is not portable to the selected renderer targets. Its dispatch or effects can differ; automatic edits require proof for every requested target.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
         "sources": [
           "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2745-L3717",
           "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L1716-L1769",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L281-L888"
         ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 17,
+        "column": 48,
+        "tag": "be",
+        "field": "state",
+        "detail": "unresolved: libass: be=1:1, active Style \"Alt\"; xy-VSFilter: be=1:1, active Style \"Alt\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 603,
+          "End": 607
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 17,
+        "column": 52,
+        "tag": "b",
+        "field": "arguments",
+        "detail": "unresolved: libass resolves 1 argument(s): \"add\" at [614,617); xy-VSFilter resolves 1 argument(s): \"add\" at [614,617).",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 607,
+          "End": 618
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 17,
+        "column": 52,
+        "tag": "b",
+        "field": "signature",
+        "detail": "unresolved: libass: unresolved argument shape; xy-VSFilter: unresolved argument shape.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 607,
+          "End": 618
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 17,
+        "column": 52,
+        "tag": "b",
+        "field": "application",
+        "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 607,
+          "End": 618
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 17,
+        "column": 52,
+        "tag": "b",
+        "field": "state",
+        "detail": "unresolved: libass: bold=unresolved, active Style \"Alt\"; xy-VSFilter: bold=unresolved, active Style \"Alt\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 607,
+          "End": 618
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 17,
+        "column": 63,
+        "tag": "fs",
+        "field": "state",
+        "detail": "unresolved: libass: fontsize=10:10, active Style \"Alt\"; xy-VSFilter: fontsize=10:10, active Style \"Alt\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 618,
+          "End": 623
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 17,
+        "column": 68,
+        "tag": "fs",
+        "field": "state",
+        "detail": "unresolved: libass: fontsize=20:20, active Style \"Alt\"; xy-VSFilter: fontsize=20:20, active Style \"Alt\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 623,
+          "End": 628
+        },
+        "sources": []
       }
     ],
-    "summary": "Fixes available: 0 safe, 0 unsafe, 6 not auto-fixable.",
+    "summary": "Fixes available: 0 safe, 0 unsafe, 37 not auto-fixable.",
     "output_sha256": "4d7e4753ce5de74d0e9b357ffba6e0fe2b3979720349372859cb1669030c7e88",
     "changed": false
   },
@@ -2299,6 +3761,105 @@
     "diagnostics": [
       {
         "file": "renderer-collisions.ass",
+        "id": "ASS003",
+        "severity": "warning",
+        "title": "Renderer behavior differs",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 11,
+        "column": 1,
+        "field": "document/style-layout",
+        "detail": "divergent: libass: name=\" Default\" at [214,222), fontname=\" Go Regular\" at [223,234), fontsize=\" 24\" at [235,238), bold=\" 0\" at [239,241), italic=\" 0\" at [242,244), alignment=\" 2\" at [245,247); xy-VSFilter: name=\" Default\" at [214,222), fontname=\" Go Regular\" at [223,234), fontsize=\" 24\" at [235,238), primarycolour=\" 0\" at [239,241), secondarycolour=\" 0\" at [242,244), outlinecolour=\" 2\" at [245,247), backcolour=\"\" at [247,247), bold=\"\" at [247,247), italic=\"\" at [247,247), underline=\"\" at [247,247), strikeout=\"\" at [247,247), scalex=\"\" at [247,247), scaley=\"\" at [247,247), spacing=\"\" at [247,247), angle=\"\" at [247,247), borderstyle=\"\" at [247,247), outline=\"\" at [247,247), shadow=\"\" at [247,247), alignment=\"\" at [247,247), marginl=\"\" at [247,247), marginr=\"\" at [247,247), marginv=\"\" at [247,247), encoding=\"\" at [247,247).",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 208,
+          "End": 247
+        },
+        "sources": [
+          "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
+          "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 11,
+        "column": 1,
+        "field": "document/style-values",
+        "detail": "unresolved: Style field layout is compared independently; renderer-specific value conversion and fallback compatibility remain unresolved.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 208,
+          "End": 247
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS003",
+        "severity": "warning",
+        "title": "Renderer behavior differs",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 12,
+        "column": 1,
+        "field": "document/style-layout",
+        "detail": "divergent: libass: name=\" Alt\" at [254,258), fontname=\" Go Regular\" at [259,270), fontsize=\" 32\" at [271,274), bold=\" 0\" at [275,277), italic=\" 0\" at [278,280), alignment=\" 7\" at [281,283); xy-VSFilter: name=\" Alt\" at [254,258), fontname=\" Go Regular\" at [259,270), fontsize=\" 32\" at [271,274), primarycolour=\" 0\" at [275,277), secondarycolour=\" 0\" at [278,280), outlinecolour=\" 7\" at [281,283), backcolour=\"\" at [283,283), bold=\"\" at [283,283), italic=\"\" at [283,283), underline=\"\" at [283,283), strikeout=\"\" at [283,283), scalex=\"\" at [283,283), scaley=\"\" at [283,283), spacing=\"\" at [283,283), angle=\"\" at [283,283), borderstyle=\"\" at [283,283), outline=\"\" at [283,283), shadow=\"\" at [283,283), alignment=\"\" at [283,283), marginl=\"\" at [283,283), marginr=\"\" at [283,283), marginv=\"\" at [283,283), encoding=\"\" at [283,283).",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 248,
+          "End": 283
+        },
+        "sources": [
+          "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
+          "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 12,
+        "column": 1,
+        "field": "document/style-values",
+        "detail": "unresolved: Style field layout is compared independently; renderer-specific value conversion and fallback compatibility remain unresolved.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 248,
+          "End": 283
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS002",
+        "severity": "error",
+        "title": "Invalid tag value",
+        "description": "A checked tag value is malformed or outside its supported integer range.",
+        "suggested_fix": "Replace it with a syntactically valid value in the accepted range.",
+        "line": 15,
+        "column": 3,
+        "tag": "fs",
+        "detail": "Expected a number, found \"vp6\".",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "sources": [
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L825",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L882",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2301",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2344",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2635"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
         "id": "ASS005",
         "severity": "warning",
         "title": "VSFilterMod tag may be unsupported by libass/VSFilter",
@@ -2307,11 +3868,33 @@
         "line": 15,
         "column": 3,
         "tag": "fsvp",
-        "detail": "This tag is specific to VSFilterMod and is not shared by libass and VSFilter. Automatic fixes are disabled for this dialogue.",
+        "detail": "This VSFilterMod-only name is not portable to the selected renderer targets. Its dispatch or effects can differ; automatic edits require proof for every requested target.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
         "sources": [
           "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2745-L3717",
           "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L1716-L1769",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L281-L888"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS002",
+        "severity": "error",
+        "title": "Invalid tag value",
+        "description": "A checked tag value is malformed or outside its supported integer range.",
+        "suggested_fix": "Replace it with a syntactically valid value in the accepted range.",
+        "line": 15,
+        "column": 9,
+        "tag": "fr",
+        "detail": "Expected a number, found \"s\".",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "sources": [
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L825",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L882",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2301",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2344",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2635"
         ]
       },
       {
@@ -2324,11 +3907,33 @@
         "line": 15,
         "column": 9,
         "tag": "frs",
-        "detail": "This tag is specific to VSFilterMod and is not shared by libass and VSFilter. Automatic fixes are disabled for this dialogue.",
+        "detail": "This VSFilterMod-only name is not portable to the selected renderer targets. Its dispatch or effects can differ; automatic edits require proof for every requested target.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
         "sources": [
           "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2745-L3717",
           "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L1716-L1769",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L281-L888"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS002",
+        "severity": "error",
+        "title": "Invalid tag value",
+        "description": "A checked tag value is malformed or outside its supported integer range.",
+        "suggested_fix": "Replace it with a syntactically valid value in the accepted range.",
+        "line": 15,
+        "column": 13,
+        "tag": "b",
+        "detail": "Bold value \"add\" must be 0, 1, or at least 100.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "sources": [
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L825",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L882",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2301",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2344",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2635"
         ]
       },
       {
@@ -2341,7 +3946,8 @@
         "line": 15,
         "column": 13,
         "tag": "blend",
-        "detail": "This tag is specific to VSFilterMod and is not shared by libass and VSFilter. Automatic fixes are disabled for this dialogue.",
+        "detail": "This VSFilterMod-only name is not portable to the selected renderer targets. Its dispatch or effects can differ; automatic edits require proof for every requested target.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
         "sources": [
           "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2745-L3717",
           "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L1716-L1769",
@@ -2358,7 +3964,8 @@
         "line": 15,
         "column": 24,
         "tag": "pos",
-        "detail": "Found 3 arguments; expected 2.",
+        "detail": "Found 3 arguments; expected 2 for libass.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
         "sources": [
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L405",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L494",
@@ -2373,6 +3980,221 @@
       },
       {
         "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 52,
+        "tag": "fs",
+        "field": "application",
+        "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 424,
+          "End": 430
+        },
+        "sources": [
+          "libass:libass/ass_parse.c:465-475 xy:src/subtitles/RTS.cpp:2506-2525 vsm:src/subtitles/RTS.cpp:3188-3206"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 52,
+        "tag": "fs",
+        "field": "state",
+        "detail": "unresolved: libass: fontsize=unresolved, active Style \"Default\"; xy-VSFilter: fontsize=unresolved, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 424,
+          "End": 430
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 58,
+        "tag": "fr",
+        "field": "application",
+        "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 430,
+          "End": 434
+        },
+        "sources": [
+          "libass:libass/ass_parse.c:547-555 xy:src/subtitles/RTS.cpp:2469-2475 vsm:src/subtitles/RTS.cpp:3130-3134"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 58,
+        "tag": "fr",
+        "field": "state",
+        "detail": "unresolved: libass: frz=unresolved, active Style \"Default\"; xy-VSFilter: frz=unresolved, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 430,
+          "End": 434
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 62,
+        "tag": "b",
+        "field": "arguments",
+        "detail": "unresolved: libass resolves 1 argument(s): \"add\" at [441,444); xy-VSFilter resolves 1 argument(s): \"add\" at [441,444).",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 434,
+          "End": 445
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 62,
+        "tag": "b",
+        "field": "signature",
+        "detail": "unresolved: libass: unresolved argument shape; xy-VSFilter: unresolved argument shape.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 434,
+          "End": 445
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 62,
+        "tag": "b",
+        "field": "application",
+        "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 434,
+          "End": 445
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 62,
+        "tag": "b",
+        "field": "state",
+        "detail": "unresolved: libass: bold=unresolved, active Style \"Default\"; xy-VSFilter: bold=unresolved, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 434,
+          "End": 445
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 73,
+        "tag": "pos",
+        "field": "signature",
+        "detail": "ignored-or-unsupported: libass: verified rejection; xy-VSFilter: verified rejection.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 445,
+          "End": 456
+        },
+        "sources": [
+          "libass:libass/ass_parse.c:606-612 xy:src/subtitles/RTS.cpp:2615-2627 vsm:src/subtitles/RTS.cpp:3510-3543"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 73,
+        "tag": "pos",
+        "field": "state",
+        "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 445,
+          "End": 456
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 84,
+        "tag": "pos",
+        "field": "state",
+        "detail": "unresolved: libass: position=4:4,5:5, active Style \"Default\"; xy-VSFilter: position=4:4,5:5, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 456,
+          "End": 465
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
         "id": "ASS001",
         "severity": "error",
         "title": "Invalid argument count",
@@ -2381,7 +4203,8 @@
         "line": 16,
         "column": 3,
         "tag": "pos",
-        "detail": "Found 3 arguments; expected 2.",
+        "detail": "Found 3 arguments; expected 2 for libass.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
         "sources": [
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L405",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L494",
@@ -2392,6 +4215,126 @@
           "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2396",
           "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2575",
           "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2615"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 16,
+        "column": 52,
+        "tag": "pos",
+        "field": "signature",
+        "detail": "ignored-or-unsupported: libass: verified rejection; xy-VSFilter: verified rejection.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 519,
+          "End": 530
+        },
+        "sources": [
+          "libass:libass/ass_parse.c:606-612 xy:src/subtitles/RTS.cpp:2615-2627 vsm:src/subtitles/RTS.cpp:3510-3543"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 16,
+        "column": 52,
+        "tag": "pos",
+        "field": "state",
+        "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 519,
+          "End": 530
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 16,
+        "column": 63,
+        "tag": "pos",
+        "field": "state",
+        "detail": "unresolved: libass: position=4:4,5:5, active Style \"Default\"; xy-VSFilter: position=4:4,5:5, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 530,
+          "End": 539
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 16,
+        "column": 72,
+        "tag": "move",
+        "field": "behavior/repeat",
+        "detail": "unresolved: libass: unresolved (no verified scenario outcome); xy-VSFilter: unresolved (no verified scenario outcome).",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 539,
+          "End": 553
+        },
+        "sources": [
+          "libass:libass/ass_parse.c:525-530 xy:src/subtitles/RTS.cpp:2577 vsm:src/subtitles/RTS.cpp:3441,3510-3515"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 16,
+        "column": 72,
+        "tag": "move",
+        "field": "state",
+        "detail": "unresolved: libass: position=4:4,5:5, active Style \"Default\"; xy-VSFilter: position=4:4,5:5, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 539,
+          "End": 553
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS002",
+        "severity": "error",
+        "title": "Invalid tag value",
+        "description": "A checked tag value is malformed or outside its supported integer range.",
+        "suggested_fix": "Replace it with a syntactically valid value in the accepted range.",
+        "line": 17,
+        "column": 7,
+        "tag": "b",
+        "detail": "Bold value \"add\" must be 0, 1, or at least 100.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "sources": [
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L825",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L882",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2301",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2344",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2635"
         ]
       },
       {
@@ -2404,15 +4347,149 @@
         "line": 17,
         "column": 7,
         "tag": "blend",
-        "detail": "This tag is specific to VSFilterMod and is not shared by libass and VSFilter. Automatic fixes are disabled for this dialogue.",
+        "detail": "This VSFilterMod-only name is not portable to the selected renderer targets. Its dispatch or effects can differ; automatic edits require proof for every requested target.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
         "sources": [
           "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2745-L3717",
           "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L1716-L1769",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L281-L888"
         ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 17,
+        "column": 48,
+        "tag": "be",
+        "field": "state",
+        "detail": "unresolved: libass: be=1:1, active Style \"Alt\"; xy-VSFilter: be=1:1, active Style \"Alt\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 603,
+          "End": 607
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 17,
+        "column": 52,
+        "tag": "b",
+        "field": "arguments",
+        "detail": "unresolved: libass resolves 1 argument(s): \"add\" at [614,617); xy-VSFilter resolves 1 argument(s): \"add\" at [614,617).",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 607,
+          "End": 618
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 17,
+        "column": 52,
+        "tag": "b",
+        "field": "signature",
+        "detail": "unresolved: libass: unresolved argument shape; xy-VSFilter: unresolved argument shape.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 607,
+          "End": 618
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 17,
+        "column": 52,
+        "tag": "b",
+        "field": "application",
+        "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 607,
+          "End": 618
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 17,
+        "column": 52,
+        "tag": "b",
+        "field": "state",
+        "detail": "unresolved: libass: bold=unresolved, active Style \"Alt\"; xy-VSFilter: bold=unresolved, active Style \"Alt\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 607,
+          "End": 618
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 17,
+        "column": 63,
+        "tag": "fs",
+        "field": "state",
+        "detail": "unresolved: libass: fontsize=10:10, active Style \"Alt\"; xy-VSFilter: fontsize=10:10, active Style \"Alt\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 618,
+          "End": 623
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 17,
+        "column": 68,
+        "tag": "fs",
+        "field": "state",
+        "detail": "unresolved: libass: fontsize=20:20, active Style \"Alt\"; xy-VSFilter: fontsize=20:20, active Style \"Alt\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 623,
+          "End": 628
+        },
+        "sources": []
       }
     ],
-    "summary": "Fixes available: 0 safe, 0 unsafe, 6 not auto-fixable.",
+    "summary": "Fixes available: 0 safe, 0 unsafe, 37 not auto-fixable.",
     "output_sha256": "4d7e4753ce5de74d0e9b357ffba6e0fe2b3979720349372859cb1669030c7e88",
     "changed": false
   },
@@ -2421,6 +4498,105 @@
     "diagnostics": [
       {
         "file": "renderer-collisions.ass",
+        "id": "ASS003",
+        "severity": "warning",
+        "title": "Renderer behavior differs",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 11,
+        "column": 1,
+        "field": "document/style-layout",
+        "detail": "divergent: libass: name=\" Default\" at [214,222), fontname=\" Go Regular\" at [223,234), fontsize=\" 24\" at [235,238), bold=\" 0\" at [239,241), italic=\" 0\" at [242,244), alignment=\" 2\" at [245,247); xy-VSFilter: name=\" Default\" at [214,222), fontname=\" Go Regular\" at [223,234), fontsize=\" 24\" at [235,238), primarycolour=\" 0\" at [239,241), secondarycolour=\" 0\" at [242,244), outlinecolour=\" 2\" at [245,247), backcolour=\"\" at [247,247), bold=\"\" at [247,247), italic=\"\" at [247,247), underline=\"\" at [247,247), strikeout=\"\" at [247,247), scalex=\"\" at [247,247), scaley=\"\" at [247,247), spacing=\"\" at [247,247), angle=\"\" at [247,247), borderstyle=\"\" at [247,247), outline=\"\" at [247,247), shadow=\"\" at [247,247), alignment=\"\" at [247,247), marginl=\"\" at [247,247), marginr=\"\" at [247,247), marginv=\"\" at [247,247), encoding=\"\" at [247,247).",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 208,
+          "End": 247
+        },
+        "sources": [
+          "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
+          "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 11,
+        "column": 1,
+        "field": "document/style-values",
+        "detail": "unresolved: Style field layout is compared independently; renderer-specific value conversion and fallback compatibility remain unresolved.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 208,
+          "End": 247
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS003",
+        "severity": "warning",
+        "title": "Renderer behavior differs",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 12,
+        "column": 1,
+        "field": "document/style-layout",
+        "detail": "divergent: libass: name=\" Alt\" at [254,258), fontname=\" Go Regular\" at [259,270), fontsize=\" 32\" at [271,274), bold=\" 0\" at [275,277), italic=\" 0\" at [278,280), alignment=\" 7\" at [281,283); xy-VSFilter: name=\" Alt\" at [254,258), fontname=\" Go Regular\" at [259,270), fontsize=\" 32\" at [271,274), primarycolour=\" 0\" at [275,277), secondarycolour=\" 0\" at [278,280), outlinecolour=\" 7\" at [281,283), backcolour=\"\" at [283,283), bold=\"\" at [283,283), italic=\"\" at [283,283), underline=\"\" at [283,283), strikeout=\"\" at [283,283), scalex=\"\" at [283,283), scaley=\"\" at [283,283), spacing=\"\" at [283,283), angle=\"\" at [283,283), borderstyle=\"\" at [283,283), outline=\"\" at [283,283), shadow=\"\" at [283,283), alignment=\"\" at [283,283), marginl=\"\" at [283,283), marginr=\"\" at [283,283), marginv=\"\" at [283,283), encoding=\"\" at [283,283).",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 248,
+          "End": 283
+        },
+        "sources": [
+          "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
+          "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 12,
+        "column": 1,
+        "field": "document/style-values",
+        "detail": "unresolved: Style field layout is compared independently; renderer-specific value conversion and fallback compatibility remain unresolved.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 248,
+          "End": 283
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS002",
+        "severity": "error",
+        "title": "Invalid tag value",
+        "description": "A checked tag value is malformed or outside its supported integer range.",
+        "suggested_fix": "Replace it with a syntactically valid value in the accepted range.",
+        "line": 15,
+        "column": 3,
+        "tag": "fs",
+        "detail": "Expected a number, found \"vp6\".",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "sources": [
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L825",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L882",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2301",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2344",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2635"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
         "id": "ASS005",
         "severity": "warning",
         "title": "VSFilterMod tag may be unsupported by libass/VSFilter",
@@ -2429,11 +4605,33 @@
         "line": 15,
         "column": 3,
         "tag": "fsvp",
-        "detail": "This tag is specific to VSFilterMod and is not shared by libass and VSFilter. Automatic fixes are disabled for this dialogue.",
+        "detail": "This VSFilterMod-only name is not portable to the selected renderer targets. Its dispatch or effects can differ; automatic edits require proof for every requested target.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
         "sources": [
           "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2745-L3717",
           "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L1716-L1769",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L281-L888"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS002",
+        "severity": "error",
+        "title": "Invalid tag value",
+        "description": "A checked tag value is malformed or outside its supported integer range.",
+        "suggested_fix": "Replace it with a syntactically valid value in the accepted range.",
+        "line": 15,
+        "column": 9,
+        "tag": "fr",
+        "detail": "Expected a number, found \"s\".",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "sources": [
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L825",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L882",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2301",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2344",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2635"
         ]
       },
       {
@@ -2446,11 +4644,33 @@
         "line": 15,
         "column": 9,
         "tag": "frs",
-        "detail": "This tag is specific to VSFilterMod and is not shared by libass and VSFilter. Automatic fixes are disabled for this dialogue.",
+        "detail": "This VSFilterMod-only name is not portable to the selected renderer targets. Its dispatch or effects can differ; automatic edits require proof for every requested target.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
         "sources": [
           "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2745-L3717",
           "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L1716-L1769",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L281-L888"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS002",
+        "severity": "error",
+        "title": "Invalid tag value",
+        "description": "A checked tag value is malformed or outside its supported integer range.",
+        "suggested_fix": "Replace it with a syntactically valid value in the accepted range.",
+        "line": 15,
+        "column": 13,
+        "tag": "b",
+        "detail": "Bold value \"add\" must be 0, 1, or at least 100.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "sources": [
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L825",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L882",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2301",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2344",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2635"
         ]
       },
       {
@@ -2463,7 +4683,8 @@
         "line": 15,
         "column": 13,
         "tag": "blend",
-        "detail": "This tag is specific to VSFilterMod and is not shared by libass and VSFilter. Automatic fixes are disabled for this dialogue.",
+        "detail": "This VSFilterMod-only name is not portable to the selected renderer targets. Its dispatch or effects can differ; automatic edits require proof for every requested target.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
         "sources": [
           "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2745-L3717",
           "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L1716-L1769",
@@ -2480,7 +4701,8 @@
         "line": 15,
         "column": 24,
         "tag": "pos",
-        "detail": "Found 3 arguments; expected 2.",
+        "detail": "Found 3 arguments; expected 2 for libass.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
         "sources": [
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L405",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L494",
@@ -2495,6 +4717,221 @@
       },
       {
         "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 52,
+        "tag": "fs",
+        "field": "application",
+        "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 424,
+          "End": 430
+        },
+        "sources": [
+          "libass:libass/ass_parse.c:465-475 xy:src/subtitles/RTS.cpp:2506-2525 vsm:src/subtitles/RTS.cpp:3188-3206"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 52,
+        "tag": "fs",
+        "field": "state",
+        "detail": "unresolved: libass: fontsize=unresolved, active Style \"Default\"; xy-VSFilter: fontsize=unresolved, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 424,
+          "End": 430
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 58,
+        "tag": "fr",
+        "field": "application",
+        "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 430,
+          "End": 434
+        },
+        "sources": [
+          "libass:libass/ass_parse.c:547-555 xy:src/subtitles/RTS.cpp:2469-2475 vsm:src/subtitles/RTS.cpp:3130-3134"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 58,
+        "tag": "fr",
+        "field": "state",
+        "detail": "unresolved: libass: frz=unresolved, active Style \"Default\"; xy-VSFilter: frz=unresolved, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 430,
+          "End": 434
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 62,
+        "tag": "b",
+        "field": "arguments",
+        "detail": "unresolved: libass resolves 1 argument(s): \"add\" at [441,444); xy-VSFilter resolves 1 argument(s): \"add\" at [441,444).",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 434,
+          "End": 445
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 62,
+        "tag": "b",
+        "field": "signature",
+        "detail": "unresolved: libass: unresolved argument shape; xy-VSFilter: unresolved argument shape.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 434,
+          "End": 445
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 62,
+        "tag": "b",
+        "field": "application",
+        "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 434,
+          "End": 445
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 62,
+        "tag": "b",
+        "field": "state",
+        "detail": "unresolved: libass: bold=unresolved, active Style \"Default\"; xy-VSFilter: bold=unresolved, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 434,
+          "End": 445
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 73,
+        "tag": "pos",
+        "field": "signature",
+        "detail": "ignored-or-unsupported: libass: verified rejection; xy-VSFilter: verified rejection.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 445,
+          "End": 456
+        },
+        "sources": [
+          "libass:libass/ass_parse.c:606-612 xy:src/subtitles/RTS.cpp:2615-2627 vsm:src/subtitles/RTS.cpp:3510-3543"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 73,
+        "tag": "pos",
+        "field": "state",
+        "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 445,
+          "End": 456
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 84,
+        "tag": "pos",
+        "field": "state",
+        "detail": "unresolved: libass: position=4:4,5:5, active Style \"Default\"; xy-VSFilter: position=4:4,5:5, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 456,
+          "End": 465
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
         "id": "ASS001",
         "severity": "error",
         "title": "Invalid argument count",
@@ -2503,7 +4940,8 @@
         "line": 16,
         "column": 3,
         "tag": "pos",
-        "detail": "Found 3 arguments; expected 2.",
+        "detail": "Found 3 arguments; expected 2 for libass.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
         "sources": [
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L405",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L494",
@@ -2514,6 +4952,126 @@
           "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2396",
           "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2575",
           "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2615"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 16,
+        "column": 52,
+        "tag": "pos",
+        "field": "signature",
+        "detail": "ignored-or-unsupported: libass: verified rejection; xy-VSFilter: verified rejection.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 519,
+          "End": 530
+        },
+        "sources": [
+          "libass:libass/ass_parse.c:606-612 xy:src/subtitles/RTS.cpp:2615-2627 vsm:src/subtitles/RTS.cpp:3510-3543"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 16,
+        "column": 52,
+        "tag": "pos",
+        "field": "state",
+        "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 519,
+          "End": 530
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 16,
+        "column": 63,
+        "tag": "pos",
+        "field": "state",
+        "detail": "unresolved: libass: position=4:4,5:5, active Style \"Default\"; xy-VSFilter: position=4:4,5:5, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 530,
+          "End": 539
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 16,
+        "column": 72,
+        "tag": "move",
+        "field": "behavior/repeat",
+        "detail": "unresolved: libass: unresolved (no verified scenario outcome); xy-VSFilter: unresolved (no verified scenario outcome).",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 539,
+          "End": 553
+        },
+        "sources": [
+          "libass:libass/ass_parse.c:525-530 xy:src/subtitles/RTS.cpp:2577 vsm:src/subtitles/RTS.cpp:3441,3510-3515"
+        ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 16,
+        "column": 72,
+        "tag": "move",
+        "field": "state",
+        "detail": "unresolved: libass: position=4:4,5:5, active Style \"Default\"; xy-VSFilter: position=4:4,5:5, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 539,
+          "End": 553
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS002",
+        "severity": "error",
+        "title": "Invalid tag value",
+        "description": "A checked tag value is malformed or outside its supported integer range.",
+        "suggested_fix": "Replace it with a syntactically valid value in the accepted range.",
+        "line": 17,
+        "column": 7,
+        "tag": "b",
+        "detail": "Bold value \"add\" must be 0, 1, or at least 100.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "sources": [
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L825",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L882",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2301",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2344",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2635"
         ]
       },
       {
@@ -2526,15 +5084,149 @@
         "line": 17,
         "column": 7,
         "tag": "blend",
-        "detail": "This tag is specific to VSFilterMod and is not shared by libass and VSFilter. Automatic fixes are disabled for this dialogue.",
+        "detail": "This VSFilterMod-only name is not portable to the selected renderer targets. Its dispatch or effects can differ; automatic edits require proof for every requested target.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
         "sources": [
           "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2745-L3717",
           "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L1716-L1769",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L281-L888"
         ]
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 17,
+        "column": 48,
+        "tag": "be",
+        "field": "state",
+        "detail": "unresolved: libass: be=1:1, active Style \"Alt\"; xy-VSFilter: be=1:1, active Style \"Alt\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 603,
+          "End": 607
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 17,
+        "column": 52,
+        "tag": "b",
+        "field": "arguments",
+        "detail": "unresolved: libass resolves 1 argument(s): \"add\" at [614,617); xy-VSFilter resolves 1 argument(s): \"add\" at [614,617).",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 607,
+          "End": 618
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 17,
+        "column": 52,
+        "tag": "b",
+        "field": "signature",
+        "detail": "unresolved: libass: unresolved argument shape; xy-VSFilter: unresolved argument shape.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 607,
+          "End": 618
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 17,
+        "column": 52,
+        "tag": "b",
+        "field": "application",
+        "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 607,
+          "End": 618
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 17,
+        "column": 52,
+        "tag": "b",
+        "field": "state",
+        "detail": "unresolved: libass: bold=unresolved, active Style \"Alt\"; xy-VSFilter: bold=unresolved, active Style \"Alt\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 607,
+          "End": 618
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 17,
+        "column": 63,
+        "tag": "fs",
+        "field": "state",
+        "detail": "unresolved: libass: fontsize=10:10, active Style \"Alt\"; xy-VSFilter: fontsize=10:10, active Style \"Alt\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 618,
+          "End": 623
+        },
+        "sources": []
+      },
+      {
+        "file": "renderer-collisions.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 17,
+        "column": 68,
+        "tag": "fs",
+        "field": "state",
+        "detail": "unresolved: libass: fontsize=20:20, active Style \"Alt\"; xy-VSFilter: fontsize=20:20, active Style \"Alt\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 623,
+          "End": 628
+        },
+        "sources": []
       }
     ],
-    "summary": "Fixes available: 0 safe, 0 unsafe, 6 not auto-fixable.",
+    "summary": "Fixes available: 0 safe, 0 unsafe, 37 not auto-fixable.",
     "output_sha256": "4d7e4753ce5de74d0e9b357ffba6e0fe2b3979720349372859cb1669030c7e88",
     "changed": false
   }

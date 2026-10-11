@@ -11,32 +11,30 @@ import (
 // AnalyzeRedundantStyleOverrides retains the standalone entry point while
 // sharing the state transitions used by ASS006 and the font checker.
 func AnalyzeRedundantStyleOverrides(doc ass.Document) []Diagnostic {
-	return proveSafeFixes(doc, analyzeRedundantStyleOverrides(doc, nil), defaultFixTargets())
+	targets := DefaultAnalysisTargets()
+	return proveSafeFixes(doc, analyzeRedundantStyleOverrides(doc, targets.Primary), targets.Profiles())
 }
 
 // AnalyzeRedundantStyleOverridesForRenderer reports renderer-local redundancy.
 // It deliberately provides no edits: a single-profile observation is not the
 // all-target equivalence proof required by SafeFix (P08).
 func AnalyzeRedundantStyleOverridesForRenderer(doc ass.Document, profile renderer.Profile) []Diagnostic {
-	return scopeDiagnostics(analyzeRedundantStyleOverrides(doc, &profile), profile)
+	return scopeDiagnostics(analyzeRedundantStyleOverrides(doc, profile), profile)
 }
 
-func analyzeRedundantStyleOverrides(doc ass.Document, profile *renderer.Profile) []Diagnostic {
+func analyzeRedundantStyleOverrides(doc ass.Document, profile renderer.Profile) []Diagnostic {
+	doc = profile.DocumentView(doc)
 	styles := semantic.StyleStatesByName(doc.StyleFields)
 	var diagnostics []Diagnostic
 	for _, dialogue := range doc.Dialogues {
-		var collector *styleRunCollector
-		if profile == nil {
-			collector = newStyleRunCollector(dialogue, styles)
-		} else {
-			collector = newStyleRunCollectorForRenderer(dialogue, styles)
-		}
+		collector := newStyleRunCollectorForRenderer(dialogue, styles)
 		if collector == nil {
 			continue
 		}
-		collector.allowEdits = profile == nil
-		semantic.Evaluate(dialogue.ParsedText(), semantic.EvaluationOptions{
-			Styles: styles, DialogueStyle: dialogue.Style, Profile: profile,
+		collector.allowEdits = true
+		tree := ass.ParseConcreteDialogue(dialogue.Text)
+		semantic.EvaluateResolved(tree, profile, semantic.EvaluationOptions{
+			Styles: styles, DialogueStyle: dialogue.Style,
 			Observer: semantic.Observer{Tag: collector.onTag, Text: collector.onText},
 		})
 		if diagnostic, ok := collector.diagnostic(); ok {
@@ -50,7 +48,7 @@ func analyzeRedundantStyleOverrides(doc ass.Document, profile *renderer.Profile)
 // It never interprets tag values, renderer precedence, or reset semantics.
 type styleRunCollector struct {
 	dialogue   ass.Dialogue
-	tree       ass.DialogueText
+	tree       ass.ConcreteDialogue
 	styles     map[string]semantic.StyleState
 	stopped    bool
 	hasTags    bool
@@ -61,15 +59,12 @@ type styleRunCollector struct {
 	allowEdits bool
 }
 
-func newStyleRunCollector(dialogue ass.Dialogue, styles map[string]semantic.StyleState) *styleRunCollector {
-	return makeStyleRunCollector(dialogue, styles, dialogue.ParsedText().HasTags())
-}
-
 func newStyleRunCollectorForRenderer(dialogue ass.Dialogue, styles map[string]semantic.StyleState) *styleRunCollector {
-	return makeStyleRunCollector(dialogue, styles, ass.ParseConcreteDialogue(dialogue.Text).HasCandidates())
+	tree := ass.ParseConcreteDialogue(dialogue.Text)
+	return makeStyleRunCollector(dialogue, styles, tree.HasCandidates(), tree)
 }
 
-func makeStyleRunCollector(dialogue ass.Dialogue, styles map[string]semantic.StyleState, hasTags bool) *styleRunCollector {
+func makeStyleRunCollector(dialogue ass.Dialogue, styles map[string]semantic.StyleState, hasTags bool, tree ass.ConcreteDialogue) *styleRunCollector {
 	if !hasTags {
 		return nil
 	}
@@ -78,7 +73,7 @@ func makeStyleRunCollector(dialogue ass.Dialogue, styles map[string]semantic.Sty
 		return nil
 	}
 	return &styleRunCollector{
-		dialogue: dialogue, tree: dialogue.ParsedText(), styles: styles,
+		dialogue: dialogue, tree: tree, styles: styles,
 		runStart:   make(map[string]semantic.StateValue),
 		runTouched: make(map[string]bool),
 		allowEdits: true,
@@ -194,21 +189,20 @@ func (c *styleRunCollector) diagnostic() (Diagnostic, bool) {
 	}, true
 }
 
-func redundantStyleEdits(dialogue ass.Dialogue, tree ass.DialogueText, styleTags []ass.Tag) []TextEdit {
+func redundantStyleEdits(dialogue ass.Dialogue, tree ass.ConcreteDialogue, styleTags []ass.Tag) []TextEdit {
 	candidate := make(map[[2]int]bool, len(styleTags))
 	for _, tag := range styleTags {
 		candidate[[2]int{tag.Start, tag.End}] = true
 	}
-
 	var edits []TextEdit
 	for _, node := range tree.Nodes {
 		block := node.Block
-		if node.Kind != ass.OverrideNode || block == nil {
+		if block == nil {
 			continue
 		}
 		hasCandidate := false
 		for _, item := range block.Items {
-			if item.Tag != nil && candidate[[2]int{item.Tag.Start, item.Tag.End}] {
+			if item.Expression != nil && candidate[[2]int{item.Expression.Span.Start, item.Expression.Span.End}] {
 				hasCandidate = true
 				break
 			}
@@ -216,19 +210,13 @@ func redundantStyleEdits(dialogue ass.Dialogue, tree ass.DialogueText, styleTags
 		if !hasCandidate {
 			continue
 		}
-		if blockContainsOnlyCandidateTags(block, candidate) {
-			edits = append(edits, TextEdit{
-				Start: dialogue.TextStart + block.Start,
-				End:   dialogue.TextStart + block.End,
-			})
+		if concreteBlockContainsOnlyCandidates(block, candidate) {
+			edits = append(edits, TextEdit{Start: dialogue.TextStart + block.Span.Start, End: dialogue.TextStart + block.Span.End})
 			continue
 		}
 		for _, item := range block.Items {
-			if item.Tag != nil && candidate[[2]int{item.Tag.Start, item.Tag.End}] {
-				edits = append(edits, TextEdit{
-					Start: dialogue.TextStart + item.Tag.Start,
-					End:   dialogue.TextStart + item.Tag.End,
-				})
+			if item.Expression != nil && candidate[[2]int{item.Expression.Span.Start, item.Expression.Span.End}] {
+				edits = append(edits, TextEdit{Start: dialogue.TextStart + item.Expression.Span.Start, End: dialogue.TextStart + item.Expression.Span.End})
 			}
 		}
 	}
@@ -236,19 +224,16 @@ func redundantStyleEdits(dialogue ass.Dialogue, tree ass.DialogueText, styleTags
 	return edits
 }
 
-func blockContainsOnlyCandidateTags(block *ass.OverrideBlock, candidates map[[2]int]bool) bool {
-	if block == nil {
-		return false
-	}
+func concreteBlockContainsOnlyCandidates(block *ass.ConcreteBlock, candidates map[[2]int]bool) bool {
 	for _, item := range block.Items {
-		if item.Tag != nil {
-			if !candidates[[2]int{item.Tag.Start, item.Tag.End}] {
+		if item.Expression != nil {
+			if !candidates[[2]int{item.Expression.Span.Start, item.Expression.Span.End}] {
 				return false
 			}
 			continue
 		}
-		for _, b := range item.Raw {
-			switch b {
+		for i := range item.Raw {
+			switch item.Raw[i] {
 			case ' ', '\t', '\r', '\n', '\f', '\v':
 			default:
 				return false

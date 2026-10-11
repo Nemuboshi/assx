@@ -46,7 +46,7 @@ type CompatibilityFinding struct {
 
 // CompareDialogue compares every pair of requested profiles. No profiles
 // selects the frozen traditional compatibility scope: libass + xy-VSFilter.
-// Input options supply Style context; caller observers and Profile are not used.
+// Input options supply Style context; caller observers are not used.
 func CompareDialogue(tree ass.ConcreteDialogue, profiles []renderer.Profile, options EvaluationOptions) []CompatibilityFinding {
 	if len(profiles) == 0 {
 		libass, _ := renderer.Standard(renderer.Libass)
@@ -107,7 +107,6 @@ func observeInterpretation(tree ass.ConcreteDialogue, profile renderer.Profile, 
 		return true
 	})
 	var indexSpans []ass.ConcreteSpan
-	options.Profile = nil
 	options.Observer = Observer{Tag: func(event TagEvent, state StateView) {
 		span := ass.ConcreteSpan{Start: event.Tag.Start, End: event.Tag.End}
 		indexSpans = append(indexSpans, span)
@@ -245,7 +244,8 @@ func verifiedSignature(s renderer.SignatureStatus) bool {
 	return s == renderer.SignatureVerified || s == renderer.SignatureRejected
 }
 func transitionCertain(e TagEvent) bool {
-	return !e.Barrier && (e.Uncertainty == UncertaintyNone || e.Ignored && e.Signature == renderer.SignatureRejected)
+	// A fix fence does not make a source-verified rejection uncertain.
+	return e.Ignored && e.Signature == renderer.SignatureRejected || !e.Barrier && e.Uncertainty == UncertaintyNone
 }
 func sameOwners(a, b map[string]ass.ConcreteSpan) bool {
 	if len(a) != len(b) {

@@ -14,7 +14,7 @@ func TestStylePrecisionFindingsAndFixClasses(t *testing.T) {
 	if len(diagnostics) != 4 {
 		t.Fatalf("got %d style findings, want 4: %#v", len(diagnostics), diagnostics)
 	}
-	if diagnostics[0].ID != IssueStyleInteger || diagnostics[0].Field != "Default.marginl" || diagnostics[0].FixSafety != SafeFix {
+	if diagnostics[0].ID != IssueStyleInteger || diagnostics[0].Field != "Default.marginl" || diagnostics[0].FixSafety != "" {
 		t.Fatalf("integer precision diagnostic = %#v", diagnostics[0])
 	}
 	if diagnostics[1].ID != IssueStyleFloat || diagnostics[1].Field != "Default.fontsize" || diagnostics[1].FixSafety != UnsafeFix {
@@ -31,14 +31,14 @@ func TestStylePrecisionFindingsAndFixClasses(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if safeCount != 1 || !strings.Contains(safeOnly, "Default, 12, 20.123456789, 0.0, 100.00000000000001") {
+	if safeCount != 0 || safeOnly != text {
 		t.Fatalf("safe-only result (%d): %s", safeCount, safeOnly)
 	}
 	all, allCount, err := ApplyFixes(text, diagnostics, true)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if allCount != 3 || !strings.Contains(all, "Default, 12, 20.123457, 0.0, 100") {
+	if allCount != 2 || !strings.Contains(all, "Default, 12.75, 20.123457, 0.0, 100") {
 		t.Fatalf("all-fixes result (%d): %s", allCount, all)
 	}
 }

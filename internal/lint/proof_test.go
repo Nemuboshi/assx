@@ -76,7 +76,7 @@ func TestEmptyOverrideSafeFixRequiresResolvedOperations(t *testing.T) {
 
 func TestGroupedProofSerializesOnceWithReferences(t *testing.T) {
 	doc := parseFontOverrideText(`{\fs21\fs21}A{\fs22\fs22}B`)
-	diagnostics := AnalyzeDocument(doc)
+	diagnostics := primaryFindings(AnalyzeDocument(doc))
 	type proofSummary struct {
 		FixProof    json.RawMessage `json:"fix_proof"`
 		FixProofRef string          `json:"fix_proof_ref"`
@@ -186,7 +186,7 @@ func TestSafeFixCannotUseAModOnlyPrefixProofInDefaultMode(t *testing.T) {
 	}
 	_, err = buildFixProof(source, []FixEditProof{{
 		ID: IssueNoEffect, Edit: TextEdit{Start: 1, End: 7},
-	}}, defaultFixTargets())
+	}}, DefaultAnalysisTargets())
 	if err == nil {
 		t.Fatal("default libass/xy proof accepted removal of the Mod prefix collision")
 	}
@@ -226,7 +226,7 @@ func TestSafeFixRejectsEditOutsideItsRuleSource(t *testing.T) {
 	fieldStart := strings.Index(source, "PlayResX: 640") + len("PlayResX: ")
 	edit := TextEdit{Start: fieldStart, End: fieldStart + 3, Replacement: "1280"}
 	candidate := FixEditProof{ID: IssueNoEffect, Edit: edit}
-	if _, err := buildFixProof(source, []FixEditProof{candidate}, defaultFixTargets()); err == nil {
+	if _, err := buildFixProof(source, []FixEditProof{candidate}, DefaultAnalysisTargets()); err == nil {
 		t.Fatal("ASS006 proof accepted a PlayResX edit")
 	}
 	forged := Diagnostic{

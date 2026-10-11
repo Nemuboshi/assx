@@ -8,10 +8,24 @@ import (
 )
 
 func TestP09PreservesDefaultModValueValidation(t *testing.T) {
-	for _, source := range []string{`{\z(bad)}A`, `{\frs(bad)}A`, `{\fsvp(bad)}A`, `{\fshp(bad)}A`, `{\ortho2}A`} {
-		got := Analyze(ass.Dialogue{Text: source})
-		if len(got) != 1 || got[0].ID != IssueVSFilterModTag {
-			t.Errorf("default validation changed for %s: %#v", source, got)
+	for _, tc := range []struct {
+		source        string
+		invalidPrefix bool
+	}{
+		{`{\z(bad)}A`, false},
+		{`{\frs(bad)}A`, true},
+		{`{\fsvp(bad)}A`, true},
+		{`{\fshp(bad)}A`, true},
+		{`{\ortho2}A`, false},
+	} {
+		got := Analyze(ass.Dialogue{Text: tc.source})
+		if !hasIssue(got, IssueVSFilterModTag) || hasIssue(got, IssueInvalidValue) != tc.invalidPrefix {
+			t.Errorf("default portability/prefix validation changed for %s: %#v", tc.source, got)
+		}
+		for _, diagnostic := range got {
+			if diagnostic.FixSafety != "" || len(diagnostic.Edits) != 0 || diagnostic.FixProof != nil {
+				t.Errorf("Mod-only source supplied a default fix: %#v", diagnostic)
+			}
 		}
 	}
 }

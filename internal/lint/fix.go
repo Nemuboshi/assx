@@ -60,6 +60,15 @@ type safeProofEdits struct {
 }
 
 func ApplyFixes(text string, diagnostics []Diagnostic, includeUnsafe bool) (string, int, error) {
+	return ApplyFixesForTargets(text, diagnostics, includeUnsafe, DefaultAnalysisTargets())
+}
+
+// ApplyFixesForTargets checks every SafeFix against the same analysis policy.
+func ApplyFixesForTargets(text string, diagnostics []Diagnostic, includeUnsafe bool, targets AnalysisTargets) (string, int, error) {
+	return applyFixes(text, diagnostics, includeUnsafe, targets)
+}
+
+func applyFixes(text string, diagnostics []Diagnostic, includeUnsafe bool, targets AnalysisTargets) (string, int, error) {
 	proofs := fixProofsByID(diagnostics)
 	for _, diagnostic := range diagnostics {
 		if diagnostic.FixProofRef == "" {
@@ -115,11 +124,16 @@ func ApplyFixes(text string, diagnostics []Diagnostic, includeUnsafe bool) (stri
 		fixes++
 	}
 	if len(safeEdits) != 0 {
-		doc := proofDocument(text, safeEdits)
-		validEdits := fixEditIndex(analyzeDocumentUnproved(doc))
+		doc := targets.Primary.DocumentView(proofDocument(text, safeEdits))
+		validEdits := fixEditIndex(analyzeDocumentForTargetsUnproved(doc, targets))
 		for _, group := range groups {
-			if err := verifyFixProofs(text, doc, group.edits, group.proof, validEdits); err != nil {
+			if err := verifyFixProofs(text, doc, group.edits, group.proof, targets.Profiles(), validEdits); err != nil {
 				return "", 0, fmt.Errorf("verify SafeFix edits: %w", err)
+			}
+		}
+		if len(groups) > 1 {
+			if _, err := buildFixProofWithDocument(text, doc, safeEdits, targets.Profiles(), validEdits); err != nil {
+				return "", 0, fmt.Errorf("verify combined SafeFix edits: %w", err)
 			}
 		}
 	}

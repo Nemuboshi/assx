@@ -1,4 +1,4 @@
-# Differential renderer compatibility (P07/10)
+# Differential renderer compatibility
 
 Implementation: [Issue #22](https://github.com/Nemuboshi/assx/issues/22) of
 [Epic #16](https://github.com/Nemuboshi/assx/issues/16). This builds on P04
@@ -14,13 +14,14 @@ separate diagnostics. An empty target list selects libass + xy-VSFilter;
 VSFilterMod is explicit and retains its `_VSMOD`/`_LUA` build capabilities.
 Duplicate profiles are removed without changing caller order.
 
-The default CLI and existing `Analyze`/`AnalyzeDocument` APIs retain the
-libass/xy-VSFilter default scope and their frozen exit behavior. P08 adds
-renderer-scoped proof metadata to `SafeFix` diagnostics and verifies each
-selected edit again before `ApplyFixes` changes the source. Keep a fix
-unavailable when any selected target lacks proof. Compatibility APIs provide no
-edits or fix safety classification. Renderer selection in the CLI belongs to
-P10; P08 implements equivalence proofs for edits.
+The default CLI selects libass primary and xy-VSFilter compatibility.
+An explicit `--renderer` without `--compat` selects only that primary.
+An explicit empty compatibility value also selects only the primary.
+Target-configured analysis normalizes and sorts profiles by renderer, revision, and build capabilities.
+Compatibility diagnostics never become primary validity errors.
+Compatibility APIs provide no edits or safety classification.
+SafeFix requires proof for every caller-requested profile and build.
+See [contracts](renderer-contracts.md) for application authorization.
 
 Syntax stays in `internal/ass`; source partitioning and renderer evidence stay
 in `internal/ass/renderer`; comparison of effective operations and scenario
@@ -169,6 +170,10 @@ allocates zero bytes in comparison. These are allocation measurements, not
 peak-memory measurements or statistically established timing improvements.
 Existing default benchmarks were compared against `main@5efedc6` with three
 100 ms runs on the same machine; most allocation counts were unchanged and
-timing was noisy. The compatibility path remains opt-in.
+timing was noisy. These measurements describe the P07 opt-in implementation, not the P10 default pipeline.
 
-Existing frozen default contracts remain unchanged.
+## Implementation record: P07
+
+P07 introduced pairwise comparison beside the then-default adapter.
+P10 integrated this comparison with the default CLI and removed the adapter.
+Reviewed default snapshot corrections are recorded in [contracts](renderer-contracts.md).

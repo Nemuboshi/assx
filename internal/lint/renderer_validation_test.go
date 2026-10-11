@@ -65,7 +65,7 @@ func TestScopedValidityPreservesDefaultStrictness(t *testing.T) {
 				t.Fatalf("scoped diagnostics: %#v", ds)
 			}
 			for _, d := range ds {
-				if d.Renderer != tt.profile.Kind().String() || d.Edits != nil || d.FixSafety != "" {
+				if d.Renderer != ProfileScope(tt.profile) || d.Edits != nil || d.FixSafety != "" {
 					t.Fatalf("unexpected scope or automatic edit: %#v", d)
 				}
 			}
@@ -163,7 +163,7 @@ func TestScopedDocumentConsumersAndJSON(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if !strings.Contains(string(b), `"renderer":"`+tt.name+`"`) {
+		if !strings.Contains(string(b), `"renderer":"`+tt.name+`@`) {
 			t.Errorf("%s renderer context missing from JSON: %s", tt.name, b)
 		}
 	}
@@ -171,8 +171,8 @@ func TestScopedDocumentConsumersAndJSON(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if strings.Contains(string(before), `"renderer"`) {
-		t.Fatalf("default JSON schema changed: %s", before)
+	if !strings.Contains(string(before), `"renderer":"libass@`) {
+		t.Fatalf("default JSON omits pinned primary scope: %s", before)
 	}
 	if !reflect.DeepEqual(modern, AnalyzeDocumentForRenderer(doc, mod)) {
 		t.Fatal("renderer scoped diagnostic ordering is nondeterministic")
@@ -181,7 +181,7 @@ func TestScopedDocumentConsumersAndJSON(t *testing.T) {
 
 func TestScopedDrawingAndSyntaxSurviveMigration(t *testing.T) {
 	lib, _, _, _, _ := scopedProfiles(t)
-	ds := AnalyzeForRenderer(ass.Dialogue{Line: 1, Text: `{\p1}m 0 {\fs20}l 3{\p0}X{garbage}{\fnArial`}, lib)
+	ds := AnalyzeForRenderer(ass.Dialogue{Line: 1, Text: `{\p1}m 0 {\fs20}l 3{\p0}X{garbage\fs20}{\fnArial`}, lib)
 	if !hasIssue(ds, IssueMalformedDrawing) || !hasIssue(ds, IssueOverrideJunk) ||
 		!hasIssue(ds, IssueUnterminatedBlock) {
 		t.Fatalf("lost drawing/override syntax checks: %#v", ds)
@@ -248,7 +248,7 @@ func TestScopedExistingConsumerJSONContext(t *testing.T) {
 	got := AnalyzeNoEffectsForRenderer(ass.Dialogue{
 		Line: 1, Text: `{\pos(1,2)\pos(3,4)}A`,
 	}, xy)
-	if len(got) != 1 || got[0].Renderer != xy.Kind().String() {
+	if len(got) != 1 || got[0].Renderer != ProfileScope(xy) {
 		t.Fatalf("renderer-local ASS006 omitted scope: %#v", got)
 	}
 	for _, d := range got {

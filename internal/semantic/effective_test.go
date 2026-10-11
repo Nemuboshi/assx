@@ -24,7 +24,7 @@ func TestEvaluateDialogueNoEffectReasons(t *testing.T) {
 
 	for _, test := range cases {
 		t.Run(test.name, func(t *testing.T) {
-			effects := EvaluateDialogue(ass.ParseDialogueText(test.text))
+			effects := evaluateLibassNoEffects(ass.ParseConcreteDialogue(test.text))
 			if len(effects) != test.wantCount {
 				t.Fatalf("effects = %#v, want %d", effects, test.wantCount)
 			}
@@ -39,7 +39,7 @@ func TestEvaluateDialogueNoEffectReasons(t *testing.T) {
 }
 
 func TestEvaluateDialogueFirstWinsReportsOwner(t *testing.T) {
-	effects := EvaluateDialogue(ass.ParseDialogueText(`{\an7\an8}A`))
+	effects := evaluateLibassNoEffects(ass.ParseConcreteDialogue(`{\an7\an8}A`))
 	if len(effects) != 1 || effects[0].Reason != FirstWinsIgnored || effects[0].OwnerIndex != 0 {
 		t.Fatalf("effects = %#v", effects)
 	}
@@ -61,7 +61,7 @@ func TestEvaluateDialogueTransformNoEffect(t *testing.T) {
 	}
 	for _, test := range cases {
 		t.Run(test.name, func(t *testing.T) {
-			effects := EvaluateDialogue(ass.ParseDialogueText(test.text))
+			effects := evaluateLibassNoEffects(ass.ParseConcreteDialogue(test.text))
 			found := false
 			for _, effect := range effects {
 				if effect.Tag.Name == "t" && effect.Reason == TransitionNoEffect {
@@ -77,7 +77,7 @@ func TestEvaluateDialogueTransformNoEffect(t *testing.T) {
 
 func TestTransitionInvalidatesEffectiveState(t *testing.T) {
 	text := "{\\bord2\\t(\\bord4)\\bord2}A"
-	effects := EvaluateDialogue(ass.ParseDialogueText(text))
+	effects := evaluateLibassNoEffects(ass.ParseConcreteDialogue(text))
 	for _, effect := range effects {
 		if effect.Tag.Name == "bord" {
 			t.Fatalf("transform-dependent border was reported redundant: %#v", effects)

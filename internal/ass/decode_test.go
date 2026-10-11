@@ -1,6 +1,8 @@
-package ass
+package ass_test
 
 import (
+	. "assx/internal/ass"
+	"assx/internal/ass/renderer"
 	"testing"
 
 	"assx/internal/ass/spec"
@@ -56,15 +58,15 @@ func TestExactDecoderRejectsPrefixOnly(t *testing.T) {
 
 func TestTagIRPreservesASTAndExposesSpec(t *testing.T) {
 	source := "{\\fs20junk\\t(\\clip(1.5,0,30,40))}Text"
-	tree := ParseDialogueText(source)
+	tree := ParseConcreteDialogue(source)
 	if len(tree.Nodes) < 1 || tree.Nodes[0].Block == nil {
 		t.Fatalf("missing parsed block: %#v", tree.Nodes)
 	}
-	tag := tree.Nodes[0].Block.Items[0].Tag
-	if tag == nil || source[tag.Start:tag.End] != tag.Raw {
+	tag := resolvedTestTag(t, source)
+	if source[tag.Start:tag.End] != tag.Raw {
 		t.Fatalf("source spans not lossless: %#v", tag)
 	}
-	ir := DecodeTag(*tag)
+	ir := DecodeTagWithSpec(tag, spec.TagSpecs[tag.Name], true)
 	if !ir.Known || ir.Spec.Value != spec.NumberValue || len(ir.Spec.Slots) != 1 || ir.Spec.Slots[0] != "fontsize" {
 		t.Fatalf("spec metadata lost: %#v", ir)
 	}
@@ -95,9 +97,8 @@ func TestTagIRRendererAmbiguityAndStructuredArgs(t *testing.T) {
 		{`{\pos(10,20)}`, ValueValid},
 	}
 	for _, tt := range tests {
-		tree := ParseDialogueText(tt.input)
-		tag := tree.Nodes[0].Block.Items[0].Tag
-		ir := DecodeTag(*tag)
+		tag := resolvedTestTag(t, tt.input)
+		ir := DecodeTagWithSpec(tag, spec.TagSpecs[tag.Name], true)
 		got := ir.Argument(0)
 		if got.Status != tt.status {
 			t.Errorf("%s: status %v, want %v", tt.input, got.Status, tt.status)
@@ -120,7 +121,7 @@ func TestStructuredArgumentStatus(t *testing.T) {
 		{"clip", []string{"1.5", "0", "10", "20"}, ValueAmbiguous},
 	}
 	for _, tc := range cases {
-		ir := DecodeTag(Tag{Name: tc.name, Args: tc.args})
+		ir := DecodeTagWithSpec(Tag{Name: tc.name, Args: tc.args}, spec.TagSpecs[tc.name], true)
 		if got := ir.ArgumentsStatus(); got != tc.status {
 			t.Errorf("%s(%v): status %v, want %v", tc.name, tc.args, got, tc.status)
 		}
@@ -136,8 +137,10 @@ func BenchmarkTypedTagDecode(b *testing.B) {
 		{Name: "move", Args: []string{"0", "0", "100", "100", "500", "1000"}},
 	}
 	b.ReportAllocs()
-	for i := 0; i < b.N; i++ {
-		ir := DecodeTag(tags[i%len(tags)])
+	i := 0
+	for b.Loop() {
+		i++
+		ir := DecodeTagWithSpec(tags[i%len(tags)], spec.TagSpecs[tags[i%len(tags)].Name], true)
 		decodedArgumentBenchSink = ir.Argument(0)
 	}
 }
@@ -159,4 +162,16 @@ func TestRendererIntegerDefaultsAndOverflow(t *testing.T) {
 			t.Errorf("%q: %#v", test.raw, got)
 		}
 	}
+}
+
+func resolvedTestTag(t *testing.T, source string) Tag {
+	t.Helper()
+	profile, _ := renderer.Standard(renderer.Libass)
+	tree := ParseConcreteDialogue(source)
+	r := profile.Resolve(*tree.Nodes[0].Block.Items[0].Expression, source)
+	tag := Tag{Name: r.Name, Raw: r.Raw, Start: r.Source.Start, End: r.Source.End, Paren: r.Form == renderer.Paren}
+	for _, arg := range r.Args {
+		tag.Args = append(tag.Args, arg.Raw)
+	}
+	return tag
 }

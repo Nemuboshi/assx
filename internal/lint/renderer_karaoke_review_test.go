@@ -86,7 +86,7 @@ func TestReviewRendererScopedKaraokeDocumentWarnings(t *testing.T) {
 						continue
 					}
 					count++
-					if d.Renderer != tc.profile.Kind().String() || d.FixSafety != "" ||
+					if d.Renderer != ProfileScope(tc.profile) || d.FixSafety != "" ||
 						len(d.Edits) != 0 || !strings.Contains(d.Detail, "2000 ms") {
 						t.Fatalf("incorrect scoped ASS030: %#v", d)
 					}
