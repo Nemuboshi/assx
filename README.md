@@ -22,6 +22,9 @@ For reproducible performance benchmarks, profiling, and the pinned baseline, see
 
 ## Development
 
+Use [Research](docs/research.md) to find subject documents, select tools, and record evidence.
+Use ASD-STE100 for repository documentation. Keep technical names and evidence exact.
+
 Requires Go 1.27.0 or later. From the repository root:
 
 ```sh

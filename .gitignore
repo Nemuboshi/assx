@@ -1,6 +1,7 @@
 ref/
 .pi/
 /.codegraph/
+/.gitnexus/
 /assx
 /assx.exe
 /AGENTS.md
