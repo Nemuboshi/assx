@@ -11,8 +11,11 @@ renderer**. The document entry point also checks headers, event fields,
 Style definitions/references, drawing syntax, and karaoke timing.
 These observation-only APIs do not authorize edits.
 `AnalyzeDocumentForTargets` accepts a primary profile and compatibility profiles.
-VSFilter primaries read fixed ASS v4+ record slots, including when Format fields differ.
-Other dialects remain outside this projection; it is not a complete renderer loader.
+VSFilter primaries project fixed ASS v4+ record slots, including when Format fields differ.
+Style and Dialogue rows form separate groups.
+A group projects only when every row has a known ASS v4+ layout.
+Unknown groups keep the parser's original fields. This is not a complete renderer
+loader.
 `Analyze` and `AnalyzeDocument` call the same concrete/profile pipeline with libass primary and xy-VSFilter compatibility.
 There is no historical input adapter or duplicate semantic path.
 

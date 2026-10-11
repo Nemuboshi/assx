@@ -7,17 +7,38 @@ import (
 	"assx/internal/ass"
 )
 
-// DocumentView projects fixed-position VSFilter records for lint consumers.
-// It is a source-backed field view, not a complete renderer document loader.
+// DocumentView projects known ASS v4+ fixed-position VSFilter record groups for lint consumers.
+// Groups with unknown layouts retain the parser's original fields.
 func (p Profile) DocumentView(doc ass.Document) ass.Document {
 	if p.kind == Libass || len(doc.Lines) == 0 || len(doc.Dialogues) == 1 && len(doc.Dialogues[0].Fields) == 0 {
 		return doc
 	}
 	tree := ass.ParseConcreteDocument(doc.Text)
+	layouts := p.ResolveDocumentLayouts(tree)
+	stylesKnown, dialoguesKnown := true, true
+	hasStyles, hasDialogues := false, false
+	for _, row := range layouts {
+		switch row.Kind {
+		case "style":
+			hasStyles = true
+			stylesKnown = stylesKnown && row.Known
+		case "dialogue":
+			hasDialogues = true
+			dialoguesKnown = dialoguesKnown && row.Known
+		}
+	}
+	projectStyles, projectDialogues := hasStyles && stylesKnown, hasDialogues && dialoguesKnown
+	if !projectStyles && !projectDialogues {
+		return doc
+	}
 	view := doc
-	view.Dialogues = nil
-	view.StyleFields = nil
-	view.EventFormat = slices.Clone(assEventColumns)
+	if projectDialogues {
+		view.Dialogues = nil
+		view.EventFormat = slices.Clone(assEventColumns)
+	}
+	if projectStyles {
+		view.StyleFields = nil
+	}
 	sections := make([]string, len(tree.Lines))
 	section := ""
 	for i, line := range tree.Lines {
@@ -26,11 +47,10 @@ func (p Profile) DocumentView(doc ass.Document) ass.Document {
 		}
 		sections[i] = section
 	}
-	for _, row := range p.ResolveDocumentLayouts(tree) {
+	for _, row := range layouts {
 		line := tree.Lines[row.Line-1]
-		// Other dialects remain outside the ASS v4+ projection.
 		section := sections[row.Line-1]
-		if row.Kind == "style" && section == "v4+ styles" {
+		if projectStyles && row.Kind == "style" && section == "v4+ styles" {
 			name := ""
 			if len(row.Cells) != 0 {
 				name = strings.TrimSpace(row.Cells[0].Raw)
@@ -47,7 +67,7 @@ func (p Profile) DocumentView(doc ass.Document) ass.Document {
 				})
 			}
 		}
-		if row.Kind != "dialogue" || section != "events" {
+		if row.Kind != "dialogue" || !projectDialogues || section != "events" {
 			continue
 		}
 		dialogue := ass.Dialogue{Line: row.Line, LineStart: line.ContentSpan.Start}

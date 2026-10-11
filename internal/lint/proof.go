@@ -196,7 +196,7 @@ func attachProofReferences(diagnostics []Diagnostic, indexes []int, proof *FixPr
 }
 
 func buildFixProof(source string, edits []FixEditProof, targets AnalysisTargets) (*FixProof, error) {
-	doc := targets.Primary.DocumentView(proofDocument(source, edits))
+	doc := proofDocument(source, edits)
 	return buildFixProofWithDocument(source, doc, edits, targets.Profiles(), fixEditIndex(analyzeDocumentForTargetsUnproved(doc, targets)))
 }
 

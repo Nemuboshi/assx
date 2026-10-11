@@ -32,6 +32,60 @@ func TestPrimaryVSFilterUsesFixedDocumentSlots(t *testing.T) {
 	}
 }
 
+func TestSafeFixProofUsesEachTargetsStyleLayout(t *testing.T) {
+	xy, _ := renderer.Standard(renderer.XYVSFilter)
+	libass, _ := renderer.Standard(renderer.Libass)
+	source := "[Script Info]\nScriptType: v4.00+\nPlayResX: 640\nPlayResY: 480\n[V4+ Styles]\nFormat: Name, Fontname, Bold, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Fontsize, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\nStyle: Default,Arial,20,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,30,0,0,0,100,100,0,0,1,2,2,2,10,10,10,1\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{\\fs20}A\n"
+	doc := ass.Parse(source)
+	targets := AnalysisTargets{Primary: xy, Compatibility: []renderer.Profile{libass}}
+	findings := AnalyzeDocumentForTargets(doc, targets)
+	redundant := false
+	for _, finding := range findings {
+		if finding.ID != IssueNoEffect && finding.ID != IssueRedundantStyleOverrides {
+			continue
+		}
+		redundant = true
+		if finding.FixSafety == SafeFix || finding.FixProof != nil || len(finding.Edits) != 0 {
+			t.Fatal("proof borrowed the primary renderer's Style layout")
+		}
+	}
+	if !redundant {
+		t.Fatal("xy-VSFilter did not report the redundant font size")
+	}
+	fixed, count, err := ApplyFixesForTargets(doc.Text, findings, false, targets)
+	if err != nil || count != 0 || fixed != doc.Text {
+		t.Fatalf("unsafe cross-renderer fix applied: count=%d err=%v", count, err)
+	}
+
+	// Recreate a primary-projected proof to verify application rechecks the source layouts.
+	projected := proveSafeFixes(xy.DocumentView(doc), analyzeDocumentForTargetsUnproved(doc, targets), targets.Profiles())
+	if safe, _, _ := CountFixes(projected); safe == 0 {
+		t.Fatal("test input did not reproduce a primary-view proof")
+	}
+	fixed, count, err = ApplyFixesForTargets(doc.Text, projected, false, targets)
+	if err == nil || count != 0 {
+		t.Fatalf("application accepted a primary-view proof: fixed=%q count=%d err=%v", fixed, count, err)
+	}
+}
+
+func TestUnknownDialectKeepsOriginalVSFilterView(t *testing.T) {
+	xy, _ := renderer.Standard(renderer.XYVSFilter)
+	source := "[Script Info]\nScriptType: v4.00\nPlayResX: 640\nPlayResY: 480\n[V4 Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, TertiaryColour, BackColour, Bold, Italic, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, AlphaLevel, Encoding\nStyle: Default,Arial,20,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,1,2,2,2,10,10,10,0,1\n[Events]\nFormat: Marked, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: Marked=0,0:00:00.00,0:00:01.00,Default,,0,0,0,,A\n"
+	doc := ass.Parse(source)
+	view := xy.DocumentView(doc)
+	if len(view.Dialogues) != 1 || len(view.StyleFields) != len(doc.StyleFields) {
+		t.Fatal("unsupported SSA records were projected as ASS v4+")
+	}
+	if _, ok := view.Dialogues[0].Field("marked"); !ok {
+		t.Fatal("SSA Marked field was renamed to an ASS layer")
+	}
+	for _, finding := range AnalyzeDocumentForTargets(doc, AnalysisTargets{Primary: xy}) {
+		if finding.ID == IssueUndefinedStyle {
+			t.Fatalf("valid SSA Style was lost: %#v", finding)
+		}
+	}
+}
+
 func TestSafeFixDoesNotBorrowPrimaryStyleLayout(t *testing.T) {
 	doc := parseStyleOverrideText("Name, MarginL", "Default,12.75", "A")
 	libass, _ := renderer.Standard(renderer.Libass)
