@@ -55,11 +55,13 @@ capabilities cannot prove which command owns the position slot.
 
 ## Consumers and rollout
 
-The default `Evaluate` entry point retains the frozen historical
-libass/xy-oriented CLI contract using a compatibility *input adapter*;
-it shares the same state transitions and state store. This adapter must
-not be confused with a multi-renderer equivalence proof. Its removal and
-CLI migration must be coordinated with P06 and the baseline review policy.
+This section records the P05 implementation. Use the linked subject documents
+for later phases.
+
+The default `Evaluate` entry point uses a compatibility input adapter.
+It shares the state engine with renderer-scoped evaluation.
+The adapter does not prove equivalence across renderers.
+Its removal requires CLI migration and baseline review.
 
 Consumers can now evaluate explicit profiles:
 
@@ -67,11 +69,10 @@ Consumers can now evaluate explicit profiles:
 - `lint.AnalyzeRedundantStyleOverridesForRenderer` for ASS013;
 - `lint.AnalyzeFontsForRenderer` for font state and drawing visibility.
 
-These per-renderer observations carry **no automatic edits**. P06 owns
-profile-scoped validity diagnostics, P07 differential compatibility, and
-P08 cross-renderer SafeFix equivalence. P09 will implement additional
-source-verified VSFilterMod extension effects; unmodeled extensions
-currently remain conservative.
+These observations carry no automatic edits. See [scoped lint](renderer-lint.md)
+for validity diagnostics, [compatibility](renderer-compatibility.md) for renderer
+comparison, and [contracts](renderer-contracts.md) for SafeFix proof scope.
+An unmodeled extension remains a proof barrier.
 
 The existing CLI, JSON schema, diagnostic order, and default SafeFix
 classification are deliberately unchanged in P05. No new renderer CLI
