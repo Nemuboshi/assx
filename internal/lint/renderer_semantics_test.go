@@ -21,12 +21,12 @@ func TestRendererScopedASS006DoesNotInventSafeFix(t *testing.T) {
 	}{
 		{renderer.Libass, 0},
 		{renderer.XYVSFilter, 0},
-		{renderer.VSFilterMod, 1},
+		{renderer.VSFilterMod, 0},
 	} {
 		var profile renderer.Profile
 		var err error
 		if tc.kind == renderer.VSFilterMod {
-			profile, err = renderer.New(tc.kind, renderer.Build{Mod: renderer.FeatureEnabled})
+			profile, err = renderer.New(tc.kind, renderer.Build{Mod: renderer.FeatureEnabled, Lua: renderer.FeatureDisabled})
 		} else {
 			profile, err = renderer.Standard(tc.kind)
 		}

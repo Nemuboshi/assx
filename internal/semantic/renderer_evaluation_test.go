@@ -30,8 +30,8 @@ func TestRendererScopedPositionFirstWins(t *testing.T) {
 		{
 			name:             "VSFilterMod enabled",
 			profile:          mustMod(t, renderer.FeatureEnabled),
-			firstUncertainty: UncertaintyNone, secondApplied: false,
-			known: true, wantSource: 0,
+			firstUncertainty: UncertaintyRendererDependent, secondApplied: false,
+			known: false, wantSource: -1,
 		},
 		{
 			name:         "VSFilterMod disabled",
@@ -95,7 +95,7 @@ func mustProfile(t *testing.T, kind renderer.Kind) renderer.Profile {
 
 func mustMod(t *testing.T, state renderer.Feature) renderer.Profile {
 	t.Helper()
-	profile, err := renderer.New(renderer.VSFilterMod, renderer.Build{Mod: state})
+	profile, err := renderer.New(renderer.VSFilterMod, renderer.Build{Mod: state, Lua: renderer.FeatureDisabled})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -135,9 +135,12 @@ func TestRendererScopedPrefixShadowingAndUnmodeledExtension(t *testing.T) {
 		t.Fatalf("Mod tags = %#v", events)
 	}
 	for i, want := range []string{"fsvp", "frs", "blend"} {
-		if events[i].Tag.Name != want || events[i].Uncertainty != UncertaintyUnsupported || !events[i].Barrier {
+		if events[i].Tag.Name != want {
 			t.Errorf("Mod extension %d = %#v", i, events[i])
 		}
+	}
+	if events[0].Barrier || events[1].Barrier || !events[2].Barrier {
+		t.Fatalf("modeled spacing/orientation and unmodeled blend barriers = %#v", events)
 	}
 }
 

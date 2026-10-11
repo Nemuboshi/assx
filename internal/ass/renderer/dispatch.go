@@ -63,7 +63,7 @@ func (p Profile) selectName(head string) (name, fallback string, status MatchSta
 			}
 		}
 	case VSFilterMod:
-		// fad is an exact apply command but has no prefix-normalization arm.
+		// fad bypasses normalization and reaches the exact apply branch.
 		if head == "fad" {
 			return "fad", "", Matched
 		}
@@ -154,7 +154,13 @@ func (p Profile) Resolve(expr ass.ConcreteExpression, source string) Result {
 			}
 		}
 	}
-	if s, ok := spec.TagSpecs[r.Name]; ok {
+	s, known := spec.TagSpecs[r.Name]
+	if p.kind == VSFilterMod {
+		if mod, ok := spec.VSFilterModTagSpecs[r.Name]; ok {
+			s, known = mod, true
+		}
+	}
+	if known {
 		r.Policy = s
 		r.Policy.Slots = append([]string(nil), s.Slots...)
 		r.Policy.Counts = append([]int(nil), s.Counts...)

@@ -188,6 +188,9 @@ func evaluate(tree ass.DialogueText, concrete *ass.ConcreteDialogue, options Eva
 		}
 	}
 	name := DialogueStyleLookupName(options.DialogueStyle)
+	if options.Profile != nil && options.Profile.Kind() == renderer.VSFilterMod && options.Profile.Build().Mod == renderer.FeatureEnabled {
+		options.Styles = modStyleStates(options.Styles)
+	}
 	m := evaluator{
 		options:          options,
 		active:           make(map[string]owner),
@@ -299,6 +302,16 @@ func (m *evaluator) consumeTag(tag ass.Tag) TagEvent {
 		event.Renderer = m.options.Profile.Kind()
 		event.Match, event.Signature, event.Shadowed = op.match, op.signature, op.shadowed
 		event.Citation = op.citation
+		// Lua globals can shadow core names before built-in dispatch.
+		if m.options.Profile.Kind() == renderer.VSFilterMod && m.options.Profile.Build().Lua != renderer.FeatureDisabled {
+			m.markActiveLive()
+			m.invalidateAll()
+			for _, slot := range []string{"position", "origin", "fade", "alignment", "clip_vector"} {
+				m.uncertainLatches[slot] = true
+			}
+			m.blockProofs(&event, UncertaintyRendererDependent)
+			return event
+		}
 		// Resolution cannot name an unclosed parenthesized expression. It is
 		// malformed syntax, not a well-formed, harmless unknown command.
 		// Handle this before the UnknownName/Ignored fast path so malformed
@@ -344,6 +357,10 @@ func (m *evaluator) consumeTag(tag ass.Tag) TagEvent {
 		if !known || tagSpec.VSFilterModOnly && len(tagSpec.Slots) == 0 {
 			m.markActiveLive()
 			m.invalidateAll()
+			if tag.Name == "mover" || tag.Name == "moves3" || tag.Name == "moves4" {
+				// These extensions can claim the same EF_MOVE latch as pos/move.
+				m.uncertainLatches["position"] = true
+			}
 			m.blockProofs(&event, UncertaintyUnsupported)
 			return event
 		}
@@ -390,7 +407,25 @@ func (m *evaluator) consumeTag(tag ass.Tag) TagEvent {
 		m.blockProofs(&event, reason)
 		return event
 	}
-	if tag.InTransition {
+	if m.options.Profile != nil && m.options.Profile.Kind() == renderer.VSFilterMod && tag.Name == "pos" && len(tag.Args) == 3 {
+		m.applyModPositionDepth(tag, index, &event)
+		return event
+	}
+	if tagSpec.VSFilterModOnly && op.signature != renderer.SignatureVerified {
+		m.markActiveLive()
+		m.invalidate(tagSpec.Slots)
+		m.blockProofs(&event, UncertaintyUnresolved)
+		return event
+	}
+	modEffectChild := tag.InTransition && m.options.Profile != nil &&
+		m.options.Profile.Kind() == renderer.VSFilterMod && op.signature == renderer.SignatureVerified &&
+		(tag.Name == "pos" || tag.Name == "move" || tag.Name == "org" || tag.Name == "fad" || tag.Name == "fade")
+	if modEffectChild {
+		// Mod reaches effect handlers inside transforms without animation.
+		// The parent timing model remains conservative.
+		m.blockProofs(&event, UncertaintyTimeDependent)
+	}
+	if tag.InTransition && !modEffectChild {
 		if reason := m.handleTransformChild(tag, tagSpec); reason != UncertaintyNone {
 			m.blockProofs(&event, reason)
 		}

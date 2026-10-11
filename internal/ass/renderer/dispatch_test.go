@@ -87,7 +87,7 @@ func TestSignatureEvidenceIsRendererScoped(t *testing.T) {
 		{source: "\\pos(1,2)", want: [3]SignatureStatus{SignatureVerified, SignatureVerified, SignatureVerified}},
 		{source: "\\pos(1,2,3)", want: [3]SignatureStatus{SignatureRejected, SignatureRejected, SignatureVerified}},
 		{source: "\\blend(add)", want: [3]SignatureStatus{SignatureUnknown, SignatureUnknown, SignatureVerified}},
-		{source: "\\fsvp6", want: [3]SignatureStatus{SignatureVerified, SignatureVerified, SignatureInferred}},
+		{source: "\\fsvp6", want: [3]SignatureStatus{SignatureVerified, SignatureVerified, SignatureVerified}},
 	} {
 		e, raw := first(t, test.source)
 		for i, profile := range p {
@@ -168,8 +168,14 @@ func TestCapabilitiesNeverDefaultToEnabled(t *testing.T) {
 			t.Errorf("%s disabled mod branch still selected: %+v", raw, off)
 		}
 	}
-	if _, err := New(VSFilterMod, Build{Mod: FeatureDisabled, Lua: FeatureEnabled}); err == nil {
-		t.Fatal("accepted incompatible build capabilities")
+	// RTS.cpp:2466-2520 gates global dispatch only on _LUA.
+	luaOnly, err := New(VSFilterMod, Build{Mod: FeatureDisabled, Lua: FeatureEnabled})
+	if err != nil {
+		t.Fatalf("independent Lua global dispatch capability rejected: %v", err)
+	}
+	luaExpr, luaSource := first(t, "\\lua(test)")
+	if result := luaOnly.Resolve(luaExpr, luaSource); result.Name == "lua" && result.Status == Matched {
+		t.Fatal("explicit lua command escaped its _VSMOD guard")
 	}
 	e, source := first(t, "\\lua(test)")
 	for _, build := range []Build{{Mod: FeatureEnabled, Lua: FeatureUnknown}, {Mod: FeatureUnknown, Lua: FeatureUnknown}} {
@@ -268,12 +274,10 @@ func TestSignatureMetadataCannotPromoteConditionalGates(t *testing.T) {
 					if state.build != FeatureEnabled && sig.Evidence != SignatureUnknown {
 						t.Errorf("build=%d advertised evidence from unavailable branch: %+v", state.build, sig)
 					}
-					if state.build == FeatureEnabled && tc.tag != "fsvp" && sig.Evidence != SignatureVerified {
+					if state.build == FeatureEnabled && sig.Evidence != SignatureVerified {
 						t.Errorf("enabled source-verified signature lost evidence: %+v", sig)
 					}
-					if state.build == FeatureEnabled && tc.tag == "fsvp" && sig.Evidence != SignatureInferred {
-						t.Errorf("inferred evidence upgraded without proof: %+v", sig)
-					}
+
 				}
 				if !found {
 					t.Fatalf("missing signature %s arity=%d", tc.tag, tc.arity)
