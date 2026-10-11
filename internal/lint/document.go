@@ -2,6 +2,7 @@ package lint
 
 import (
 	"assx/internal/ass"
+	editpkg "assx/internal/edit"
 	"sort"
 )
 
@@ -47,7 +48,7 @@ func suppressOverlappingNoEffect(diagnostics, redundant []Diagnostic) []Diagnost
 			overlaps := false
 			for _, fontDiagnostic := range redundant {
 				for _, fontEdit := range fontDiagnostic.Edits {
-					if edit.Start < fontEdit.End && fontEdit.Start < edit.End {
+					if (editpkg.Interval{Start: edit.Start, End: edit.End}).Overlaps(editpkg.Interval{Start: fontEdit.Start, End: fontEdit.End}) {
 						overlaps = true
 						break
 					}
