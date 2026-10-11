@@ -22,7 +22,7 @@ func diagnosticsForIDs(diags []Diagnostic, ids ...string) []Diagnostic {
 
 func TestEmptyParenthesizedClipIsIgnored(t *testing.T) {
 	text := `before{\clip()}after`
-	dialogue := ass.Dialogue{Text: text, Line: 1, Syntax: ass.ParseDialogueText(text)}
+	dialogue := ass.Dialogue{Text: text, Line: 1}
 	findings := Analyze(dialogue)
 	if got := diagnosticsForIDs(findings, IssueArgumentCount, IssueOverrideJunk); len(got) != 0 {
 		t.Fatalf("empty clip produced diagnostics: %#v", got)
@@ -57,7 +57,7 @@ func TestLegacyAlignmentAliasRendererDifference(t *testing.T) {
 		{text: `{\a12}A`, want: false},
 	}
 	for _, test := range cases {
-		dialogue := ass.Dialogue{Text: test.text, Line: 1, Syntax: ass.ParseDialogueText(test.text)}
+		dialogue := ass.Dialogue{Text: test.text, Line: 1}
 		found := false
 		for _, diagnostic := range Analyze(dialogue) {
 			if diagnostic.ID == IssueRendererDiff && diagnostic.Tag == "a" {
@@ -84,7 +84,7 @@ func TestUnterminatedOverrideBlock(t *testing.T) {
 	}
 	for _, test := range cases {
 		t.Run(test.name, func(t *testing.T) {
-			dialogue := ass.Dialogue{Text: test.text, Line: 1, Syntax: ass.ParseDialogueText(test.text)}
+			dialogue := ass.Dialogue{Text: test.text, Line: 1}
 			findings := diagnosticsForIDs(Analyze(dialogue), IssueUnterminatedBlock)
 			if len(findings) != test.want {
 				t.Fatalf("findings = %#v, want %d", findings, test.want)

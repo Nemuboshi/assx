@@ -73,41 +73,69 @@
       ],
       "nodes": [
         {
-          "kind": 2,
+          "kind": 1,
           "raw": "{\\fs20\\fs25}",
           "start": 0,
           "end": 12,
           "items": [
             {
               "kind": 1,
-              "raw": "",
+              "raw": "\\fs20",
               "start": 1,
               "end": 6,
-              "tag": {
-                "name": "fs",
-                "raw": "\\fs20",
-                "args": [
-                  "20"
-                ],
-                "start": 1,
-                "end": 6,
-                "column": 3
+              "expression": {
+                "Span": {
+                  "Start": 1,
+                  "End": 6
+                },
+                "SlashSpan": {
+                  "Start": 1,
+                  "End": 2
+                },
+                "HeadSpan": {
+                  "Start": 2,
+                  "End": 6
+                },
+                "Head": "fs20",
+                "Parenthesized": false,
+                "Open": -1,
+                "Close": -1,
+                "ContentSpan": {
+                  "Start": 0,
+                  "End": 0
+                },
+                "Commas": null,
+                "Raw": "\\fs20"
               }
             },
             {
               "kind": 1,
-              "raw": "",
+              "raw": "\\fs25",
               "start": 6,
               "end": 11,
-              "tag": {
-                "name": "fs",
-                "raw": "\\fs25",
-                "args": [
-                  "25"
-                ],
-                "start": 6,
-                "end": 11,
-                "column": 8
+              "expression": {
+                "Span": {
+                  "Start": 6,
+                  "End": 11
+                },
+                "SlashSpan": {
+                  "Start": 6,
+                  "End": 7
+                },
+                "HeadSpan": {
+                  "Start": 7,
+                  "End": 11
+                },
+                "Head": "fs25",
+                "Parenthesized": false,
+                "Open": -1,
+                "Close": -1,
+                "ContentSpan": {
+                  "Start": 0,
+                  "End": 0
+                },
+                "Commas": null,
+                "Raw": "\\fs25"
               }
             }
           ]
@@ -466,444 +494,82 @@
     "diagnostics": [
       {
         "file": "utf16le.ass",
-        "id": "ASS006",
-        "severity": "suggestion",
-        "title": "Override has no effect",
-        "description": "An override is replaced, reset, or ignored before it affects dialogue text, or repeats the value already active in every affected state slot.",
-        "suggested_fix": "Remove it or move it to the intended text boundary.",
-        "fix_safety": "safe",
-        "fix_proof": {
-          "id": "aa98dfac73917e141a359bb638e18f2e8ea8b3c5677914c61520b4b26cbed393",
-          "source_sha256": "26de9d5eae6d7377c54b7e7a87db22da799e7f33bcbafb36625ebba26bb1f21c",
-          "edited_sha256": "5aa011d0e8f2d40b9f79464d98999ca523e108b7c08af58a2221be84aed1cc8f",
-          "source_edits": [
-            {
-              "id": "ASS006",
-              "edit": {
-                "start": 424,
-                "end": 429,
-                "replacement": ""
-              }
-            }
-          ],
-          "targets": [
-            {
-              "renderer": "libass",
-              "version": "f61db567e6593df3470e91594bcd4ad2d0473aff",
-              "capabilities": {
-                "vsfiltermod": "not-applicable",
-                "lua": "not-applicable"
-              }
-            },
-            {
-              "renderer": "xy-VSFilter",
-              "version": "135a30153a38fa846cb5c39df0f258403e92096e",
-              "capabilities": {
-                "vsfiltermod": "not-applicable",
-                "lua": "not-applicable"
-              }
-            }
-          ],
-          "interpretations": [
-            {
-              "target": {
-                "renderer": "libass",
-                "version": "f61db567e6593df3470e91594bcd4ad2d0473aff",
-                "capabilities": {
-                  "vsfiltermod": "not-applicable",
-                  "lua": "not-applicable"
-                }
-              },
-              "dialogues": [
-                {
-                  "line": 15,
-                  "before_trace_sha256": "86bd771c61061506c84a847cc5f0b2bb554d9f1a810368f3f2f74f8d3b8fa780",
-                  "after_trace_sha256": "67f84a9d4a0d5a02c4413cfe42f3081452280f77e162c22762917dbbe30c5a0c",
-                  "before_interpretations": [
-                    {
-                      "kind": "tag",
-                      "source": {
-                        "Start": 1,
-                        "End": 6
-                      },
-                      "tag": "fs",
-                      "raw": "\\fs20",
-                      "arguments": [
-                        "20"
-                      ],
-                      "match": "matched",
-                      "signature": "verified",
-                      "citation": "libass:libass/ass_parse.c:465-475 xy:src/subtitles/RTS.cpp:2506-2525 vsm:src/subtitles/RTS.cpp:3188-3206",
-                      "policy": "assign",
-                      "slots": [
-                        "fontsize"
-                      ],
-                      "before": {
-                        "fontsize": {
-                          "value": "24:24",
-                          "known": true
-                        }
-                      },
-                      "after": {
-                        "fontsize": {
-                          "value": "20:20",
-                          "known": true
-                        }
-                      },
-                      "applied": true,
-                      "known": true,
-                      "uncertainty": "none",
-                      "state": {
-                        "active_style": "Default",
-                        "values": {
-                          "fontsize": {
-                            "value": "20:20",
-                            "known": true
-                          }
-                        },
-                        "sources": {
-                          "fontsize": 0
-                        }
-                      }
-                    },
-                    {
-                      "kind": "tag",
-                      "source": {
-                        "Start": 6,
-                        "End": 11
-                      },
-                      "index": 1,
-                      "tag": "fs",
-                      "raw": "\\fs25",
-                      "arguments": [
-                        "25"
-                      ],
-                      "match": "matched",
-                      "signature": "verified",
-                      "citation": "libass:libass/ass_parse.c:465-475 xy:src/subtitles/RTS.cpp:2506-2525 vsm:src/subtitles/RTS.cpp:3188-3206",
-                      "policy": "assign",
-                      "slots": [
-                        "fontsize"
-                      ],
-                      "before": {
-                        "fontsize": {
-                          "value": "20:20",
-                          "known": true
-                        }
-                      },
-                      "after": {
-                        "fontsize": {
-                          "value": "25:25",
-                          "known": true
-                        }
-                      },
-                      "applied": true,
-                      "known": true,
-                      "uncertainty": "none",
-                      "state": {
-                        "active_style": "Default",
-                        "values": {
-                          "fontsize": {
-                            "value": "25:25",
-                            "known": true
-                          }
-                        },
-                        "sources": {
-                          "fontsize": 1
-                        }
-                      }
-                    }
-                  ],
-                  "after_interpretations": [
-                    {
-                      "kind": "tag",
-                      "source": {
-                        "Start": 1,
-                        "End": 6
-                      },
-                      "tag": "fs",
-                      "raw": "\\fs25",
-                      "arguments": [
-                        "25"
-                      ],
-                      "match": "matched",
-                      "signature": "verified",
-                      "citation": "libass:libass/ass_parse.c:465-475 xy:src/subtitles/RTS.cpp:2506-2525 vsm:src/subtitles/RTS.cpp:3188-3206",
-                      "policy": "assign",
-                      "slots": [
-                        "fontsize"
-                      ],
-                      "before": {
-                        "fontsize": {
-                          "value": "24:24",
-                          "known": true
-                        }
-                      },
-                      "after": {
-                        "fontsize": {
-                          "value": "25:25",
-                          "known": true
-                        }
-                      },
-                      "applied": true,
-                      "known": true,
-                      "uncertainty": "none",
-                      "state": {
-                        "active_style": "Default",
-                        "values": {
-                          "fontsize": {
-                            "value": "25:25",
-                            "known": true
-                          }
-                        },
-                        "sources": {
-                          "fontsize": 0
-                        }
-                      }
-                    },
-                    {
-                      "kind": "text",
-                      "source": {
-                        "Start": 7,
-                        "End": 25
-                      },
-                      "text": "日本語の字幕",
-                      "state": {
-                        "active_style": "Default",
-                        "values": {
-                          "fontsize": {
-                            "value": "25:25",
-                            "known": true
-                          }
-                        },
-                        "sources": {
-                          "fontsize": 0
-                        }
-                      }
-                    }
-                  ]
-                }
-              ]
-            },
-            {
-              "target": {
-                "renderer": "xy-VSFilter",
-                "version": "135a30153a38fa846cb5c39df0f258403e92096e",
-                "capabilities": {
-                  "vsfiltermod": "not-applicable",
-                  "lua": "not-applicable"
-                }
-              },
-              "dialogues": [
-                {
-                  "line": 15,
-                  "before_trace_sha256": "86bd771c61061506c84a847cc5f0b2bb554d9f1a810368f3f2f74f8d3b8fa780",
-                  "after_trace_sha256": "67f84a9d4a0d5a02c4413cfe42f3081452280f77e162c22762917dbbe30c5a0c",
-                  "before_interpretations": [
-                    {
-                      "kind": "tag",
-                      "source": {
-                        "Start": 1,
-                        "End": 6
-                      },
-                      "tag": "fs",
-                      "raw": "\\fs20",
-                      "arguments": [
-                        "20"
-                      ],
-                      "match": "matched",
-                      "signature": "verified",
-                      "citation": "libass:libass/ass_parse.c:465-475 xy:src/subtitles/RTS.cpp:2506-2525 vsm:src/subtitles/RTS.cpp:3188-3206",
-                      "policy": "assign",
-                      "slots": [
-                        "fontsize"
-                      ],
-                      "before": {
-                        "fontsize": {
-                          "value": "24:24",
-                          "known": true
-                        }
-                      },
-                      "after": {
-                        "fontsize": {
-                          "value": "20:20",
-                          "known": true
-                        }
-                      },
-                      "applied": true,
-                      "known": true,
-                      "uncertainty": "none",
-                      "state": {
-                        "active_style": "Default",
-                        "values": {
-                          "fontsize": {
-                            "value": "20:20",
-                            "known": true
-                          }
-                        },
-                        "sources": {
-                          "fontsize": 0
-                        }
-                      }
-                    },
-                    {
-                      "kind": "tag",
-                      "source": {
-                        "Start": 6,
-                        "End": 11
-                      },
-                      "index": 1,
-                      "tag": "fs",
-                      "raw": "\\fs25",
-                      "arguments": [
-                        "25"
-                      ],
-                      "match": "matched",
-                      "signature": "verified",
-                      "citation": "libass:libass/ass_parse.c:465-475 xy:src/subtitles/RTS.cpp:2506-2525 vsm:src/subtitles/RTS.cpp:3188-3206",
-                      "policy": "assign",
-                      "slots": [
-                        "fontsize"
-                      ],
-                      "before": {
-                        "fontsize": {
-                          "value": "20:20",
-                          "known": true
-                        }
-                      },
-                      "after": {
-                        "fontsize": {
-                          "value": "25:25",
-                          "known": true
-                        }
-                      },
-                      "applied": true,
-                      "known": true,
-                      "uncertainty": "none",
-                      "state": {
-                        "active_style": "Default",
-                        "values": {
-                          "fontsize": {
-                            "value": "25:25",
-                            "known": true
-                          }
-                        },
-                        "sources": {
-                          "fontsize": 1
-                        }
-                      }
-                    }
-                  ],
-                  "after_interpretations": [
-                    {
-                      "kind": "tag",
-                      "source": {
-                        "Start": 1,
-                        "End": 6
-                      },
-                      "tag": "fs",
-                      "raw": "\\fs25",
-                      "arguments": [
-                        "25"
-                      ],
-                      "match": "matched",
-                      "signature": "verified",
-                      "citation": "libass:libass/ass_parse.c:465-475 xy:src/subtitles/RTS.cpp:2506-2525 vsm:src/subtitles/RTS.cpp:3188-3206",
-                      "policy": "assign",
-                      "slots": [
-                        "fontsize"
-                      ],
-                      "before": {
-                        "fontsize": {
-                          "value": "24:24",
-                          "known": true
-                        }
-                      },
-                      "after": {
-                        "fontsize": {
-                          "value": "25:25",
-                          "known": true
-                        }
-                      },
-                      "applied": true,
-                      "known": true,
-                      "uncertainty": "none",
-                      "state": {
-                        "active_style": "Default",
-                        "values": {
-                          "fontsize": {
-                            "value": "25:25",
-                            "known": true
-                          }
-                        },
-                        "sources": {
-                          "fontsize": 0
-                        }
-                      }
-                    },
-                    {
-                      "kind": "text",
-                      "source": {
-                        "Start": 7,
-                        "End": 25
-                      },
-                      "text": "日本語の字幕",
-                      "state": {
-                        "active_style": "Default",
-                        "values": {
-                          "fontsize": {
-                            "value": "25:25",
-                            "known": true
-                          }
-                        },
-                        "sources": {
-                          "fontsize": 0
-                        }
-                      }
-                    }
-                  ]
-                }
-              ]
-            }
-          ],
-          "verification_basis": [
-            "Compare interpretations within every pinned target renderer.",
-            "Require verified signatures and citations for every command affected by a semantic edit.",
-            "Compare the full trace when an edit removes only an empty override block.",
-            "Compare visible text, tracked state values, and source provenance before and after the edit.",
-            "Reject edits that change document parsing or an unresolved semantic operation.",
-            "Compare integer Style fields by the exact integer consumed before and after the edit.",
-            "Use libass rendercheck for pixel regression fixtures; use pinned-source and trace evidence for xy-VSFilter."
-          ]
+        "id": "ASS003",
+        "severity": "warning",
+        "title": "Renderer behavior differs",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 11,
+        "column": 1,
+        "field": "document/style-layout",
+        "detail": "divergent: libass: name=\" Default\" at [214,222), fontname=\" Go Regular\" at [223,234), fontsize=\" 24\" at [235,238), bold=\" 0\" at [239,241), italic=\" 0\" at [242,244), alignment=\" 2\" at [245,247); xy-VSFilter: name=\" Default\" at [214,222), fontname=\" Go Regular\" at [223,234), fontsize=\" 24\" at [235,238), primarycolour=\" 0\" at [239,241), secondarycolour=\" 0\" at [242,244), outlinecolour=\" 2\" at [245,247), backcolour=\"\" at [247,247), bold=\"\" at [247,247), italic=\"\" at [247,247), underline=\"\" at [247,247), strikeout=\"\" at [247,247), scalex=\"\" at [247,247), scaley=\"\" at [247,247), spacing=\"\" at [247,247), angle=\"\" at [247,247), borderstyle=\"\" at [247,247), outline=\"\" at [247,247), shadow=\"\" at [247,247), alignment=\"\" at [247,247), marginl=\"\" at [247,247), marginr=\"\" at [247,247), marginv=\"\" at [247,247), encoding=\"\" at [247,247).",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 208,
+          "End": 247
         },
-        "edits": [
-          {
-            "start": 424,
-            "end": 429,
-            "replacement": ""
-          }
-        ],
-        "line": 15,
-        "column": 3,
-        "tag": "fs",
-        "detail": "Overwritten before any dialogue text used it.",
         "sources": [
-          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584",
-          "https://github.com/libass/libass/blob/f61db56/libass/ass_render.c#L1075",
-          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2301",
-          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2396",
-          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2575",
-          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2643"
+          "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
+          "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
         ]
-      }
-    ],
-    "summary": "Fixes available: 1 safe, 0 unsafe, 0 not auto-fixable.",
-    "output_sha256": "7e3fcc78fafa6eb062daa948106dc656f15254fafa04fb14851201bc238a7960",
-    "changed": false
-  },
-  "cli_fonts": {
-    "exit_code": 0,
-    "diagnostics": [
+      },
+      {
+        "file": "utf16le.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 11,
+        "column": 1,
+        "field": "document/style-values",
+        "detail": "unresolved: Style field layout is compared independently; renderer-specific value conversion and fallback compatibility remain unresolved.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 208,
+          "End": 247
+        },
+        "sources": []
+      },
+      {
+        "file": "utf16le.ass",
+        "id": "ASS003",
+        "severity": "warning",
+        "title": "Renderer behavior differs",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 12,
+        "column": 1,
+        "field": "document/style-layout",
+        "detail": "divergent: libass: name=\" Alt\" at [254,258), fontname=\" Go Regular\" at [259,270), fontsize=\" 32\" at [271,274), bold=\" 0\" at [275,277), italic=\" 0\" at [278,280), alignment=\" 7\" at [281,283); xy-VSFilter: name=\" Alt\" at [254,258), fontname=\" Go Regular\" at [259,270), fontsize=\" 32\" at [271,274), primarycolour=\" 0\" at [275,277), secondarycolour=\" 0\" at [278,280), outlinecolour=\" 7\" at [281,283), backcolour=\"\" at [283,283), bold=\"\" at [283,283), italic=\"\" at [283,283), underline=\"\" at [283,283), strikeout=\"\" at [283,283), scalex=\"\" at [283,283), scaley=\"\" at [283,283), spacing=\"\" at [283,283), angle=\"\" at [283,283), borderstyle=\"\" at [283,283), outline=\"\" at [283,283), shadow=\"\" at [283,283), alignment=\"\" at [283,283), marginl=\"\" at [283,283), marginr=\"\" at [283,283), marginv=\"\" at [283,283), encoding=\"\" at [283,283).",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 248,
+          "End": 283
+        },
+        "sources": [
+          "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
+          "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
+        ]
+      },
+      {
+        "file": "utf16le.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 12,
+        "column": 1,
+        "field": "document/style-values",
+        "detail": "unresolved: Style field layout is compared independently; renderer-specific value conversion and fallback compatibility remain unresolved.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 248,
+          "End": 283
+        },
+        "sources": []
+      },
       {
         "file": "utf16le.ass",
         "id": "ASS006",
@@ -913,7 +579,7 @@
         "suggested_fix": "Remove it or move it to the intended text boundary.",
         "fix_safety": "safe",
         "fix_proof": {
-          "id": "aa98dfac73917e141a359bb638e18f2e8ea8b3c5677914c61520b4b26cbed393",
+          "id": "1db0b26d5ea56bc0553858676fb8e5d08139fa45626c2c607f47237bdff14078",
           "source_sha256": "26de9d5eae6d7377c54b7e7a87db22da799e7f33bcbafb36625ebba26bb1f21c",
           "edited_sha256": "5aa011d0e8f2d40b9f79464d98999ca523e108b7c08af58a2221be84aed1cc8f",
           "source_edits": [
@@ -1137,8 +803,8 @@
               "dialogues": [
                 {
                   "line": 15,
-                  "before_trace_sha256": "86bd771c61061506c84a847cc5f0b2bb554d9f1a810368f3f2f74f8d3b8fa780",
-                  "after_trace_sha256": "67f84a9d4a0d5a02c4413cfe42f3081452280f77e162c22762917dbbe30c5a0c",
+                  "before_trace_sha256": "3f98cbe3eb8ff9cf8a8d8aacc67730f5664d5cb36402780803a50373417fdb4a",
+                  "after_trace_sha256": "a67e1fe6500548748bceff98108e76d1015cf9dd001c9ed3b720f71bbb096fd6",
                   "before_interpretations": [
                     {
                       "kind": "tag",
@@ -1327,6 +993,564 @@
         "column": 3,
         "tag": "fs",
         "detail": "Overwritten before any dialogue text used it.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "sources": [
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584",
+          "https://github.com/libass/libass/blob/f61db56/libass/ass_render.c#L1075",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2301",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2396",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2575",
+          "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2643"
+        ]
+      },
+      {
+        "file": "utf16le.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 52,
+        "tag": "fs",
+        "field": "state",
+        "detail": "unresolved: libass: fontsize=20:20, active Style \"Default\"; xy-VSFilter: fontsize=20:20, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 424,
+          "End": 429
+        },
+        "sources": []
+      },
+      {
+        "file": "utf16le.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 57,
+        "tag": "fs",
+        "field": "state",
+        "detail": "unresolved: libass: fontsize=25:25, active Style \"Default\"; xy-VSFilter: fontsize=25:25, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 429,
+          "End": 434
+        },
+        "sources": []
+      }
+    ],
+    "summary": "Fixes available: 1 safe, 0 unsafe, 6 not auto-fixable.",
+    "output_sha256": "7e3fcc78fafa6eb062daa948106dc656f15254fafa04fb14851201bc238a7960",
+    "changed": false
+  },
+  "cli_fonts": {
+    "exit_code": 0,
+    "diagnostics": [
+      {
+        "file": "utf16le.ass",
+        "id": "ASS003",
+        "severity": "warning",
+        "title": "Renderer behavior differs",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 11,
+        "column": 1,
+        "field": "document/style-layout",
+        "detail": "divergent: libass: name=\" Default\" at [214,222), fontname=\" Go Regular\" at [223,234), fontsize=\" 24\" at [235,238), bold=\" 0\" at [239,241), italic=\" 0\" at [242,244), alignment=\" 2\" at [245,247); xy-VSFilter: name=\" Default\" at [214,222), fontname=\" Go Regular\" at [223,234), fontsize=\" 24\" at [235,238), primarycolour=\" 0\" at [239,241), secondarycolour=\" 0\" at [242,244), outlinecolour=\" 2\" at [245,247), backcolour=\"\" at [247,247), bold=\"\" at [247,247), italic=\"\" at [247,247), underline=\"\" at [247,247), strikeout=\"\" at [247,247), scalex=\"\" at [247,247), scaley=\"\" at [247,247), spacing=\"\" at [247,247), angle=\"\" at [247,247), borderstyle=\"\" at [247,247), outline=\"\" at [247,247), shadow=\"\" at [247,247), alignment=\"\" at [247,247), marginl=\"\" at [247,247), marginr=\"\" at [247,247), marginv=\"\" at [247,247), encoding=\"\" at [247,247).",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 208,
+          "End": 247
+        },
+        "sources": [
+          "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
+          "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
+        ]
+      },
+      {
+        "file": "utf16le.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 11,
+        "column": 1,
+        "field": "document/style-values",
+        "detail": "unresolved: Style field layout is compared independently; renderer-specific value conversion and fallback compatibility remain unresolved.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 208,
+          "End": 247
+        },
+        "sources": []
+      },
+      {
+        "file": "utf16le.ass",
+        "id": "ASS003",
+        "severity": "warning",
+        "title": "Renderer behavior differs",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 12,
+        "column": 1,
+        "field": "document/style-layout",
+        "detail": "divergent: libass: name=\" Alt\" at [254,258), fontname=\" Go Regular\" at [259,270), fontsize=\" 32\" at [271,274), bold=\" 0\" at [275,277), italic=\" 0\" at [278,280), alignment=\" 7\" at [281,283); xy-VSFilter: name=\" Alt\" at [254,258), fontname=\" Go Regular\" at [259,270), fontsize=\" 32\" at [271,274), primarycolour=\" 0\" at [275,277), secondarycolour=\" 0\" at [278,280), outlinecolour=\" 7\" at [281,283), backcolour=\"\" at [283,283), bold=\"\" at [283,283), italic=\"\" at [283,283), underline=\"\" at [283,283), strikeout=\"\" at [283,283), scalex=\"\" at [283,283), scaley=\"\" at [283,283), spacing=\"\" at [283,283), angle=\"\" at [283,283), borderstyle=\"\" at [283,283), outline=\"\" at [283,283), shadow=\"\" at [283,283), alignment=\"\" at [283,283), marginl=\"\" at [283,283), marginr=\"\" at [283,283), marginv=\"\" at [283,283), encoding=\"\" at [283,283).",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 248,
+          "End": 283
+        },
+        "sources": [
+          "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
+          "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
+        ]
+      },
+      {
+        "file": "utf16le.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 12,
+        "column": 1,
+        "field": "document/style-values",
+        "detail": "unresolved: Style field layout is compared independently; renderer-specific value conversion and fallback compatibility remain unresolved.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 248,
+          "End": 283
+        },
+        "sources": []
+      },
+      {
+        "file": "utf16le.ass",
+        "id": "ASS006",
+        "severity": "suggestion",
+        "title": "Override has no effect",
+        "description": "An override is replaced, reset, or ignored before it affects dialogue text, or repeats the value already active in every affected state slot.",
+        "suggested_fix": "Remove it or move it to the intended text boundary.",
+        "fix_safety": "safe",
+        "fix_proof": {
+          "id": "1db0b26d5ea56bc0553858676fb8e5d08139fa45626c2c607f47237bdff14078",
+          "source_sha256": "26de9d5eae6d7377c54b7e7a87db22da799e7f33bcbafb36625ebba26bb1f21c",
+          "edited_sha256": "5aa011d0e8f2d40b9f79464d98999ca523e108b7c08af58a2221be84aed1cc8f",
+          "source_edits": [
+            {
+              "id": "ASS006",
+              "edit": {
+                "start": 424,
+                "end": 429,
+                "replacement": ""
+              }
+            }
+          ],
+          "targets": [
+            {
+              "renderer": "libass",
+              "version": "f61db567e6593df3470e91594bcd4ad2d0473aff",
+              "capabilities": {
+                "vsfiltermod": "not-applicable",
+                "lua": "not-applicable"
+              }
+            },
+            {
+              "renderer": "xy-VSFilter",
+              "version": "135a30153a38fa846cb5c39df0f258403e92096e",
+              "capabilities": {
+                "vsfiltermod": "not-applicable",
+                "lua": "not-applicable"
+              }
+            }
+          ],
+          "interpretations": [
+            {
+              "target": {
+                "renderer": "libass",
+                "version": "f61db567e6593df3470e91594bcd4ad2d0473aff",
+                "capabilities": {
+                  "vsfiltermod": "not-applicable",
+                  "lua": "not-applicable"
+                }
+              },
+              "dialogues": [
+                {
+                  "line": 15,
+                  "before_trace_sha256": "86bd771c61061506c84a847cc5f0b2bb554d9f1a810368f3f2f74f8d3b8fa780",
+                  "after_trace_sha256": "67f84a9d4a0d5a02c4413cfe42f3081452280f77e162c22762917dbbe30c5a0c",
+                  "before_interpretations": [
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 1,
+                        "End": 6
+                      },
+                      "tag": "fs",
+                      "raw": "\\fs20",
+                      "arguments": [
+                        "20"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:465-475 xy:src/subtitles/RTS.cpp:2506-2525 vsm:src/subtitles/RTS.cpp:3188-3206",
+                      "policy": "assign",
+                      "slots": [
+                        "fontsize"
+                      ],
+                      "before": {
+                        "fontsize": {
+                          "value": "24:24",
+                          "known": true
+                        }
+                      },
+                      "after": {
+                        "fontsize": {
+                          "value": "20:20",
+                          "known": true
+                        }
+                      },
+                      "applied": true,
+                      "known": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {
+                          "fontsize": {
+                            "value": "20:20",
+                            "known": true
+                          }
+                        },
+                        "sources": {
+                          "fontsize": 0
+                        }
+                      }
+                    },
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 6,
+                        "End": 11
+                      },
+                      "index": 1,
+                      "tag": "fs",
+                      "raw": "\\fs25",
+                      "arguments": [
+                        "25"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:465-475 xy:src/subtitles/RTS.cpp:2506-2525 vsm:src/subtitles/RTS.cpp:3188-3206",
+                      "policy": "assign",
+                      "slots": [
+                        "fontsize"
+                      ],
+                      "before": {
+                        "fontsize": {
+                          "value": "20:20",
+                          "known": true
+                        }
+                      },
+                      "after": {
+                        "fontsize": {
+                          "value": "25:25",
+                          "known": true
+                        }
+                      },
+                      "applied": true,
+                      "known": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {
+                          "fontsize": {
+                            "value": "25:25",
+                            "known": true
+                          }
+                        },
+                        "sources": {
+                          "fontsize": 1
+                        }
+                      }
+                    }
+                  ],
+                  "after_interpretations": [
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 1,
+                        "End": 6
+                      },
+                      "tag": "fs",
+                      "raw": "\\fs25",
+                      "arguments": [
+                        "25"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:465-475 xy:src/subtitles/RTS.cpp:2506-2525 vsm:src/subtitles/RTS.cpp:3188-3206",
+                      "policy": "assign",
+                      "slots": [
+                        "fontsize"
+                      ],
+                      "before": {
+                        "fontsize": {
+                          "value": "24:24",
+                          "known": true
+                        }
+                      },
+                      "after": {
+                        "fontsize": {
+                          "value": "25:25",
+                          "known": true
+                        }
+                      },
+                      "applied": true,
+                      "known": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {
+                          "fontsize": {
+                            "value": "25:25",
+                            "known": true
+                          }
+                        },
+                        "sources": {
+                          "fontsize": 0
+                        }
+                      }
+                    },
+                    {
+                      "kind": "text",
+                      "source": {
+                        "Start": 7,
+                        "End": 25
+                      },
+                      "text": "日本語の字幕",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {
+                          "fontsize": {
+                            "value": "25:25",
+                            "known": true
+                          }
+                        },
+                        "sources": {
+                          "fontsize": 0
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "target": {
+                "renderer": "xy-VSFilter",
+                "version": "135a30153a38fa846cb5c39df0f258403e92096e",
+                "capabilities": {
+                  "vsfiltermod": "not-applicable",
+                  "lua": "not-applicable"
+                }
+              },
+              "dialogues": [
+                {
+                  "line": 15,
+                  "before_trace_sha256": "3f98cbe3eb8ff9cf8a8d8aacc67730f5664d5cb36402780803a50373417fdb4a",
+                  "after_trace_sha256": "a67e1fe6500548748bceff98108e76d1015cf9dd001c9ed3b720f71bbb096fd6",
+                  "before_interpretations": [
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 1,
+                        "End": 6
+                      },
+                      "tag": "fs",
+                      "raw": "\\fs20",
+                      "arguments": [
+                        "20"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:465-475 xy:src/subtitles/RTS.cpp:2506-2525 vsm:src/subtitles/RTS.cpp:3188-3206",
+                      "policy": "assign",
+                      "slots": [
+                        "fontsize"
+                      ],
+                      "before": {
+                        "fontsize": {
+                          "value": "24:24",
+                          "known": true
+                        }
+                      },
+                      "after": {
+                        "fontsize": {
+                          "value": "20:20",
+                          "known": true
+                        }
+                      },
+                      "applied": true,
+                      "known": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {
+                          "fontsize": {
+                            "value": "20:20",
+                            "known": true
+                          }
+                        },
+                        "sources": {
+                          "fontsize": 0
+                        }
+                      }
+                    },
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 6,
+                        "End": 11
+                      },
+                      "index": 1,
+                      "tag": "fs",
+                      "raw": "\\fs25",
+                      "arguments": [
+                        "25"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:465-475 xy:src/subtitles/RTS.cpp:2506-2525 vsm:src/subtitles/RTS.cpp:3188-3206",
+                      "policy": "assign",
+                      "slots": [
+                        "fontsize"
+                      ],
+                      "before": {
+                        "fontsize": {
+                          "value": "20:20",
+                          "known": true
+                        }
+                      },
+                      "after": {
+                        "fontsize": {
+                          "value": "25:25",
+                          "known": true
+                        }
+                      },
+                      "applied": true,
+                      "known": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {
+                          "fontsize": {
+                            "value": "25:25",
+                            "known": true
+                          }
+                        },
+                        "sources": {
+                          "fontsize": 1
+                        }
+                      }
+                    }
+                  ],
+                  "after_interpretations": [
+                    {
+                      "kind": "tag",
+                      "source": {
+                        "Start": 1,
+                        "End": 6
+                      },
+                      "tag": "fs",
+                      "raw": "\\fs25",
+                      "arguments": [
+                        "25"
+                      ],
+                      "match": "matched",
+                      "signature": "verified",
+                      "citation": "libass:libass/ass_parse.c:465-475 xy:src/subtitles/RTS.cpp:2506-2525 vsm:src/subtitles/RTS.cpp:3188-3206",
+                      "policy": "assign",
+                      "slots": [
+                        "fontsize"
+                      ],
+                      "before": {
+                        "fontsize": {
+                          "value": "24:24",
+                          "known": true
+                        }
+                      },
+                      "after": {
+                        "fontsize": {
+                          "value": "25:25",
+                          "known": true
+                        }
+                      },
+                      "applied": true,
+                      "known": true,
+                      "uncertainty": "none",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {
+                          "fontsize": {
+                            "value": "25:25",
+                            "known": true
+                          }
+                        },
+                        "sources": {
+                          "fontsize": 0
+                        }
+                      }
+                    },
+                    {
+                      "kind": "text",
+                      "source": {
+                        "Start": 7,
+                        "End": 25
+                      },
+                      "text": "日本語の字幕",
+                      "state": {
+                        "active_style": "Default",
+                        "values": {
+                          "fontsize": {
+                            "value": "25:25",
+                            "known": true
+                          }
+                        },
+                        "sources": {
+                          "fontsize": 0
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          "verification_basis": [
+            "Compare interpretations within every pinned target renderer.",
+            "Require verified signatures and citations for every command affected by a semantic edit.",
+            "Compare the full trace when an edit removes only an empty override block.",
+            "Compare visible text, tracked state values, and source provenance before and after the edit.",
+            "Reject edits that change document parsing or an unresolved semantic operation.",
+            "Compare integer Style fields by the exact integer consumed before and after the edit.",
+            "Use libass rendercheck for pixel regression fixtures; use pinned-source and trace evidence for xy-VSFilter."
+          ]
+        },
+        "edits": [
+          {
+            "start": 424,
+            "end": 429,
+            "replacement": ""
+          }
+        ],
+        "line": 15,
+        "column": 3,
+        "tag": "fs",
+        "detail": "Overwritten before any dialogue text used it.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
         "sources": [
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_render.c#L1075",
@@ -1346,24 +1570,259 @@
         "line": 15,
         "column": 13,
         "detail": "Font family \"Go Regular\" does not contain these characters: \"日本語の字幕\".",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
         "sources": null
+      },
+      {
+        "file": "utf16le.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 52,
+        "tag": "fs",
+        "field": "state",
+        "detail": "unresolved: libass: fontsize=20:20, active Style \"Default\"; xy-VSFilter: fontsize=20:20, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 424,
+          "End": 429
+        },
+        "sources": []
+      },
+      {
+        "file": "utf16le.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 57,
+        "tag": "fs",
+        "field": "state",
+        "detail": "unresolved: libass: fontsize=25:25, active Style \"Default\"; xy-VSFilter: fontsize=25:25, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 429,
+          "End": 434
+        },
+        "sources": []
       }
     ],
-    "summary": "Fixes available: 1 safe, 0 unsafe, 1 not auto-fixable.",
+    "summary": "Fixes available: 1 safe, 0 unsafe, 7 not auto-fixable.",
     "output_sha256": "7e3fcc78fafa6eb062daa948106dc656f15254fafa04fb14851201bc238a7960",
     "changed": false
   },
   "cli_safe_fix": {
     "exit_code": 0,
-    "diagnostics": null,
-    "summary": "Applied fixes: 1 safe, 0 unsafe. Fixes available: 0 safe, 0 unsafe, 0 not auto-fixable.",
+    "diagnostics": [
+      {
+        "file": "utf16le.ass",
+        "id": "ASS003",
+        "severity": "warning",
+        "title": "Renderer behavior differs",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 11,
+        "column": 1,
+        "field": "document/style-layout",
+        "detail": "divergent: libass: name=\" Default\" at [214,222), fontname=\" Go Regular\" at [223,234), fontsize=\" 24\" at [235,238), bold=\" 0\" at [239,241), italic=\" 0\" at [242,244), alignment=\" 2\" at [245,247); xy-VSFilter: name=\" Default\" at [214,222), fontname=\" Go Regular\" at [223,234), fontsize=\" 24\" at [235,238), primarycolour=\" 0\" at [239,241), secondarycolour=\" 0\" at [242,244), outlinecolour=\" 2\" at [245,247), backcolour=\"\" at [247,247), bold=\"\" at [247,247), italic=\"\" at [247,247), underline=\"\" at [247,247), strikeout=\"\" at [247,247), scalex=\"\" at [247,247), scaley=\"\" at [247,247), spacing=\"\" at [247,247), angle=\"\" at [247,247), borderstyle=\"\" at [247,247), outline=\"\" at [247,247), shadow=\"\" at [247,247), alignment=\"\" at [247,247), marginl=\"\" at [247,247), marginr=\"\" at [247,247), marginv=\"\" at [247,247), encoding=\"\" at [247,247).",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 208,
+          "End": 247
+        },
+        "sources": [
+          "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
+          "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
+        ]
+      },
+      {
+        "file": "utf16le.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 11,
+        "column": 1,
+        "field": "document/style-values",
+        "detail": "unresolved: Style field layout is compared independently; renderer-specific value conversion and fallback compatibility remain unresolved.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 208,
+          "End": 247
+        },
+        "sources": []
+      },
+      {
+        "file": "utf16le.ass",
+        "id": "ASS003",
+        "severity": "warning",
+        "title": "Renderer behavior differs",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 12,
+        "column": 1,
+        "field": "document/style-layout",
+        "detail": "divergent: libass: name=\" Alt\" at [254,258), fontname=\" Go Regular\" at [259,270), fontsize=\" 32\" at [271,274), bold=\" 0\" at [275,277), italic=\" 0\" at [278,280), alignment=\" 7\" at [281,283); xy-VSFilter: name=\" Alt\" at [254,258), fontname=\" Go Regular\" at [259,270), fontsize=\" 32\" at [271,274), primarycolour=\" 0\" at [275,277), secondarycolour=\" 0\" at [278,280), outlinecolour=\" 7\" at [281,283), backcolour=\"\" at [283,283), bold=\"\" at [283,283), italic=\"\" at [283,283), underline=\"\" at [283,283), strikeout=\"\" at [283,283), scalex=\"\" at [283,283), scaley=\"\" at [283,283), spacing=\"\" at [283,283), angle=\"\" at [283,283), borderstyle=\"\" at [283,283), outline=\"\" at [283,283), shadow=\"\" at [283,283), alignment=\"\" at [283,283), marginl=\"\" at [283,283), marginr=\"\" at [283,283), marginv=\"\" at [283,283), encoding=\"\" at [283,283).",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 248,
+          "End": 283
+        },
+        "sources": [
+          "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
+          "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
+        ]
+      },
+      {
+        "file": "utf16le.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 12,
+        "column": 1,
+        "field": "document/style-values",
+        "detail": "unresolved: Style field layout is compared independently; renderer-specific value conversion and fallback compatibility remain unresolved.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 248,
+          "End": 283
+        },
+        "sources": []
+      },
+      {
+        "file": "utf16le.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 52,
+        "tag": "fs",
+        "field": "state",
+        "detail": "unresolved: libass: fontsize=25:25, active Style \"Default\"; xy-VSFilter: fontsize=25:25, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 424,
+          "End": 429
+        },
+        "sources": []
+      }
+    ],
+    "summary": "Applied fixes: 1 safe, 0 unsafe. Fixes available: 0 safe, 0 unsafe, 5 not auto-fixable.",
     "output_sha256": "398462d3ba490f9e91461ee6abec3b116c5ad492b7a1dfacd84d5dc356df86fe",
     "changed": true
   },
   "cli_unsafe_fix": {
     "exit_code": 0,
-    "diagnostics": null,
-    "summary": "Applied fixes: 1 safe, 0 unsafe. Fixes available: 0 safe, 0 unsafe, 0 not auto-fixable.",
+    "diagnostics": [
+      {
+        "file": "utf16le.ass",
+        "id": "ASS003",
+        "severity": "warning",
+        "title": "Renderer behavior differs",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 11,
+        "column": 1,
+        "field": "document/style-layout",
+        "detail": "divergent: libass: name=\" Default\" at [214,222), fontname=\" Go Regular\" at [223,234), fontsize=\" 24\" at [235,238), bold=\" 0\" at [239,241), italic=\" 0\" at [242,244), alignment=\" 2\" at [245,247); xy-VSFilter: name=\" Default\" at [214,222), fontname=\" Go Regular\" at [223,234), fontsize=\" 24\" at [235,238), primarycolour=\" 0\" at [239,241), secondarycolour=\" 0\" at [242,244), outlinecolour=\" 2\" at [245,247), backcolour=\"\" at [247,247), bold=\"\" at [247,247), italic=\"\" at [247,247), underline=\"\" at [247,247), strikeout=\"\" at [247,247), scalex=\"\" at [247,247), scaley=\"\" at [247,247), spacing=\"\" at [247,247), angle=\"\" at [247,247), borderstyle=\"\" at [247,247), outline=\"\" at [247,247), shadow=\"\" at [247,247), alignment=\"\" at [247,247), marginl=\"\" at [247,247), marginr=\"\" at [247,247), marginv=\"\" at [247,247), encoding=\"\" at [247,247).",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 208,
+          "End": 247
+        },
+        "sources": [
+          "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
+          "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
+        ]
+      },
+      {
+        "file": "utf16le.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 11,
+        "column": 1,
+        "field": "document/style-values",
+        "detail": "unresolved: Style field layout is compared independently; renderer-specific value conversion and fallback compatibility remain unresolved.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 208,
+          "End": 247
+        },
+        "sources": []
+      },
+      {
+        "file": "utf16le.ass",
+        "id": "ASS003",
+        "severity": "warning",
+        "title": "Renderer behavior differs",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 12,
+        "column": 1,
+        "field": "document/style-layout",
+        "detail": "divergent: libass: name=\" Alt\" at [254,258), fontname=\" Go Regular\" at [259,270), fontsize=\" 32\" at [271,274), bold=\" 0\" at [275,277), italic=\" 0\" at [278,280), alignment=\" 7\" at [281,283); xy-VSFilter: name=\" Alt\" at [254,258), fontname=\" Go Regular\" at [259,270), fontsize=\" 32\" at [271,274), primarycolour=\" 0\" at [275,277), secondarycolour=\" 0\" at [278,280), outlinecolour=\" 7\" at [281,283), backcolour=\"\" at [283,283), bold=\"\" at [283,283), italic=\"\" at [283,283), underline=\"\" at [283,283), strikeout=\"\" at [283,283), scalex=\"\" at [283,283), scaley=\"\" at [283,283), spacing=\"\" at [283,283), angle=\"\" at [283,283), borderstyle=\"\" at [283,283), outline=\"\" at [283,283), shadow=\"\" at [283,283), alignment=\"\" at [283,283), marginl=\"\" at [283,283), marginr=\"\" at [283,283), marginv=\"\" at [283,283), encoding=\"\" at [283,283).",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 248,
+          "End": 283
+        },
+        "sources": [
+          "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
+          "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
+        ]
+      },
+      {
+        "file": "utf16le.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 12,
+        "column": 1,
+        "field": "document/style-values",
+        "detail": "unresolved: Style field layout is compared independently; renderer-specific value conversion and fallback compatibility remain unresolved.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 248,
+          "End": 283
+        },
+        "sources": []
+      },
+      {
+        "file": "utf16le.ass",
+        "id": "ASS031",
+        "severity": "warning",
+        "title": "Renderer command interpretation is unresolved",
+        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
+        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "line": 15,
+        "column": 52,
+        "tag": "fs",
+        "field": "state",
+        "detail": "unresolved: libass: fontsize=25:25, active Style \"Default\"; xy-VSFilter: fontsize=25:25, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
+        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "source_span": {
+          "Start": 424,
+          "End": 429
+        },
+        "sources": []
+      }
+    ],
+    "summary": "Applied fixes: 1 safe, 0 unsafe. Fixes available: 0 safe, 0 unsafe, 5 not auto-fixable.",
     "output_sha256": "398462d3ba490f9e91461ee6abec3b116c5ad492b7a1dfacd84d5dc356df86fe",
     "changed": true
   }

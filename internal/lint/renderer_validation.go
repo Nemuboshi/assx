@@ -18,15 +18,18 @@ func AnalyzeForRenderer(dialogue ass.Dialogue, profile renderer.Profile) []Diagn
 	return scopeDiagnostics(findings, profile)
 }
 
-// AnalyzeDocumentForRenderer is the opt-in P06 entry point. Shared document
-// checks remain active; only override naming, argument forms, state, drawing,
-// karaoke, and reset-style references use the selected renderer. CLI selection
-// and the default multi-renderer compatibility policy belong to P10.
+// AnalyzeDocumentForRenderer provides renderer-local observations without fixes.
+// AnalyzeDocumentForTargets also applies compatibility policy and proves edits.
 func AnalyzeDocumentForRenderer(doc ass.Document, profile renderer.Profile) []Diagnostic {
+	return scopeDiagnostics(analyzeDocumentForProfile(doc, profile), profile)
+}
+
+func analyzeDocumentForProfile(doc ass.Document, profile renderer.Profile) []Diagnostic {
+	doc = profile.DocumentView(doc)
 	diagnostics := AnalyzeHeaders(doc)
 	diagnostics = append(diagnostics, AnalyzeKeywords(doc)...)
 	diagnostics = append(diagnostics, analyzeStyles(doc)...)
-	diagnostics = append(diagnostics, analyzeEventFields(doc, &profile, false)...)
+	diagnostics = append(diagnostics, analyzeEventFields(doc, profile, false)...)
 	diagnostics = append(diagnostics, analyzeUndefinedStyleReferencesForRenderer(doc, profile)...)
 
 	styles := semantic.StyleStatesByName(doc.StyleFields)
@@ -34,7 +37,7 @@ func AnalyzeDocumentForRenderer(doc ass.Document, profile renderer.Profile) []Di
 	for _, dialogue := range doc.Dialogues {
 		collector := newStyleRunCollectorForRenderer(dialogue, styles)
 		if collector != nil {
-			collector.allowEdits = false
+			collector.allowEdits = true
 		}
 		findings, style := analyzeResolvedDialogue(dialogue, profile, styles, collector)
 		diagnostics = append(diagnostics, findings...)
@@ -42,15 +45,16 @@ func AnalyzeDocumentForRenderer(doc ass.Document, profile renderer.Profile) []Di
 			redundant = append(redundant, *style)
 		}
 	}
+	diagnostics = suppressOverlappingNoEffect(diagnostics, redundant)
 	diagnostics = append(diagnostics, redundant...)
-	return scopeDiagnostics(diagnostics, profile)
+	return diagnostics
 }
 
 // scopeDiagnostics annotates the explicit scope and enforces the P08 proof
 // boundary for ALL diagnostics, including shared header and Style checks.
 func scopeDiagnostics(diagnostics []Diagnostic, profile renderer.Profile) []Diagnostic {
 	for i := range diagnostics {
-		diagnostics[i].Renderer = profile.Kind().String()
+		diagnostics[i].Renderer = ProfileScope(profile)
 		diagnostics[i].FixSafety = ""
 		diagnostics[i].FixProof = nil
 		diagnostics[i].FixProofRef = ""
@@ -94,8 +98,16 @@ func analyzeResolvedDialogue(dialogue ass.Dialogue, profile renderer.Profile, st
 				ID: rule.ID, Severity: rule.Severity, Title: rule.Title,
 				Description: rule.Description, Fix: rule.Fix,
 				Line: dialogue.Line, Column: node.Block.Span.Start + 1,
+				FixSafety: rule.FixSafety, Edits: []TextEdit{{Start: dialogue.TextStart + node.Block.Span.Start, End: dialogue.TextStart + node.Block.Span.End}},
 				Sources: rule.Sources,
 			})
+			continue
+		}
+		hasCandidates := false
+		for _, item := range node.Block.Items {
+			hasCandidates = hasCandidates || item.Expression != nil
+		}
+		if !hasCandidates {
 			continue
 		}
 		for _, item := range node.Block.Items {
@@ -138,6 +150,13 @@ func analyzeResolvedDialogue(dialogue ass.Dialogue, profile renderer.Profile, st
 	evaluation := semantic.EvaluateResolved(tree, profile, options)
 	for _, effect := range evaluation.NoEffects {
 		analyzer.add(IssueNoEffect, effect.Tag, noEffectDetail(effect))
+		finding := &analyzer.diagnostics[len(analyzer.diagnostics)-1]
+		if effect.ProofRevoked {
+			finding.FixSafety = ""
+			finding.Detail += " A later unmodeled operation prevents proving this fix safe for the selected renderer targets."
+			continue
+		}
+		finding.Edits = []TextEdit{noEffectRemovalEditConcrete(tree, effect.Tag, dialogue.TextStart)}
 	}
 	analyzer.diagnostics = append(analyzer.diagnostics, drawing.diagnostics()...)
 	if !dialogue.MissingFields {
@@ -213,6 +232,11 @@ func (a *dialogueAnalyzer) consumeResolved(tag ass.Tag, result renderer.Result, 
 		return
 	}
 	ir := ass.DecodeTagWithSpec(tag, result.Policy, true)
+	if result.Form == renderer.Bare && result.Shadowed == "" && len(tag.Args) == 1 &&
+		ir.Argument(0).Consumed == 0 && result.Policy.Value != 0 && result.Name != "fn" {
+		a.add(IssueUnknownTag, tag, "The complete command head has no recognized value; the selected renderer consumes a shorter prefix.")
+		return
+	}
 	// The frozen traditional syntax retains its source-checked structural
 	// constraints even where the evidence matrix is not exhaustive.
 	// Rect/vector clip forms are source-pinned in all three renderers.
@@ -223,7 +247,7 @@ func (a *dialogueAnalyzer) consumeResolved(tag ass.Tag, result renderer.Result, 
 		a.add(IssueRendererUnresolved, tag, "This argument shape is not verified for the selected renderer build.")
 		return
 	}
-	a.validateIR(tag, ir, enforceCounts, false)
+	a.validateIR(tag, ir, enforceCounts)
 	if tail := ignoredTagTailIR(tag, ir); tail != "" {
 		a.diagnostics = append(a.diagnostics, overrideJunkDiagnostic(
 			ass.Dialogue{Line: a.line}, tag.Column, tail))

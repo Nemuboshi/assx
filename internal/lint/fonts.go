@@ -302,20 +302,21 @@ func styleDistance(face fontFace, context fontContext) int {
 
 // AnalyzeFonts reports missing font families and missing glyphs in dialogue text.
 func AnalyzeFonts(doc ass.Document, checker *FontChecker) ([]Diagnostic, error) {
-	return analyzeFonts(doc, checker, nil)
+	return AnalyzeFontsForRenderer(doc, checker, DefaultAnalysisTargets().Primary)
 }
 
 // AnalyzeFontsForRenderer reads text-state boundaries from the same evaluator
 // as lint while interpreting each override against one pinned renderer.
 func AnalyzeFontsForRenderer(doc ass.Document, checker *FontChecker, profile renderer.Profile) ([]Diagnostic, error) {
-	findings, err := analyzeFonts(doc, checker, &profile)
+	findings, err := analyzeFonts(doc, checker, profile)
 	if err != nil {
 		return nil, err
 	}
 	return scopeDiagnostics(findings, profile), nil
 }
 
-func analyzeFonts(doc ass.Document, checker *FontChecker, profile *renderer.Profile) ([]Diagnostic, error) {
+func analyzeFonts(doc ass.Document, checker *FontChecker, profile renderer.Profile) ([]Diagnostic, error) {
+	doc = profile.DocumentView(doc)
 	definitions := semantic.StyleDefinitionsByName(doc.StyleFields)
 	styles := semantic.StyleStatesByName(doc.StyleFields)
 	// ASS defaults for missing bold/italic fields are known to the font
@@ -337,9 +338,8 @@ func analyzeFonts(doc ass.Document, checker *FontChecker, profile *renderer.Prof
 		}
 		var usages []*fontUsage
 		usageByContext := make(map[fontContext]*fontUsage)
-		semantic.Evaluate(dialogue.ParsedText(), semantic.EvaluationOptions{
+		semantic.EvaluateResolved(ass.ParseConcreteDialogue(dialogue.Text), profile, semantic.EvaluationOptions{
 			Styles: styles, DialogueStyle: dialogue.Style, SkipNoEffectProofs: true,
-			Profile: profile,
 			Observer: semantic.Observer{
 				Text: func(text string, start int, state semantic.StateView) {
 					family := state.Value("fontname")

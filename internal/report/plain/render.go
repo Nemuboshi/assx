@@ -31,6 +31,9 @@ func Render(output io.Writer, path string, diagnostics []lint.Diagnostic, elapse
 		for i, d := range ordered {
 			_, _ = fmt.Fprintf(writer, "%s[%s] %s:%d:%d\n", strings.ToUpper(string(d.Severity)), d.ID, path, d.Line, d.Column)
 			_, _ = fmt.Fprintf(writer, "    %s\n", d.Title)
+			if d.Renderer != "" {
+				_, _ = fmt.Fprintf(writer, "    renderer: %s\n", d.Renderer)
+			}
 			if d.Tag != "" {
 				_, _ = fmt.Fprintf(writer, "    tag: \\%s\n", d.Tag)
 			}

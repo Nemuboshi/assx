@@ -2,7 +2,7 @@
 
 Issue: [#4](https://github.com/Nemuboshi/assx/issues/4)
 
-`internal/semantic.Evaluate` is the single state-transition entry point for
+`internal/semantic.EvaluateResolved` is the single state-transition entry point for
 the ASS006 no-effect rule, the ASS013 Style-default rule and font analysis.
 Future formatters can consume the same state view without depending on lint.
 
@@ -14,15 +14,13 @@ a small set of special forms (transforms, clipping, Style resets, karaoke,
 drawing mode and relative font sizes) are delegated to
 internal/semantic/handlers.go. TransformComparable declares the existing
 set of transform targets eligible for no-effect comparison without a
-separate tag-name whitelist. This change is a behavior-preserving relocation;
-unknown-state handling, observer output and SafeFix policy remain unchanged.
+separate tag-name whitelist. Profile resolution supplies the policy before evaluation.
 
 ## Inputs and outputs
 
-A caller supplies a lossless `ass.DialogueText`, optional canonical Style
-states, the Dialogue Style name and optional observer callbacks. The engine
-walks the existing parsed AST, preserving the source tag and source-byte
-locations. It does not create a parallel AST or mutate the source.
+A caller supplies a lossless `ass.ConcreteDialogue`, explicit pinned profile, optional Style states, and observer callbacks.
+The engine resolves operations from the concrete tree and preserves source-byte locations.
+It does not create another syntax tree, infer global tag names, or mutate source.
 
 `Observer.Tag` receives `TagEvent` after each tag's transition. It exposes
 the assignment policy, affected slots, values before and after the operation,
@@ -61,8 +59,8 @@ Consumers must not infer SafeFix eligibility from an unknown value.
 ASS006 owns tag-level no-effect diagnostics. ASS013 owns the grouping and
 editing policy for Style-equivalent runs. Both use the same evaluator in
 `AnalyzeDocument`. The existing duplicate-diagnostic suppression still
-assigns overlapping fixes to ASS013. A VSFilterMod-only operation, including
-one inside a transform, revokes all automatic fixes for that Dialogue.
+assigns overlapping fixes to ASS013. An unmodeled or build-conditional operation, including one inside a transform, revokes proofs for that Dialogue.
+Requested Mod targets with unknown capability or enabled/unknown Lua cannot authorize fixes.
 
 `SkipNoEffectProofs` permits consumers such as font analysis to use the
 state stream without allocating no-effect provenance and liveness results.
@@ -97,7 +95,7 @@ Use the benchmark suite in [performance.md](performance.md), measuring
 Evaluate wall time, B/op and allocs/op together. The engine should not
 introduce a full snapshot allocation for each individual tag.
 
-## Issue #4 benchmark comparison
+## Implementation record: Issue #4 benchmark comparison
 
 Measured in the same Windows/amd64 benchmark environment, using
 Go's `-benchmem -benchtime=250ms -count=3`. Baseline was a temporary,
@@ -119,8 +117,9 @@ ASS006 and ASS013, without document parsing.
 
 An unrecognized tag, VSFilterMod-only extension, malformed or
 renderer-ambiguous assignment, unsupported transform child, or malformed
-structured arity is a dialogue-wide SafeFix proof barrier. Once encountered,
-`semantic.Evaluate` marks all previously collected no-effect candidates as
+structured arity is a dialogue-wide SafeFix proof barrier.
+A source-verified rejected position form cannot acquire a latch, but malformed source still blocks fixes. Once encountered,
+`semantic.EvaluateResolved` marks all previously collected no-effect candidates as
 `ProofRevoked` and stops producing new proofs. ASS006 retains those earlier
 findings as non-auto-fixable diagnostics with no edits. The ASS013 collector
 instead discards its accumulated Style-equivalence edit candidates, even when

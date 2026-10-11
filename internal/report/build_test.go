@@ -10,7 +10,7 @@ import (
 
 func TestBuildFallsBackToPointForMalformedOverrideBlock(t *testing.T) {
 	source := `{\pos(1,2)`
-	dialogue := ass.Dialogue{Text: source, Line: 1, LineStart: 0, TextStart: 0, Syntax: ass.ParseDialogueText(source)}
+	dialogue := ass.Dialogue{Text: source, Line: 1, LineStart: 0, TextStart: 0}
 	got := Build("sample.ass", []lint.Diagnostic{{ID: "ASS002", Line: 1, Column: 2, Tag: "pos"}}, ass.Document{Text: source, Dialogues: []ass.Dialogue{dialogue}})
 	if p := got.Groups[0].Diagnostics[0]; p.SourceColumn != 2 || p.SourceWidth != 1 {
 		t.Fatalf("malformed block source = %d:%d, want point at 2", p.SourceColumn, p.SourceWidth)
@@ -20,11 +20,11 @@ func TestBuildFallsBackToPointForMalformedOverrideBlock(t *testing.T) {
 func TestBuildUsesNestedTagSpanAndDoesNotBorrowEditRange(t *testing.T) {
 	text := `Dialogue: {\t(0,100,\fs20)}`
 	dialogueText := `{\t(0,100,\fs20)}`
-	dialogue := ass.Dialogue{Text: dialogueText, Line: 1, LineStart: 0, TextStart: len("Dialogue: "), Syntax: ass.ParseDialogueText(dialogueText)}
+	dialogue := ass.Dialogue{Text: dialogueText, Line: 1, LineStart: 0, TextStart: len("Dialogue: ")}
 	var nestedColumn int
-	dialogue.Syntax.WalkTokens(func(token ass.TokenView) bool {
-		if token.HasTag && token.Tag.Name == "fs" {
-			nestedColumn = token.Tag.Column
+	ass.WalkConcreteExpressions(ass.ParseConcreteDialogue(dialogue.Text), func(expression ass.ConcreteExpression, nested bool) bool {
+		if nested && expression.Head == "fs20" {
+			nestedColumn = expression.HeadSpan.Start + 1
 			return false
 		}
 		return true
@@ -43,7 +43,7 @@ func TestBuildUsesNestedTagSpanAndDoesNotBorrowEditRange(t *testing.T) {
 }
 func TestBuildUsesDocumentTextStartAndConcreteFixMetadata(t *testing.T) {
 	doc := ass.Document{Text: "12345678901234567890{\\fs20}\nDialogue: ...........label", Dialogues: []ass.Dialogue{
-		{Text: "{\\fs20}", Line: 1, LineStart: 0, TextStart: 20, Syntax: ass.ParseDialogueText("{\\fs20}")},
+		{Text: "{\\fs20}", Line: 1, LineStart: 0, TextStart: 20},
 		{Line: 2, LineStart: 28, Fields: []ass.EventField{{Name: "style", Start: 49, End: 54}}},
 	}}
 	got := Build("sample.ass", []lint.Diagnostic{
@@ -60,7 +60,7 @@ func TestBuildUsesDocumentTextStartAndConcreteFixMetadata(t *testing.T) {
 	if got.Groups[0].Diagnostics[2].SourceColumn != 22 || got.Groups[0].Diagnostics[2].SourceWidth != 5 {
 		t.Fatalf("field source = %d:%d, want 22:5", got.Groups[0].Diagnostics[2].SourceColumn, got.Groups[0].Diagnostics[2].SourceWidth)
 	}
-	if got.Groups[0].Diagnostics[0].Outcome != FixSafe || got.Groups[0].Diagnostics[1].Outcome != FixNone {
+	if got.Groups[0].Diagnostics[0].Outcome != FixNone || got.Groups[0].Diagnostics[1].Outcome != FixNone {
 		t.Fatalf("fix outcomes = %v, %v", got.Groups[0].Diagnostics[0].Outcome, got.Groups[0].Diagnostics[1].Outcome)
 	}
 }

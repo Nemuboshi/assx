@@ -38,7 +38,12 @@ References: libass [argument splitting](https://github.com/libass/libass/blob/f6
 
 ## ASS005 — VSFilterMod tag may be unsupported by libass/VSFilter
 
-VSFilterMod adds `\1img`, `\2img`, `\3img`, `\4img`; `\1vc`–`\4vc`; `\1va`–`\4va`; `\distort`, `\frs`, `\fsvp`, `\fshp`, `\jitter`, `\lua`, `\mover`, `\moves3`, `\moves4`, `\movevc`, `\rnds`, `\rndx`, `\rndy`, `\rndz`, `\rnd`, `\xblur`, `\yblur`, `\z`, `\ortho`, and `\blend`. These tags are absent from the shared libass and original VSFilter tag set, so either renderer may ignore them or interpret their content differently. `lua` is conditional on VSFilterMod being built with Lua support. The warning has no fix, and automatic fixes are disabled for the dialogue containing the tag.
+VSFilterMod adds `\1img`, `\2img`, `\3img`, `\4img`; `\1vc`–`\4vc`; `\1va`–`\4va`; `\distort`, `\frs`, `\fsvp`, `\fshp`, `\jitter`, `\lua`, `\mover`, `\moves3`, `\moves4`, `\movevc`, `\rnds`, `\rndx`, `\rndy`, `\rndz`, `\rnd`, `\xblur`, `\yblur`, `\z`, `\ortho`, and `\blend`. These names are not portable to libass and xy-VSFilter.
+ASS005 remains active when the requested target set excludes Mod.
+It checks verified Mod name dispatch, not invocation validity or signature acceptance.
+Primary profiles still report unknown names, invalid shorter-prefix values, or unresolved forms separately.
+`lua` depends on build capabilities. The warning has no edit.
+Unknown operations and prefix collisions remain SafeFix barriers.
 
 References: pinned VSFilterMod [tag handlers](https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2745-L3717), original VSFilter [tag map](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L1716-L1769), and libass [tag parser](https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L281-L888).
 
@@ -87,7 +92,8 @@ References: libass float parsing via [`ass_atof`](https://github.com/libass/liba
 
 This rule compares supported override slots with properties declared in the dialogue's Style. It supports Fontname, Fontsize, Bold, Italic, ScaleX, ScaleY, Spacing, Underline, StrikeOut, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Outline, Shadow, Angle, and Encoding. Colors are tracked as separate color and alpha slots; `\bord`/`\xbord`/`\ybord`, `\shad`/`\xshad`/`\yshad`, and `\fr`/`\frz` share their renderer state slots.
 
-The safe fix removes relevant override tags only when tracked state matches the Style at every visible text boundary. Intermediate changes overwritten before text can be removed, while a later assignment that restores a Style value after visible text is kept. Other formatting tags are preserved. Style-default fallbacks after a named reset are only modeled when the active and original Style values agree: libass uses the active Style, while VSFilter retains the original defaults. A VSFilterMod tag anywhere in the dialogue disables automatic style fixes for the whole dialogue. Relative `\fs+`/`\fs-` forms, style resets, transforms, drawing mode, malformed values, ambiguous styles, and unsupported state are skipped. Properties without a corresponding Style field, including blur, be, frx, fry, fax, fay, clip, p, and pbo, are not compared.
+The safe fix removes relevant override tags only when tracked state matches the Style at every visible text boundary. Intermediate changes overwritten before text can be removed, while a later assignment that restores a Style value after visible text is kept. Other formatting tags are preserved. Style-default fallbacks after a named reset are only modeled when the active and original Style values agree: libass uses the active Style, while VSFilter retains the original defaults. An unmodeled or build-conditional operation anywhere in the dialogue blocks automatic Style fixes.
+SafeFix must prove every requested primary and compatibility target; unknown Mod or Lua capabilities cannot authorize edits. Relative `\fs+`/`\fs-` forms, style resets, transforms, drawing mode, malformed values, ambiguous styles, and unsupported state are skipped. Properties without a corresponding Style field, including blur, be, frx, fry, fax, fay, clip, p, and pbo, are not compared.
 
 ## ASS014 — Extra opening brace in override block
 

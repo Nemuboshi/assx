@@ -25,7 +25,6 @@ type Dialogue struct {
 	Line        int
 	LineStart   int
 	TextStart   int
-	Syntax      DialogueText
 	Fields      []EventField
 	// MissingFields marks a line that ran out of values before the Format
 	// names did. libass discards such events (process_event_tail breaks on a
@@ -42,13 +41,6 @@ func (d Dialogue) Field(name string) (EventField, bool) {
 		}
 	}
 	return EventField{}, false
-}
-
-func (d Dialogue) ParsedText() DialogueText {
-	if d.Syntax.Source == d.Text && (d.Text == "" || d.Syntax.Nodes != nil) {
-		return d.Syntax
-	}
-	return ParseDialogueText(d.Text)
 }
 
 type HeaderField struct {
@@ -261,7 +253,6 @@ func parseEventLine(body string, bodyOffset, lineOffset, line int, format []stri
 			field := EventField{Name: name, Value: value, Start: bodyOffset + cursor, End: bodyOffset + len(body)}
 			dialogue.Text = value
 			dialogue.TextStart = bodyOffset + cursor
-			dialogue.Syntax = ParseDialogueText(dialogue.Text)
 			dialogue.Fields = append(dialogue.Fields, field)
 			break
 		}

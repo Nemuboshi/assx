@@ -37,14 +37,14 @@ func run(args []string, stdout, stderr io.Writer) int {
 	unsafeFix := flags.Bool("unsafe-fix", false, "apply safe and unsafe fixes")
 	checkFonts := flags.Bool("check-fonts", false, "check subtitle font availability and character coverage")
 	fontDir := flags.String("font-dir", "", "font folder to scan instead of system fonts (requires --check-fonts)")
+	rendererName := flags.String("renderer", "libass", "primary renderer: libass, xy-vsfilter, or vsfiltermod")
+	compatNames := flags.String("compat", "", "additional compatibility renderers (comma-separated)")
+	modBuildName := flags.String("mod-build", "unknown", "VSFilterMod build capability: unknown, enabled, or disabled")
+	luaBuildName := flags.String("lua-build", "unknown", "VSFilterMod Lua capability: unknown, enabled, or disabled")
 	// Usage and fallback diagnostics on stderr are best-effort: their write
 	// failures cannot be reported through the same failing stream.
 	flags.Usage = func() {
-		_, _ = fmt.Fprintln(stderr, "Usage: assx [--format pretty|plain|json] [--explain] [--fix] [--unsafe-fix] [--check-fonts] [--font-dir DIR] file.ass")
-	}
-	if option := singleDashOption(args); option != "" {
-		_, _ = fmt.Fprintf(stderr, "Options must use the -- prefix: %s\n", option)
-		return 2
+		_, _ = fmt.Fprintln(stderr, "Usage: assx [--format pretty|plain|json] [--renderer=libass|xy-vsfilter|vsfiltermod] [--compat=RENDERERS] [--mod-build=unknown|enabled|disabled] [--lua-build=unknown|enabled|disabled] [--explain] [--fix] [--unsafe-fix] [--check-fonts] [--font-dir DIR] file.ass")
 	}
 	if err := flags.Parse(args); err != nil {
 		if err == flag.ErrHelp {
@@ -58,6 +58,12 @@ func run(args []string, stdout, stderr io.Writer) int {
 	}
 	if *format != "pretty" && *format != "plain" && *format != "json" {
 		_, _ = fmt.Fprintf(stderr, "Unknown output format %q. Use pretty, plain, or json.\n", *format)
+		return 2
+	}
+
+	targets, err := parseAnalysisTargets(flags, *rendererName, *compatNames, *modBuildName, *luaBuildName)
+	if err != nil {
+		_, _ = fmt.Fprintln(stderr, err)
 		return 2
 	}
 
@@ -98,9 +104,9 @@ func run(args []string, stdout, stderr io.Writer) int {
 		}
 	}
 	analyzeDoc := func(doc ass.Document) ([]lint.Diagnostic, error) {
-		diagnostics := lint.AnalyzeDocument(doc)
+		diagnostics := lint.AnalyzeDocumentForTargets(doc, targets)
 		if fontChecker != nil {
-			fontDiagnostics, err := lint.AnalyzeFonts(doc, fontChecker)
+			fontDiagnostics, err := lint.AnalyzeFontsForRenderer(doc, fontChecker, targets.Primary)
 			if err != nil {
 				return nil, err
 			}
@@ -123,7 +129,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 	var appliedSafe, appliedUnsafe int
 	if *fix || *unsafeFix {
 		availableSafe, availableUnsafe, _ := lint.CountFixes(diagnostics)
-		fixedText, count, err := lint.ApplyFixes(doc.Text, diagnostics, *unsafeFix)
+		fixedText, count, err := lint.ApplyFixesForTargets(doc.Text, diagnostics, *unsafeFix, targets)
 		if err != nil {
 			progress.stop()
 			_, _ = fmt.Fprintln(stderr, err)
@@ -185,7 +191,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 			return 2
 		}
 	default:
-		view := report.Build(path, diagnostics, doc)
+		view := report.Build(path, diagnostics, targets.Primary.DocumentView(doc))
 		view.Explain = *explain
 		view.Applied.Safe, view.Applied.Unsafe = appliedSafe, appliedUnsafe
 		if err := pretty.Render(stdout, view, doc.Text, colorAllowed(stdout), outputWidth(stdout)); err != nil {
@@ -209,26 +215,6 @@ func outputWidth(writer io.Writer) int {
 		}
 	}
 	return 80
-}
-
-func singleDashOption(args []string) string {
-	for i := 0; i < len(args); i++ {
-		arg := args[i]
-		if arg == "--" {
-			break
-		}
-		if strings.HasPrefix(arg, "--") {
-			name, _, hasValue := strings.Cut(arg[2:], "=")
-			if !hasValue && (name == "format" || name == "font-dir") {
-				i++
-			}
-			continue
-		}
-		if strings.HasPrefix(arg, "-") {
-			return arg
-		}
-	}
-	return ""
 }
 
 type scanProgress struct {

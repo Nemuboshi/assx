@@ -25,7 +25,7 @@ func TestUnmodeledTagsRevokeEarlierNoEffectProofs(t *testing.T) {
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			effects := EvaluateDialogue(ass.ParseDialogueText(tc.text))
+			effects := evaluateLibassNoEffects(ass.ParseConcreteDialogue(tc.text))
 			if len(effects) == 0 {
 				t.Fatal("expected a preserved but non-fixable diagnostic candidate")
 			}
@@ -46,7 +46,7 @@ func TestSupportedTagsStillAllowNoEffectProofs(t *testing.T) {
 		`{\fs20\fs20\clip(0,0,10,10)}A`,
 		`{\fs20\fs20\pos(10,20)}A`,
 	} {
-		effects := EvaluateDialogue(ass.ParseDialogueText(tc))
+		effects := evaluateLibassNoEffects(ass.ParseConcreteDialogue(tc))
 		if len(effects) == 0 {
 			t.Errorf("ordinary supported tag should keep no-effect proof: %q", tc)
 		}

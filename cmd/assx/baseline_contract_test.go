@@ -23,6 +23,7 @@ import (
 const baselineCommit = "6ba745336615f102d5de39f76550f0a45da7bbb6"
 
 var updateContracts = flag.Bool("update-contracts", false, "regenerate renderer baseline golden files (requires an explicit reviewed correction)")
+var reviewContracts = flag.Bool("review-contracts", false, "write candidate snapshots under .pi for correction review without changing goldens")
 
 type baselineTag struct {
 	Name       string        `json:"name"`
@@ -50,15 +51,15 @@ func snapshotTag(tag ass.Tag) baselineTag {
 }
 
 type baselineItem struct {
-	Kind  ass.BlockItemKind `json:"kind"`
-	Raw   string            `json:"raw"`
-	Start int               `json:"start"`
-	End   int               `json:"end"`
-	Tag   *baselineTag      `json:"tag,omitempty"`
+	Kind       ass.ConcreteItemKind    `json:"kind"`
+	Raw        string                  `json:"raw"`
+	Start      int                     `json:"start"`
+	End        int                     `json:"end"`
+	Expression *ass.ConcreteExpression `json:"expression,omitempty"`
 }
 
 type baselineNode struct {
-	Kind  ass.DialogueNodeKind `json:"kind"`
+	Kind  ass.ConcreteNodeKind `json:"kind"`
 	Raw   string               `json:"raw"`
 	Start int                  `json:"start"`
 	End   int                  `json:"end"`
@@ -126,20 +127,17 @@ type baselineDialogue struct {
 }
 
 func snapshotDialogue(dialogue ass.Dialogue, styles map[string]semantic.StyleState) baselineDialogue {
-	tree := dialogue.ParsedText()
+	tree := ass.ParseConcreteDialogue(dialogue.Text)
 	out := baselineDialogue{
 		Line: dialogue.Line, Style: dialogue.Style, TextStart: dialogue.TextStart,
 		MissingFields: dialogue.MissingFields, Fields: dialogue.Fields,
 	}
 	for _, node := range tree.Nodes {
-		part := baselineNode{Kind: node.Kind, Raw: tree.Source[node.Start:node.End], Start: node.Start, End: node.End}
+		part := baselineNode{Kind: node.Kind, Raw: node.Raw, Start: node.Span.Start, End: node.Span.End}
 		if node.Block != nil {
 			for _, item := range node.Block.Items {
-				bi := baselineItem{Kind: item.Kind, Raw: item.Raw, Start: item.Start, End: item.End}
-				if item.Tag != nil {
-					tag := snapshotTag(*item.Tag)
-					bi.Tag = &tag
-				}
+				bi := baselineItem{Kind: item.Kind, Raw: item.Raw, Start: item.Span.Start, End: item.Span.End}
+				bi.Expression = item.Expression
 				part.Items = append(part.Items, bi)
 			}
 		}
@@ -169,7 +167,7 @@ func snapshotDialogue(dialogue ass.Dialogue, styles map[string]semantic.StyleSta
 			},
 		},
 	}
-	for _, effect := range semantic.Evaluate(tree, options).NoEffects {
+	for _, effect := range semantic.EvaluateResolved(tree, lint.DefaultAnalysisTargets().Primary, options).NoEffects {
 		out.NoEffects = append(out.NoEffects, baselineEffect{
 			Tag: snapshotTag(effect.Tag), Reason: uint8(effect.Reason),
 			Owner: effect.OwnerIndex, Revoked: effect.ProofRevoked,
@@ -282,6 +280,16 @@ func TestRendererBaselineContracts(t *testing.T) {
 			}
 			actual = append(actual, '\n')
 			golden := filepath.Join("..", "..", "testdata", "contracts", "golden", filename+".json")
+			if *reviewContracts {
+				candidate := filepath.Join("..", "..", ".pi", "contracts-review", filename+".json")
+				if err := os.MkdirAll(filepath.Dir(candidate), 0o755); err != nil {
+					t.Fatal(err)
+				}
+				if err := os.WriteFile(candidate, actual, 0o644); err != nil {
+					t.Fatal(err)
+				}
+				return
+			}
 			if *updateContracts {
 				if err := os.WriteFile(golden, actual, 0o644); err != nil {
 					t.Fatal(err)

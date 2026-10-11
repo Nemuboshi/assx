@@ -85,8 +85,15 @@ func TestRunRedundantStyleDiagnosticHasPlainAndJSONMetadata(t *testing.T) {
 		if err := json.Unmarshal([]byte(stdout.String()), &diagnostics); err != nil {
 			t.Fatal(err)
 		}
-		if len(diagnostics) != 1 || diagnostics[0].Title == "" || diagnostics[0].Description == "" || diagnostics[0].Fix == "" {
-			t.Fatalf("incomplete JSON diagnostic: %#v", diagnostics)
+		found := false
+		for _, diagnostic := range diagnostics {
+			if diagnostic.Title == "" || diagnostic.Description == "" || diagnostic.Fix == "" || diagnostic.Renderer == "" {
+				t.Fatalf("incomplete JSON diagnostic: %s", diagnostic.ID)
+			}
+			found = found || diagnostic.ID == lint.IssueRedundantStyleOverrides
+		}
+		if !found {
+			t.Fatal("missing Style-equivalence diagnostic")
 		}
 	}
 }

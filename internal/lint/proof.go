@@ -66,15 +66,7 @@ type FixProof struct {
 }
 
 func defaultFixTargets() []renderer.Profile {
-	libass, err := renderer.Standard(renderer.Libass)
-	if err != nil {
-		panic(err)
-	}
-	xy, err := renderer.Standard(renderer.XYVSFilter)
-	if err != nil {
-		panic(err)
-	}
-	return []renderer.Profile{libass, xy}
+	return DefaultAnalysisTargets().Profiles()
 }
 
 func fixTargets(profiles []renderer.Profile) []FixTarget {
@@ -127,7 +119,10 @@ func proveSafeFixes(doc ass.Document, diagnostics []Diagnostic, profiles []rende
 		return diagnostics
 	}
 	validEdits := fixEditIndex(diagnostics)
-	proofDoc := proofDocument(doc.Text, selected)
+	proofDoc := doc
+	if len(proofDoc.Dialogues) == 0 {
+		proofDoc = proofDocument(doc.Text, selected)
+	}
 	if proof, err := buildFixProofWithDocument(doc.Text, proofDoc, selected, profiles, validEdits); err == nil {
 		attachProofReferences(diagnostics, candidates, proof)
 		return diagnostics
@@ -200,16 +195,17 @@ func attachProofReferences(diagnostics []Diagnostic, indexes []int, proof *FixPr
 	}
 }
 
-func buildFixProof(source string, edits []FixEditProof, profiles []renderer.Profile) (*FixProof, error) {
-	doc := proofDocument(source, edits)
-	return buildFixProofWithEditIndex(source, edits, profiles, fixEditIndex(analyzeDocumentUnproved(doc)))
-}
-
-func buildFixProofWithEditIndex(source string, edits []FixEditProof, profiles []renderer.Profile, validEdits map[FixEditProof]struct{}) (*FixProof, error) {
-	return buildFixProofWithDocument(source, proofDocument(source, edits), edits, profiles, validEdits)
+func buildFixProof(source string, edits []FixEditProof, targets AnalysisTargets) (*FixProof, error) {
+	doc := targets.Primary.DocumentView(proofDocument(source, edits))
+	return buildFixProofWithDocument(source, doc, edits, targets.Profiles(), fixEditIndex(analyzeDocumentForTargetsUnproved(doc, targets)))
 }
 
 func buildFixProofWithDocument(source string, beforeDoc ass.Document, edits []FixEditProof, profiles []renderer.Profile, validEdits map[FixEditProof]struct{}) (*FixProof, error) {
+	for _, profile := range profiles {
+		if profile.Kind() == renderer.VSFilterMod && (profile.Build().Mod == renderer.FeatureUnknown || profile.Build().Lua != renderer.FeatureDisabled) {
+			return nil, fmt.Errorf("VSFilterMod proof requires a known Mod capability and disabled Lua")
+		}
+	}
 	if len(profiles) == 0 {
 		return nil, fmt.Errorf("SafeFix proof has no renderer targets")
 	}
@@ -239,6 +235,15 @@ func buildFixProofWithDocument(source string, beforeDoc ass.Document, edits []Fi
 	var afterDoc ass.Document
 	if hasStyleFieldEdits(edits) {
 		afterDoc = proofDocument(changed, edits)
+		if len(beforeDoc.Dialogues) != len(afterDoc.Dialogues) || !reflect.DeepEqual(beforeDoc.EventFormat, afterDoc.EventFormat) {
+			for _, profile := range profiles {
+				view := profile.DocumentView(afterDoc)
+				if len(view.Dialogues) == len(beforeDoc.Dialogues) && reflect.DeepEqual(view.EventFormat, beforeDoc.EventFormat) {
+					afterDoc = view
+					break
+				}
+			}
+		}
 	} else {
 		afterDoc, err = editedDialogueDocument(beforeDoc, changed, edits)
 		if err != nil {
@@ -288,27 +293,53 @@ func buildFixProofWithDocument(source string, beforeDoc ass.Document, edits []Fi
 	byDialogue := dialogueEditsByIndex(beforeDoc, edits)
 	affected := affectedDialogues(beforeDoc, edits, byDialogue)
 	for _, profile := range profiles {
+		profileBefore, profileAfter := profile.DocumentView(beforeDoc), profile.DocumentView(afterDoc)
+		if len(beforeDoc.Lines) == 0 {
+			profileBefore, profileAfter = beforeDoc, afterDoc
+		}
+		profileStyles := semantic.StyleStatesByName(profileBefore.StyleFields)
+		if !reflect.DeepEqual(profileStyles, semantic.StyleStatesByName(profileAfter.StyleFields)) {
+			return nil, fmt.Errorf("%s edit changes interpreted Style state", profile.Kind())
+		}
+		profileStyleEvidence, err := verifyStyleIntegerEdits(profileBefore, profileAfter, edits)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", profile.Kind(), err)
+		}
+		if len(profileStyleEvidence) != len(styleEvidence) {
+			return nil, fmt.Errorf("%s cannot verify every edited Style field", profile.Kind())
+		}
+		byLineBefore, byLineAfter := make(map[int]ass.Dialogue), make(map[int]ass.Dialogue)
+		for _, dialogue := range profileBefore.Dialogues {
+			byLineBefore[dialogue.Line] = dialogue
+		}
+		for _, dialogue := range profileAfter.Dialogues {
+			byLineAfter[dialogue.Line] = dialogue
+		}
 		target := FixTargetProof{Target: FixTarget{
 			Renderer: profile.Kind().String(), Version: profile.Version(),
 			Capabilities: proofCapabilities(profile.Kind(), profile.Build()),
 		}}
 		for _, dialogueIndex := range affected {
-			beforeDialogue := beforeDoc.Dialogues[dialogueIndex]
-			afterDialogue := afterDoc.Dialogues[dialogueIndex]
+			baseDialogue := beforeDoc.Dialogues[dialogueIndex]
+			beforeDialogue, beforePresent := byLineBefore[baseDialogue.Line]
+			afterDialogue, afterPresent := byLineAfter[baseDialogue.Line]
+			if !beforePresent || !afterPresent || beforeDialogue.TextStart != baseDialogue.TextStart || beforeDialogue.Style != baseDialogue.Style || beforeDialogue.MissingFields || afterDialogue.MissingFields {
+				return nil, fmt.Errorf("%s cannot verify the edited Dialogue layout", profile.Kind())
+			}
 			dialogueEdits := byDialogue[dialogueIndex]
 			var comparison semantic.ProofComparison
 			if syntaxOnly {
 				comparison = semantic.CompareSyntaxProof(
 					ass.ParseConcreteDialogue(beforeDialogue.Text),
 					ass.ParseConcreteDialogue(afterDialogue.Text), profile,
-					semantic.EvaluationOptions{Styles: stylesBefore, DialogueStyle: beforeDialogue.Style},
+					semantic.EvaluationOptions{Styles: profileStyles, DialogueStyle: beforeDialogue.Style},
 				)
 			} else {
 				comparison = semantic.CompareResolvedProof(
 					ass.ParseConcreteDialogue(beforeDialogue.Text),
 					ass.ParseConcreteDialogue(afterDialogue.Text),
 					profile,
-					semantic.EvaluationOptions{Styles: stylesBefore, DialogueStyle: beforeDialogue.Style},
+					semantic.EvaluationOptions{Styles: profileStyles, DialogueStyle: beforeDialogue.Style},
 					removedRanges(beforeDialogue, dialogueEdits),
 				)
 			}
@@ -331,7 +362,7 @@ func buildFixProofWithDocument(source string, beforeDoc ass.Document, edits []Fi
 				After:  relevantSteps(comparison.After.Steps, ranges),
 			})
 		}
-		target.StyleFields = slices.Clone(styleEvidence)
+		target.StyleFields = slices.Clone(profileStyleEvidence)
 		proof.Interpretations = append(proof.Interpretations, target)
 	}
 	identity := *proof
@@ -345,11 +376,11 @@ func buildFixProofWithDocument(source string, beforeDoc ass.Document, edits []Fi
 
 func isEmptyOverrideEdit(doc ass.Document, edit TextEdit) bool {
 	for _, dialogue := range doc.Dialogues {
-		for _, node := range dialogue.ParsedText().Nodes {
-			if node.Kind != ass.OverrideNode || node.Block == nil || !node.Block.IsEmpty() {
+		for _, node := range ass.ParseConcreteDialogue(dialogue.Text).Nodes {
+			if node.Block == nil || strings.TrimSpace(node.Block.Content) != "" {
 				continue
 			}
-			if edit.Start == dialogue.TextStart+node.Block.Start && edit.End == dialogue.TextStart+node.Block.End {
+			if edit.Start == dialogue.TextStart+node.Block.Span.Start && edit.End == dialogue.TextStart+node.Block.Span.End {
 				return true
 			}
 		}
@@ -415,13 +446,16 @@ func sameDocumentShape(before, after ass.Document, edits []FixEditProof) bool {
 }
 
 func verifyStyleIntegerEdits(before, after ass.Document, edits []FixEditProof) ([]ProofStyleField, error) {
+	if len(before.StyleFields) != len(after.StyleFields) {
+		return nil, fmt.Errorf("edit changed interpreted Style fields")
+	}
 	var out []ProofStyleField
 	for i, field := range before.StyleFields {
 		other := after.StyleFields[i]
 		if field.Value == other.Value {
 			continue
 		}
-		if !styleFieldEdited(field, edits, IssueStyleInteger) {
+		if !integerStyleFields[field.Name] || !styleFieldEdited(field, edits, IssueStyleInteger) {
 			return nil, fmt.Errorf("style field %s.%s changed without an integer proof", field.StyleName, field.Name)
 		}
 		oldValue := ass.DecodeInteger(strings.TrimSpace(field.Value))
@@ -754,15 +788,15 @@ func proofIdentityMatches(proof *FixProof) bool {
 	return err == nil && id == proof.ID
 }
 
-func verifyFixProofs(source string, beforeDoc ass.Document, selected []FixEditProof, proof *FixProof, validEdits map[FixEditProof]struct{}) error {
+func verifyFixProofs(source string, beforeDoc ass.Document, selected []FixEditProof, proof *FixProof, requested []renderer.Profile, validEdits map[FixEditProof]struct{}) error {
 	if proof == nil || proof.ID == "" || proof.SourceSHA256 != hashSource(source) {
 		return fmt.Errorf("SafeFix proof does not match the current source")
 	}
 	if !sameFixEditSet(selected, proof.SourceEdits) {
 		return fmt.Errorf("selected SafeFix edits do not match the proof")
 	}
-	if !sameFixTargets(proof.Targets, fixTargets(defaultFixTargets())) {
-		return fmt.Errorf("default SafeFix application requires libass and xy-VSFilter proofs")
+	if len(requested) == 0 || !sameFixTargets(proof.Targets, fixTargets(requested)) {
+		return fmt.Errorf("SafeFix proof does not match the requested renderer targets")
 	}
 	if !proofIdentityMatches(proof) {
 		return fmt.Errorf("SafeFix proof identity does not match its evidence")
