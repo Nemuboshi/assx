@@ -3,8 +3,10 @@ package semantic
 import (
 	"strconv"
 	"strings"
+	"unicode"
 
 	"assx/internal/ass"
+	"assx/internal/ass/renderer"
 	"assx/internal/ass/spec"
 )
 
@@ -12,6 +14,16 @@ import (
 // No per-tag interface allocations or runtime registration are required.
 
 func (m *evaluator) handleTransformChild(tag ass.Tag, tagSpec spec.TagSpec) SemanticUncertainty {
+	if m.options.Profile != nil && m.options.Profile.Kind() == renderer.VSFilterMod {
+		// Mod recursively applies all handlers. Do not publish a static value
+		// for animated assignments or let a later child retain pos3 depth.
+		if tagSpec.Behavior == spec.Assign && len(tagSpec.Slots) != 0 {
+			m.invalidate(tagSpec.Slots)
+		} else {
+			m.invalidateAll()
+		}
+		return UncertaintyTimeDependent
+	}
 	// A transform child is evaluated by its parent. Unsupported targets or
 	// syntax must still revoke proofs created before the parent transform.
 	unknown := tagSpec.Behavior != spec.Assign || RelativeFontSize(tag)
@@ -58,6 +70,47 @@ func resolveAssignmentPolicy(tag ass.Tag, tagSpec spec.TagSpec) ([]string, spec.
 	return slots, behavior
 }
 
+// applyModPositionDepth retains the accepted depth write despite the pinned
+// three-argument position layout defect (RTS.cpp:3530-3539,4238-4241).
+func (m *evaluator) applyModPositionDepth(tag ass.Tag, index int, event *TagEvent) {
+	event.Policy = spec.FirstWins
+	event.Slots = []string{"position", "z_depth"}
+	m.fillValues(&event.Before, event.Slots)
+	if _, occupied := m.latched["position"]; occupied {
+		event.Ignored = true
+		m.fillValues(&event.After, event.Slots)
+		return
+	}
+	m.markActiveLive()
+	m.blockProofs(event, UncertaintyRendererDependent)
+	if m.operationFor(tag).signature != renderer.SignatureVerified {
+		m.uncertainLatches["position"] = true
+	}
+	if m.uncertainLatches["position"] {
+		// A preceding extension may have claimed EF_MOVE and blocked depth.
+		m.invalidate(event.Slots)
+		m.fillValues(&event.After, event.Slots)
+		return
+	}
+	m.latched["position"] = index
+	m.collisionDisabled = true
+	m.state["position"] = UnknownValue()
+	m.active["position"] = owner{index: index, start: m.position}
+	depth := UnknownValue()
+	decoded := ass.DecodeExactNumber(tag.Args[2])
+	if decoded.Status == ass.ValueValid && !strings.ContainsFunc(tag.Raw, func(r rune) bool {
+		return r > unicode.MaxASCII && unicode.IsSpace(r)
+	}) {
+		if value, ok := canonicalFloat(decoded.Number * 80); ok {
+			depth = KnownValue(value)
+		}
+	}
+	m.state["z_depth"] = depth
+	m.active["z_depth"] = owner{index: index, start: m.position, proven: depth.Known}
+	event.Applied = true
+	m.fillValues(&event.After, event.Slots)
+}
+
 func (m *evaluator) handleRelativeFontSize(tag ass.Tag, tagSpec spec.TagSpec, event *TagEvent, slots []string) bool {
 	if tagSpec.Semantic != spec.SemanticFontSize || !RelativeFontSize(tag) {
 		return false
@@ -101,6 +154,31 @@ func (m *evaluator) assignmentValues(tag ass.Tag, tagSpec spec.TagSpec, slots []
 		values, valuesKnown = StyleTagState(tag, tagSpec, slots, style.Values, original.Values)
 	} else {
 		values, valuesKnown = CanonicalTagState(tag, tagSpec, slots)
+	}
+	modReset := tagSpec.VSFilterModOnly && m.options.Profile != nil && m.options.Profile.Kind() == renderer.VSFilterMod && len(tag.Args) == 0
+	if tag.Name == "ortho" && m.options.Profile != nil && m.options.Profile.Kind() == renderer.VSFilterMod && len(tag.Args) == 1 {
+		decoded := ass.DecodeExactInteger(tag.Args[0])
+		if decoded.Status != ass.ValueValid || decoded.Integer < -1<<31 || decoded.Integer > 1<<31-1 {
+			return nil, false
+		}
+		modReset = decoded.Integer != 0 && decoded.Integer != 1
+	}
+	if modReset {
+		if raw, known := tag.RawArgument(); !known || strings.ContainsFunc(raw, func(r rune) bool {
+			return r > unicode.MaxASCII && unicode.IsSpace(r)
+		}) {
+			return nil, false
+		}
+		original := m.options.Styles[m.originalStyle]
+		values = make([]string, len(slots))
+		for i, slot := range slots {
+			value := original.Values[slot]
+			if !value.Known {
+				return nil, false
+			}
+			values[i] = value.Value
+		}
+		valuesKnown = true
 	}
 	if tagSpec.Semantic == spec.SemanticDrawingMode {
 		if number, ok := tag.IntegerArgument(); ok {

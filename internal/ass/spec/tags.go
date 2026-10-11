@@ -93,6 +93,16 @@ var TagSpecs = map[string]TagSpec{
 	"yblur": {VSFilterModOnly: true}, "z": {VSFilterModOnly: true}, "ortho": {VSFilterModOnly: true}, "blend": {VSFilterModOnly: true},
 }
 
+// VSFilterModTagSpecs supplies profile-scoped assignments without changing
+// the frozen default decoder. Both adapters use the same semantic engine.
+var VSFilterModTagSpecs = map[string]TagSpec{
+	"frs":   {VSFilterModOnly: true, Slots: []string{"font_orient"}, Value: NumberValue},
+	"fsvp":  {VSFilterModOnly: true, Slots: []string{"vfont_space"}, Value: NumberValue},
+	"fshp":  {VSFilterModOnly: true, Slots: []string{"hfont_space"}, Value: NumberValue},
+	"z":     {VSFilterModOnly: true, Slots: []string{"z_depth"}, Value: NumberValue},
+	"ortho": {VSFilterModOnly: true, Slots: []string{"ortho"}, Value: IntegerValue},
+}
+
 var KeepOnStyleReset = map[string]bool{
 	"wrap_style":     true,
 	"drawing_scale":  true,
