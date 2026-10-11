@@ -76,7 +76,7 @@ func (d Diagnostic) MarshalJSON() ([]byte, error) {
 
 func Analyze(dialogue ass.Dialogue) []Diagnostic {
 	targets := DefaultAnalysisTargets()
-	findings, _ := analyzeResolvedDialogue(dialogue, targets.Primary, nil, nil)
+	findings, _ := analyzeResolvedDialogue(dialogue, targets.Primary, nil, nil, nil)
 	findings = append(findings, portabilityDiagnostics(dialogue, targets)...)
 	findings = append(findings, AnalyzeCompatibility(dialogue, targets.Profiles())...)
 	for i := range findings {

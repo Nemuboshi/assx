@@ -14,7 +14,7 @@ import (
 // AnalyzeForRenderer validates a dialogue under exactly one pinned renderer.
 // Findings are renderer-local observations, never all-target SafeFix proofs.
 func AnalyzeForRenderer(dialogue ass.Dialogue, profile renderer.Profile) []Diagnostic {
-	findings, _ := analyzeResolvedDialogue(dialogue, profile, nil, nil)
+	findings, _ := analyzeResolvedDialogue(dialogue, profile, nil, nil, nil)
 	return scopeDiagnostics(findings, profile)
 }
 
@@ -39,7 +39,7 @@ func analyzeDocumentForProfile(doc ass.Document, profile renderer.Profile) []Dia
 		if collector != nil {
 			collector.allowEdits = true
 		}
-		findings, style := analyzeResolvedDialogue(dialogue, profile, styles, collector)
+		findings, style := analyzeResolvedDialogue(dialogue, profile, styles, collector, nil)
 		diagnostics = append(diagnostics, findings...)
 		if style != nil {
 			redundant = append(redundant, *style)
@@ -85,8 +85,11 @@ func scopeDiagnostics(diagnostics []Diagnostic, profile renderer.Profile) []Diag
 	return out
 }
 
-func analyzeResolvedDialogue(dialogue ass.Dialogue, profile renderer.Profile, styles map[string]semantic.StyleState, collector *styleRunCollector) ([]Diagnostic, *Diagnostic) {
+func analyzeResolvedDialogue(dialogue ass.Dialogue, profile renderer.Profile, styles map[string]semantic.StyleState, collector *styleRunCollector, indexedTree *ass.ConcreteDialogue) ([]Diagnostic, *Diagnostic) {
 	tree := ass.ParseConcreteDialogue(dialogue.Text)
+	if indexedTree != nil {
+		tree = *indexedTree
+	}
 	analyzer := dialogueAnalyzer{line: dialogue.Line, textStart: dialogue.TextStart}
 	for _, node := range tree.Nodes {
 		if node.Block == nil {
