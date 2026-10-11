@@ -71,11 +71,13 @@ that audit metadata. `--fix` checks the submitted ID and edited-source hash,
 then rebuilds the evidence from the current source and complete edit group.
 
 `--fix` rechecks the proof against the current file and selected edits.
-Application derives authorized edits again under the same caller-requested primary and compatibility policy.
+Proof construction starts with the original parsed document. It builds an event
+and Style view for each target.
+Application rebuilds each view from the current source under the requested
+primary and compatibility policy.
 It does not trust diagnostic scope labels.
 Subset, revision, capability, source, edited hash, or interpretation mismatches reject the request.
 Separate proof groups also require combined edit verification before application.
-Each target uses its own document field and Style view.
 A custom layout cannot borrow the primary renderer's integer field proof. The
 default scope contains pinned libass and xy-VSFilter profiles. A proof for
 VSFilterMod alone cannot authorize a default fix. The default CLI does not select VSFilterMod.

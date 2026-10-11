@@ -124,7 +124,7 @@ func applyFixes(text string, diagnostics []Diagnostic, includeUnsafe bool, targe
 		fixes++
 	}
 	if len(safeEdits) != 0 {
-		doc := targets.Primary.DocumentView(proofDocument(text, safeEdits))
+		doc := proofDocument(text, safeEdits)
 		validEdits := fixEditIndex(analyzeDocumentForTargetsUnproved(doc, targets))
 		for _, group := range groups {
 			if err := verifyFixProofs(text, doc, group.edits, group.proof, targets.Profiles(), validEdits); err != nil {

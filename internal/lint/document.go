@@ -8,7 +8,7 @@ import (
 // AnalyzeDocumentForTargets validates only the primary renderer and reports
 // compatibility observations for the full selected profile set separately.
 func AnalyzeDocumentForTargets(doc ass.Document, targets AnalysisTargets) []Diagnostic {
-	return proveSafeFixes(targets.Primary.DocumentView(doc), analyzeDocumentForTargetsUnproved(doc, targets), targets.Profiles())
+	return proveSafeFixes(doc, analyzeDocumentForTargetsUnproved(doc, targets), targets.Profiles())
 }
 
 func analyzeDocumentForTargetsUnproved(doc ass.Document, targets AnalysisTargets) []Diagnostic {
