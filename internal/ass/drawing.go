@@ -40,47 +40,8 @@ type Drawing struct {
 
 var drawingNumberPrefix = regexp.MustCompile(`^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?`)
 
-func (tree DialogueText) Drawings() []Drawing {
-	var drawings []Drawing
-	var fragments []DrawingFragment
-	drawing := false
-
-	flush := func() {
-		if len(fragments) == 0 {
-			return
-		}
-		drawings = append(drawings, ParseDrawing(fragments))
-		fragments = nil
-	}
-
-	tree.WalkTokens(func(token TokenView) bool {
-		if token.HasTag {
-			tag := token.Tag
-			if tag.InTransition || tag.Name != "p" {
-				return true
-			}
-			value, known := tag.IntegerArgument()
-			if !known {
-				return true
-			}
-			next := value > 0
-			if drawing && !next {
-				flush()
-			}
-			drawing = next
-			return true
-		}
-		if drawing && token.Text != "" {
-			fragments = append(fragments, DrawingFragment{
-				Text: token.Text, Start: token.Start, End: token.Start + len(token.Text),
-			})
-		}
-		return true
-	})
-	if drawing {
-		flush()
-	}
-	return drawings
+func isSpace(ch byte) bool {
+	return ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n' || ch == '\f' || ch == '\v'
 }
 
 func ParseDrawing(fragments []DrawingFragment) Drawing {

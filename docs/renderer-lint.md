@@ -1,20 +1,23 @@
-# Renderer-scoped lint validation (P06/10)
+# Renderer-scoped lint validation
 
 Implementation: [Issue #21](https://github.com/Nemuboshi/assx/issues/21) of
 [Epic #16](https://github.com/Nemuboshi/assx/issues/16).
 
-## API and rollout boundary
+## Current API boundary
 
 `lint.AnalyzeForRenderer(dialogue, profile)` and
 `lint.AnalyzeDocumentForRenderer(document, profile)` evaluate a **single pinned
 renderer**. The document entry point also checks headers, event fields,
-Style definitions/references, drawing syntax, and karaoke timing. Existing
-`Analyze` and `AnalyzeDocument` retain the frozen default libass/xy-oriented
-contract; changing CLI renderer selection and removing the historical input
-adapter are reserved for P10.
+Style definitions/references, drawing syntax, and karaoke timing.
+These observation-only APIs do not authorize edits.
+`AnalyzeDocumentForTargets` accepts a primary profile and compatibility profiles.
+VSFilter primaries read fixed ASS v4+ record slots, including when Format fields differ.
+Other dialects remain outside this projection; it is not a complete renderer loader.
+`Analyze` and `AnalyzeDocument` call the same concrete/profile pipeline with libass primary and xy-VSFilter compatibility.
+There is no historical input adapter or duplicate semantic path.
 
 Only the renderer-neutral concrete syntax tree is used for naming and
-argument resolution in the opt-in lint path. The selected `renderer.Profile`
+argument resolution in every lint path. The selected `renderer.Profile`
 owns prefix collisions, command identity, signature evidence, and conditional
 build availability. The shared typed decoder takes the resulting explicit
 policy. Lint does not mutate the registry or widen a universal `TagSpec.Counts`
@@ -46,18 +49,25 @@ list to legalize VSFilterMod-only shapes.
   source-verified signatures for every contributing karaoke tag. Partially
   consumed arguments (such as `\\k200junk`) and inferred-only VSFilterMod
   signatures cannot produce a definitive timing warning. Standalone event
-  analysis uses the same evaluator and proof checks; the default CLI's
-  historical karaoke behavior remains unchanged.
+  analysis uses the same evaluator and proof checks, including the default CLI.
 
-The optional `renderer` JSON field is present only in explicit per-profile
-findings; the default JSON shape, rule IDs, severities, ordering policy, and
-exit-code policy remain unchanged. A single-profile analysis **never supplies
+The `renderer` JSON field identifies the pinned profile, including Mod capabilities.
+Compatibility findings identify both profiles and use physical-line columns.
+Primary tag findings use dialogue-relative columns. Findings retain stable source ordering.
+Primary error diagnostics produce exit status 1; compatibility diagnostics remain warnings.
+ASS005 remains a portability lint for Mod-only names when the requested scope excludes Mod. A single-profile analysis **never supplies
 SafeFix edits or an edit safety classification**, including on shared
-document checks and the existing ASS006/ASS013/font APIs. All-target
-equivalence is P08. Differential compatibility is provided separately by the
+document checks and the existing ASS006/ASS013/font APIs. Target-configured analysis supplies fixes only after proving every requested profile.
+Application recomputes authorized edits with that same primary and compatibility policy. Differential compatibility is provided separately by the
 [P07 comparison APIs](renderer-compatibility.md). Those APIs use ASS003 for
 proven differences and ASS031 for unresolved compatibility observations;
 invocation validity remains the responsibility of the APIs described here.
+
+## Implementation record: P06
+
+P06 added observation-only APIs while preserving the temporary default adapter.
+P10 removed that adapter and added CLI selection and target-configured fix application.
+The reviewed corrections are recorded in [contracts](renderer-contracts.md).
 
 ## Regression and performance
 

@@ -1,4 +1,4 @@
-# Renderer-scoped effective semantics (P05/10)
+# Renderer-scoped effective semantics
 
 Implementation: [Issue #20](https://github.com/Nemuboshi/assx/issues/20) in
 [Epic #16](https://github.com/Nemuboshi/assx/issues/16). This builds on the
@@ -9,9 +9,8 @@ independent syntax and source-backed dispatch delivered in P02–P04.
 A single state engine in `internal/semantic` evaluates commands for one
 renderer at a time. `EvaluateResolved` consumes a renderer-neutral
 `ass.ConcreteDialogue` and a pinned `renderer.Profile`; it never assigns
-tag names in the CST. The `EvaluationOptions.Profile` path also supports
-existing consumers that only hold a `DialogueText`, re-lexing the original
-source into the neutral CST rather than using the historical tag names.
+tag names in the CST. There is no nil-profile or legacy evaluation path.
+Every caller supplies a concrete tree and explicit pinned profile.
 
 The adapter in `operation.go` produces a sequence of text boundaries and
 resolved operations. Each operation retains source coordinates, its
@@ -20,6 +19,8 @@ signature evidence, and prefix-shadowing information. Transform children
 are resolved from their original nested expressions and evaluated in source
 order. A single evaluator owns StateView, style lookup, precedence,
 first-wins latches, provenance, liveness, and proof revocation.
+Named resets retain the original Dialogue Style and consume the first resolved argument.
+Unknown named Styles remain proof barriers; no missing Style is invented.
 
 `DecodeTagWithSpec` is the typed scalar decoder entry point when a command
 has already been resolved. Semantic canonicalization, assignment handlers,
@@ -34,6 +35,7 @@ Match status, verified argument shapes, and modeled state are separate:
   not by itself establish known state or edit equivalence.
 - A source-verified rejected form (the exhaustive `pos` and `move` shapes)
   is ignored by that renderer and cannot acquire a first-wins latch.
+  Malformed input still blocks automatic edits; rejection does not prove edit safety.
 - A build-conditional or unresolved shape invalidates affected values and
   proofs. When it could have claimed a first-wins slot, a subsequent valid
   assignment cannot fabricate a definite owner.
@@ -65,12 +67,12 @@ reject the first form and can apply the second. VSFilterMod with `_VSMOD`
 enabled can apply the first and ignore the second. A build with unknown
 capabilities cannot prove which command owns the position slot.
 
-## VSFilterMod P09 scope
+## Current VSFilterMod scope
 
-P09 retains the default pipeline and frozen goldens. P10 owns CLI integration
-and legacy adapter removal. The existing evaluator remains the only state engine.
-Mod assignment metadata is selected by the profile resolver.
-The frozen default decoder retains its existing Mod vocabulary-only policies.
+P09 Mod handlers use the P10 concrete/profile engine.
+The profile resolver selects Mod assignment metadata.
+Document consumers select target-specific Styles before evaluation adds Mod defaults.
+The default CLI uses libass validity and xy-VSFilter compatibility, not Mod semantics.
 
 The [matrix](ass-tags.xml) owns signatures and pinned source citations.
 `move` accepts exactly four or six non-empty arguments in all three targets.
@@ -95,17 +97,12 @@ Complex movers can claim EF_MOVE, so later pos commands cannot invent latch owne
 No Mod binary or pixel comparison was run. Recheck if pins, build flags,
 input signatures, Lua assumptions, or the modeled renderer fields change.
 
-## Consumers and rollout
+## Current consumers
 
-This section records the P05 implementation. Use the linked subject documents
-for later phases.
-
-The default `Evaluate` entry point uses a compatibility input adapter.
-It shares the state engine with renderer-scoped evaluation.
-The adapter does not prove equivalence across renderers.
-Its removal requires CLI migration and baseline review.
-
-Consumers can now evaluate explicit profiles:
+All default and explicit-profile consumers use `EvaluateResolved`.
+The primary renderer determines invocation validity.
+Compatibility comparison and SafeFix checks use the normalized requested profile set.
+Consumers can request renderer-local observations:
 
 - `lint.AnalyzeNoEffectsForRenderer` for ASS006 observations;
 - `lint.AnalyzeRedundantStyleOverridesForRenderer` for ASS013;
@@ -116,9 +113,14 @@ for validity diagnostics, [compatibility](renderer-compatibility.md) for rendere
 comparison, and [contracts](renderer-contracts.md) for SafeFix proof scope.
 An unmodeled extension remains a proof barrier.
 
-The existing CLI, JSON schema, diagnostic order, and default SafeFix
-classification are deliberately unchanged in P05. No new renderer CLI
-selector is introduced.
+The CLI exposes `--renderer`, `--compat`, and explicit Mod build capabilities.
+JSON and both text presenters identify the pinned scope.
+See [usage](../README.md) and [reports](diagnostic-reports.md).
+
+## Implementation record: P05
+
+P05 preserved the then-default adapter while introducing resolved evaluation.
+P10 removed that adapter after targeted regressions and reviewed baseline corrections.
 
 ## Validation
 

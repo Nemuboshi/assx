@@ -214,7 +214,7 @@ func TestNoEffectTransformFixRequiresVerifiedSignature(t *testing.T) {
 		{text: `{\pos(100,100)\bord2\t(\bord2)}A`, want: `{\pos(100,100)\bord2}A`, wantSafeFix: true},
 	}
 	for _, test := range cases {
-		dialogue := ass.Dialogue{Text: test.text, Line: 1, Syntax: ass.ParseDialogueText(test.text)}
+		dialogue := ass.Dialogue{Text: test.text, Line: 1}
 		diagnostics := Analyze(dialogue)
 		var transform []Diagnostic
 		for _, diagnostic := range diagnostics {

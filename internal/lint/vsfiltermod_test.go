@@ -18,15 +18,23 @@ func TestVSFilterModTagsWarnWithoutAutomaticFixes(t *testing.T) {
 		t.Run(tag, func(t *testing.T) {
 			text := "{\\" + tag + "(1)}x"
 			diagnostics := Analyze(ass.Dialogue{Text: text})
-			if len(diagnostics) != 1 || diagnostics[0].ID != IssueVSFilterModTag || diagnostics[0].Tag != tag {
-				t.Fatalf("diagnostics = %#v", diagnostics)
+			var diagnostic Diagnostic
+			for _, finding := range diagnostics {
+				if finding.ID == IssueVSFilterModTag && finding.Tag == tag {
+					diagnostic = finding
+				}
+				if finding.FixSafety != "" || len(finding.Edits) != 0 {
+					t.Fatalf("Mod invocation authorized an edit: %s", finding.ID)
+				}
 			}
-			diagnostic := diagnostics[0]
+			if diagnostic.ID == "" {
+				t.Fatalf("missing purposeful ASS005 for %s", tag)
+			}
 			if diagnostic.Severity != Warning || diagnostic.FixSafety != "" || len(diagnostic.Edits) != 0 {
 				t.Fatalf("mod-tag warning has fix metadata: %#v", diagnostic)
 			}
 			safe, unsafe, unfixable := CountFixes(diagnostics)
-			if safe != 0 || unsafe != 0 || unfixable != 1 {
+			if safe != 0 || unsafe != 0 || unfixable != len(diagnostics) {
 				t.Fatalf("fix counts = (%d, %d, %d)", safe, unsafe, unfixable)
 			}
 			fixed, count, err := ApplyFixes(text, diagnostics, true)

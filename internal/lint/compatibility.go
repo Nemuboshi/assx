@@ -1,7 +1,6 @@
 package lint
 
 import (
-	"fmt"
 	"slices"
 	"sort"
 	"strings"
@@ -17,7 +16,12 @@ import (
 // Compatibility findings never authorize edits or change default Analyze.
 func AnalyzeCompatibility(dialogue ass.Dialogue, profiles []renderer.Profile) []Diagnostic {
 	findings := semantic.CompareDialogue(ass.ParseConcreteDialogue(dialogue.Text), profiles, semantic.EvaluationOptions{})
-	return compatibilityDiagnostics(findings, func(span ass.ConcreteSpan) (int, int) { return dialogue.Line, span.Start + 1 })
+	diagnostics := compatibilityDiagnostics(findings, func(span ass.ConcreteSpan) (int, int) { return dialogue.Line, span.Start + 1 })
+	for i := range diagnostics {
+		span := diagnostics[i].SourceSpan.AtDocumentOffset(dialogue.TextStart)
+		diagnostics[i].SourceSpan = &span
+	}
+	return diagnostics
 }
 
 // AnalyzeDocumentCompatibility uses the lossless document, including records
@@ -48,7 +52,7 @@ func compatibilityDiagnostics(findings []semantic.CompatibilityFinding, location
 			continue
 		}
 		left, right := finding.Left.Profile, finding.Right.Profile
-		scope := fmt.Sprintf("%s@%s (%+v) / %s@%s (%+v)", left.Kind(), left.Version(), left.Build(), right.Kind(), right.Version(), right.Build())
+		scope := ProfileScope(left) + " / " + ProfileScope(right)
 		k := key{finding.Source, finding.Dimension, scope, finding.Detail, finding.Status}
 		if seen[k] {
 			continue
@@ -60,7 +64,7 @@ func compatibilityDiagnostics(findings []semantic.CompatibilityFinding, location
 		}
 		rule := Rules[id]
 		line, column := location(finding.Source)
-		out = append(out, Diagnostic{ID: id, Severity: rule.Severity, Title: rule.Title, Description: "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.", Fix: "Review both renderer interpretations and verify the intended rendering before changing the source.", Line: line, Column: column, Tag: finding.Left.Resolution.Head, Field: finding.Dimension, Detail: string(finding.Status) + ": " + finding.Detail, Renderer: scope, Sources: slices.Clone(finding.Citations)})
+		out = append(out, Diagnostic{ID: id, Severity: rule.Severity, Title: rule.Title, Description: "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.", Fix: "Review both renderer interpretations and verify the intended rendering before changing the source.", Line: line, Column: column, Tag: finding.Left.Resolution.Name, Field: finding.Dimension, Detail: string(finding.Status) + ": " + finding.Detail, Renderer: scope, SourceSpan: &finding.Source, Sources: slices.Clone(finding.Citations)})
 	}
 	sort.SliceStable(out, func(i, j int) bool {
 		if out[i].Line == out[j].Line {

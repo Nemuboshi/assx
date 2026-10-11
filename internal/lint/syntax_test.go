@@ -40,7 +40,7 @@ func TestEmptyOverrideBlockAndOverrideJunk(t *testing.T) {
 
 func TestCommentBlockIsNotOverrideJunk(t *testing.T) {
 	text := "{a normal comment}text"
-	dialogue := ass.Dialogue{Text: text, Line: 1, Syntax: ass.ParseDialogueText(text)}
+	dialogue := ass.Dialogue{Text: text, Line: 1}
 	for _, diagnostic := range Analyze(dialogue) {
 		if diagnostic.ID == IssueOverrideJunk || diagnostic.ID == IssueEmptyOverrideBlock {
 			t.Fatalf("comment produced override syntax finding: %#v", diagnostic)

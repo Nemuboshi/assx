@@ -3,7 +3,6 @@ package lint
 import (
 	"encoding/json"
 	"fmt"
-	"math"
 	"strconv"
 	"strings"
 
@@ -16,23 +15,24 @@ import (
 type TextEdit = edit.TextEdit
 
 type Diagnostic struct {
-	File        string     `json:"file"`
-	ID          string     `json:"id"`
-	Severity    Severity   `json:"severity"`
-	Title       string     `json:"title"`
-	Description string     `json:"description"`
-	Fix         string     `json:"suggested_fix"`
-	FixSafety   FixSafety  `json:"fix_safety,omitempty"`
-	FixProof    *FixProof  `json:"fix_proof,omitempty"`
-	FixProofRef string     `json:"fix_proof_ref,omitempty"`
-	Edits       []TextEdit `json:"edits,omitempty"`
-	Line        int        `json:"line"`
-	Column      int        `json:"column"`
-	Tag         string     `json:"tag,omitempty"`
-	Field       string     `json:"field,omitempty"`
-	Detail      string     `json:"detail,omitempty"`
-	Renderer    string     `json:"renderer,omitempty"`
-	Sources     []string   `json:"sources"`
+	File        string            `json:"file"`
+	ID          string            `json:"id"`
+	Severity    Severity          `json:"severity"`
+	Title       string            `json:"title"`
+	Description string            `json:"description"`
+	Fix         string            `json:"suggested_fix"`
+	FixSafety   FixSafety         `json:"fix_safety,omitempty"`
+	FixProof    *FixProof         `json:"fix_proof,omitempty"`
+	FixProofRef string            `json:"fix_proof_ref,omitempty"`
+	Edits       []TextEdit        `json:"edits,omitempty"`
+	Line        int               `json:"line"`
+	Column      int               `json:"column"`
+	Tag         string            `json:"tag,omitempty"`
+	Field       string            `json:"field,omitempty"`
+	Detail      string            `json:"detail,omitempty"`
+	Renderer    string            `json:"renderer,omitempty"`
+	SourceSpan  *ass.ConcreteSpan `json:"source_span,omitempty"`
+	Sources     []string          `json:"sources"`
 }
 
 func analyzeUnterminatedBlocks(dialogue ass.Dialogue) []Diagnostic {
@@ -60,10 +60,9 @@ func analyzeUnterminatedBlocks(dialogue ass.Dialogue) []Diagnostic {
 }
 
 type dialogueAnalyzer struct {
-	line              int
-	textStart         int
-	diagnostics       []Diagnostic
-	hasVSFilterModTag bool
+	line        int
+	textStart   int
+	diagnostics []Diagnostic
 }
 
 func (d Diagnostic) MarshalJSON() ([]byte, error) {
@@ -76,12 +75,25 @@ func (d Diagnostic) MarshalJSON() ([]byte, error) {
 }
 
 func Analyze(dialogue ass.Dialogue) []Diagnostic {
-	findings := analyzeWithEffects(dialogue, semantic.EvaluateDialogue(dialogue.ParsedText()))
+	targets := DefaultAnalysisTargets()
+	findings, _ := analyzeResolvedDialogue(dialogue, targets.Primary, nil, nil)
+	findings = append(findings, portabilityDiagnostics(dialogue, targets)...)
+	findings = append(findings, AnalyzeCompatibility(dialogue, targets.Profiles())...)
+	for i := range findings {
+		if findings[i].Renderer == "" {
+			findings[i].Renderer = ProfileScope(targets.Primary)
+		}
+	}
+	proofDialogue := dialogue
+	if proofDialogue.Line == 0 {
+		proofDialogue.Line = 1
+	}
+	doc := ass.Document{Text: dialogue.Text, Dialogues: []ass.Dialogue{proofDialogue}}
+	findings = proveSafeFixes(doc, findings, targets.Profiles())
 	if dialogue.TextStart != 0 {
 		return withoutSafeFixes(findings)
 	}
-	doc := ass.Document{Text: dialogue.Text, Dialogues: []ass.Dialogue{dialogue}}
-	return proveSafeFixes(doc, findings, defaultFixTargets())
+	return findings
 }
 
 func withoutSafeFixes(diagnostics []Diagnostic) []Diagnostic {
@@ -94,44 +106,6 @@ func withoutSafeFixes(diagnostics []Diagnostic) []Diagnostic {
 		}
 	}
 	return diagnostics
-}
-
-func analyzeWithEffects(dialogue ass.Dialogue, effects []semantic.NoEffect) []Diagnostic {
-	tree := dialogue.ParsedText()
-	analyzer := dialogueAnalyzer{line: dialogue.Line, textStart: dialogue.TextStart}
-
-	tree.WalkTokens(func(token ass.TokenView) bool {
-		if token.HasTag {
-			analyzer.consumeTag(token.Tag)
-		}
-		return true
-	})
-
-	analyzer.diagnostics = append(analyzer.diagnostics, analyzeOverrideSyntax(dialogue, tree)...)
-	analyzer.diagnostics = append(analyzer.diagnostics, analyzeDrawings(dialogue, tree)...)
-	analyzer.diagnostics = append(analyzer.diagnostics, analyzeUnterminatedBlocks(dialogue)...)
-
-	for _, effect := range effects {
-		analyzer.add(IssueNoEffect, effect.Tag, noEffectDetail(effect))
-		finding := &analyzer.diagnostics[len(analyzer.diagnostics)-1]
-		if effect.ProofRevoked {
-			finding.FixSafety = ""
-			finding.Detail += " A later unmodeled operation prevents proving this fix safe across renderers."
-			continue
-		}
-		finding.Edits = []TextEdit{
-			noEffectRemovalEdit(tree, effect.Tag, analyzer.textStart),
-		}
-	}
-
-	analyzer.diagnostics = append(analyzer.diagnostics, analyzeRepeatedOpenBraces(dialogue)...)
-	if analyzer.hasVSFilterModTag {
-		for i := range analyzer.diagnostics {
-			analyzer.diagnostics[i].FixSafety = ""
-			analyzer.diagnostics[i].Edits = nil
-		}
-	}
-	return analyzer.diagnostics
 }
 
 func noEffectDetail(effect semantic.NoEffect) string {
@@ -160,39 +134,9 @@ func (a *dialogueAnalyzer) add(id string, tag ass.Tag, detail string) {
 	})
 }
 
-func (a *dialogueAnalyzer) consumeTag(tag ass.Tag) {
-	if tag.RepeatedSlashes > 0 {
-		a.add(IssueRepeatedSlash, tag, fmt.Sprintf("Found %d extra backslash(es) before the tag.", tag.RepeatedSlashes))
-		a.diagnostics[len(a.diagnostics)-1].Edits = []TextEdit{{
-			Start: a.textStart + tag.Start,
-			End:   a.textStart + tag.Start + tag.RepeatedSlashes,
-		}}
-		return
-	}
-
-	a.validate(tag)
-	tagSpec, known := spec.TagSpecs[tag.Name]
-	if !known {
-		a.add(IssueUnknownTag, tag, "Unknown override tag.")
-		return
-	}
-	if tag.Name == "N" || tag.Name == "n" || tag.Name == "h" {
-		a.add(IssueUnknownTag, tag, "This text escape is only valid in dialogue text, outside an override block.")
-		return
-	}
-	if tagSpec.VSFilterModOnly {
-		a.hasVSFilterModTag = true
-		a.add(IssueVSFilterModTag, tag, "This tag is specific to VSFilterMod and is not shared by libass and VSFilter. Automatic fixes are disabled for this dialogue.")
-	}
-}
-
-func (a *dialogueAnalyzer) validate(tag ass.Tag) {
-	a.validateIR(tag, ass.DecodeTag(tag), true, true)
-}
-
-// validateIR accepts only the policy selected by the caller. The compatibility
-// adapter still supplies the frozen default decoder until the CLI migration.
-func (a *dialogueAnalyzer) validateIR(tag ass.Tag, ir ass.TagIR, policyArity, comparisons bool) {
+// validateIR checks values under the resolved policy. Differential checks
+// belong only to the semantic compatibility engine.
+func (a *dialogueAnalyzer) validateIR(tag ass.Tag, ir ass.TagIR, policyArity bool) {
 	if !ir.Known {
 		return
 	}
@@ -219,15 +163,11 @@ func (a *dialogueAnalyzer) validateIR(tag ass.Tag, ir ass.TagIR, policyArity, co
 			invalid(fmt.Sprintf("Expected an integer, found %q.", arg))
 		} else if (tagSpec.Min != 0 || tagSpec.Max != 0) && (decoded.Integer < int64(tagSpec.Min) || decoded.Integer > int64(tagSpec.Max)) {
 			invalid(fmt.Sprintf("Value %d is outside the accepted range %d..%d.", decoded.Integer, tagSpec.Min, tagSpec.Max))
-		} else if comparisons && tag.Name == "a" && (decoded.Integer == 4 || decoded.Integer == 8) {
-			a.add(IssueRendererDiff, tag, fmt.Sprintf("libass treats \\a%d as middle-center like \\a5; xy-VSFilter and VSFilterMod bit-map it to a different alignment.", decoded.Integer))
+
 		}
 	case spec.NumberValue:
 		if decoded.Consumed == 0 {
 			invalid(fmt.Sprintf("Expected a number, found %q.", arg))
-		}
-		if comparisons && tag.Name == "blur" && usable && decoded.Number > 100 {
-			a.add(IssueRendererDiff, tag, "Values above 100 are clamped by libass but have no matching upper clamp in VSFilter.")
 		}
 	case spec.BoldValue:
 		value := decoded.Integer
@@ -241,8 +181,7 @@ func (a *dialogueAnalyzer) validateIR(tag ass.Tag, ir ass.TagIR, policyArity, co
 	case spec.HexValue:
 		if decoded.Consumed == 0 {
 			invalid(fmt.Sprintf("Expected a hexadecimal value, found %q.", arg))
-		} else if comparisons && tag.Paren && strings.HasPrefix(strings.ToUpper(arg), "&H") {
-			a.add(IssueRendererDiff, tag, "VSFilter and libass treat an &H prefix in parenthesized color/alpha arguments differently.")
+
 		}
 	case spec.NumberListValue:
 		for i, value := range tag.Args {
@@ -253,19 +192,12 @@ func (a *dialogueAnalyzer) validateIR(tag ass.Tag, ir ass.TagIR, policyArity, co
 		}
 	case spec.RectValue:
 		if len(tag.Args) == 4 {
-			rendererDiff := false
 			for i, value := range tag.Args {
 				component := ir.Argument(i)
 				if component.Consumed == 0 {
 					invalid(fmt.Sprintf("Expected numeric rectangle arguments; found %q.", value))
 					break
 				}
-				if usableFloat := component.Status == ass.ValueValid || component.Status == ass.ValueAmbiguous; usableFloat && math.Trunc(component.Number) != math.Trunc(component.Number+0.5) {
-					rendererDiff = true
-				}
-			}
-			if comparisons && rendererDiff {
-				a.add(IssueRendererDiff, tag, "Fractional rectangular clip coordinates can round differently: xy-VSFilter adds 0.5 before integer conversion, while libass and VSFilterMod consume integer values.")
 			}
 		}
 	}

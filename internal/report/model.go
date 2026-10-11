@@ -36,6 +36,7 @@ type Diagnostic struct {
 	Detail       string
 	Fix          string
 	Tag          string
+	Renderer     string
 	Field        string
 	FixSafety    lint.FixSafety
 	Edits        []lint.TextEdit

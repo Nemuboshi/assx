@@ -50,8 +50,7 @@ func TestRendererScopedPositionFirstWins(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var events []TagEvent
 			seen := false
-			Evaluate(ass.ParseDialogueText(`{\pos(1,2,3)\pos(4,5)}A`), EvaluationOptions{
-				Profile: &tt.profile,
+			EvaluateResolved(ass.ParseConcreteDialogue(`{\pos(1,2,3)\pos(4,5)}A`), tt.profile, EvaluationOptions{
 				Observer: Observer{
 					Tag: func(event TagEvent, _ StateView) {
 						events = append(events, event)
@@ -106,8 +105,7 @@ func TestRendererScopedPrefixShadowingAndUnmodeledExtension(t *testing.T) {
 	for _, kind := range []renderer.Kind{renderer.Libass, renderer.XYVSFilter} {
 		profile := mustProfile(t, kind)
 		var events []TagEvent
-		Evaluate(ass.ParseDialogueText(`{\fsvp6\frs10\blend(add)}A`), EvaluationOptions{
-			Profile: &profile,
+		EvaluateResolved(ass.ParseConcreteDialogue(`{\fsvp6\frs10\blend(add)}A`), profile, EvaluationOptions{
 			Observer: Observer{Tag: func(event TagEvent, _ StateView) {
 				events = append(events, event)
 			}},
@@ -127,8 +125,7 @@ func TestRendererScopedPrefixShadowingAndUnmodeledExtension(t *testing.T) {
 
 	profile := mustMod(t, renderer.FeatureEnabled)
 	var events []TagEvent
-	Evaluate(ass.ParseDialogueText(`{\fsvp6\frs10\blend(add)}A`), EvaluationOptions{
-		Profile:  &profile,
+	EvaluateResolved(ass.ParseConcreteDialogue(`{\fsvp6\frs10\blend(add)}A`), profile, EvaluationOptions{
 		Observer: Observer{Tag: func(e TagEvent, _ StateView) { events = append(events, e) }},
 	})
 	if len(events) != 3 {
@@ -147,8 +144,7 @@ func TestRendererScopedPrefixShadowingAndUnmodeledExtension(t *testing.T) {
 func TestRendererScopedTransformAndStateProvenance(t *testing.T) {
 	profile := mustProfile(t, renderer.Libass)
 	var events []TagEvent
-	Evaluate(ass.ParseDialogueText(`{\clip(0,0,10,10)\clip(1,2,3)\t(0,500,\fs30)}A`), EvaluationOptions{
-		Profile: &profile,
+	EvaluateResolved(ass.ParseConcreteDialogue(`{\clip(0,0,10,10)\clip(1,2,3)\t(0,500,\fs30)}A`), profile, EvaluationOptions{
 		Observer: Observer{
 			Tag: func(e TagEvent, state StateView) {
 				events = append(events, e)
@@ -165,7 +161,7 @@ func TestRendererScopedTransformAndStateProvenance(t *testing.T) {
 	if len(events) != 4 {
 		t.Fatalf("transform walk missed resolved child: %#v", events)
 	}
-	if events[1].Uncertainty != UncertaintyUnresolved || !events[1].Barrier {
+	if events[1].Uncertainty != UncertaintyMalformed || !events[1].Barrier {
 		t.Errorf("invalid clip not conservatively handled: %#v", events[1])
 	}
 	if events[3].Tag.Name != "fs" || !events[3].Tag.InTransition {
@@ -179,8 +175,7 @@ func TestRendererScopedStyleFontObserver(t *testing.T) {
 		"Default": CanonicalStyleState(map[string]string{"fontname": "Arial", "fontsize": "20"}),
 	}
 	var family string
-	Evaluate(ass.ParseDialogueText(`{\fnOther\r}Hello`), EvaluationOptions{
-		Profile: &profile, Styles: styles, DialogueStyle: "Default",
+	EvaluateResolved(ass.ParseConcreteDialogue(`{\fnOther\r}Hello`), profile, EvaluationOptions{Styles: styles, DialogueStyle: "Default",
 		SkipNoEffectProofs: true,
 		Observer: Observer{Text: func(text string, _ int, state StateView) {
 			if text == "Hello" && state.Value("fontname").Known {

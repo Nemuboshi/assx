@@ -301,7 +301,7 @@ func StyleTagState(tag ass.Tag, tagSpec spec.TagSpec, slots []string, base, orig
 		// restores the Style value.
 		raw = strings.Trim(raw, " \t\r\n\v\f")
 		value, known := tag.IntegerArgument()
-		if !known {
+		if !known || raw != "" && ass.DecodeRendererInteger(raw).Consumed == 0 {
 			return nil, false
 		}
 		resetToStyle = raw == "" || (value != 0 && value != 1 && (name == "i" || value < 100))

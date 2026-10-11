@@ -36,7 +36,7 @@ func TestSpecialTagUncertaintyEvents(t *testing.T) {
 		{"absolute karaoke timing", "{\\kt20}A", "kt", false, false, UncertaintyRendererDependent, true},
 		{"relative font size", "{\\fs+10}A", "fs", false, false, UncertaintyUnsupported, true},
 		{"unknown tag", "{\\mystery}A", "mystery", false, false, UncertaintyUnsupported, true},
-		{"renderer extension", "{\\1img}A", "1img", false, false, UncertaintyRendererDependent, true},
+		{"renderer extension", "{\\1img}A", "1img", false, false, UncertaintyUnsupported, true},
 		{"valid Style reset", "{\\r}A", "r", true, false, UncertaintyNone, false},
 		{"unresolved named Style reset", "{\\rMissing}A", "r", true, false, UncertaintyUnresolved, true},
 		{"unresolved reset without Style table", "{\\rMissing}A", "r", false, false, UncertaintyUnresolved, true},
@@ -56,7 +56,7 @@ func TestSpecialTagUncertaintyEvents(t *testing.T) {
 			if tc.styles {
 				options.Styles = styles
 			}
-			Evaluate(ass.ParseDialogueText(tc.text), options)
+			evaluateLibass(ass.ParseConcreteDialogue(tc.text), options)
 			if !found {
 				t.Fatalf("missing event for tag %q in %q", tc.tag, tc.text)
 			}
@@ -88,7 +88,7 @@ func TestSpecialTagUncertaintyRevokesPriorNoEffectProofs(t *testing.T) {
 			if tc.styles {
 				options.Styles = styles
 			}
-			effects := Evaluate(ass.ParseDialogueText(tc.text), options).NoEffects
+			effects := evaluateLibass(ass.ParseConcreteDialogue(tc.text), options).NoEffects
 			if len(effects) == 0 {
 				t.Fatalf("no original no-effect candidate found for %q", tc.text)
 			}
@@ -102,7 +102,7 @@ func TestSpecialTagUncertaintyRevokesPriorNoEffectProofs(t *testing.T) {
 }
 
 func TestMalformedKaraokeNumericPrefixIsNotKnownTiming(t *testing.T) {
-	Evaluate(ass.ParseDialogueText("{\\k20\\k20junk}A"), EvaluationOptions{
+	evaluateLibass(ass.ParseConcreteDialogue("{\\k20\\k20junk}A"), EvaluationOptions{
 		Observer: Observer{Text: func(_ string, _ int, state StateView) {
 			if cursor := state.Value("karaoke_cursor"); cursor.Known {
 				t.Fatalf("numeric prefix was treated as known timing: %#v", cursor)
@@ -141,7 +141,7 @@ func TestMalformedClipArityInvalidatesBothStateSlots(t *testing.T) {
 					}
 				}
 			}
-			Evaluate(ass.ParseDialogueText(tc.text), EvaluationOptions{
+			evaluateLibass(ass.ParseConcreteDialogue(tc.text), EvaluationOptions{
 				Observer: Observer{
 					Tag: func(event TagEvent, state StateView) {
 						if event.Index == 0 {

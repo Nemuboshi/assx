@@ -16,7 +16,7 @@ func TestRedundantStyleOverridesSafeFix(t *testing.T) {
 		t.Fatal(err)
 	}
 	doc := ass.Parse(string(data))
-	diagnostics := AnalyzeDocument(doc)
+	diagnostics := primaryFindings(AnalyzeDocument(doc))
 	if len(diagnostics) != 1 || diagnostics[0].ID != IssueRedundantStyleOverrides {
 		t.Fatalf("diagnostics = %#v", diagnostics)
 	}
@@ -106,7 +106,8 @@ func TestRedundantStyleOverrideProperties(t *testing.T) {
 			if len(diagnostics) != 1 || diagnostics[0].ID != IssueRedundantStyleOverrides {
 				t.Fatalf("diagnostics = %#v", diagnostics)
 			}
-			if diagnostics[0].Severity != Suggestion || diagnostics[0].FixSafety != SafeFix {
+			if diagnostics[0].Severity != Suggestion || diagnostics[0].FixSafety != "" {
+				// Abbreviated custom Style layouts are not equivalent in xy-VSFilter.
 				t.Fatalf("finding metadata = %#v", diagnostics[0])
 			}
 			if rule := Rules[IssueRedundantStyleOverrides]; rule.Title != "Overrides match style" || rule.Severity != Suggestion || rule.FixSafety != SafeFix {
@@ -118,7 +119,7 @@ func TestRedundantStyleOverrideProperties(t *testing.T) {
 
 func TestRedundantStyleOverrideRestorationAndOverlap(t *testing.T) {
 	format, style := "Name, Outline", "Default,2"
-	if diagnostics := AnalyzeDocument(parseStyleOverrideText(format, style, `{\bord4}A{\bord2}B`)); len(diagnostics) != 0 {
+	if diagnostics := primaryFindings(AnalyzeDocument(parseStyleOverrideText(format, style, `{\bord4}A{\bord2}B`))); len(diagnostics) != 0 {
 		t.Fatalf("state restoration was reported: %#v", diagnostics)
 	}
 	mixedAlpha := parseStyleOverrideText(
@@ -131,16 +132,16 @@ func TestRedundantStyleOverrideRestorationAndOverlap(t *testing.T) {
 	}
 
 	doc := parseStyleOverrideText(format, style, `{\bord4\bord2}A`)
-	diagnostics := AnalyzeDocument(doc)
+	diagnostics := primaryFindings(AnalyzeDocument(doc))
 	if len(diagnostics) != 1 || diagnostics[0].ID != IssueRedundantStyleOverrides {
 		t.Fatalf("redundant sequence diagnostics = %#v", diagnostics)
 	}
 	fixed, count, err := ApplyFixes(doc.Text, diagnostics, false)
-	if err != nil || count != 1 || !strings.Contains(fixed, "Default,,0,0,0,,A\n") {
-		t.Fatalf("sequence fix = (%q, %d, %v)", fixed, count, err)
+	if err != nil || count != 0 || fixed != doc.Text {
+		t.Fatalf("unproved custom-layout sequence changed source: count=%d err=%v", count, err)
 	}
 
-	overlap := AnalyzeDocument(parseStyleOverrideText(format, style, `{\bord2\bord2}A`))
+	overlap := primaryFindings(AnalyzeDocument(parseStyleOverrideText(format, style, `{\bord2\bord2}A`)))
 	if len(overlap) != 1 || overlap[0].ID != IssueRedundantStyleOverrides {
 		t.Fatalf("ASS006/ASS013 overlap was not assigned to ASS013: %#v", overlap)
 	}
@@ -182,7 +183,7 @@ func TestSameValueAssignmentsKeepPreviousEffectiveOwner(t *testing.T) {
 	for _, test := range cases {
 		t.Run(test.name, func(t *testing.T) {
 			doc := parseStyleOverrideText(test.format, test.style, test.text)
-			diagnostics := AnalyzeDocument(doc)
+			diagnostics := primaryFindings(AnalyzeDocument(doc))
 			if len(diagnostics) != 1 || diagnostics[0].ID != IssueNoEffect || diagnostics[0].FixSafety != SafeFix {
 				t.Fatalf("diagnostics = %#v", diagnostics)
 			}
@@ -201,7 +202,7 @@ func TestSameValueAssignmentsKeepPreviousEffectiveOwner(t *testing.T) {
 
 func TestRedundantStyleFixPreservesOtherTags(t *testing.T) {
 	doc := parseFontOverrideText(`{\c&H00FF00&\fnCourier New\fnArial}A{\fnArial}B`)
-	diagnostics := AnalyzeDocument(doc)
+	diagnostics := primaryFindings(AnalyzeDocument(doc))
 	if len(diagnostics) != 1 || diagnostics[0].ID != IssueRedundantStyleOverrides {
 		t.Fatalf("diagnostics = %#v", diagnostics)
 	}

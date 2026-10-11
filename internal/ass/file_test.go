@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestParseDialogueTextOffsetsAndHeaderValues(t *testing.T) {
+func TestParseEventTextOffsetsAndHeaderValues(t *testing.T) {
 	text := "[Script Info]\r\nPlayResX: 1920\r\nPlayResY: 1080\r\nYCbCr Matrix: TV.601\r\n[Events]\r\nFormat: Layer, Start, End, Text\r\nDialogue: 0,0:00:00.00,0:00:01.00,hello, world\r\n"
 	doc := Parse(text)
 	if len(doc.Dialogues) != 1 {

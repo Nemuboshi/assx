@@ -10,8 +10,7 @@ import (
 )
 
 // resolvedOperation is the only command/policy input accepted by the state
-// engine. The legacy adapter exists solely for the frozen default CLI contract;
-// renderer-scoped input is always resolved from the neutral CST.
+// engine. Input is always resolved from the neutral CST.
 type resolvedOperation struct {
 	tag       ass.Tag
 	policy    spec.TagSpec
@@ -33,11 +32,7 @@ type semanticToken struct {
 }
 
 func (m *evaluator) operationFor(tag ass.Tag) resolvedOperation {
-	if m.options.Profile != nil {
-		return m.operations[tag.Start]
-	}
-	policy, known := spec.TagSpecs[tag.Name]
-	return resolvedOperation{tag: tag, policy: policy, known: known, match: renderer.Matched}
+	return m.operations[tag.Start]
 }
 
 func (m *evaluator) policyFor(tag ass.Tag) (spec.TagSpec, bool) {

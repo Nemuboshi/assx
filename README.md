@@ -3,10 +3,18 @@ assx checks ASS subtitle files for lint issues.
 ## Usage
 
 ```text
-assx [--format pretty|plain|json] [--explain] [--fix] [--unsafe-fix] [--check-fonts] [--font-dir DIR] file.ass
+assx [--renderer=libass|xy-vsfilter|vsfiltermod] [--compat=RENDERERS] [--mod-build=unknown|enabled|disabled] [--lua-build=unknown|enabled|disabled] [--format pretty|plain|json] [--explain] [--fix] [--unsafe-fix] [--check-fonts] [--font-dir DIR] file.ass
 ```
 
 - `file.ass`: the ASS file to check.
+- `--renderer`: select the primary pinned renderer for validity checks.
+- `--compat`: add comma-separated profiles for compatibility and SafeFix checks. Use an empty value to select only the primary.
+- Without either flag, assx selects libass as primary and xy-VSFilter for compatibility.
+- An explicit `--renderer` without `--compat` selects only that primary. Compatibility warnings never become primary validity errors.
+- `--mod-build` and `--lua-build`: declare VSFilterMod capabilities. Both default to `unknown`; assx never infers them.
+- Capability flags require VSFilterMod as primary or in `--compat`. Known Mod capability and disabled Lua are required for Mod SafeFix proofs.
+- Both `--flag` and `-flag` forms work, with separate values or `=value`.
+- Exit status: 0 for no primary errors, 1 for primary errors, 2 for usage, input/output, or fix-application failures.
 - `--format pretty|plain|json`: choose output format; defaults to `pretty`. Pretty output shows a compact diagnostic report with source frames; color is used only on an interactive terminal. A scan spinner appears only when stderr is interactive. `plain` preserves the text-oriented output; `json` emits machine-readable diagnostics.
 - `--explain`: include expanded rule descriptions and evidence URLs in pretty output.
 - `--fix`: apply safe fixes. If the input is a symbolic link, update its target and preserve the link.
@@ -16,6 +24,10 @@ assx [--format pretty|plain|json] [--explain] [--fix] [--unsafe-fix] [--check-fo
 
 
 Font indexing is cached under the operating system's user cache directory. Font files are still discovered on every run, so added or removed fonts take effect immediately; cached metadata is reused only while a file's size and modification time match.
+
+All analysis uses the lossless concrete syntax tree and pinned profile engine.
+SafeFix application recomputes authorized edits under the caller's primary and compatibility policy.
+See [renderer contracts](docs/renderer-contracts.md) for evidence scope and limits.
 
 For diagnostic IDs and explanations, see the [lint rules](docs/rules.md). For pretty report behavior and dependency versions, see [diagnostic reports](docs/diagnostic-reports.md).
 For reproducible performance benchmarks, profiling, and the pinned baseline, see [performance benchmarks](docs/performance.md).
