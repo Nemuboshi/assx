@@ -174,6 +174,12 @@ func TestMatrixFeatureRequirementsMatchPinnedSource(t *testing.T) {
 		"frs|1|both|vsm":    "_VSMOD",
 		"fsvp|0|bare|vsm":   "_VSMOD",
 		"fsvp|1|both|vsm":   "_VSMOD",
+		"fshp|0|bare|vsm":   "_VSMOD",
+		"fshp|1|both|vsm":   "_VSMOD",
+		"z|0|bare|vsm":      "_VSMOD",
+		"z|1|both|vsm":      "_VSMOD",
+		"ortho|0|bare|vsm":  "_VSMOD",
+		"ortho|1|both|vsm":  "_VSMOD",
 	}
 	matrix := loadMatrix(t)
 	for _, tag := range matrix.Tags {
@@ -289,9 +295,10 @@ func TestPinnedExhaustiveSignatureClaims(t *testing.T) {
 			t.Errorf("%s: %v", tag.Name, err)
 		}
 		switch tag.Name {
-		case "pos":
+		case "pos", "move":
+			// move also has a complete 4/6-argument audit in all pinned parsers.
 			if tag.Params.Exhaustive != "libass xy vsm" {
-				t.Fatalf("pos must retain three-renderer pinned arity completeness: %q", tag.Params.Exhaustive)
+				t.Fatalf("pos/move must retain three-renderer pinned arity completeness: %q", tag.Params.Exhaustive)
 			}
 			if tag.Params.ExhaustiveCite == "" {
 				t.Fatal("position arity completeness lost its source citation")

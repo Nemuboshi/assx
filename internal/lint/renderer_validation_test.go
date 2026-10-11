@@ -20,11 +20,11 @@ func scopedProfiles(t *testing.T) (renderer.Profile, renderer.Profile, renderer.
 	if err != nil {
 		t.Fatal(err)
 	}
-	enabled, err := renderer.New(renderer.VSFilterMod, renderer.Build{Mod: renderer.FeatureEnabled})
+	enabled, err := renderer.New(renderer.VSFilterMod, renderer.Build{Mod: renderer.FeatureEnabled, Lua: renderer.FeatureDisabled})
 	if err != nil {
 		t.Fatal(err)
 	}
-	unknown, err := renderer.Standard(renderer.VSFilterMod)
+	unknown, err := renderer.New(renderer.VSFilterMod, renderer.Build{Mod: renderer.FeatureUnknown, Lua: renderer.FeatureDisabled})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -123,7 +123,7 @@ func TestScopedMalformedFormsNestedAndState(t *testing.T) {
 		profile      renderer.Profile
 		wantNoEffect bool
 	}{
-		{lib, false}, {xy, false}, {mod, true},
+		{lib, false}, {xy, false}, {mod, false},
 	} {
 		got := AnalyzeForRenderer(ass.Dialogue{Line: 1, Text: `{\pos(1,2,3)\pos(4,5)}A`}, tt.profile)
 		if hasIssue(got, IssueNoEffect) != tt.wantNoEffect {

@@ -51,8 +51,9 @@ importantly, even a list consisting entirely of verified signatures is not
 proof that every accepted arity has been enumerated: scalar handlers can
 consume only their first value or default a missing one. The generated matrix
 therefore contains a separate, renderer-scoped **exhaustive** declaration with
-independent pinned-source citations. Only pos currently claims this proof,
-for all three renderers (with three-coordinate support still gated on _VSMOD).
+independent pinned-source citations. Both pos and move claim this proof for all three renderers.
+Three-coordinate pos remains gated on _VSMOD. move accepts only four or six
+non-empty arguments; eight arguments are rejected.
 Without that declaration, unlisted forms remain SignatureUnknown, not
 SignatureRejected. The rejection algorithm additionally requires every
 build-applicable signature to be verified and no conditional signature to
@@ -71,10 +72,14 @@ VSFilterMod first runs its **ordered case-sensitive normalization chain**
 The distinction matters for no-op normalization branches that leave the
 unmodified command for exact dispatch, such as clip, pos and some extensions.
 The command fad is handled by an exact apply branch without a normalization
-arm; a bogus inline fad suffix must not be accepted as an alternate form.
+arm. The fallback counter does not stop the exact apply chain.
+A bogus inline fad suffix must not be accepted as an alternate form.
 
-VSFilterMod extensions gated by _VSMOD and Lua functionality gated by
-_VSMOD plus _LUA require explicit compile-time capabilities. The default
+VSFilterMod extensions gated by _VSMOD require explicit compile-time capabilities.
+The explicit lua command requires both _VSMOD and _LUA.
+User-defined global dispatch requires only _LUA and can shadow core names.
+Thus _LUA can remain enabled when _VSMOD is disabled.
+Enabled or unknown _LUA blocks built-in semantic proofs without a verified global environment. The default
 Build represents unknown capabilities, even for a VSFilterMod profile.
 An unknown optional branch records the candidate and its disabled-build
 fallback instead of pretending to know which parser was compiled.
