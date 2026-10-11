@@ -32,18 +32,18 @@ var eventTimeShape = regexp.MustCompile(`^[+-]?\d+:[+-]?\d+:[+-]?\d+\.[+-]?\d+$`
 // AnalyzeEventFields checks the Events Format line and every parsed event
 // field against what libass and VSFilter actually do with it.
 func AnalyzeEventFields(doc ass.Document) []Diagnostic {
-	return analyzeEventFields(doc, nil, true)
+	return analyzeEventFields(doc, DefaultAnalysisTargets().Primary, true)
 }
 
 // AnalyzeEventFieldsForRenderer keeps the shared document-level checks while
 // obtaining karaoke timing from the selected profile, not the legacy tags.
 func AnalyzeEventFieldsForRenderer(doc ass.Document, profile renderer.Profile) []Diagnostic {
-	return scopeDiagnostics(analyzeEventFields(doc, &profile, true), profile)
+	return scopeDiagnostics(analyzeEventFields(doc, profile, true), profile)
 }
 
 // includeKaraoke is false only when the document's single shared P05
 // evaluation has a karaoke observer attached in analyzeResolvedDialogue.
-func analyzeEventFields(doc ass.Document, profile *renderer.Profile, includeKaraoke bool) []Diagnostic {
+func analyzeEventFields(doc ass.Document, profile renderer.Profile, includeKaraoke bool) []Diagnostic {
 	diagnostics := eventFormatFindings(doc)
 	for _, dialogue := range doc.Dialogues {
 		if dialogue.MissingFields {
@@ -67,11 +67,7 @@ func analyzeEventFields(doc ass.Document, profile *renderer.Profile, includeKara
 		diagnostics = append(diagnostics, analyzeLayer(dialogue)...)
 		diagnostics = append(diagnostics, analyzeEffect(dialogue)...)
 		if includeKaraoke {
-			if profile == nil {
-				diagnostics = append(diagnostics, analyzeKaraoke(dialogue)...)
-			} else {
-				diagnostics = append(diagnostics, analyzeKaraokeForRenderer(dialogue, *profile)...)
-			}
+			diagnostics = append(diagnostics, analyzeKaraokeForRenderer(dialogue, profile)...)
 		}
 	}
 	return diagnostics
@@ -190,10 +186,6 @@ func analyzeLayer(dialogue ass.Dialogue) []Diagnostic {
 // so they do not change the sum. \kt is a v4++ absolute reset whose exact
 // semantics differ between engines, and a VSFilterMod-only tag can rewrite
 // timing, so both cases bail to avoid a false claim.
-func analyzeKaraoke(dialogue ass.Dialogue) []Diagnostic {
-	return analyzeKaraokeWithCursor(dialogue, func() (int64, bool) { return karaokeCursor(dialogue.ParsedText()) })
-}
-
 func analyzeKaraokeForRenderer(dialogue ass.Dialogue, profile renderer.Profile) []Diagnostic {
 	return analyzeKaraokeWithCursor(dialogue, func() (int64, bool) {
 		return karaokeCursorResolved(ass.ParseConcreteDialogue(dialogue.Text), profile)
@@ -225,53 +217,6 @@ func analyzeKaraokeWithCursor(dialogue ass.Dialogue, findCursor func() (int64, b
 		Detail:  fmt.Sprintf("The karaoke syllables total %d ms, longer than the %d ms event, so the trailing syllables never reach their highlight window.", cursor, duration),
 		Sources: rule.Sources,
 	}}
-}
-
-// karaokeCursor sums the karaoke timeline in milliseconds. modeled is false
-// when a construct outside the shared cursor model (\kt, a syllable inside a
-// \t transition, or a non-numeric syllable) makes the total engine-specific.
-func karaokeCursor(tree ass.DialogueText) (int64, bool) {
-	const defaultSyllable = 1000
-	var cursor int64
-	sawKaraoke := false
-	modeled := true
-	tree.WalkTokens(func(token ass.TokenView) bool {
-		if !token.HasTag {
-			return true
-		}
-		tag := token.Tag
-		switch tag.Name {
-		case "kt":
-			modeled = false
-			return false
-		case "k", "K", "kf", "ko":
-			if tag.InTransition {
-				modeled = false
-				return false
-			}
-			sawKaraoke = true
-			duration := int64(defaultSyllable)
-			switch len(tag.Args) {
-			case 0:
-			case 1:
-				value := ass.DecodeNumber(tag.Args[0])
-				if value.Status != ass.ValueValid || value.Number < 0 || value.Number > float64(int64(^uint64(0)>>1)/10) {
-					modeled = false
-					return false
-				}
-				duration = int64(value.Number) * 10
-			default:
-				modeled = false
-				return false
-			}
-			cursor += duration
-		}
-		return true
-	})
-	if !modeled || !sawKaraoke {
-		return 0, false
-	}
-	return cursor, true
 }
 
 // eventInteger mirrors what both engines accept for an integer cell: decimal

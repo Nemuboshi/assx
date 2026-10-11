@@ -23,24 +23,11 @@ func Build(path string, diagnostics []lint.Diagnostic, document ass.Document) Su
 	for _, dialogue := range document.Dialogues {
 		textOffset := dialogue.TextStart - dialogue.LineStart
 		textStarts[dialogue.Line] = textOffset
-		dialogue.ParsedText().WalkTokens(func(token ass.TokenView) bool {
-			if !token.HasTag {
-				return true
-			}
-			name := token.Tag.Name
-			span := token.Tag.End - token.Tag.SlashStart
-			column := textOffset + token.Tag.SlashStart + 1
-			if token.Tag.RepeatedSlashes > 0 {
-				if name == "" {
-					span = token.Tag.End - token.Tag.Start
-					column = textOffset + token.Tag.Start + 1
-				} else {
-					span = token.Tag.RepeatedSlashes
-				}
-			}
-			tagSpans[tagKey{dialogue.Line, token.Tag.Column, token.Tag.Name}] = sourcePosition{
-				column: column,
-				width:  span,
+		tree := ass.ParseConcreteDialogue(dialogue.Text)
+		ass.WalkConcreteExpressions(tree, func(expression ass.ConcreteExpression, nested bool) bool {
+			tagSpans[tagKey{line: dialogue.Line, column: expression.HeadSpan.Start + 1}] = sourcePosition{
+				column: textOffset + expression.Span.Start + 1,
+				width:  expression.Span.End - expression.Span.Start,
 			}
 			return true
 		})
@@ -59,9 +46,18 @@ func Build(path string, diagnostics []lint.Diagnostic, document ass.Document) Su
 			}
 		}
 	}
+	proofs := make(map[string]*lint.FixProof)
+	for _, diagnostic := range diagnostics {
+		if diagnostic.FixProof != nil {
+			proofs[diagnostic.FixProof.ID] = diagnostic.FixProof
+		}
+	}
 	for i := range diagnostics {
 		d := &diagnostics[i]
 		position := locate(d, textStarts, fields, tagSpans)
+		if d.SourceSpan != nil {
+			position = sourcePosition{column: d.SourceSpan.Start - lineOffsets[d.Line] + 1, width: max(1, d.SourceSpan.End-d.SourceSpan.Start)}
+		}
 		view := Diagnostic{
 			Line:         d.Line,
 			Column:       d.Column,
@@ -75,11 +71,12 @@ func Build(path string, diagnostics []lint.Diagnostic, document ass.Document) Su
 			Fix:          d.Fix,
 			Tag:          d.Tag,
 			Field:        d.Field,
+			Renderer:     d.Renderer,
 			FixSafety:    d.FixSafety,
 			Edits:        append([]lint.TextEdit(nil), d.Edits...),
 			Sources:      append([]string(nil), d.Sources...),
 		}
-		view.Outcome = outcomeOf(d)
+		view.Outcome = outcomeOf(d, proofs)
 		switch d.Severity {
 		case lint.Error:
 			group.Errors++
@@ -113,7 +110,6 @@ type fieldKey struct {
 type tagKey struct {
 	line   int
 	column int
-	name   string
 }
 
 type sourcePosition struct {
@@ -133,7 +129,7 @@ func locate(d *lint.Diagnostic, textStarts map[int]int, fields map[fieldKey]sour
 		position.column += offset
 	}
 	if d.Tag != "" {
-		if tagPosition, ok := tagSpans[tagKey{d.Line, d.Column, d.Tag}]; ok {
+		if tagPosition, ok := tagSpans[tagKey{line: d.Line, column: d.Column}]; ok {
 			return tagPosition
 		}
 	}
@@ -142,19 +138,17 @@ func locate(d *lint.Diagnostic, textStarts map[int]int, fields map[fieldKey]sour
 
 // outcomeOf derives the fix badge only from concrete edits and validated
 // per-diagnostic safety metadata.
-func outcomeOf(d *lint.Diagnostic) FixOutcome {
-	if len(d.Edits) == 0 {
-		return FixNone
+func outcomeOf(d *lint.Diagnostic, proofs map[string]*lint.FixProof) FixOutcome {
+	items := []lint.Diagnostic{*d}
+	if d.FixProofRef != "" {
+		items = append(items, lint.Diagnostic{FixProof: proofs[d.FixProofRef]})
 	}
-	switch d.FixSafety {
-	case lint.SafeFix:
-		if d.FixProof != nil {
-			return FixSafe
-		}
-	case lint.UnsafeFix:
+	safe, unsafe, _ := lint.CountFixes(items)
+	if safe != 0 {
+		return FixSafe
+	}
+	if unsafe != 0 {
 		return FixUnsafe
-	default:
-		return FixNone
 	}
 	return FixNone
 }

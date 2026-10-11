@@ -8,39 +8,6 @@ import (
 	"assx/internal/ass/spec"
 )
 
-func analyzeOverrideSyntax(dialogue ass.Dialogue, tree ass.DialogueText) []Diagnostic {
-	var diagnostics []Diagnostic
-	for _, node := range tree.Nodes {
-		if node.Kind != ass.OverrideNode || node.Block == nil {
-			continue
-		}
-		block := node.Block
-		if block.IsEmpty() {
-			rule := Rules[IssueEmptyOverrideBlock]
-			diagnostics = append(diagnostics, Diagnostic{
-				ID: rule.ID, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
-				Fix: rule.Fix, FixSafety: rule.FixSafety, Line: dialogue.Line, Column: block.Start + 1,
-				Edits:   []TextEdit{{Start: dialogue.TextStart + block.Start, End: dialogue.TextStart + block.End}},
-				Sources: rule.Sources,
-			})
-			continue
-		}
-
-		for _, item := range block.Items {
-			if item.Tag == nil {
-				if junk := meaningfulRawJunk(item.Raw); junk != "" {
-					diagnostics = append(diagnostics, overrideJunkDiagnostic(dialogue, item.Start+1, junk))
-				}
-				continue
-			}
-			if tail := ignoredTagTail(*item.Tag); tail != "" {
-				diagnostics = append(diagnostics, overrideJunkDiagnostic(dialogue, item.Tag.Column, tail))
-			}
-		}
-	}
-	return diagnostics
-}
-
 func overrideJunkDiagnostic(dialogue ass.Dialogue, column int, junk string) Diagnostic {
 	rule := Rules[IssueOverrideJunk]
 	return Diagnostic{
@@ -59,13 +26,6 @@ func meaningfulRawJunk(raw string) string {
 		return ""
 	}
 	return trimmed
-}
-
-func ignoredTagTail(tag ass.Tag) string {
-	if tag.Paren || len(tag.Args) != 1 {
-		return ""
-	}
-	return ignoredTagTailIR(tag, ass.DecodeTag(tag))
 }
 
 // ignoredTagTailIR never resolves names. Renderer-scoped consumers supply the

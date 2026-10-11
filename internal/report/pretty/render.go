@@ -65,6 +65,9 @@ func Render(output io.Writer, summary report.Summary, source string, color bool,
 					_, _ = fmt.Fprintf(w, "  %s | %s%s\n", strings.Repeat(" ", numberWidth), strings.Repeat(" ", marker), "^"+strings.Repeat("~", max(0, markWidth-1)))
 				}
 			}
+			if d.Renderer != "" {
+				writeWrapped(w, "  ", "Renderer: "+d.Renderer, width)
+			}
 			if summary.Explain {
 				writeWrapped(w, "  ", d.Detail, width)
 				if d.Description != "" {

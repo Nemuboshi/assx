@@ -1,55 +1,38 @@
 package lint
 
 import (
-	"sort"
-
 	"assx/internal/ass"
-	"assx/internal/semantic"
+	"sort"
 )
 
-func AnalyzeDocument(doc ass.Document) []Diagnostic {
-	return proveSafeFixes(doc, analyzeDocumentUnproved(doc), defaultFixTargets())
+// AnalyzeDocumentForTargets validates only the primary renderer and reports
+// compatibility observations for the full selected profile set separately.
+func AnalyzeDocumentForTargets(doc ass.Document, targets AnalysisTargets) []Diagnostic {
+	return proveSafeFixes(targets.Primary.DocumentView(doc), analyzeDocumentForTargetsUnproved(doc, targets), targets.Profiles())
 }
 
-func analyzeDocumentUnproved(doc ass.Document) []Diagnostic {
-	diagnostics := AnalyzeHeaders(doc)
-	diagnostics = append(diagnostics, AnalyzeKeywords(doc)...)
-	diagnostics = append(diagnostics, analyzeStyles(doc)...)
-	diagnostics = append(diagnostics, AnalyzeEventFields(doc)...)
-	diagnostics = append(diagnostics, analyzeUndefinedStyleReferences(doc)...)
-	styles := semantic.StyleStatesByName(doc.StyleFields)
-	var styleDiagnostics []Diagnostic
+func analyzeDocumentForTargetsUnproved(doc ass.Document, targets AnalysisTargets) []Diagnostic {
+	findings := analyzeDocumentForProfile(doc, targets.Primary)
 	for _, dialogue := range doc.Dialogues {
-		if !dialogue.ParsedText().HasTags() {
-			diagnostics = append(diagnostics, analyzeWithEffects(dialogue, nil)...)
-			continue
-		}
-		collector := newStyleRunCollector(dialogue, styles)
-		options := semantic.EvaluationOptions{
-			Styles: styles, DialogueStyle: dialogue.Style,
-		}
-		if collector != nil {
-			options.Observer = semantic.Observer{Tag: collector.onTag, Text: collector.onText}
-		}
-		evaluation := semantic.Evaluate(dialogue.ParsedText(), options)
-		diagnostics = append(diagnostics, analyzeWithEffects(dialogue, evaluation.NoEffects)...)
-		if collector != nil {
-			if diagnostic, ok := collector.diagnostic(); ok {
-				styleDiagnostics = append(styleDiagnostics, diagnostic)
-			}
+		findings = append(findings, portabilityDiagnostics(dialogue, targets)...)
+	}
+	findings = append(findings, AnalyzeDocumentCompatibility(doc, targets.Profiles())...)
+	for i := range findings {
+		if findings[i].Renderer == "" {
+			findings[i].Renderer = ProfileScope(targets.Primary)
 		}
 	}
-	if len(styleDiagnostics) != 0 {
-		diagnostics = suppressOverlappingNoEffect(diagnostics, styleDiagnostics)
-		diagnostics = append(diagnostics, styleDiagnostics...)
-	}
-	sort.SliceStable(diagnostics, func(i, j int) bool {
-		if diagnostics[i].Line == diagnostics[j].Line {
-			return diagnostics[i].Column < diagnostics[j].Column
+	sort.SliceStable(findings, func(i, j int) bool {
+		if findings[i].Line == findings[j].Line {
+			return findings[i].Column < findings[j].Column
 		}
-		return diagnostics[i].Line < diagnostics[j].Line
+		return findings[i].Line < findings[j].Line
 	})
-	return diagnostics
+	return findings
+}
+
+func AnalyzeDocument(doc ass.Document) []Diagnostic {
+	return AnalyzeDocumentForTargets(doc, DefaultAnalysisTargets())
 }
 
 func suppressOverlappingNoEffect(diagnostics, redundant []Diagnostic) []Diagnostic {

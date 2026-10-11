@@ -14,7 +14,7 @@ import (
 // No per-tag interface allocations or runtime registration are required.
 
 func (m *evaluator) handleTransformChild(tag ass.Tag, tagSpec spec.TagSpec) SemanticUncertainty {
-	if m.options.Profile != nil && m.options.Profile.Kind() == renderer.VSFilterMod {
+	if m.profile.Kind() == renderer.VSFilterMod {
 		// Mod recursively applies all handlers. Do not publish a static value
 		// for animated assignments or let a later child retain pos3 depth.
 		if tagSpec.Behavior == spec.Assign && len(tagSpec.Slots) != 0 {
@@ -155,8 +155,8 @@ func (m *evaluator) assignmentValues(tag ass.Tag, tagSpec spec.TagSpec, slots []
 	} else {
 		values, valuesKnown = CanonicalTagState(tag, tagSpec, slots)
 	}
-	modReset := tagSpec.VSFilterModOnly && m.options.Profile != nil && m.options.Profile.Kind() == renderer.VSFilterMod && len(tag.Args) == 0
-	if tag.Name == "ortho" && m.options.Profile != nil && m.options.Profile.Kind() == renderer.VSFilterMod && len(tag.Args) == 1 {
+	modReset := tagSpec.VSFilterModOnly && m.profile.Kind() == renderer.VSFilterMod && len(tag.Args) == 0
+	if tag.Name == "ortho" && m.profile.Kind() == renderer.VSFilterMod && len(tag.Args) == 1 {
 		decoded := ass.DecodeExactInteger(tag.Args[0])
 		if decoded.Status != ass.ValueValid || decoded.Integer < -1<<31 || decoded.Integer > 1<<31-1 {
 			return nil, false
@@ -265,8 +265,8 @@ func (m *evaluator) transitionHasNoEffect(tag ass.Tag) bool {
 
 func (m *evaluator) resetStyle(tag ass.Tag) bool {
 	target := m.originalStyle
-	if len(tag.Args) > 0 && strings.TrimSpace(strings.Join(tag.Args, ",")) != "" {
-		target = strings.TrimSpace(strings.Join(tag.Args, ","))
+	if len(tag.Args) > 0 && strings.TrimSpace(tag.Args[0]) != "" {
+		target = strings.TrimSpace(tag.Args[0])
 	}
 	// Reset clears explicit overrides, exposing the new Style defaults. It
 	// cannot clear first-wins slots nor state explicitly kept across resets.

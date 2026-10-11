@@ -142,7 +142,6 @@ func CompareSyntaxProof(before, after ass.ConcreteDialogue, profile renderer.Pro
 
 func observeProofTrace(tree ass.ConcreteDialogue, profile renderer.Profile, options EvaluationOptions) ProofTrace {
 	var trace ProofTrace
-	options.Profile = nil
 	options.Observer = Observer{
 		Tag: func(event TagEvent, state StateView) {
 			trace.Steps = append(trace.Steps, ProofStep{

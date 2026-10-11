@@ -2,7 +2,6 @@ package semantic
 
 import (
 	"slices"
-	"strings"
 
 	"assx/internal/ass"
 	"assx/internal/ass/renderer"
@@ -114,9 +113,6 @@ type EvaluationOptions struct {
 	// SkipNoEffectProofs avoids provenance/liveness bookkeeping when only
 	// effective text state is needed (for example, font coverage analysis).
 	SkipNoEffectProofs bool
-	// Profile selects independent renderer resolution. Nil preserves the
-	// historical default lint contract until the CLI migration in P10.
-	Profile *renderer.Profile
 }
 
 type Evaluation struct {
@@ -140,6 +136,7 @@ type noEffectCandidate struct {
 // values, and source-tag provenance. Lint consumers never replay assignments.
 type evaluator struct {
 	options           EvaluationOptions
+	profile           renderer.Profile
 	position          int
 	collisionDisabled bool
 	proofsDisabled    bool
@@ -157,42 +154,18 @@ type evaluator struct {
 	operations        map[int]resolvedOperation
 }
 
-func EvaluateDialogue(tree ass.DialogueText) []NoEffect {
-	return Evaluate(tree, EvaluationOptions{}).NoEffects
-}
-
-func Evaluate(tree ass.DialogueText, options EvaluationOptions) Evaluation {
-	return evaluate(tree, nil, options)
-}
-
-// EvaluateResolved evaluates an existing lossless CST for one pinned renderer.
-// The CST is never named or rewritten to match a profile. All observers and
-// NoEffect results come from the same state engine as the default entry point.
+// EvaluateResolved evaluates the lossless CST under one pinned renderer.
 func EvaluateResolved(tree ass.ConcreteDialogue, profile renderer.Profile, options EvaluationOptions) Evaluation {
-	options.Profile = &profile
-	return evaluate(ass.DialogueText{Source: tree.Source}, &tree, options)
-}
-
-func evaluate(tree ass.DialogueText, concrete *ass.ConcreteDialogue, options EvaluationOptions) Evaluation {
-	if options.Observer.Text == nil {
-		if options.Profile == nil && !tree.HasTags() {
-			return Evaluation{}
-		}
-		if options.Profile != nil {
-			if concrete != nil && !concrete.HasCandidates() {
-				return Evaluation{}
-			}
-			if concrete == nil && (!strings.Contains(tree.Source, "{") || !strings.Contains(tree.Source, "\\")) {
-				return Evaluation{}
-			}
-		}
+	if options.Observer.Text == nil && !tree.HasCandidates() {
+		return Evaluation{}
 	}
 	name := DialogueStyleLookupName(options.DialogueStyle)
-	if options.Profile != nil && options.Profile.Kind() == renderer.VSFilterMod && options.Profile.Build().Mod == renderer.FeatureEnabled {
+	if profile.Kind() == renderer.VSFilterMod && profile.Build().Mod == renderer.FeatureEnabled {
 		options.Styles = modStyleStates(options.Styles)
 	}
 	m := evaluator{
 		options:          options,
+		profile:          profile,
 		active:           make(map[string]owner),
 		state:            make(map[string]StateValue),
 		latched:          make(map[string]int),
@@ -221,21 +194,10 @@ func evaluate(tree ass.DialogueText, concrete *ass.ConcreteDialogue, options Eva
 			}
 		}
 	}
-	if options.Profile == nil {
-		tree.WalkTokens(func(token ass.TokenView) bool {
-			visit(semanticToken{text: token.Text, start: token.Start, tag: token.Tag, hasTag: token.HasTag})
-			return true
-		})
-	} else {
-		if concrete == nil {
-			parsed := ass.ParseConcreteDialogue(tree.Source)
-			concrete = &parsed
-		}
-		tokens, operations := resolveTokens(*concrete, *options.Profile)
-		m.operations = operations
-		for _, token := range tokens {
-			visit(token)
-		}
+	tokens, operations := resolveTokens(tree, profile)
+	m.operations = operations
+	for _, token := range tokens {
+		visit(token)
 	}
 	out := make([]NoEffect, 0, len(m.candidates))
 	for index := range m.allTags {
@@ -286,99 +248,74 @@ func (m *evaluator) consumeTag(tag ass.Tag) TagEvent {
 	event := TagEvent{Tag: tag, Index: index}
 
 	if tag.RepeatedSlashes > 0 {
-		if m.options.Profile != nil {
-			// A slash run does not establish a normally resolved operation.
-			// Do not silently treat it as a harmless ignored command.
-			m.markActiveLive()
-			m.invalidateAll()
-			m.blockProofs(&event, UncertaintyUnresolved)
-		}
-		return event // The legacy parser separately emits the normalized tag.
+		m.markActiveLive()
+		m.invalidateAll()
+		m.blockProofs(&event, UncertaintyUnresolved)
+		return event
 	}
 
 	tagSpec, known := m.policyFor(tag)
 	op := m.operationFor(tag)
-	if m.options.Profile != nil {
-		event.Renderer = m.options.Profile.Kind()
-		event.Match, event.Signature, event.Shadowed = op.match, op.signature, op.shadowed
-		event.Citation = op.citation
-		// Lua globals can shadow core names before built-in dispatch.
-		if m.options.Profile.Kind() == renderer.VSFilterMod && m.options.Profile.Build().Lua != renderer.FeatureDisabled {
-			m.markActiveLive()
+	event.Renderer = m.profile.Kind()
+	event.Match, event.Signature, event.Shadowed = op.match, op.signature, op.shadowed
+	event.Citation = op.citation
+	// Lua globals can shadow core names before built-in dispatch.
+	if m.profile.Kind() == renderer.VSFilterMod && m.profile.Build().Lua != renderer.FeatureDisabled {
+		m.markActiveLive()
+		m.invalidateAll()
+		for _, slot := range []string{"position", "origin", "fade", "alignment", "clip_vector"} {
+			m.uncertainLatches[slot] = true
+		}
+		m.blockProofs(&event, UncertaintyRendererDependent)
+		return event
+	}
+	// Handle unclosed syntax before the unknown-name fast path to revoke prior proofs.
+	if op.unclosed {
+		m.markActiveLive()
+		if tag.Name == "clip" || tag.Name == "iclip" {
+			m.invalidateMalformedTag(spec.TagSpec{Semantic: spec.SemanticClip}, index)
+		} else {
 			m.invalidateAll()
-			for _, slot := range []string{"position", "origin", "fade", "alignment", "clip_vector"} {
-				m.uncertainLatches[slot] = true
-			}
-			m.blockProofs(&event, UncertaintyRendererDependent)
-			return event
 		}
-		// Resolution cannot name an unclosed parenthesized expression. It is
-		// malformed syntax, not a well-formed, harmless unknown command.
-		// Handle this before the UnknownName/Ignored fast path so malformed
-		// operations revoke earlier as well as subsequent SafeFix proofs.
-		if op.unclosed {
-			m.markActiveLive()
-			if tag.Name == "clip" || tag.Name == "iclip" {
-				// Either rectangular or vector clipping may have been affected.
-				// Keep unrelated Style/font state intact, but revoke both clip
-				// values, source owners and certainty of vector first-wins.
-				m.invalidateMalformedTag(spec.TagSpec{Semantic: spec.SemanticClip}, index)
-			} else {
-				// No trustworthy resolved policy exists for this incomplete
-				// command (notably an unclosed transform).
-				m.invalidateAll()
-			}
-			m.blockProofs(&event, UncertaintyMalformed)
-			return event
-		}
-		switch op.match {
-		case renderer.UnknownName, renderer.Ignored, renderer.Disabled:
-			event.Ignored = true
-			m.markActiveLive()
-			reason := UncertaintyUnsupported
-			if op.match == renderer.Disabled {
-				reason = UncertaintyRendererDependent
-			}
-			m.blockProofs(&event, reason)
-			return event
-		case renderer.Conditional:
-			m.markActiveLive()
-			m.invalidateAll()
-			m.blockProofs(&event, UncertaintyRendererDependent)
-			return event
-		}
-		if op.signature == renderer.SignatureRejected {
-			// Pinned exhaustive evidence proves this form cannot claim any
-			// state or first-wins latch; subsequent valid operations still run.
-			event.Ignored = true
-			event.Uncertainty = UncertaintyMalformed
-			return event
-		}
-		if !known || tagSpec.VSFilterModOnly && len(tagSpec.Slots) == 0 {
-			m.markActiveLive()
-			m.invalidateAll()
-			if tag.Name == "mover" || tag.Name == "moves3" || tag.Name == "moves4" {
-				// These extensions can claim the same EF_MOVE latch as pos/move.
-				m.uncertainLatches["position"] = true
-			}
-			m.blockProofs(&event, UncertaintyUnsupported)
-			return event
-		}
-	} else if !known || tag.Name == "N" || tag.Name == "n" || tag.Name == "h" || tagSpec.VSFilterModOnly {
-		// Unknown renderer prefixes can change arbitrary state. Do not prove
-		// any later fix on the strength of the previous state.
+		m.blockProofs(&event, UncertaintyMalformed)
+		return event
+	}
+	switch op.match {
+	case renderer.UnknownName, renderer.Ignored, renderer.Disabled:
+		event.Ignored = true
 		m.markActiveLive()
 		m.invalidateAll()
 		reason := UncertaintyUnsupported
-		if tagSpec.VSFilterModOnly {
+		if op.match == renderer.Disabled {
 			reason = UncertaintyRendererDependent
 		}
 		m.blockProofs(&event, reason)
 		return event
+	case renderer.Conditional:
+		m.markActiveLive()
+		m.invalidateAll()
+		m.blockProofs(&event, UncertaintyRendererDependent)
+		return event
+	}
+	if op.signature == renderer.SignatureRejected {
+		// Rejection cannot own a latch, but malformed source remains a fix fence.
+		event.Ignored = true
+		m.blockProofs(&event, UncertaintyMalformed)
+		return event
+	}
+	if !known || tagSpec.VSFilterModOnly && len(tagSpec.Slots) == 0 {
+		m.markActiveLive()
+		m.invalidateAll()
+		if tag.Name == "mover" || tag.Name == "moves3" || tag.Name == "moves4" {
+			// These extensions can claim the same EF_MOVE latch as pos/move.
+			m.uncertainLatches["position"] = true
+		}
+		m.blockProofs(&event, UncertaintyUnsupported)
+		return event
 	}
 	if tagSpec.Counts != nil && !slices.Contains(tagSpec.Counts, len(tag.Args)) &&
-		(m.options.Profile == nil || op.signature != renderer.SignatureVerified) {
-		if m.options.Profile != nil && tagSpec.Behavior == spec.FirstWins {
+		op.signature != renderer.SignatureVerified {
+		if tagSpec.Behavior == spec.FirstWins {
 			// A definite owner wins regardless of whether a later form is
 			// supported in this build. Preserve both value and provenance.
 			owned := true
@@ -396,7 +333,7 @@ func (m *evaluator) consumeTag(tag ass.Tag) TagEvent {
 		}
 		m.invalidateMalformedTag(tagSpec, index)
 		reason := UncertaintyMalformed
-		if m.options.Profile != nil && op.signature == renderer.SignatureUnknown {
+		if op.signature == renderer.SignatureUnknown && tagSpec.Semantic != spec.SemanticClip {
 			reason = UncertaintyUnresolved
 			if tagSpec.Behavior == spec.FirstWins {
 				for _, slot := range tagSpec.Slots {
@@ -407,7 +344,7 @@ func (m *evaluator) consumeTag(tag ass.Tag) TagEvent {
 		m.blockProofs(&event, reason)
 		return event
 	}
-	if m.options.Profile != nil && m.options.Profile.Kind() == renderer.VSFilterMod && tag.Name == "pos" && len(tag.Args) == 3 {
+	if m.profile.Kind() == renderer.VSFilterMod && tag.Name == "pos" && len(tag.Args) == 3 {
 		m.applyModPositionDepth(tag, index, &event)
 		return event
 	}
@@ -417,8 +354,7 @@ func (m *evaluator) consumeTag(tag ass.Tag) TagEvent {
 		m.blockProofs(&event, UncertaintyUnresolved)
 		return event
 	}
-	modEffectChild := tag.InTransition && m.options.Profile != nil &&
-		m.options.Profile.Kind() == renderer.VSFilterMod && op.signature == renderer.SignatureVerified &&
+	modEffectChild := tag.InTransition && m.profile.Kind() == renderer.VSFilterMod && op.signature == renderer.SignatureVerified &&
 		(tag.Name == "pos" || tag.Name == "move" || tag.Name == "org" || tag.Name == "fad" || tag.Name == "fade")
 	if modEffectChild {
 		// Mod reaches effect handlers inside transforms without animation.

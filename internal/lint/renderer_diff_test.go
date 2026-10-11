@@ -17,7 +17,7 @@ func TestFractionalRectClipRendererDifference(t *testing.T) {
 		{text: `{\clip(1,0,100,100)}A`, want: false},
 	}
 	for _, test := range cases {
-		dialogue := ass.Dialogue{Text: test.text, Line: 1, Syntax: ass.ParseDialogueText(test.text)}
+		dialogue := ass.Dialogue{Text: test.text, Line: 1}
 		found := false
 		for _, diagnostic := range Analyze(dialogue) {
 			if diagnostic.ID == IssueRendererDiff && (diagnostic.Tag == "clip" || diagnostic.Tag == "iclip") {

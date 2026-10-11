@@ -1,4 +1,4 @@
-# Pinned renderer profiles and source-backed dispatch (P04/10)
+# Pinned renderer profiles and source-backed dispatch
 
 Implementation: [Issue #19](https://github.com/Nemuboshi/assx/issues/19), under [Epic #16](https://github.com/Nemuboshi/assx/issues/16).
 
@@ -6,8 +6,9 @@ Implementation: [Issue #19](https://github.com/Nemuboshi/assx/issues/19), under 
 
 The isolated package at internal/ass/renderer consumes the lossless
 ConcreteExpression / ConcreteDialogue created by internal/ass. It does not
-rewrite the CST, assign a global dialect to it, alter legacy_tags.go, or
-change the existing command-line acceptance envelope.
+rewrite the CST or assign a global dialect to it.
+All CLI and API validity checks use this profile path.
+The default primary is libass, with xy-VSFilter compatibility targets.
 
 A Profile identifies exactly one renderer source revision, plus build-scoped
 feature states. It is a value type with immutable configuration. The name
@@ -23,8 +24,7 @@ The caller can inspect independently:
   documented command that was shadowed by a prefix.
 - Whether a signature has source-verified evidence, only inferred evidence,
   an evidence-backed rejection, or is still unknown.
-- Source spans and exact raw argument components; parsing a number or applying
-  a state transition is outside this PR.
+- Source spans and exact raw argument components; the shared decoder and semantic engine own value conversion and state transitions.
 
 An XML signature records applicability separately from per-renderer
 verification **and per-signature compile-time requirements**. In VSFilterMod,
@@ -93,8 +93,9 @@ The normalized command is distinguished from the original raw lexeme:
 | \blend(add) | b (shadow) | b (shadow) | blend |
 | \pos(1,2,3) | pos, arity rejected | pos, arity rejected | pos, arity verified |
 
-The legacy behavior and diagnostics remain unchanged until the renderer
-semantics and scoped lint migration in later PRs.
+The CLI selects profiles with `--renderer` and `--compat`.
+Mod capabilities remain unknown unless explicitly selected.
+See [usage](../README.md) and [contracts](renderer-contracts.md).
 
 ## Evidence pipeline and verification
 
@@ -126,9 +127,9 @@ blend is shadowed by be. The string blend begins with bl, so the be check
 cannot match. blend is checked before the generic b branch and has a reachable
 apply branch (RTS.cpp:2551, 3716–3730). XML name-match evidence is corrected
 in this PR. Both traditional renderers recognize the shorter b prefix.
-Golden default diagnostics are intentionally *not* rewritten for this
-renderer-specific metadata correction.
+## Implementation record: P04
 
-P05 should evaluate Result operations per renderer, with state and provenance;
-P06 should migrate validity/diagnostic decisions; P08 must require
-renderer-scoped proof before classifying any mutation as SafeFix.
+P04 corrected the blend/be evidence without changing the then-default adapter.
+P05 added resolved evaluation. P06 added scoped validity. P08 added edit proofs.
+P10 removed the adapter and integrated profile selection with the default CLI.
+Current reviewed snapshot changes are recorded in [contracts](renderer-contracts.md).

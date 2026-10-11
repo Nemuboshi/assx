@@ -6,11 +6,11 @@ import (
 	"assx/internal/perftest"
 )
 
-var benchmarkDialogueTrees []DialogueText
+var benchmarkDialogueTrees []ConcreteDialogue
 
 // Measures AST construction alone; fixture loading and document parsing are
 // outside the timer. Each operation parses all dialogues in the workload.
-func BenchmarkParseDialogueTextFixtures(b *testing.B) {
+func BenchmarkParseConcreteDialogueFixtures(b *testing.B) {
 	for _, test := range perftest.Cases(b) {
 		doc := Parse(test.Text)
 		texts := make([]string, len(doc.Dialogues))
@@ -20,13 +20,13 @@ func BenchmarkParseDialogueTextFixtures(b *testing.B) {
 			bytes += len(dialogue.Text)
 		}
 		b.Run(test.Name, func(b *testing.B) {
-			trees := make([]DialogueText, len(texts))
+			trees := make([]ConcreteDialogue, len(texts))
 			b.SetBytes(int64(bytes))
 			b.ReportAllocs()
 			b.ResetTimer()
-			for i := 0; i < b.N; i++ {
+			for b.Loop() {
 				for j, text := range texts {
-					trees[j] = ParseDialogueText(text)
+					trees[j] = ParseConcreteDialogue(text)
 				}
 			}
 			benchmarkDialogueTrees = trees

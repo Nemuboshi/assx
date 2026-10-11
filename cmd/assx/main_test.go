@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/binary"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -58,13 +59,13 @@ func TestRunSafeFixAndConciseSummary(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(string(fixed), "Style: Default, 12\n") || !strings.Contains(string(fixed), `{\fs20}text`) {
+	if !strings.Contains(string(fixed), "Style: Default, 12.75\n") || !strings.Contains(string(fixed), `{\fs20}text`) {
 		t.Fatalf("safe edits not applied:\n%s", fixed)
 	}
-	if !strings.Contains(stdout.String(), "Applied fixes: 2 safe, 0 unsafe.") || !strings.Contains(stdout.String(), "Fixes available: 0 safe, 0 unsafe, 0 not auto-fixable.") {
+	if !strings.Contains(stdout.String(), "Applied fixes: 1 safe, 0 unsafe.") || !strings.Contains(stdout.String(), "Fixes available: 0 safe, 0 unsafe, 4 not auto-fixable.") {
 		t.Fatalf("summary = %q", stdout.String())
 	}
-	if strings.Contains(stdout.String(), "Overwritten before") || strings.Contains(stdout.String(), "fractional part") {
+	if strings.Contains(stdout.String(), "Overwritten before") {
 		t.Fatalf("implementation detail leaked into text output: %q", stdout.String())
 	}
 }
@@ -120,7 +121,7 @@ func TestRunVSFilterModTagWarningDisablesFixes(t *testing.T) {
 			t.Errorf("dialogue with VSFilterMod tag remains auto-fixable: %#v", diagnostic)
 		}
 	}
-	if !foundWarning || !strings.Contains(stderr.String(), "0 safe, 0 unsafe, 2 not auto-fixable") {
+	if !foundWarning || !strings.Contains(stderr.String(), fmt.Sprintf("0 safe, 0 unsafe, %d not auto-fixable", len(diagnostics))) {
 		t.Fatalf("warning or no-fix summary missing: %s / %s", stdout.String(), stderr.String())
 	}
 	after, err := os.ReadFile(path)
@@ -143,7 +144,7 @@ func TestRunUnsafeFixIsOptInAndPreservesExitStatus(t *testing.T) {
 		t.Fatalf("lint run returned %d: %s", code, stderr.String())
 	}
 	before, _ := os.ReadFile(path)
-	if string(before) != input || !strings.Contains(stdout.String(), "Fixes available: 0 safe, 2 unsafe, 0 not auto-fixable.") {
+	if string(before) != input || !strings.Contains(stdout.String(), "Fixes available: 0 safe, 2 unsafe, 3 not auto-fixable.") {
 		t.Fatalf("default run changed file or summary: %q / %q", before, stdout.String())
 	}
 	stdout.Reset()
@@ -165,12 +166,12 @@ func TestRunUnsafeFixIsOptInAndPreservesExitStatus(t *testing.T) {
 
 func TestRunJSONStaysValidAndReportsUnknownTagsAsSuggestion(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "unknown.ass")
-	input := "[Script Info]\nYCbCr Matrix: None\nPlayResX: 640\nPlayResY: 480\nLayoutResX: 640\nLayoutResY: 480\n[V4+ Styles]\nFormat: Name, Fontname, Fontsize\nStyle: Default, Arial, 20\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{\\unknownTag}text\n"
+	input := "[Script Info]\nYCbCr Matrix: None\nPlayResX: 640\nPlayResY: 480\nLayoutResX: 640\nLayoutResY: 480\n[V4+ Styles]\nFormat: Name, Fontname, Fontsize\nStyle: Default, Arial, 20\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{\\mysteryTag}text\n"
 	if err := os.WriteFile(path, []byte(input), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	var stdout, stderr strings.Builder
-	if code := run([]string{"--format", "json", path}, &stdout, &stderr); code != 0 {
+	if code := run([]string{"--format", "json", "--compat=", path}, &stdout, &stderr); code != 0 {
 		t.Fatalf("run returned %d: %s", code, stderr.String())
 	}
 	var diagnostics []map[string]any
@@ -185,7 +186,7 @@ func TestRunJSONStaysValidAndReportsUnknownTagsAsSuggestion(t *testing.T) {
 	}
 	stdout.Reset()
 	stderr.Reset()
-	if code := run([]string{"--format", "plain", path}, &stdout, &stderr); code != 0 {
+	if code := run([]string{"--format", "plain", "--compat=", path}, &stdout, &stderr); code != 0 {
 		t.Fatalf("plain run returned %d: %s", code, stderr.String())
 	}
 	if !strings.Contains(stdout.String(), "SUGGESTION[ASS007]") || !strings.Contains(stdout.String(), "1 suggestions") {
@@ -296,7 +297,7 @@ func TestRunFontChecksAreOptionalAndNotAutoFixed(t *testing.T) {
 
 	stdout.Reset()
 	stderr.Reset()
-	args := []string{"--check-fonts", "--font-dir", filepath.Dir(fontDir), "--format", "json", "--fix", path}
+	args := []string{"--compat=", "--check-fonts", "--font-dir", filepath.Dir(fontDir), "--format", "json", "--fix", path}
 	if code := run(args, &stdout, &stderr); code != 0 {
 		t.Fatalf("font-check run returned %d: %s", code, stderr.String())
 	}

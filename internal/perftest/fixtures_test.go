@@ -6,7 +6,9 @@ import (
 	"unicode/utf8"
 
 	"assx/internal/ass"
+	"assx/internal/ass/renderer"
 	"assx/internal/perftest"
+	"assx/internal/semantic"
 )
 
 func TestPerformanceFixturesHaveCompleteEvents(t *testing.T) {
@@ -30,7 +32,7 @@ func TestPerformanceFixturesHaveCompleteEvents(t *testing.T) {
 				if dialogue.MissingFields {
 					t.Fatalf("incomplete event at line %d", dialogue.Line)
 				}
-				if len(dialogue.ParsedText().Nodes) == 0 {
+				if len(ass.ParseConcreteDialogue(dialogue.Text).Nodes) == 0 {
 					t.Fatalf("empty parsed text at line %d", dialogue.Line)
 				}
 			}
@@ -124,52 +126,40 @@ func inspectFixture(doc ass.Document) fixtureFeatures {
 			f.lineBreaks++
 		}
 
-		tree := dialogue.ParsedText()
-		hasOverrides := false
+		tree := ass.ParseConcreteDialogue(dialogue.Text)
 		localTransforms := 0
-		for _, node := range tree.Nodes {
-			if node.Kind != ass.OverrideNode {
-				continue
-			}
-			hasOverrides = true
-			if node.Block == nil {
-				continue
-			}
-			for _, item := range node.Block.Items {
-				if item.Tag != nil {
-					f.nestedTransforms += countNestedTransforms(*item.Tag)
-				}
-			}
-		}
-		if !hasOverrides {
+		if !tree.HasCandidates() {
 			f.plainDialogues++
 		}
-
-		tree.WalkTokens(func(token ass.TokenView) bool {
-			if !token.HasTag {
-				return true
-			}
-			tag := token.Tag
+		profile, _ := renderer.Standard(renderer.Libass)
+		profile.WalkDialogue(tree, func(tag renderer.Result, nested bool) bool {
 			f.tags[tag.Name]++
 			if tag.Name == "t" {
 				localTransforms++
-			}
-			if (tag.Name == "clip" || tag.Name == "iclip") && len(tag.Args) > 0 {
-				vector := strings.TrimSpace(tag.Args[len(tag.Args)-1])
-				if strings.HasPrefix(vector, "m ") {
-					if tag.Name == "clip" {
-						f.vectorClip++
-					} else {
-						f.inverseVectorClip++
-					}
+				if nested {
+					f.nestedTransforms++
 				}
 			}
+			if (tag.Name == "clip" || tag.Name == "iclip") && len(tag.Args) > 0 && strings.HasPrefix(strings.TrimSpace(tag.Args[len(tag.Args)-1].Raw), "m ") {
+				if tag.Name == "clip" {
+					f.vectorClip++
+				} else {
+					f.inverseVectorClip++
+				}
+			}
+
 			return true
 		})
 		if localTransforms >= 2 {
 			f.multipleTransforms++
 		}
-		for _, drawing := range tree.Drawings() {
+		var drawings []ass.Drawing
+		semantic.EvaluateResolved(tree, profile, semantic.EvaluationOptions{Observer: semantic.Observer{Text: func(text string, start int, state semantic.StateView) {
+			if scale := state.Value("drawing_scale"); scale.Known && scale.Value != "0" {
+				drawings = append(drawings, ass.ParseDrawing([]ass.DrawingFragment{{Text: text, Start: start, End: start + len(text)}}))
+			}
+		}}})
+		for _, drawing := range drawings {
 			if len(drawing.Commands) == 0 {
 				continue
 			}
@@ -189,15 +179,4 @@ func inspectFixture(doc ass.Document) fixtureFeatures {
 		}
 	}
 	return f
-}
-
-func countNestedTransforms(tag ass.Tag) int {
-	count := 0
-	for _, child := range tag.Children {
-		if tag.Name == "t" && child.Name == "t" {
-			count++
-		}
-		count += countNestedTransforms(child)
-	}
-	return count
 }

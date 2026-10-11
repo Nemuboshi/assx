@@ -17,14 +17,14 @@ func TestEvaluatorTextBoundariesResetsAndSources(t *testing.T) {
 			"fontname": "Courier New", "fontsize": "30", "bold": "-1", "outline": "4",
 		}),
 	}
-	tree := ass.ParseDialogueText("{\\fs24\\bord3}A{\\rOther}B{\\fs0}C{\\r}D")
+	tree := ass.ParseConcreteDialogue("{\\fs24\\bord3}A{\\rOther}B{\\fs0}C{\\r}D")
 	type snapshot struct {
 		text, family, fontSize string
 		known, weightKnown     bool
 		fontSource             int
 	}
 	var got []snapshot
-	evaluation := Evaluate(tree, EvaluationOptions{
+	evaluation := evaluateLibass(tree, EvaluationOptions{
 		Styles: styles, DialogueStyle: "Default",
 		Observer: Observer{Text: func(text string, _ int, view StateView) {
 			font := view.Value("fontname")
@@ -58,10 +58,10 @@ func TestEvaluatorTextBoundariesResetsAndSources(t *testing.T) {
 }
 
 func TestEvaluatorPrecedenceAndProvenance(t *testing.T) {
-	tree := ass.ParseDialogueText("{\\an7\\an8\\xbord2\\ybord2\\bord2}A{\\r\\an9}B")
+	tree := ass.ParseConcreteDialogue("{\\an7\\an8\\xbord2\\ybord2\\bord2}A{\\r\\an9}B")
 	var alignment, border StateValue
 	var alignmentOwner int
-	evaluation := Evaluate(tree, EvaluationOptions{
+	evaluation := evaluateLibass(tree, EvaluationOptions{
 		Observer: Observer{Text: func(text string, _ int, view StateView) {
 			if text == "A" {
 				border = view.Value("border_x")
@@ -90,9 +90,9 @@ func TestEvaluatorPrecedenceAndProvenance(t *testing.T) {
 }
 
 func TestEvaluatorAccumulatesAndRetainsKaraokeAcrossStyleResets(t *testing.T) {
-	tree := ass.ParseDialogueText("{\\k20}A{\\kf30}B{\\r}C")
+	tree := ass.ParseConcreteDialogue("{\\k20}A{\\kf30}B{\\r}C")
 	var values []string
-	Evaluate(tree, EvaluationOptions{
+	evaluateLibass(tree, EvaluationOptions{
 		Observer: Observer{Text: func(_ string, _ int, state StateView) {
 			cursor := state.Value("karaoke_cursor")
 			if !cursor.Known {
@@ -110,7 +110,7 @@ func TestEvaluatorAccumulatesAndRetainsKaraokeAcrossStyleResets(t *testing.T) {
 		"{\\k20\\k999999999999999999999}A",
 		"{\\k20\\t(\\k20)}A",
 	} {
-		Evaluate(ass.ParseDialogueText(text), EvaluationOptions{
+		evaluateLibass(ass.ParseConcreteDialogue(text), EvaluationOptions{
 			Observer: Observer{Text: func(_ string, _ int, state StateView) {
 				if state.Value("karaoke_cursor").Known {
 					t.Errorf("%q incorrectly produced known karaoke timing", text)
@@ -132,7 +132,7 @@ func TestEvaluatorPropagatesUnknownAndRecoversAfterReset(t *testing.T) {
 		"{\\fnCourier New\\t(\\fs30)}A{\\r}B",
 	} {
 		var seen int
-		Evaluate(ass.ParseDialogueText(text), EvaluationOptions{
+		evaluateLibass(ass.ParseConcreteDialogue(text), EvaluationOptions{
 			Styles: styles, DialogueStyle: "Default", SkipNoEffectProofs: true,
 			Observer: Observer{Text: func(_ string, _ int, state StateView) {
 				font := state.Value("fontname")
@@ -152,9 +152,9 @@ func TestEvaluatorPropagatesUnknownAndRecoversAfterReset(t *testing.T) {
 }
 
 func TestEvaluatorSkipsProvenanceWorkForFontOnlyReads(t *testing.T) {
-	tree := ass.ParseDialogueText("{\\fnMissing\\fnArial\\p1}m 0 0{\\p0}A")
+	tree := ass.ParseConcreteDialogue("{\\fnMissing\\fnArial\\p1}m 0 0{\\p0}A")
 	var visibleFont string
-	result := Evaluate(tree, EvaluationOptions{
+	result := evaluateLibass(tree, EvaluationOptions{
 		SkipNoEffectProofs: true,
 		Observer: Observer{Text: func(text string, _ int, state StateView) {
 			if text == "A" {
@@ -179,7 +179,7 @@ func TestEvaluatorRejectsUncertainFirstWinsAndUnknownOwnerProofs(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			var source int
-			effects := Evaluate(ass.ParseDialogueText(tc.text), EvaluationOptions{
+			effects := evaluateLibass(ass.ParseConcreteDialogue(tc.text), EvaluationOptions{
 				Observer: Observer{Text: func(_ string, _ int, view StateView) {
 					source = view.Source("alignment")
 				}},
@@ -203,7 +203,7 @@ func TestEvaluatorUnknownAssignmentIsNotProvenOverwritten(t *testing.T) {
 		"{\\fs20junk\\fs24}A",
 		"{\\fs　20\\fs24}A",
 	} {
-		effects := EvaluateDialogue(ass.ParseDialogueText(tc))
+		effects := evaluateLibassNoEffects(ass.ParseConcreteDialogue(tc))
 		for _, effect := range effects {
 			if effect.Reason == OverwrittenBeforeUse {
 				t.Errorf("%q generated an overwrite proof from an unknown tag: %#v", tc, effect)

@@ -5,41 +5,29 @@ import (
 	"testing"
 )
 
-func BenchmarkParseDialogueText(b *testing.B) {
+func BenchmarkParseConcreteDialogue(b *testing.B) {
 	for _, test := range dialogueTextBenchmarkCases() {
 		b.Run(test.name, func(b *testing.B) {
 			b.ReportAllocs()
-			for i := 0; i < b.N; i++ {
-				_ = ParseDialogueText(test.text)
+			for b.Loop() {
+				_ = ParseConcreteDialogue(test.text)
 			}
 		})
 	}
 }
 
-func BenchmarkDialogueTextTokens(b *testing.B) {
+func BenchmarkConcreteDialogueWalk(b *testing.B) {
 	for _, test := range dialogueTextBenchmarkCases() {
-		tree := ParseDialogueText(test.text)
-		b.Run(test.name, func(b *testing.B) {
-			b.ReportAllocs()
-			for i := 0; i < b.N; i++ {
-				_ = tree.Tokens()
-			}
-		})
-	}
-}
-
-func BenchmarkDialogueTextWalk(b *testing.B) {
-	for _, test := range dialogueTextBenchmarkCases() {
-		tree := ParseDialogueText(test.text)
+		tree := ParseConcreteDialogue(test.text)
 		var visited int
-		visit := func(TokenView) bool {
+		visit := func(ConcreteExpression, bool) bool {
 			visited++
 			return true
 		}
 		b.Run(test.name, func(b *testing.B) {
 			b.ReportAllocs()
-			for i := 0; i < b.N; i++ {
-				tree.WalkTokens(visit)
+			for b.Loop() {
+				WalkConcreteExpressions(tree, visit)
 			}
 			if visited == 0 {
 				b.Fatal("visitor saw no tokens")

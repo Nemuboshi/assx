@@ -2,7 +2,7 @@
 
 Issue: [#2](https://github.com/Nemuboshi/assx/issues/2)
 
-The benchmark suite separates source parsing, dialogue AST construction,
+The benchmark suite separates source parsing, dialogue CST construction,
 effective-state evaluation, lint analysis, and complete parse-and-lint work.
 This is a measurement harness, not a production optimization.
 
@@ -31,9 +31,9 @@ a useful later extension.
 
 | Benchmark | What is timed per operation |
 | --- | --- |
-| `BenchmarkParseDialogueTextFixtures` | AST parsing for every Dialogue's text, without document parsing |
-| `BenchmarkASSDocumentParse` | `ass.Parse` including the Dialogue AST |
-| `BenchmarkEvaluateDialogue` | Effective-state evaluation on pre-parsed ASTs |
+| `BenchmarkParseConcreteDialogueFixtures` | Lossless CST parsing for each Dialogue, without document parsing |
+| `BenchmarkASSDocumentParse` | `ass.Parse` document fields and spans, without dialogue CST construction |
+| `BenchmarkEvaluateDialogue` | Explicit libass effective-state evaluation on pre-parsed CSTs |
 | `BenchmarkAnalyzeDocumentFixtures` | All lint passes on a pre-parsed document |
 | `BenchmarkParseAndAnalyzeDocumentFixtures` | Complete `ass.Parse` plus `lint.AnalyzeDocument` |
 
@@ -54,7 +54,7 @@ Keep hardware-specific notes outside the repository.
 go test ./...
 go test ./internal/ass ./internal/semantic ./internal/lint \
   -run '^$' \
-  -bench 'Benchmark(ASSDocumentParse|ParseDialogueTextFixtures|EvaluateDialogue|AnalyzeDocumentFixtures|ParseAndAnalyzeDocumentFixtures)$' \
+  -bench 'Benchmark(ASSDocumentParse|ParseConcreteDialogueFixtures|EvaluateDialogue|AnalyzeDocumentFixtures|ParseAndAnalyzeDocumentFixtures)$' \
   -benchmem -benchtime=250ms -count=5 > before.txt
 ~~~
 
@@ -70,7 +70,7 @@ benchstat before.txt after.txt
 CI runs the new benchmarks once with `-benchtime=1x` as a smoke test, with
 no fixed performance threshold: shared CI runners are noisy.
 
-## Initial baseline
+## Implementation record: Initial baseline
 
 - **Measured commit:** `b3080c8c22591f0aa28532d501c3970d7b8b2df3`
 - **Environment:** Windows/amd64, Go 1.27.0
@@ -97,7 +97,7 @@ no fixed performance threshold: shared CI runners are noisy.
 The independently measured stage timings and allocations should **not** be
 summed to reconstruct an end-to-end run; GC and object lifetimes differ.
 
-## CPU and allocation profiling
+## Implementation record: CPU and allocation profiling
 
 Sampled `BenchmarkAnalyzeDocumentFixtures/typesetting` on the same commit:
 
@@ -131,7 +131,12 @@ The renderer-aware migration freezes the original `main@6ba745336615f102d5de39f7
 - Raw benchstat input: [baseline-6ba7453-windows-amd64.txt](performance/baseline-6ba7453-windows-amd64.txt)
 - Environment: Windows/amd64, Go 1.27.0
 - Sample settings: `-benchmem -benchtime=250ms -count=5`
-- Workloads and timed regions: unchanged from the table above
+- Historical samples use the legacy dialogue parser and default semantic adapter.
+- P10 uses the concrete parser and profile engine; timed boundaries now follow the current table.
 - Detailed regression and evidence contract: [renderer-contracts.md](renderer-contracts.md)
+
+P10 removes the legacy parser and adds default compatibility comparison.
+The parent integration compares benchmark samples, runs lint and frame checks, and records the measured effect.
+No new performance result is claimed here.
 
 Treat the two baseline commits as distinct measurement points. Compare P02–P10 against the renderer architecture baseline using equivalent software and hardware; use `benchstat` instead of treating single-sample differences as regressions.

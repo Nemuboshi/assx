@@ -26,7 +26,7 @@ func TestSafeFixRendererRegressions(t *testing.T) {
 		{"parenthesized font zero reset", "Name, Fontname", "Default,Go", `{\fn( 0 )}A`, "A"},
 		{"parenthesized empty bold reset", "Name, Bold", "Default,-1", `{\b( )}A`, `{\b( )}A`},
 		{"parenthesized empty italic reset", "Name, Italic", "Default,-1", `{\i( )}A`, `{\i( )}A`},
-		{"bold with trailing whitespace", "Name, Bold", "Default,-1", `{\b }A`, "A"},
+		{"bold with trailing whitespace and mismatched Style layout", "Name, Bold", "Default,-1", `{\b }A`, `{\b }A`},
 		{"unicode whitespace before italic", "Name, Italic", "Default,0", "{\\i1}A{\\i\u30001}B", "{\\i1}A{\\i\u30001}B"},
 		{"zero shadow after clamping", "Name, Shadow", "Default,1", `{\shad-2}A{\shad0}B`, `{\shad-2}AB`},
 	}
