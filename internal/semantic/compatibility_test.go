@@ -54,19 +54,30 @@ func TestCompatibilityIndependentInterpretations(t *testing.T) {
 }
 
 func TestCompatibilityEvidenceNeverInventsEquivalence(t *testing.T) {
+	// Tracked state may only reach equivalence through the same verified gate
+	// as application. A profile pair that cannot prove a certain transition
+	// must not gain state equivalence, and equivalence must never hide a known
+	// difference. This preserves the partial-engine guard while allowing a
+	// verified equal observation to stop re-reporting per tag.
 	for _, source := range []string{`{\fs20}A`, `{\alpha&H80&}A`, `{\t(0,500,\fs30)}A`, `{\rMissing}A`, `{\clip(1,2,3)}A`, `{\k10}A`, `{\p1}m 0 0 l 1 1`, `{\fs20\mystery}A`} {
 		findings := CompareDialogue(ass.ParseConcreteDialogue(source), compatibilityProfiles(t), EvaluationOptions{})
-		unresolved := false
+		applications := make(map[[3]any]CompatibilityStatus)
 		for _, f := range findings {
-			if f.Status == CompatibilityUnresolved {
-				unresolved = true
-			}
-			if f.Dimension == "state" && f.Status == CompatibilityEquivalent {
-				t.Fatalf("%s: tracked state was promoted to rendering equivalence", source)
+			key := [3]any{f.Source.Start, f.Source.End, profilePair(f)}
+			if f.Dimension == "application" {
+				applications[key] = f.Status
 			}
 		}
-		if !unresolved {
-			t.Fatalf("%s: missing explicit unresolved result", source)
+		for _, f := range findings {
+			if f.Dimension != "state" {
+				continue
+			}
+			if f.Status == CompatibilityEquivalent && applications[[3]any{f.Source.Start, f.Source.End, profilePair(f)}] != CompatibilityEquivalent {
+				t.Fatalf("%s: state equivalence without application proof: %#v", source, f)
+			}
+			if f.Status == CompatibilityEquivalent && knownStateDifference(f.Left.Event, f.Right.Event) {
+				t.Fatalf("%s: state equivalence hides a known difference: %#v", source, f)
+			}
 		}
 	}
 	unknown := mustMod(t, renderer.FeatureUnknown)
@@ -75,7 +86,19 @@ func TestCompatibilityEvidenceNeverInventsEquivalence(t *testing.T) {
 		if f.Dimension == "dispatch" && f.Left.Resolution.Head == "fsvp6" && f.Status != CompatibilityUnresolved {
 			t.Fatalf("unknown build acquired a proof: %#v", f)
 		}
+		if f.Dimension == "state" && f.Status == CompatibilityEquivalent {
+			t.Fatalf("unknown build invented state equivalence: %#v", f)
+		}
 	}
+}
+
+// profilePair keys an observation to its unordered profile pair.
+func profilePair(f CompatibilityFinding) [2]string {
+	left, right := f.Left.Profile.Kind().String(), f.Right.Profile.Kind().String()
+	if left > right {
+		left, right = right, left
+	}
+	return [2]string{left, right}
 }
 
 func TestCompatibilityVerifiedScenarios(t *testing.T) {

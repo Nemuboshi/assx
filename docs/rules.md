@@ -135,7 +135,7 @@ The drawing AST models `m`, `n`, `l`, `b`, `s`, `p`, and `c`, and preserves draw
 
 ## ASS031 — Renderer command interpretation is unresolved
 
-Explicit renderer-scoped validation uses this warning when a command is disabled or build-conditional, matched but semantically unmodeled, backed only by inferred signature evidence, or malformed in a way that prevents a verified interpretation. The finding does not assert a cross-renderer incompatibility and never authorizes an automatic edit. The default CLI does not emit ASS031; see [renderer-scoped lint validation](renderer-lint.md).
+Explicit renderer-scoped validation uses this warning when a command is disabled or build-conditional, matched but semantically unmodeled, backed only by inferred signature evidence, or malformed in a way that prevents a verified interpretation. The finding does not assert a cross-renderer incompatibility and never authorizes an automatic edit. The default CLI also emits this warning for unresolved or ignored cross-renderer compatibility observations. Unverified tracked-state agreement remains one of these observations. See [renderer-scoped lint validation](renderer-lint.md) and [compatibility](renderer-compatibility.md).
 
 ## Fixes
 

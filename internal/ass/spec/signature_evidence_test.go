@@ -321,6 +321,15 @@ func TestPinnedExhaustiveSignatureClaims(t *testing.T) {
 					}
 				})
 			}
+		case "clip", "iclip":
+			// Three-renderer pinned arity completeness (rectangle plus
+			// vector-clip gate; see the matrix exhaustive citation).
+			if tag.Params.Exhaustive != "libass xy vsm" {
+				t.Fatalf("%s must retain three-renderer pinned arity completeness: %q", tag.Name, tag.Params.Exhaustive)
+			}
+			if tag.Params.ExhaustiveCite == "" {
+				t.Fatalf("%s arity completeness lost its source citation", tag.Name)
+			}
 		default:
 			if tag.Params.Exhaustive != "" {
 				t.Errorf("%s claims exhaustive arities without independent pinned audit", tag.Name)

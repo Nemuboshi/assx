@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="ass-style-fields.xsl"?>
+<!--
+  ass-style-fields.xml — ASS Style-field conversion matrix.
+
+  This file is separate from docs/ass-tags.xml. The tag matrix owns override-tag
+  dispatch. Style fields have no arity, no prefix dispatch and no paren form, so
+  they cannot use the tag schema. This matrix owns the raw-text-to-stored-value
+  conversion of one Style field per renderer.
+
+  Pins (same commits as docs/ass-tags.xml):
+    libass      f61db56   ref/renderers/libass
+    xy-VSFilter 135a3015  ref/renderers/xy-VSFilter
+    VSFilterMod 7a00567   ref/renderers/VSFilterMod
+
+  status="V" means at least one renderer conversion was read in pinned source.
+  verified="libass xy vsm" states exactly which conversion was read. A
+  conversion without a renderer citation is source-inferred, not verified.
+  An unverified conversion MUST use parse="unmodeled" and post="unmodeled".
+  This matrix is evidence, never a proof of pixel equivalence or SafeFix.
+  A value-dependent field can agree for one input and differ for another. The
+  comparison therefore resolves per value, not per field.
+
+  A row records the conversion. It does not resolve a renderer difference that
+  the conversion feeds. The note field states that limit.
+
+  parse tokens (raw text to value):
+    libass-int       parse_int_header, then mystrtou32_modulo (mod 2**32)
+    libass-double    ass_atof, an ass_strtod double
+    libass-color     parse_color_header, a byte-swapped uint32
+    libass-name      STARREDSTRVAL: strip every leading '*'
+    libass-align     INTVAL, then numpad2align
+    vsfilter-int     GetInt, a swscanf %d or %x into int; throws on garbage
+    vsfilter-float   GetFloat, a swscanf %f into 32-bit float
+    vsfilter-color   GetInt stored as a COLORREF
+    vsfilter-name    GetStr, then TrimLeft('*')
+    vsfilter-align   GetInt, stored raw
+    raw-string       STRVAL or GetStr without conversion
+    unmodeled        no verified conversion
+
+  post tokens (value to renderer-visible state):
+    none, bool, clamp0, ratio, numpad, borderstyle, unmodeled
+-->
+<matrix>
+  <meta>
+    <pin renderer="libass" commit="f61db567e6593df3470e91594bcd4ad2d0473aff" path="ref/renderers/libass"/>
+    <pin renderer="xy-VSFilter" commit="135a30153a38fa846cb5c39df0f258403e92096e" path="ref/renderers/xy-VSFilter"/>
+    <pin renderer="VSFilterMod" commit="7a00567e4a49b6310691b9a6791646b2a018bfa2" path="ref/renderers/VSFilterMod"/>
+
+    <parses>
+      <parse id="libass-int"     desc="parse_int_header then mystrtou32_modulo; base 16 after &amp;h or 0x, else base 10; value reduced modulo 2**32; 0 when no digit is read"/>
+      <parse id="libass-double"  desc="ass_atof, an ass_strtod double"/>
+      <parse id="libass-color"   desc="parse_color_header, a byte-swapped uint32"/>
+      <parse id="libass-name"    desc="STARREDSTRVAL: strip every leading '*'"/>
+      <parse id="libass-align"   desc="INTVAL then numpad2align"/>
+      <parse id="vsfilter-int"   desc="GetInt: optional &amp;h or 0x selects %x, else %d; swscanf into int; throws on no match"/>
+      <parse id="vsfilter-float" desc="GetFloat: swscanf %f into a 32-bit float"/>
+      <parse id="vsfilter-color" desc="GetInt stored as a COLORREF"/>
+      <parse id="vsfilter-name"  desc="GetStr then TrimLeft('*')"/>
+      <parse id="vsfilter-align" desc="GetInt stored raw"/>
+      <parse id="raw-string"     desc="STRVAL or GetStr without conversion"/>
+      <parse id="unmodeled"      desc="no verified conversion"/>
+    </parses>
+
+    <posts>
+      <post id="none"        desc="stored value is the visible value"/>
+      <post id="bool"        desc="nonzero becomes 1"/>
+      <post id="clamp0"      desc="negative values become 0"/>
+      <post id="ratio"       desc="percent value, divided by 100 at or before use"/>
+      <post id="numpad"      desc="numpad value mapped to HALIGN|VALIGN"/>
+      <post id="borderstyle" desc="1 becomes 0 and 3 becomes 1; every other value becomes 0"/>
+      <post id="unmodeled"   desc="no verified conversion"/>
+    </posts>
+  </meta>
+
+  <!-- ===== text fields ===== -->
+
+  <stylefield name="name" status="V" kind="name">
+    <conv renderer="libass" parse="libass-name" post="none" verified="libass" cite="libass:libass/ass.c:688"/>
+    <conv renderer="xy" parse="vsfilter-name" post="none" verified="xy" cite="xy:src/subtitles/STS.cpp:1507,1549"/>
+    <conv renderer="vsm" parse="vsfilter-name" post="none" verified="vsm" cite="vsm:src/subtitles/STS.cpp:1861,1928"/>
+    <note>
+      Both renderers strip leading '*' characters. The stored name is not
+      equivalent. libass keeps the bytes and replaces only an empty name with
+      "Default" (ass.c:744-747). xy replaces an empty name with "Default" and
+      maps the name "default" to "Default" without regard to case
+      (STS.cpp:2263,1479). VSFilterMod also replaces an empty name through
+      AddStyle. Name resolution therefore differs for mixed-case and empty
+      names. The matrix records the conversion; it does not resolve the lookup.
+    </note>
+  </stylefield>
+
+  <stylefield name="fontname" status="V" kind="name">
+    <conv renderer="libass" parse="raw-string" post="none" verified="libass" cite="libass:libass/ass.c:691"/>
+    <conv renderer="xy" parse="raw-string" post="none" verified="xy" cite="xy:src/subtitles/STS.cpp:1508"/>
+    <conv renderer="vsm" parse="raw-string" post="none" verified="vsm" cite="vsm:src/subtitles/STS.cpp:1862"/>
+    <note>
+      Every renderer keeps the name text. VSFilterMod passes the name through
+      WToT (STS.cpp:1862, TextFile.cpp:567-573). The pinned VSFilterMod project
+      sets CharacterSet Unicode (subtitles.vcxproj:35), so WToT is the identity
+      for that build and no character changes. A narrow-character build would
+      truncate each wide character. The build scope is unknown by default.
+    </note>
+  </stylefield>
+
+  <!-- ===== colours ===== -->
+
+  <stylefield name="primarycolour" status="V" kind="hexcolor">
+    <conv renderer="libass" parse="libass-color" post="none" verified="libass" cite="libass:libass/ass.c:338-342,692"/>
+    <conv renderer="xy" parse="vsfilter-color" post="none" verified="xy" cite="xy:src/subtitles/STS.cpp:1510,1535"/>
+    <conv renderer="vsm" parse="vsfilter-color" post="none" verified="vsm" cite="vsm:src/subtitles/STS.cpp:1864,1892-1896"/>
+    <note>
+      Both renderers read one integer. libass byte-swaps it at parse
+      (parse_color_header, ass.c:338-342) and reads channels with the
+      _r/_g/_b/_a macros (ass_parse.h:26-29). xy stores the integer as a
+      COLORREF and reverses red and blue at use (RTS.cpp:59-62,1278-1328).
+      The two byte orders were not followed to the drawn pixel. The conversion
+      stays unresolved until that check is complete.
+    </note>
+  </stylefield>
+
+  <stylefield name="secondarycolour" status="V" kind="hexcolor">
+    <conv renderer="libass" parse="libass-color" post="none" verified="libass" cite="libass:libass/ass.c:338-342,693"/>
+    <conv renderer="xy" parse="vsfilter-color" post="none" verified="xy" cite="xy:src/subtitles/STS.cpp:1510,1535"/>
+    <conv renderer="vsm" parse="vsfilter-color" post="none" verified="vsm" cite="vsm:src/subtitles/STS.cpp:1864,1892-1896"/>
+    <note>Same byte-order question as primarycolour.</note>
+  </stylefield>
+
+  <stylefield name="outlinecolour" status="V" kind="hexcolor">
+    <conv renderer="libass" parse="libass-color" post="none" verified="libass" cite="libass:libass/ass.c:338-342,694"/>
+    <conv renderer="xy" parse="vsfilter-color" post="none" verified="xy" cite="xy:src/subtitles/STS.cpp:1510,1535"/>
+    <conv renderer="vsm" parse="vsfilter-color" post="none" verified="vsm" cite="vsm:src/subtitles/STS.cpp:1864,1892-1896"/>
+    <note>
+      libass reads the SSA TertiaryColour name here (ass.c:694). In SSA, libass
+      then overwrites OutlineColour from BackColour (ass.c:696-697). The v4+
+      path does not. Same byte-order question as primarycolour.
+    </note>
+  </stylefield>
+
+  <stylefield name="backcolour" status="V" kind="hexcolor">
+    <conv renderer="libass" parse="libass-color" post="none" verified="libass" cite="libass:libass/ass.c:338-342,695"/>
+    <conv renderer="xy" parse="vsfilter-color" post="none" verified="xy" cite="xy:src/subtitles/STS.cpp:1510,1535"/>
+    <conv renderer="vsm" parse="vsfilter-color" post="none" verified="vsm" cite="vsm:src/subtitles/STS.cpp:1864,1892-1896"/>
+    <note>Same byte-order question as primarycolour.</note>
+  </stylefield>
+
+  <!-- ===== boolean flags ===== -->
+
+  <stylefield name="bold" status="V" kind="int">
+    <conv renderer="libass" parse="libass-int" post="bool" verified="libass" cite="libass:libass/ass.c:607,740"/>
+    <conv renderer="xy" parse="vsfilter-int" post="bool" verified="xy" cite="xy:src/subtitles/STS.cpp:1511"/>
+    <conv renderer="vsm" parse="vsfilter-int" post="bool" verified="vsm" cite="vsm:src/subtitles/STS.cpp:1865"/>
+    <note>
+      Every renderer applies !! to the integer, so any nonzero value becomes 1.
+      Garbage input differs: libass yields 0 (ass.c:299) while GetInt throws
+      (STS.cpp:1249). ASS022 already reports the malformed case.
+    </note>
+  </stylefield>
+
+  <stylefield name="italic" status="V" kind="int">
+    <conv renderer="libass" parse="libass-int" post="bool" verified="libass" cite="libass:libass/ass.c:608,741"/>
+    <conv renderer="xy" parse="vsfilter-int" post="bool" verified="xy" cite="xy:src/subtitles/STS.cpp:1512"/>
+    <conv renderer="vsm" parse="vsfilter-int" post="bool" verified="vsm" cite="vsm:src/subtitles/STS.cpp:1866"/>
+    <note>Same boolean rule as bold.</note>
+  </stylefield>
+
+  <stylefield name="underline" status="V" kind="int">
+    <conv renderer="libass" parse="libass-int" post="bool" verified="libass" cite="libass:libass/ass.c:609,742"/>
+    <conv renderer="xy" parse="vsfilter-int" post="bool" verified="xy" cite="xy:src/subtitles/STS.cpp:1513"/>
+    <conv renderer="vsm" parse="vsfilter-int" post="bool" verified="vsm" cite="vsm:src/subtitles/STS.cpp:1867"/>
+    <note>Same boolean rule as bold. xy and VSFilterMod read this field only for sver 5 and later.</note>
+  </stylefield>
+
+  <stylefield name="strikeout" status="V" kind="int">
+    <conv renderer="libass" parse="libass-int" post="bool" verified="libass" cite="libass:libass/ass.c:610,743"/>
+    <conv renderer="xy" parse="vsfilter-int" post="bool" verified="xy" cite="xy:src/subtitles/STS.cpp:1514"/>
+    <conv renderer="vsm" parse="vsfilter-int" post="bool" verified="vsm" cite="vsm:src/subtitles/STS.cpp:1868"/>
+    <note>Same boolean rule as bold. xy and VSFilterMod read this field only for sver 5 and later.</note>
+  </stylefield>
+
+  <!-- ===== numbers ===== -->
+
+  <stylefield name="fontsize" status="V" kind="number">
+    <conv renderer="libass" parse="libass-double" post="none" verified="libass" cite="libass:libass/ass.c:606"/>
+    <conv renderer="xy" parse="vsfilter-float" post="none" verified="xy" cite="xy:src/subtitles/STS.cpp:1509"/>
+    <conv renderer="vsm" parse="vsfilter-float" post="none" verified="vsm" cite="vsm:src/subtitles/STS.cpp:1863"/>
+    <note>
+      libass stores a double. xy and VSFilterMod store a 32-bit float. A value
+      with more than seven significant digits can round differently. ASS012
+      reports that case. The conversion is value-dependent, so the comparison
+      resolves per value.
+    </note>
+  </stylefield>
+
+  <stylefield name="scalex" status="V" kind="number">
+    <conv renderer="libass" parse="libass-double" post="ratio" verified="libass" cite="libass:libass/ass.c:620,735"/>
+    <conv renderer="xy" parse="vsfilter-float" post="ratio" verified="xy" cite="xy:src/subtitles/STS.cpp:1515,1536"/>
+    <conv renderer="vsm" parse="vsfilter-float" post="ratio" verified="vsm" cite="vsm:src/subtitles/STS.cpp:1869,1897"/>
+    <note>
+      libass divides by 100 at parse. xy and VSFilterMod store percent and
+      divide by 100 at use (RTS.cpp:430-431,736). All three clamp negatives to
+      0. The ratio is equivalent for a value that survives the float32 step.
+    </note>
+  </stylefield>
+
+  <stylefield name="scaley" status="V" kind="number">
+    <conv renderer="libass" parse="libass-double" post="ratio" verified="libass" cite="libass:libass/ass.c:621,736"/>
+    <conv renderer="xy" parse="vsfilter-float" post="ratio" verified="xy" cite="xy:src/subtitles/STS.cpp:1516,1537"/>
+    <conv renderer="vsm" parse="vsfilter-float" post="ratio" verified="vsm" cite="vsm:src/subtitles/STS.cpp:1870,1898"/>
+    <note>Same rule as scalex.</note>
+  </stylefield>
+
+  <stylefield name="spacing" status="V" kind="number">
+    <conv renderer="libass" parse="libass-double" post="clamp0" verified="libass" cite="libass:libass/ass.c:611,737"/>
+    <conv renderer="xy" parse="vsfilter-float" post="clamp0" verified="xy" cite="xy:src/subtitles/STS.cpp:1517,1538"/>
+    <conv renderer="vsm" parse="vsfilter-float" post="clamp0" verified="vsm" cite="vsm:src/subtitles/STS.cpp:1871,1899-1901"/>
+    <note>
+      The negative clamp is build-conditional in VSFilterMod. The clamp sits
+      inside #ifndef _VSMOD (patch f002, STS.cpp:1899-1901), so a _VSMOD build
+      keeps a negative spacing. An unknown VSFilterMod build cannot resolve this
+      field.
+    </note>
+  </stylefield>
+
+  <stylefield name="angle" status="V" kind="number">
+    <conv renderer="libass" parse="libass-double" post="none" verified="libass" cite="libass:libass/ass.c:612"/>
+    <conv renderer="xy" parse="vsfilter-float" post="none" verified="xy" cite="xy:src/subtitles/STS.cpp:1518"/>
+    <conv renderer="vsm" parse="vsfilter-float" post="none" verified="vsm" cite="vsm:src/subtitles/STS.cpp:1872"/>
+    <note>Same double versus float32 question as fontsize. No clamp in either renderer.</note>
+  </stylefield>
+
+  <stylefield name="outline" status="V" kind="number">
+    <conv renderer="libass" parse="libass-double" post="clamp0" verified="libass" cite="libass:libass/ass.c:622,738"/>
+    <conv renderer="xy" parse="vsfilter-float" post="clamp0" verified="xy" cite="xy:src/subtitles/STS.cpp:1520,1541"/>
+    <conv renderer="vsm" parse="vsfilter-float" post="clamp0" verified="vsm" cite="vsm:src/subtitles/STS.cpp:1874,1904-1905"/>
+    <note>All three clamp negatives to 0. Same float32 precision question as fontsize.</note>
+  </stylefield>
+
+  <stylefield name="shadow" status="V" kind="number">
+    <conv renderer="libass" parse="libass-double" post="clamp0" verified="libass" cite="libass:libass/ass.c:623,739"/>
+    <conv renderer="xy" parse="vsfilter-float" post="clamp0" verified="xy" cite="xy:src/subtitles/STS.cpp:1521,1543"/>
+    <conv renderer="vsm" parse="vsfilter-float" post="clamp0" verified="vsm" cite="vsm:src/subtitles/STS.cpp:1875,1906-1907"/>
+    <note>All three clamp negatives to 0. Same float32 precision question as fontsize.</note>
+  </stylefield>
+
+  <!-- ===== integers ===== -->
+
+  <stylefield name="borderstyle" status="V" kind="int">
+    <conv renderer="libass" parse="libass-int" post="none" verified="libass" cite="libass:libass/ass.c:613"/>
+    <conv renderer="xy" parse="vsfilter-int" post="borderstyle" verified="xy" cite="xy:src/subtitles/STS.cpp:1519,1540"/>
+    <conv renderer="vsm" parse="vsfilter-int" post="borderstyle" verified="vsm" cite="vsm:src/subtitles/STS.cpp:1873,1903"/>
+    <note>
+      libass keeps the raw integer and tests 3 for an opaque box and 4 for a
+      background box (ass_render.c:2467,3009). xy and VSFilterMod map 1 to 0
+      and 3 to 1, and map every other value to 0. Values 1 and 3 agree. Value 4
+      selects a background box in libass and a plain outline in xy. Value 2
+      selects an outline in both. The conversion is value-dependent.
+    </note>
+  </stylefield>
+
+  <stylefield name="alignment" status="V" kind="int">
+    <conv renderer="libass" parse="libass-align" post="numpad" verified="libass" cite="libass:libass/ass.c:614,712 libass:libass/ass_utils.h:142-158"/>
+    <conv renderer="xy" parse="vsfilter-align" post="none" verified="xy" cite="xy:src/subtitles/STS.cpp:1522 xy:src/subtitles/RTS.cpp:3264-3268"/>
+    <conv renderer="vsm" parse="vsfilter-align" post="none" verified="vsm" cite="vsm:src/subtitles/STS.cpp:1876"/>
+    <note>
+      libass maps the value to HALIGN|VALIGN with numpad2align at parse
+      (ass.c:712). xy and VSFilterMod keep the raw integer and derive the
+      position at use from val%3 and val&lt;=3 or val&lt;=6 (RTS.cpp:3264-3268).
+      The two derivations agree for values 1 to 9. They were not shown to agree
+      for 0, for values above 9, or for negative values. The conversion stays
+      unresolved until that check is complete.
+    </note>
+  </stylefield>
+
+  <stylefield name="marginl" status="V" kind="int">
+    <conv renderer="libass" parse="libass-int" post="none" verified="libass" cite="libass:libass/ass.c:616"/>
+    <conv renderer="xy" parse="vsfilter-int" post="none" verified="xy" cite="xy:src/subtitles/STS.cpp:1523"/>
+    <conv renderer="vsm" parse="vsfilter-int" post="none" verified="vsm" cite="vsm:src/subtitles/STS.cpp:1877"/>
+    <note>
+      Both renderers store one integer with no post-processing. libass reduces
+      modulo 2**32 (ass.c:292-321). GetInt uses swscanf, whose overflow behavior
+      is undefined. A value inside the int32 range is equivalent.
+    </note>
+  </stylefield>
+
+  <stylefield name="marginr" status="V" kind="int">
+    <conv renderer="libass" parse="libass-int" post="none" verified="libass" cite="libass:libass/ass.c:617"/>
+    <conv renderer="xy" parse="vsfilter-int" post="none" verified="xy" cite="xy:src/subtitles/STS.cpp:1524"/>
+    <conv renderer="vsm" parse="vsfilter-int" post="none" verified="vsm" cite="vsm:src/subtitles/STS.cpp:1878"/>
+    <note>Same integer rule as marginl.</note>
+  </stylefield>
+
+  <stylefield name="marginv" status="V" kind="int">
+    <conv renderer="libass" parse="libass-int" post="none" verified="libass" cite="libass:libass/ass.c:618"/>
+    <conv renderer="xy" parse="vsfilter-int" post="none" verified="xy" cite="xy:src/subtitles/STS.cpp:1525"/>
+    <conv renderer="vsm" parse="vsfilter-int" post="none" verified="vsm" cite="vsm:src/subtitles/STS.cpp:1879"/>
+    <note>Same integer rule as marginl.</note>
+  </stylefield>
+
+  <stylefield name="encoding" status="V" kind="int">
+    <conv renderer="libass" parse="libass-int" post="none" verified="libass" cite="libass:libass/ass.c:619"/>
+    <conv renderer="xy" parse="vsfilter-int" post="none" verified="xy" cite="xy:src/subtitles/STS.cpp:1529"/>
+    <conv renderer="vsm" parse="vsfilter-int" post="none" verified="vsm" cite="vsm:src/subtitles/STS.cpp:1882"/>
+    <note>Same integer rule as marginl. libass stores it in Encoding (ass_render.c:1110).</note>
+  </stylefield>
+
+  <!-- ===== SSA-only fields ===== -->
+
+  <stylefield name="tertiarycolour" status="V" kind="hexcolor">
+    <conv renderer="libass" parse="libass-color" post="none" verified="libass" cite="libass:libass/ass.c:694-697"/>
+    <conv renderer="xy" parse="vsfilter-color" post="none" verified="xy" cite="xy:src/subtitles/STS.cpp:1532"/>
+    <conv renderer="vsm" parse="vsfilter-color" post="none" verified="vsm" cite="vsm:src/subtitles/STS.cpp:1885"/>
+    <note>
+      SSA only. libass reads the name as OutlineColour, then overwrites
+      OutlineColour from BackColour (ass.c:694-697). xy and VSFilterMod copy
+      BackColour into colours[2] (STS.cpp:1532,1885). The two paths reach the
+      same slot by different routes. The byte-order question from primarycolour
+      also applies.
+    </note>
+  </stylefield>
+
+  <stylefield name="alphalevel" status="V" kind="int">
+    <conv renderer="libass" parse="libass-int" post="none" verified="libass" cite="libass:libass/ass.c:603,533-541,733-734"/>
+    <conv renderer="xy" parse="vsfilter-int" post="none" verified="xy" cite="xy:src/subtitles/STS.cpp:1528,1533-1534"/>
+    <conv renderer="vsm" parse="vsfilter-int" post="none" verified="vsm" cite="vsm:src/subtitles/STS.cpp:1881,1886-1891"/>
+    <note>
+      SSA only. libass applies the alpha to the three front colours and forces
+      the back alpha to 0x80 (ass.c:533-541,733-734). xy and VSFilterMod clamp
+      the value to 0..0xff and set alpha[3] to 0x80 (STS.cpp:1533-1534,
+      1886-1891). Both clamp to one byte, so a value inside 0..255 is
+      equivalent.
+    </note>
+  </stylefield>
+
+  <stylefield name="justify" status="V" kind="int">
+    <conv renderer="libass" parse="libass-int" post="unmodeled" verified="libass" cite="libass:libass/ass.c:615"/>
+    <conv renderer="xy" parse="unmodeled" post="unmodeled" verified="" cite=""/>
+    <conv renderer="vsm" parse="unmodeled" post="unmodeled" verified="" cite=""/>
+    <note>
+      libass parses Justify (ass.c:615) but no pinned reader was found for the
+      stored value. xy and VSFilterMod have no Justify field at all. The field
+      stays unmodeled.
+    </note>
+  </stylefield>
+</matrix>

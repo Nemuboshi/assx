@@ -61,12 +61,12 @@ streams. Nested constructs absent from one stream remain unresolved.
 Verified signatures establish argument shapes, not complete state semantics.
 Application conclusions require accepted/rejected signatures and certain
 transitions. Operations with first-wins ownership additionally require verified
-repeat behavior; ordinary assignments do not depend on latch evidence. Equal
-tracked state **never establishes rendering equivalence**. A known state
-difference can be reported when those proof gates hold, but state agreement
-remains unresolved. Even
-an equivalent dispatch or documented behavior scenario does not guarantee
-pixel-identical output.
+repeat behavior; ordinary assignments do not depend on latch evidence. The
+tracked-state dimension shares that gate. Under it, equal known slot
+transitions and an equal active Style report `equivalent` for the compared
+observations; a known difference reports `divergent`. Outside the gate, state
+agreement stays unresolved. Equal tracked state still does not promise
+pixel-identical rendering; no `equivalent` dimension does.
 
 ## Evidence and reference cases
 
@@ -135,12 +135,48 @@ lint maps them to physical lines, including CR, LF, and CRLF. Records dropped
 by the historical parser remain visible to compatibility analysis.
 
 This API verifies source partitioning, not full renderer document loading.
-Unsupported dialects, malformed framing, Style value conversion/fallback,
-unresolved resets, drawing, karaoke, and time-dependent transforms remain
-explicitly unresolved where no sufficient model/evidence exists. Shared Style
-canonicalization is an input to the partial evaluator and cannot authorize
-Style or pixel equivalence. This boundary avoids duplicating a complete
-renderer document loader during P07.
+Unsupported dialects, malformed framing, unresolved resets, drawing, karaoke,
+and time-dependent transforms remain explicitly unresolved where no sufficient
+model/evidence exists. Shared Style canonicalization is an input to the partial
+evaluator and cannot authorize Style or pixel equivalence. This boundary avoids
+duplicating a complete renderer document loader during P07.
+
+## Style field conversion evidence
+## Style field conversion evidence
+
+[docs/ass-style-fields.xml](ass-style-fields.xml) records the raw-text-to-value
+conversion of each Style field for each pinned renderer. It is separate from
+[docs/ass-tags.xml](ass-tags.xml). Style fields have no arity, no prefix
+dispatch and no paren form, so they cannot use the tag schema. The tag matrix
+owns override-tag dispatch. This matrix owns Style value conversion.
+
+The two matrices share the pins, the V/S status, the explicit `verified` scope
+and the cite tokens. They do not share a schema. The generator
+`internal/ass/renderer/cmd/genstylematrix` emits
+`internal/ass/renderer/style_matrix_generated.go`. CI runs it with `-check`.
+
+Each row states a parse step and a post step. A cited row names the pinned line
+for its own renderer. A row without a citation must use `unmodeled` for both
+steps, so an unverified conversion cannot read as evidence.
+
+This matrix does not resolve the `document/style-values` observation by itself.
+It names the conversion. The comparison still needs a value-level equivalence
+relation, because the renderers store the same intent in different forms. For
+example, libass divides ScaleX by 100 at parse while xy-VSFilter stores percent
+and divides at use, and libass keeps BorderStyle raw while the VSFilter
+loaders map 1 to 0 and 3 to 1. Until that relation is defined, the observation
+stays `unresolved`.
+
+The matrix records these limits as open questions:
+
+- Colour byte order was not followed to the drawn pixel. libass byte-swaps at
+  parse; xy-VSFilter reverses red and blue at use.
+- Alignment agreement was shown for values 1 to 9 only. Values 0, values above
+  9 and negative values are unverified.
+- The VSFilterMod `Spacing` clamp is build-conditional (`_VSMOD`, patch f002).
+  An unknown build cannot resolve that field.
+- `Justify` has a libass parse site but no pinned reader for the stored value,
+  and no field in either VSFilter loader.
 
 ## Validation
 
@@ -150,6 +186,7 @@ go test -race ./internal/semantic ./internal/lint ./internal/ass/renderer -count
 go vet ./...
 go build ./cmd/assx
 (cd internal/ass/renderer && go run ./cmd/genmatrix -check)
+(cd internal/ass/renderer && go run ./cmd/genstylematrix -check)
 go test ./internal/semantic -run '^$' -bench '^BenchmarkCompareDialogue$' -benchmem
 ```
 

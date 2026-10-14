@@ -156,7 +156,10 @@ func scenarioEvidence(observation *Interpretation, scenario string, candidates [
 	case "coord-round":
 		applicable = rectangleRoundingDomain(observation)
 	case "repeat":
-		applicable = applicable && e.Ignored && transitionCertain(e)
+		// A definite first-wins latch blocks this occurrence in all three
+		// pinned handlers. The evaluator records the blocked occurrence with
+		// Applied=false; Ignored marks malformed or unsupported consumption.
+		applicable = applicable && !e.Applied && transitionCertain(e)
 		for _, owner := range observation.Owners {
 			applicable = applicable && owner.End <= r.Source.Start
 		}

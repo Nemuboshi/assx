@@ -15,6 +15,7 @@ Check their stated phase before you use a rollout claim as a current contract.
 | --- | --- | --- | --- |
 | Syntax and source spans | `internal/ass` | [Syntax](renderer-syntax.md) | Check raw input, node spans, and round-trip tests. |
 | Tag signatures and dispatch | `internal/ass/spec`, `internal/ass/renderer` | [Profiles](renderer-profiles.md), [matrix](ass-tags.xml) | Check the exact form, source pin, and build guards. |
+| Style field conversion | `internal/ass/renderer` | [Style fields](ass-style-fields.xml), [compatibility](renderer-compatibility.md) | Check the parse step, the post step, the source pin, and the build guards. |
 | State, resets, and transforms | `internal/semantic` | [Semantics](renderer-semantics.md) | Trace one renderer at a time. Check state and provenance. |
 | Lint policy and rule IDs | `internal/lint` | [Rules](rules.md), [scoped lint](renderer-lint.md) | Check the existing rule and its consumers. |
 | Renderer differences | `internal/semantic` | [Compatibility](renderer-compatibility.md) | Compare the same input in each selected renderer. |
@@ -24,6 +25,7 @@ Check their stated phase before you use a rollout claim as a current contract.
 | Performance | The affected package | [Performance](performance.md) | Compare the same workload, toolchain, and machine. |
 
 The matrix owns renderer signatures and scenario evidence.
+The Style field matrix owns Style value conversion evidence.
 Contracts own proof scope and baseline review.
 Rules own diagnostic policy. Tests record behavior.
 A historical implementation record does not override these sources.

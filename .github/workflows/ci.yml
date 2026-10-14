@@ -27,7 +27,7 @@ jobs:
           args: --timeout=5m
       - name: Verify generated renderer evidence
         working-directory: internal/ass/renderer
-        run: go run ./cmd/genmatrix -check
+        run: go run ./cmd/genmatrix -check && go run ./cmd/genstylematrix -check
       - name: Test
         run: go test ./...
       - name: Renderer evidence and baseline contracts

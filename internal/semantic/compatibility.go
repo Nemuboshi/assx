@@ -213,11 +213,19 @@ func compareInterpretations(span ass.ConcreteSpan, a, b *Interpretation) []Compa
 			add("behavior/"+scenario, status, fmt.Sprintf("%s: %s; %s: %s.", a.Profile.Kind(), behaviorDescription(av), b.Profile.Kind(), behaviorDescription(bv)), av.Citation, bv.Citation)
 		}
 	}
-	// Identical tracked slots are insufficient evidence: the engine is partial
-	// and shared canonical values are deliberately conservative across profiles.
+	// Identical tracked slots are insufficient evidence for pixel identity:
+	// the engine is partial and shared canonical values are deliberately
+	// conservative across profiles. Under the certain gate, equal known slot
+	// transitions and an equal active Style still compare two independent
+	// observations, so report equivalence of those observations.
 	stateStatus := CompatibilityUnresolved
-	if certain && knownStateDifference(ae, be) {
-		stateStatus = CompatibilityDivergent
+	if certain {
+		switch {
+		case knownStateDifference(ae, be):
+			stateStatus = CompatibilityDivergent
+		case sameTrackedState(ae, be, a.ActiveStyle, b.ActiveStyle):
+			stateStatus = CompatibilityEquivalent
+		}
 	}
 	add("state", stateStatus, fmt.Sprintf("%s: %s, active Style %q; %s: %s, active Style %q. Tracked state alone cannot prove rendering compatibility.", a.Profile.Kind(), stateDescription(ae), a.ActiveStyle, b.Profile.Kind(), stateDescription(be), b.ActiveStyle))
 	return out
@@ -240,12 +248,50 @@ func knownStateDifference(a, b TagEvent) bool {
 	return false
 }
 
+// sameTrackedState proves observation equality only from known values.
+// An unknown slot, a slot list that does not align, or a different active
+// Style keeps the comparison unresolved.
+func sameTrackedState(a, b TagEvent, aStyle, bStyle string) bool {
+	if aStyle != bStyle || len(a.Slots) != len(b.Slots) {
+		return false
+	}
+	for i, slot := range a.Slots {
+		j := slices.Index(b.Slots, slot)
+		if j < 0 || i >= len(a.After) || j >= len(b.After) {
+			return false
+		}
+		if !a.After[i].Known || !b.After[j].Known || a.After[i] != b.After[j] {
+			return false
+		}
+	}
+	return true
+}
+
 func verifiedSignature(s renderer.SignatureStatus) bool {
 	return s == renderer.SignatureVerified || s == renderer.SignatureRejected
 }
+
+// definiteDelegatedTransition reports whether the parent tag itself applies a
+// source-proven, deterministic delegation. \t consumes its measured argument
+// window and recursively applies its body before returning; the parent writes
+// no tracked slot, so its own transition is not time-dependent. The children
+// keep their per-span uncertainty, which the comparison reports separately.
+// libass:libass/ass_parse.c:670-727 xy:src/subtitles/RTS.cpp:2670-2702
+// vsm:src/subtitles/RTS.cpp:3613-3644 pin the same parent contract.
+func definiteDelegatedTransition(e TagEvent) bool {
+	return e.Policy == spec.Transition && e.Applied && !e.Ignored && !e.Barrier &&
+		len(e.Slots) == 0 && e.Uncertainty == UncertaintyTimeDependent
+}
+
 func transitionCertain(e TagEvent) bool {
 	// A fix fence does not make a source-verified rejection uncertain.
-	return e.Ignored && e.Signature == renderer.SignatureRejected || !e.Barrier && e.Uncertainty == UncertaintyNone
+	if e.Ignored && e.Signature == renderer.SignatureRejected {
+		return true
+	}
+	if definiteDelegatedTransition(e) {
+		return true
+	}
+	return !e.Barrier && e.Uncertainty == UncertaintyNone
 }
 func sameOwners(a, b map[string]ass.ConcreteSpan) bool {
 	if len(a) != len(b) {
