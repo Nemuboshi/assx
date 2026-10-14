@@ -211,11 +211,19 @@ func (p Profile) Resolve(expr ass.ConcreteExpression, source string) Result {
 	// Nested parentheses and commas after a modifier backslash require
 	// renderer-specific parameter scanning beyond this CST partition. An
 	// arity match cannot verify that both parsers consumed the same input.
+	// Exception: a trailing argument that is exactly one backslash name plus
+	// one balanced parenthesized group is pushed as one whole argument by all
+	// three pinned splitters (libass 320-349 backslash rule, xy 2130-2152,
+	// vsm 2434-2462), so its partition is source-proven, not renderer-specific.
 	unmodeledParameters := false
-	for _, arg := range r.Args {
-		if strings.ContainsAny(arg.Raw, "()") {
-			unmodeledParameters = true
+	for i, arg := range r.Args {
+		if !strings.ContainsAny(arg.Raw, "()") {
+			continue
 		}
+		if i == len(r.Args)-1 && balancedModifierGroup(arg.Raw) {
+			continue
+		}
+		unmodeledParameters = true
 	}
 	if expr.Parenthesized && expr.ContentSpan.Start >= 0 && expr.ContentSpan.End <= len(source) {
 		content := source[expr.ContentSpan.Start:expr.ContentSpan.End]
@@ -229,6 +237,23 @@ func (p Profile) Resolve(expr ass.ConcreteExpression, source string) Result {
 		r.Citation = ""
 	}
 	return r
+}
+
+// balancedModifierGroup reports whether raw is one backslash command name
+// followed by exactly one flat parenthesized group. Its first closing
+// parenthesis is its last character, so the libass backslash rule (320-349),
+// the xy scan (2130-2152), and the VSFilterMod scan (2434-2462) each push
+// this shape as one whole argument, agreeing with this CST partition.
+func balancedModifierGroup(raw string) bool {
+	trimmed := strings.Trim(raw, " \t")
+	if len(trimmed) < 3 || trimmed[0] != '\\' || trimmed[len(trimmed)-1] != ')' {
+		return false
+	}
+	open := strings.IndexByte(trimmed, '(')
+	if open <= 1 || strings.Contains(trimmed[:open], ")") || strings.IndexByte(trimmed[open+1:len(trimmed)-1], '(') >= 0 {
+		return false
+	}
+	return !strings.Contains(trimmed[open+1:len(trimmed)-1], ")")
 }
 
 // WalkDialogue emits candidates in source order, including arbitrarily

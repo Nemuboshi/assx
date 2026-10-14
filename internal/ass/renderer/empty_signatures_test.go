@@ -111,13 +111,30 @@ func TestTrulyRequiredBareArgumentsStillReject(t *testing.T) {
 
 // The source-backed scalar handlers can consume the first value while ignoring
 // surplus parenthesized text. Declared known forms alone cannot prove rejection.
+// The rectangular/vector clip shapes are exhaustively source-proven (see the
+// matrix exhaustive attribute), so they moved to the rejection expectations.
 func TestNonExhaustiveSignatureSetsCannotReject(t *testing.T) {
-	for _, raw := range []string{"\\fs(18,unexpected)", "\\bord(2,3)", "\\fn(Arial,Extra)", "\\clip"} {
+	for _, raw := range []string{"\\fs(18,unexpected)", "\\bord(2,3)", "\\fn(Arial,Extra)"} {
 		expr, source := first(t, raw)
 		for _, profile := range profiles(t) {
 			got := profile.Resolve(expr, source)
 			if got.Signature == SignatureRejected {
 				t.Errorf("%s: non-exhaustive %q was rejected as a proven invalid form", profile.Kind(), raw)
+			}
+		}
+	}
+}
+
+// libass dispatches clip only at nargs 4 or 1/2 through parse_vector_clip,
+// xy/VSMatch on GetCount 1, 2, or 4, and every empty component is filtered
+// before dispatch. No pinned handler consumes zero or three clip arguments.
+func TestExhaustiveClipShapesReject(t *testing.T) {
+	for _, raw := range []string{`\clip`, `\clip()`, `\clip(1,2,3)`} {
+		expr, source := first(t, raw)
+		for _, profile := range profiles(t) {
+			got := profile.Resolve(expr, source)
+			if got.Status != Matched || got.Signature != SignatureRejected {
+				t.Errorf("%s: %q must reject: %+v", profile.Kind(), raw, got)
 			}
 		}
 	}

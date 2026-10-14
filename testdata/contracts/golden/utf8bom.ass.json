@@ -1002,47 +1002,9 @@
           "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2575",
           "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2643"
         ]
-      },
-      {
-        "file": "utf8bom.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 15,
-        "column": 52,
-        "tag": "fs",
-        "field": "state",
-        "detail": "unresolved: libass: fontsize=20:20, active Style \"Default\"; xy-VSFilter: fontsize=20:20, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 438,
-          "End": 443
-        },
-        "sources": []
-      },
-      {
-        "file": "utf8bom.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 15,
-        "column": 57,
-        "tag": "fs",
-        "field": "state",
-        "detail": "unresolved: libass: fontsize=25:25, active Style \"Default\"; xy-VSFilter: fontsize=25:25, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 443,
-          "End": 448
-        },
-        "sources": []
       }
     ],
-    "summary": "Fixes available: 1 safe, 0 unsafe, 6 not auto-fixable.",
+    "summary": "Fixes available: 1 safe, 0 unsafe, 4 not auto-fixable.",
     "output_sha256": "09559d90d2ef42c1bad72865867795d8ccc0ac5962791a21fcf8642aef69b186",
     "changed": false
   },
@@ -1572,47 +1534,9 @@
         "detail": "Font family \"Go Regular\" does not contain these characters: \"日本語\".",
         "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
         "sources": null
-      },
-      {
-        "file": "utf8bom.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 15,
-        "column": 52,
-        "tag": "fs",
-        "field": "state",
-        "detail": "unresolved: libass: fontsize=20:20, active Style \"Default\"; xy-VSFilter: fontsize=20:20, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 438,
-          "End": 443
-        },
-        "sources": []
-      },
-      {
-        "file": "utf8bom.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 15,
-        "column": 57,
-        "tag": "fs",
-        "field": "state",
-        "detail": "unresolved: libass: fontsize=25:25, active Style \"Default\"; xy-VSFilter: fontsize=25:25, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 443,
-          "End": 448
-        },
-        "sources": []
       }
     ],
-    "summary": "Fixes available: 1 safe, 0 unsafe, 7 not auto-fixable.",
+    "summary": "Fixes available: 1 safe, 0 unsafe, 5 not auto-fixable.",
     "output_sha256": "09559d90d2ef42c1bad72865867795d8ccc0ac5962791a21fcf8642aef69b186",
     "changed": false
   },
@@ -1696,28 +1620,9 @@
           "End": 294
         },
         "sources": []
-      },
-      {
-        "file": "utf8bom.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 15,
-        "column": 52,
-        "tag": "fs",
-        "field": "state",
-        "detail": "unresolved: libass: fontsize=25:25, active Style \"Default\"; xy-VSFilter: fontsize=25:25, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 438,
-          "End": 443
-        },
-        "sources": []
       }
     ],
-    "summary": "Applied fixes: 1 safe, 0 unsafe. Fixes available: 0 safe, 0 unsafe, 5 not auto-fixable.",
+    "summary": "Applied fixes: 1 safe, 0 unsafe. Fixes available: 0 safe, 0 unsafe, 4 not auto-fixable.",
     "output_sha256": "a3c1e0a6992f16586245a02e29f98ee78bd2bfc495a72804715f16be5d7ed577",
     "changed": true
   },
@@ -1801,28 +1706,9 @@
           "End": 294
         },
         "sources": []
-      },
-      {
-        "file": "utf8bom.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 15,
-        "column": 52,
-        "tag": "fs",
-        "field": "state",
-        "detail": "unresolved: libass: fontsize=25:25, active Style \"Default\"; xy-VSFilter: fontsize=25:25, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 438,
-          "End": 443
-        },
-        "sources": []
       }
     ],
-    "summary": "Applied fixes: 1 safe, 0 unsafe. Fixes available: 0 safe, 0 unsafe, 5 not auto-fixable.",
+    "summary": "Applied fixes: 1 safe, 0 unsafe. Fixes available: 0 safe, 0 unsafe, 4 not auto-fixable.",
     "output_sha256": "a3c1e0a6992f16586245a02e29f98ee78bd2bfc495a72804715f16be5d7ed577",
     "changed": true
   }

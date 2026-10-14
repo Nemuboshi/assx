@@ -174,30 +174,65 @@ func TestCompatibilityRepeatBehaviorRequiresProvenLatchOwner(t *testing.T) {
 }
 
 func TestCompatibilityVerifiedApplicationObservations(t *testing.T) {
+	// Under the certain gate, application and tracked state share the same
+	// proof base: source-verified signatures, certain transitions, and a
+	// first-wins repeat check. Equal known slot transitions with an equal
+	// active Style therefore reach tracked-state equivalence together.
 	for _, source := range []string{`{\fs20}A`, `{\bord2}A`, `{\pos(1,2)}A`, `{\pos(1,2)\pos(3,4)}A`, `{\pos(1,2,3)}A`} {
 		t.Run(source, func(t *testing.T) {
-			found := false
+			applications, states := 0, 0
 			for _, f := range CompareDialogue(ass.ParseConcreteDialogue(source), nil, EvaluationOptions{}) {
-				if f.Dimension == "application" {
-					found = true
+				switch f.Dimension {
+				case "application":
+					applications++
 					if f.Status != CompatibilityEquivalent {
 						t.Fatalf("verified observation not comparable: %#v", f)
 					}
-				}
-				if f.Dimension == "state" && f.Status == CompatibilityEquivalent {
-					t.Fatal("tracked state became rendering equivalence")
+				case "state":
+					states++
+					if f.Status != CompatibilityEquivalent {
+						t.Fatalf("verified equal state not promoted: %#v", f)
+					}
 				}
 			}
-			if !found {
-				t.Fatal("missing application observation")
+			if applications == 0 || applications != states {
+				t.Fatalf("application and equal-state proof counts differ: %d application, %d state", applications, states)
 			}
 		})
 	}
-	for _, source := range []string{`{\fs20junk}A`, `{\clip(1,2,3)}A`, `{\t(0,500,\fs30)}A`} {
+	for _, source := range []string{`{\fs20junk}A`, `{\t(1,2,3,4,5,\fs30)}A`} {
 		for _, f := range CompareDialogue(ass.ParseConcreteDialogue(source), nil, EvaluationOptions{}) {
 			if f.Dimension == "application" && f.Source.Start == 1 && f.Status != CompatibilityUnresolved {
 				t.Fatalf("%s: uncertain invocation gained application proof: %#v", source, f)
 			}
 		}
 	}
+	// A certain \t parent applies its delegation; its body is evaluated by the
+	// parent, so the child stays an equal non-static observation with its own
+	// timing evidence. Modeled children were already compared this way; the
+	// parent proof is what the delegating-transition arm adds.
+	t.Run("certain-delegating-parent", func(t *testing.T) {
+		const parentSpan, childSpan = 1, 10
+		parent, child := false, false
+		for _, f := range CompareDialogue(ass.ParseConcreteDialogue(`{\t(0,500,\fs30)}A`), nil, EvaluationOptions{}) {
+			if f.Dimension != "application" {
+				continue
+			}
+			switch f.Source.Start {
+			case parentSpan:
+				parent = true
+				if f.Status != CompatibilityEquivalent {
+					t.Fatalf("delegating transition lost application proof: %#v", f)
+				}
+			case childSpan:
+				child = true
+				if f.Status == CompatibilityDivergent {
+					t.Fatalf("modeled child split on an equal delegation observation: %#v", f)
+				}
+			}
+		}
+		if !parent || !child {
+			t.Fatalf("missing parent or child application comparison: parent=%t child=%t", parent, child)
+		}
+	})
 }

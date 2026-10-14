@@ -2656,63 +2656,6 @@
       },
       {
         "file": "style-fonts.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 15,
-        "column": 52,
-        "tag": "fn",
-        "field": "state",
-        "detail": "unresolved: libass: fontname=Go Regular, active Style \"Default\"; xy-VSFilter: fontname=Go Regular, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 424,
-          "End": 437
-        },
-        "sources": []
-      },
-      {
-        "file": "style-fonts.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 15,
-        "column": 65,
-        "tag": "fs",
-        "field": "state",
-        "detail": "unresolved: libass: fontsize=24:24, active Style \"Default\"; xy-VSFilter: fontsize=24:24, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 437,
-          "End": 442
-        },
-        "sources": []
-      },
-      {
-        "file": "style-fonts.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 16,
-        "column": 48,
-        "tag": "fn",
-        "field": "state",
-        "detail": "unresolved: libass: fontname=Definitely Missing Font, active Style \"Alt\"; xy-VSFilter: fontname=Definitely Missing Font, active Style \"Alt\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 501,
-          "End": 527
-        },
-        "sources": []
-      },
-      {
-        "file": "style-fonts.ass",
         "id": "ASS017",
         "severity": "warning",
         "title": "Undefined style reference",
@@ -2781,25 +2724,6 @@
       },
       {
         "file": "style-fonts.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 17,
-        "column": 68,
-        "tag": "b",
-        "field": "state",
-        "detail": "unresolved: libass: bold=1, active Style \"Nonexistent\"; xy-VSFilter: bold=1, active Style \"Nonexistent\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 608,
-          "End": 611
-        },
-        "sources": []
-      },
-      {
-        "file": "style-fonts.ass",
         "id": "ASS006",
         "severity": "suggestion",
         "title": "Override has no effect",
@@ -2827,66 +2751,9 @@
           "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2575",
           "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2643"
         ]
-      },
-      {
-        "file": "style-fonts.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 18,
-        "column": 52,
-        "tag": "r",
-        "field": "state",
-        "detail": "unresolved: libass: no modeled slot transition, active Style \"Alt\"; xy-VSFilter: no modeled slot transition, active Style \"Alt\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 677,
-          "End": 682
-        },
-        "sources": []
-      },
-      {
-        "file": "style-fonts.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 18,
-        "column": 57,
-        "tag": "fn",
-        "field": "state",
-        "detail": "unresolved: libass: fontname=Go Regular, active Style \"Alt\"; xy-VSFilter: fontname=Go Regular, active Style \"Alt\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 682,
-          "End": 695
-        },
-        "sources": []
-      },
-      {
-        "file": "style-fonts.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 18,
-        "column": 70,
-        "tag": "r",
-        "field": "state",
-        "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 695,
-          "End": 704
-        },
-        "sources": []
       }
     ],
-    "summary": "Fixes available: 2 safe, 0 unsafe, 15 not auto-fixable.",
+    "summary": "Fixes available: 2 safe, 0 unsafe, 8 not auto-fixable.",
     "output_sha256": "7c5425d6cf69b7215c1b6e258ee742a0d9d2a04b735613d6feb14b3356607dfa",
     "changed": false
   },
@@ -3669,44 +3536,6 @@
       },
       {
         "file": "style-fonts.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 15,
-        "column": 52,
-        "tag": "fn",
-        "field": "state",
-        "detail": "unresolved: libass: fontname=Go Regular, active Style \"Default\"; xy-VSFilter: fontname=Go Regular, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 424,
-          "End": 437
-        },
-        "sources": []
-      },
-      {
-        "file": "style-fonts.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 15,
-        "column": 65,
-        "tag": "fs",
-        "field": "state",
-        "detail": "unresolved: libass: fontsize=24:24, active Style \"Default\"; xy-VSFilter: fontsize=24:24, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 437,
-          "End": 442
-        },
-        "sources": []
-      },
-      {
-        "file": "style-fonts.ass",
         "id": "ASS015",
         "severity": "suggestion",
         "title": "Subtitle font is missing",
@@ -3717,25 +3546,6 @@
         "detail": "Font family \"Definitely Missing Font\" was not found in the scanned fonts.",
         "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
         "sources": null
-      },
-      {
-        "file": "style-fonts.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 16,
-        "column": 48,
-        "tag": "fn",
-        "field": "state",
-        "detail": "unresolved: libass: fontname=Definitely Missing Font, active Style \"Alt\"; xy-VSFilter: fontname=Definitely Missing Font, active Style \"Alt\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 501,
-          "End": 527
-        },
-        "sources": []
       },
       {
         "file": "style-fonts.ass",
@@ -3807,25 +3617,6 @@
       },
       {
         "file": "style-fonts.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 17,
-        "column": 68,
-        "tag": "b",
-        "field": "state",
-        "detail": "unresolved: libass: bold=1, active Style \"Nonexistent\"; xy-VSFilter: bold=1, active Style \"Nonexistent\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 608,
-          "End": 611
-        },
-        "sources": []
-      },
-      {
-        "file": "style-fonts.ass",
         "id": "ASS006",
         "severity": "suggestion",
         "title": "Override has no effect",
@@ -3853,66 +3644,9 @@
           "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2575",
           "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2643"
         ]
-      },
-      {
-        "file": "style-fonts.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 18,
-        "column": 52,
-        "tag": "r",
-        "field": "state",
-        "detail": "unresolved: libass: no modeled slot transition, active Style \"Alt\"; xy-VSFilter: no modeled slot transition, active Style \"Alt\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 677,
-          "End": 682
-        },
-        "sources": []
-      },
-      {
-        "file": "style-fonts.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 18,
-        "column": 57,
-        "tag": "fn",
-        "field": "state",
-        "detail": "unresolved: libass: fontname=Go Regular, active Style \"Alt\"; xy-VSFilter: fontname=Go Regular, active Style \"Alt\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 682,
-          "End": 695
-        },
-        "sources": []
-      },
-      {
-        "file": "style-fonts.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 18,
-        "column": 70,
-        "tag": "r",
-        "field": "state",
-        "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 695,
-          "End": 704
-        },
-        "sources": []
       }
     ],
-    "summary": "Fixes available: 2 safe, 0 unsafe, 16 not auto-fixable.",
+    "summary": "Fixes available: 2 safe, 0 unsafe, 9 not auto-fixable.",
     "output_sha256": "7c5425d6cf69b7215c1b6e258ee742a0d9d2a04b735613d6feb14b3356607dfa",
     "changed": false
   },
@@ -3999,25 +3733,6 @@
       },
       {
         "file": "style-fonts.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 16,
-        "column": 48,
-        "tag": "fn",
-        "field": "state",
-        "detail": "unresolved: libass: fontname=Definitely Missing Font, active Style \"Alt\"; xy-VSFilter: fontname=Definitely Missing Font, active Style \"Alt\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 481,
-          "End": 507
-        },
-        "sources": []
-      },
-      {
-        "file": "style-fonts.ass",
         "id": "ASS017",
         "severity": "warning",
         "title": "Undefined style reference",
@@ -4083,66 +3798,9 @@
           "End": 588
         },
         "sources": []
-      },
-      {
-        "file": "style-fonts.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 17,
-        "column": 68,
-        "tag": "b",
-        "field": "state",
-        "detail": "unresolved: libass: bold=1, active Style \"Nonexistent\"; xy-VSFilter: bold=1, active Style \"Nonexistent\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 588,
-          "End": 591
-        },
-        "sources": []
-      },
-      {
-        "file": "style-fonts.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 18,
-        "column": 52,
-        "tag": "r",
-        "field": "state",
-        "detail": "unresolved: libass: no modeled slot transition, active Style \"Alt\"; xy-VSFilter: no modeled slot transition, active Style \"Alt\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 657,
-          "End": 662
-        },
-        "sources": []
-      },
-      {
-        "file": "style-fonts.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 18,
-        "column": 57,
-        "tag": "r",
-        "field": "state",
-        "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 662,
-          "End": 671
-        },
-        "sources": []
       }
     ],
-    "summary": "Applied fixes: 2 safe, 0 unsafe. Fixes available: 0 safe, 0 unsafe, 12 not auto-fixable.",
+    "summary": "Applied fixes: 2 safe, 0 unsafe. Fixes available: 0 safe, 0 unsafe, 8 not auto-fixable.",
     "output_sha256": "0b9cfc6ed431341aba4ed5db0bedef5bda80ba12af1bc0bcc827e57845fd7805",
     "changed": true
   },
@@ -4229,25 +3887,6 @@
       },
       {
         "file": "style-fonts.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 16,
-        "column": 48,
-        "tag": "fn",
-        "field": "state",
-        "detail": "unresolved: libass: fontname=Definitely Missing Font, active Style \"Alt\"; xy-VSFilter: fontname=Definitely Missing Font, active Style \"Alt\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 481,
-          "End": 507
-        },
-        "sources": []
-      },
-      {
-        "file": "style-fonts.ass",
         "id": "ASS017",
         "severity": "warning",
         "title": "Undefined style reference",
@@ -4313,66 +3952,9 @@
           "End": 588
         },
         "sources": []
-      },
-      {
-        "file": "style-fonts.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 17,
-        "column": 68,
-        "tag": "b",
-        "field": "state",
-        "detail": "unresolved: libass: bold=1, active Style \"Nonexistent\"; xy-VSFilter: bold=1, active Style \"Nonexistent\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 588,
-          "End": 591
-        },
-        "sources": []
-      },
-      {
-        "file": "style-fonts.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 18,
-        "column": 52,
-        "tag": "r",
-        "field": "state",
-        "detail": "unresolved: libass: no modeled slot transition, active Style \"Alt\"; xy-VSFilter: no modeled slot transition, active Style \"Alt\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 657,
-          "End": 662
-        },
-        "sources": []
-      },
-      {
-        "file": "style-fonts.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 18,
-        "column": 57,
-        "tag": "r",
-        "field": "state",
-        "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 662,
-          "End": 671
-        },
-        "sources": []
       }
     ],
-    "summary": "Applied fixes: 2 safe, 0 unsafe. Fixes available: 0 safe, 0 unsafe, 12 not auto-fixable.",
+    "summary": "Applied fixes: 2 safe, 0 unsafe. Fixes available: 0 safe, 0 unsafe, 8 not auto-fixable.",
     "output_sha256": "0b9cfc6ed431341aba4ed5db0bedef5bda80ba12af1bc0bcc827e57845fd7805",
     "changed": true
   }

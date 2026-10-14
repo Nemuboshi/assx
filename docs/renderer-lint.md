@@ -39,10 +39,17 @@ list to legalize VSFilterMod-only shapes.
   as the **actual matched command**: `\\fsvp6` is an invalid `\\fs` argument
   in the traditional profiles, while it resolves to `\\fsvp` in enabled
   VSFilterMod builds.
-- **ASS031** is reserved for genuinely new per-profile uncertainty: disabled
-  or build-conditional dispatch, a matched but unmodeled command, inferred
-  signatures, and malformed/unresolved invocation shapes. It is not a
-  cross-renderer incompatibility finding.
+- **ASS031** covers two observation classes. Renderer-scoped validation uses it
+  for per-profile uncertainty: disabled or build-conditional dispatch, a
+  matched but unmodeled command, inferred signatures, and malformed/unresolved
+  invocation shapes. The compatibility APIs use it for unresolved or ignored
+  cross-renderer observations, including tracked-state agreement that the
+  shared proof gate cannot verify, and Style field value conversion. Verified
+  equal tracked state reports `equivalent` and emits no finding. Neither class
+  asserts a proven incompatibility; **ASS003** reports those. Style field
+  conversion evidence is recorded separately in
+  [the Style field matrix](ass-style-fields.xml). That matrix names each
+  conversion; it does not by itself resolve the observation.
 - VSFilterMod's verified three-argument `\\pos` is allowed only in a build
   whose extension is enabled. Unknown build capabilities remain unresolved.
   First-wins effects and reset/style provenance are produced by the P05

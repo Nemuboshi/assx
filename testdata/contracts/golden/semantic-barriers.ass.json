@@ -3718,63 +3718,6 @@
         "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
         "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
         "line": 15,
-        "column": 52,
-        "tag": "fs",
-        "field": "state",
-        "detail": "unresolved: libass: fontsize=20:20, active Style \"Default\"; xy-VSFilter: fontsize=20:20, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 424,
-          "End": 429
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 15,
-        "column": 57,
-        "tag": "fs",
-        "field": "state",
-        "detail": "unresolved: libass: fontsize=21:21, active Style \"Default\"; xy-VSFilter: fontsize=21:21, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 429,
-          "End": 434
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 15,
-        "column": 62,
-        "tag": "clip",
-        "field": "state",
-        "detail": "unresolved: libass: clip_rect=clip:0:0,0:0,10:10,10:10, active Style \"Default\"; xy-VSFilter: clip_rect=clip:0:0,0:0,10:10,10:10, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 434,
-          "End": 450
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 15,
         "column": 78,
         "tag": "clip",
         "field": "arguments",
@@ -3891,44 +3834,6 @@
         "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
         "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
         "line": 16,
-        "column": 52,
-        "tag": "fs",
-        "field": "state",
-        "detail": "unresolved: libass: fontsize=21:21, active Style \"Default\"; xy-VSFilter: fontsize=21:21, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 516,
-          "End": 521
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 16,
-        "column": 57,
-        "tag": "fs",
-        "field": "state",
-        "detail": "unresolved: libass: fontsize=20:20, active Style \"Default\"; xy-VSFilter: fontsize=20:20, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 521,
-          "End": 526
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 16,
         "column": 62,
         "tag": "u",
         "field": "application",
@@ -3958,25 +3863,6 @@
         "source_span": {
           "Start": 526,
           "End": 537
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 16,
-        "column": 73,
-        "tag": "fs",
-        "field": "state",
-        "detail": "unresolved: libass: fontsize=20:20, active Style \"Default\"; xy-VSFilter: fontsize=20:20, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 537,
-          "End": 542
         },
         "sources": []
       },
@@ -4064,25 +3950,6 @@
         "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
         "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
         "line": 17,
-        "column": 61,
-        "tag": "fs",
-        "field": "state",
-        "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 605,
-          "End": 610
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 17,
         "column": 66,
         "tag": "t",
         "field": "application",
@@ -4112,25 +3979,6 @@
         "source_span": {
           "Start": 610,
           "End": 626
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 17,
-        "column": 75,
-        "tag": "frz",
-        "field": "state",
-        "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 619,
-          "End": 625
         },
         "sources": []
       },
@@ -4216,44 +4064,6 @@
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 17,
-        "column": 96,
-        "tag": "p",
-        "field": "state",
-        "detail": "unresolved: libass: drawing_scale=1, active Style \"Default\"; xy-VSFilter: drawing_scale=1, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 640,
-          "End": 643
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 17,
-        "column": 119,
-        "tag": "p",
-        "field": "state",
-        "detail": "unresolved: libass: drawing_scale=0, active Style \"Default\"; xy-VSFilter: drawing_scale=0, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 663,
-          "End": 666
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
         "id": "ASS017",
         "severity": "warning",
         "title": "Undefined style reference",
@@ -4305,47 +4115,9 @@
           "End": 728
         },
         "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 18,
-        "column": 57,
-        "tag": "fn",
-        "field": "state",
-        "detail": "unresolved: libass: fontname=Go Regular, active Style \"Missing\"; xy-VSFilter: fontname=Go Regular, active Style \"Missing\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 728,
-          "End": 741
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 18,
-        "column": 70,
-        "tag": "fn",
-        "field": "state",
-        "detail": "unresolved: libass: fontname=Go Regular, active Style \"Missing\"; xy-VSFilter: fontname=Go Regular, active Style \"Missing\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 741,
-          "End": 754
-        },
-        "sources": []
       }
     ],
-    "summary": "Fixes available: 0 safe, 0 unsafe, 39 not auto-fixable.",
+    "summary": "Fixes available: 0 safe, 0 unsafe, 27 not auto-fixable.",
     "output_sha256": "a662872335aa7826b8c31db3214c17d7f38fbc6ae0235294528c9cbc7c85fd91",
     "changed": false
   },
@@ -4483,63 +4255,6 @@
         "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
         "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
         "line": 15,
-        "column": 52,
-        "tag": "fs",
-        "field": "state",
-        "detail": "unresolved: libass: fontsize=20:20, active Style \"Default\"; xy-VSFilter: fontsize=20:20, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 424,
-          "End": 429
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 15,
-        "column": 57,
-        "tag": "fs",
-        "field": "state",
-        "detail": "unresolved: libass: fontsize=21:21, active Style \"Default\"; xy-VSFilter: fontsize=21:21, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 429,
-          "End": 434
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 15,
-        "column": 62,
-        "tag": "clip",
-        "field": "state",
-        "detail": "unresolved: libass: clip_rect=clip:0:0,0:0,10:10,10:10, active Style \"Default\"; xy-VSFilter: clip_rect=clip:0:0,0:0,10:10,10:10, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 434,
-          "End": 450
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 15,
         "column": 78,
         "tag": "clip",
         "field": "arguments",
@@ -4656,44 +4371,6 @@
         "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
         "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
         "line": 16,
-        "column": 52,
-        "tag": "fs",
-        "field": "state",
-        "detail": "unresolved: libass: fontsize=21:21, active Style \"Default\"; xy-VSFilter: fontsize=21:21, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 516,
-          "End": 521
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 16,
-        "column": 57,
-        "tag": "fs",
-        "field": "state",
-        "detail": "unresolved: libass: fontsize=20:20, active Style \"Default\"; xy-VSFilter: fontsize=20:20, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 521,
-          "End": 526
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 16,
         "column": 62,
         "tag": "u",
         "field": "application",
@@ -4723,25 +4400,6 @@
         "source_span": {
           "Start": 526,
           "End": 537
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 16,
-        "column": 73,
-        "tag": "fs",
-        "field": "state",
-        "detail": "unresolved: libass: fontsize=20:20, active Style \"Default\"; xy-VSFilter: fontsize=20:20, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 537,
-          "End": 542
         },
         "sources": []
       },
@@ -4829,25 +4487,6 @@
         "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
         "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
         "line": 17,
-        "column": 61,
-        "tag": "fs",
-        "field": "state",
-        "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 605,
-          "End": 610
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 17,
         "column": 66,
         "tag": "t",
         "field": "application",
@@ -4877,25 +4516,6 @@
         "source_span": {
           "Start": 610,
           "End": 626
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 17,
-        "column": 75,
-        "tag": "frz",
-        "field": "state",
-        "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 619,
-          "End": 625
         },
         "sources": []
       },
@@ -4981,44 +4601,6 @@
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 17,
-        "column": 96,
-        "tag": "p",
-        "field": "state",
-        "detail": "unresolved: libass: drawing_scale=1, active Style \"Default\"; xy-VSFilter: drawing_scale=1, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 640,
-          "End": 643
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 17,
-        "column": 119,
-        "tag": "p",
-        "field": "state",
-        "detail": "unresolved: libass: drawing_scale=0, active Style \"Default\"; xy-VSFilter: drawing_scale=0, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 663,
-          "End": 666
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
         "id": "ASS017",
         "severity": "warning",
         "title": "Undefined style reference",
@@ -5070,47 +4652,9 @@
           "End": 728
         },
         "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 18,
-        "column": 57,
-        "tag": "fn",
-        "field": "state",
-        "detail": "unresolved: libass: fontname=Go Regular, active Style \"Missing\"; xy-VSFilter: fontname=Go Regular, active Style \"Missing\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 728,
-          "End": 741
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 18,
-        "column": 70,
-        "tag": "fn",
-        "field": "state",
-        "detail": "unresolved: libass: fontname=Go Regular, active Style \"Missing\"; xy-VSFilter: fontname=Go Regular, active Style \"Missing\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 741,
-          "End": 754
-        },
-        "sources": []
       }
     ],
-    "summary": "Fixes available: 0 safe, 0 unsafe, 39 not auto-fixable.",
+    "summary": "Fixes available: 0 safe, 0 unsafe, 27 not auto-fixable.",
     "output_sha256": "a662872335aa7826b8c31db3214c17d7f38fbc6ae0235294528c9cbc7c85fd91",
     "changed": false
   },
@@ -5248,63 +4792,6 @@
         "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
         "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
         "line": 15,
-        "column": 52,
-        "tag": "fs",
-        "field": "state",
-        "detail": "unresolved: libass: fontsize=20:20, active Style \"Default\"; xy-VSFilter: fontsize=20:20, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 424,
-          "End": 429
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 15,
-        "column": 57,
-        "tag": "fs",
-        "field": "state",
-        "detail": "unresolved: libass: fontsize=21:21, active Style \"Default\"; xy-VSFilter: fontsize=21:21, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 429,
-          "End": 434
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 15,
-        "column": 62,
-        "tag": "clip",
-        "field": "state",
-        "detail": "unresolved: libass: clip_rect=clip:0:0,0:0,10:10,10:10, active Style \"Default\"; xy-VSFilter: clip_rect=clip:0:0,0:0,10:10,10:10, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 434,
-          "End": 450
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 15,
         "column": 78,
         "tag": "clip",
         "field": "arguments",
@@ -5421,44 +4908,6 @@
         "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
         "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
         "line": 16,
-        "column": 52,
-        "tag": "fs",
-        "field": "state",
-        "detail": "unresolved: libass: fontsize=21:21, active Style \"Default\"; xy-VSFilter: fontsize=21:21, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 516,
-          "End": 521
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 16,
-        "column": 57,
-        "tag": "fs",
-        "field": "state",
-        "detail": "unresolved: libass: fontsize=20:20, active Style \"Default\"; xy-VSFilter: fontsize=20:20, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 521,
-          "End": 526
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 16,
         "column": 62,
         "tag": "u",
         "field": "application",
@@ -5488,25 +4937,6 @@
         "source_span": {
           "Start": 526,
           "End": 537
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 16,
-        "column": 73,
-        "tag": "fs",
-        "field": "state",
-        "detail": "unresolved: libass: fontsize=20:20, active Style \"Default\"; xy-VSFilter: fontsize=20:20, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 537,
-          "End": 542
         },
         "sources": []
       },
@@ -5594,25 +5024,6 @@
         "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
         "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
         "line": 17,
-        "column": 61,
-        "tag": "fs",
-        "field": "state",
-        "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 605,
-          "End": 610
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 17,
         "column": 66,
         "tag": "t",
         "field": "application",
@@ -5642,25 +5053,6 @@
         "source_span": {
           "Start": 610,
           "End": 626
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 17,
-        "column": 75,
-        "tag": "frz",
-        "field": "state",
-        "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 619,
-          "End": 625
         },
         "sources": []
       },
@@ -5746,44 +5138,6 @@
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 17,
-        "column": 96,
-        "tag": "p",
-        "field": "state",
-        "detail": "unresolved: libass: drawing_scale=1, active Style \"Default\"; xy-VSFilter: drawing_scale=1, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 640,
-          "End": 643
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 17,
-        "column": 119,
-        "tag": "p",
-        "field": "state",
-        "detail": "unresolved: libass: drawing_scale=0, active Style \"Default\"; xy-VSFilter: drawing_scale=0, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 663,
-          "End": 666
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
         "id": "ASS017",
         "severity": "warning",
         "title": "Undefined style reference",
@@ -5835,47 +5189,9 @@
           "End": 728
         },
         "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 18,
-        "column": 57,
-        "tag": "fn",
-        "field": "state",
-        "detail": "unresolved: libass: fontname=Go Regular, active Style \"Missing\"; xy-VSFilter: fontname=Go Regular, active Style \"Missing\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 728,
-          "End": 741
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 18,
-        "column": 70,
-        "tag": "fn",
-        "field": "state",
-        "detail": "unresolved: libass: fontname=Go Regular, active Style \"Missing\"; xy-VSFilter: fontname=Go Regular, active Style \"Missing\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 741,
-          "End": 754
-        },
-        "sources": []
       }
     ],
-    "summary": "Fixes available: 0 safe, 0 unsafe, 39 not auto-fixable.",
+    "summary": "Fixes available: 0 safe, 0 unsafe, 27 not auto-fixable.",
     "output_sha256": "a662872335aa7826b8c31db3214c17d7f38fbc6ae0235294528c9cbc7c85fd91",
     "changed": false
   },
@@ -6013,63 +5329,6 @@
         "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
         "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
         "line": 15,
-        "column": 52,
-        "tag": "fs",
-        "field": "state",
-        "detail": "unresolved: libass: fontsize=20:20, active Style \"Default\"; xy-VSFilter: fontsize=20:20, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 424,
-          "End": 429
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 15,
-        "column": 57,
-        "tag": "fs",
-        "field": "state",
-        "detail": "unresolved: libass: fontsize=21:21, active Style \"Default\"; xy-VSFilter: fontsize=21:21, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 429,
-          "End": 434
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 15,
-        "column": 62,
-        "tag": "clip",
-        "field": "state",
-        "detail": "unresolved: libass: clip_rect=clip:0:0,0:0,10:10,10:10, active Style \"Default\"; xy-VSFilter: clip_rect=clip:0:0,0:0,10:10,10:10, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 434,
-          "End": 450
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 15,
         "column": 78,
         "tag": "clip",
         "field": "arguments",
@@ -6186,44 +5445,6 @@
         "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
         "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
         "line": 16,
-        "column": 52,
-        "tag": "fs",
-        "field": "state",
-        "detail": "unresolved: libass: fontsize=21:21, active Style \"Default\"; xy-VSFilter: fontsize=21:21, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 516,
-          "End": 521
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 16,
-        "column": 57,
-        "tag": "fs",
-        "field": "state",
-        "detail": "unresolved: libass: fontsize=20:20, active Style \"Default\"; xy-VSFilter: fontsize=20:20, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 521,
-          "End": 526
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 16,
         "column": 62,
         "tag": "u",
         "field": "application",
@@ -6253,25 +5474,6 @@
         "source_span": {
           "Start": 526,
           "End": 537
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 16,
-        "column": 73,
-        "tag": "fs",
-        "field": "state",
-        "detail": "unresolved: libass: fontsize=20:20, active Style \"Default\"; xy-VSFilter: fontsize=20:20, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 537,
-          "End": 542
         },
         "sources": []
       },
@@ -6359,25 +5561,6 @@
         "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
         "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
         "line": 17,
-        "column": 61,
-        "tag": "fs",
-        "field": "state",
-        "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 605,
-          "End": 610
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 17,
         "column": 66,
         "tag": "t",
         "field": "application",
@@ -6407,25 +5590,6 @@
         "source_span": {
           "Start": 610,
           "End": 626
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 17,
-        "column": 75,
-        "tag": "frz",
-        "field": "state",
-        "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 619,
-          "End": 625
         },
         "sources": []
       },
@@ -6511,44 +5675,6 @@
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 17,
-        "column": 96,
-        "tag": "p",
-        "field": "state",
-        "detail": "unresolved: libass: drawing_scale=1, active Style \"Default\"; xy-VSFilter: drawing_scale=1, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 640,
-          "End": 643
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 17,
-        "column": 119,
-        "tag": "p",
-        "field": "state",
-        "detail": "unresolved: libass: drawing_scale=0, active Style \"Default\"; xy-VSFilter: drawing_scale=0, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 663,
-          "End": 666
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
         "id": "ASS017",
         "severity": "warning",
         "title": "Undefined style reference",
@@ -6600,47 +5726,9 @@
           "End": 728
         },
         "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 18,
-        "column": 57,
-        "tag": "fn",
-        "field": "state",
-        "detail": "unresolved: libass: fontname=Go Regular, active Style \"Missing\"; xy-VSFilter: fontname=Go Regular, active Style \"Missing\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 728,
-          "End": 741
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 18,
-        "column": 70,
-        "tag": "fn",
-        "field": "state",
-        "detail": "unresolved: libass: fontname=Go Regular, active Style \"Missing\"; xy-VSFilter: fontname=Go Regular, active Style \"Missing\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 741,
-          "End": 754
-        },
-        "sources": []
       }
     ],
-    "summary": "Fixes available: 0 safe, 0 unsafe, 39 not auto-fixable.",
+    "summary": "Fixes available: 0 safe, 0 unsafe, 27 not auto-fixable.",
     "output_sha256": "a662872335aa7826b8c31db3214c17d7f38fbc6ae0235294528c9cbc7c85fd91",
     "changed": false
   }
