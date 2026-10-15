@@ -25,7 +25,8 @@
   valid. It does not check cross-renderer equivalence of the stored form. A user
   cannot easily make Style rows renderer-identical by hand, so Style values need
   no deeper investigation than the tag matrix gives override tags. The linter
-  checks that a colour is hexadecimal RGB and that Alignment is 1 to 9. The
+  checks that a colour has a valid digit in its selected base and that Alignment
+  is 1 to 9. The
   notes below record the conversion; they do not require an equivalence check.
 
   A row records the conversion. It does not resolve a renderer difference that
@@ -117,8 +118,10 @@
     <conv renderer="xy" parse="vsfilter-color" post="none" verified="xy" cite="xy:src/subtitles/STS.cpp:1510,1535"/>
     <conv renderer="vsm" parse="vsfilter-color" post="none" verified="vsm" cite="vsm:src/subtitles/STS.cpp:1864,1892-1896"/>
     <note>
-      assx checks only that the value is a valid hexadecimal RGB colour. It does
-      not check cross-renderer equivalence of the stored form. libass byte-swaps
+      assx checks only that the value has a valid digit in its selected base (hex
+      after &amp;H or 0x, else decimal). The ASS convention writes a colour as
+      &amp;HAABBGGRR&amp; hex. assx does not check cross-renderer equivalence of
+      the stored form. libass byte-swaps
       at parse (parse_color_header, ass.c:338-342) and reads channels with the
       _r/_g/_b/_a macros (ass_parse.h:26-29). xy stores the integer as a
       COLORREF and reverses red and blue at use (RTS.cpp:59-62,1278-1328). The

@@ -162,7 +162,8 @@ This matrix records the conversion. For Style fields assx checks only that a
 value is valid. It does not check cross-renderer equivalence of the stored form.
 A user cannot easily make Style rows renderer-identical by hand, so Style values
 need no deeper investigation than the tag matrix gives override tags. The linter
-checks that a colour is hexadecimal RGB and that ASS v4+ `Alignment` is 1 to 9.
+checks that a colour has a valid digit in its selected base and that ASS v4+
+`Alignment` is 1 to 9.
 
 A Style row is not reported only because its value conversion is unresolved. The
 conversion is evidence for a future value-level check, not a per-line warning.
@@ -174,8 +175,8 @@ above.
 The matrix records these limits as deliberate decisions:
 
 - Colour byte order was not followed to the drawn pixel. libass byte-swaps at
-  parse; xy-VSFilter reverses red and blue at use. Only the valid hexadecimal
-  RGB form is checked. Equivalence is out of scope.
+  parse; xy-VSFilter reverses red and blue at use. Only the valid digit in the
+  selected base is checked. Equivalence is out of scope.
 - `Alignment` is checked as a numpad value in 1 to 9. The same derivations were
   shown to agree for values 1 to 9. Values 0, values above 9 and negative values
   are reported as invalid, not compared.
