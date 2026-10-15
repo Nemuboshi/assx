@@ -32,6 +32,7 @@ const (
 	IssueEffectField             = "ASS029"
 	IssueKaraoke                 = "ASS030"
 	IssueRendererUnresolved      = "ASS031"
+	IssueStyleAlignment          = "ASS032"
 )
 
 type Severity string
@@ -183,6 +184,12 @@ var Rules = map[string]Rule{
 		Description: "A Style colour field has no valid leading digit for its base. libass silently uses opaque black, while VSFilter rejects the line and may reload the file with another subtitle parser.",
 		Fix:         "Write the colour as &HAABBGGRR& hexadecimal digits.",
 		Sources:     []string{"https://github.com/libass/libass/blob/f61db56/libass/ass.c#L338-L342", "https://github.com/libass/libass/blob/f61db56/libass/ass.c#L292-L321", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L1237-L1252", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L1553-L1557", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L2775-L2790"},
+	},
+	IssueStyleAlignment: {
+		ID: IssueStyleAlignment, Severity: Warning, Title: "Style Alignment is outside 1 to 9",
+		Description: "The ASS Alignment style field is a numpad value. The supported renderers place text for values 1 to 9. A value outside this range is not a valid numpad alignment.",
+		Fix:         "Use an Alignment value in the range 1 to 9.",
+		Sources:     []string{"https://github.com/libass/libass/blob/f61db56/libass/ass.c#L712", "https://github.com/libass/libass/blob/f61db56/libass/ass_utils.h#L142-L158", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L3264-L3268"},
 	},
 	IssueKeywordCase: {
 		ID: IssueKeywordCase, Severity: Warning, Title: "Keyword case is libass-incompatible",

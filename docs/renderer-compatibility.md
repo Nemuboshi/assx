@@ -142,7 +142,6 @@ evaluator and cannot authorize Style or pixel equivalence. This boundary avoids
 duplicating a complete renderer document loader during P07.
 
 ## Style field conversion evidence
-## Style field conversion evidence
 
 [docs/ass-style-fields.xml](ass-style-fields.xml) records the raw-text-to-value
 conversion of each Style field for each pinned renderer. It is separate from
@@ -159,24 +158,34 @@ Each row states a parse step and a post step. A cited row names the pinned line
 for its own renderer. A row without a citation must use `unmodeled` for both
 steps, so an unverified conversion cannot read as evidence.
 
-This matrix does not resolve the `document/style-values` observation by itself.
-It names the conversion. The comparison still needs a value-level equivalence
-relation, because the renderers store the same intent in different forms. For
-example, libass divides ScaleX by 100 at parse while xy-VSFilter stores percent
-and divides at use, and libass keeps BorderStyle raw while the VSFilter
-loaders map 1 to 0 and 3 to 1. Until that relation is defined, the observation
-stays `unresolved`.
+This matrix records the conversion. For Style fields assx checks only that a
+value is valid. It does not check cross-renderer equivalence of the stored form.
+A user cannot easily make Style rows renderer-identical by hand, so Style values
+need no deeper investigation than the tag matrix gives override tags. The linter
+checks that a colour is hexadecimal RGB and that ASS v4+ `Alignment` is 1 to 9.
 
-The matrix records these limits as open questions:
+A Style row is not reported only because its value conversion is unresolved. The
+conversion is evidence for a future value-level check, not a per-line warning.
+The earlier `document/style-values` observation emitted one unresolved finding
+for every Style row whenever two profiles were compared. That observation is
+removed: it carried no actionable detail and it duplicated the per-field checks
+above.
+
+The matrix records these limits as deliberate decisions:
 
 - Colour byte order was not followed to the drawn pixel. libass byte-swaps at
-  parse; xy-VSFilter reverses red and blue at use.
-- Alignment agreement was shown for values 1 to 9 only. Values 0, values above
-  9 and negative values are unverified.
+  parse; xy-VSFilter reverses red and blue at use. Only the valid hexadecimal
+  RGB form is checked. Equivalence is out of scope.
+- `Alignment` is checked as a numpad value in 1 to 9. The same derivations were
+  shown to agree for values 1 to 9. Values 0, values above 9 and negative values
+  are reported as invalid, not compared.
+- `BorderStyle` is deferred. assx does not check it yet.
 - The VSFilterMod `Spacing` clamp is build-conditional (`_VSMOD`, patch f002).
-  An unknown build cannot resolve that field.
+  A mod-build-version question cannot be resolved from the pinned source alone,
+  so this field is ignored and documented, not checked.
 - `Justify` has a libass parse site but no pinned reader for the stored value,
-  and no field in either VSFilter loader.
+  and no field in either VSFilter loader. It is retained and documented, not
+  treated as an issue.
 
 ## Validation
 

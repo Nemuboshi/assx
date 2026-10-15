@@ -62,7 +62,7 @@ func TestRunSafeFixAndConciseSummary(t *testing.T) {
 	if !strings.Contains(string(fixed), "Style: Default, 12.75\n") || !strings.Contains(string(fixed), `{\fs20}text`) {
 		t.Fatalf("safe edits not applied:\n%s", fixed)
 	}
-	if !strings.Contains(stdout.String(), "Applied fixes: 1 safe, 0 unsafe.") || !strings.Contains(stdout.String(), "Fixes available: 0 safe, 0 unsafe, 4 not auto-fixable.") {
+	if !strings.Contains(stdout.String(), "Applied fixes: 1 safe, 0 unsafe.") || !strings.Contains(stdout.String(), "Fixes available: 0 safe, 0 unsafe, 3 not auto-fixable.") {
 		t.Fatalf("summary = %q", stdout.String())
 	}
 	if strings.Contains(stdout.String(), "Overwritten before") {
@@ -144,7 +144,7 @@ func TestRunUnsafeFixIsOptInAndPreservesExitStatus(t *testing.T) {
 		t.Fatalf("lint run returned %d: %s", code, stderr.String())
 	}
 	before, _ := os.ReadFile(path)
-	if string(before) != input || !strings.Contains(stdout.String(), "Fixes available: 0 safe, 2 unsafe, 3 not auto-fixable.") {
+	if string(before) != input || !strings.Contains(stdout.String(), "Fixes available: 0 safe, 2 unsafe, 2 not auto-fixable.") {
 		t.Fatalf("default run changed file or summary: %q / %q", before, stdout.String())
 	}
 	stdout.Reset()

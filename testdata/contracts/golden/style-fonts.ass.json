@@ -1903,24 +1903,6 @@
       },
       {
         "file": "style-fonts.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 11,
-        "column": 1,
-        "field": "document/style-values",
-        "detail": "unresolved: Style field layout is compared independently; renderer-specific value conversion and fallback compatibility remain unresolved.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 208,
-          "End": 247
-        },
-        "sources": []
-      },
-      {
-        "file": "style-fonts.ass",
         "id": "ASS003",
         "severity": "warning",
         "title": "Renderer behavior differs",
@@ -1939,24 +1921,6 @@
           "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
           "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
         ]
-      },
-      {
-        "file": "style-fonts.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 12,
-        "column": 1,
-        "field": "document/style-values",
-        "detail": "unresolved: Style field layout is compared independently; renderer-specific value conversion and fallback compatibility remain unresolved.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 248,
-          "End": 283
-        },
-        "sources": []
       },
       {
         "file": "style-fonts.ass",
@@ -2753,7 +2717,7 @@
         ]
       }
     ],
-    "summary": "Fixes available: 2 safe, 0 unsafe, 8 not auto-fixable.",
+    "summary": "Fixes available: 2 safe, 0 unsafe, 6 not auto-fixable.",
     "output_sha256": "7c5425d6cf69b7215c1b6e258ee742a0d9d2a04b735613d6feb14b3356607dfa",
     "changed": false
   },
@@ -2783,24 +2747,6 @@
       },
       {
         "file": "style-fonts.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 11,
-        "column": 1,
-        "field": "document/style-values",
-        "detail": "unresolved: Style field layout is compared independently; renderer-specific value conversion and fallback compatibility remain unresolved.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 208,
-          "End": 247
-        },
-        "sources": []
-      },
-      {
-        "file": "style-fonts.ass",
         "id": "ASS003",
         "severity": "warning",
         "title": "Renderer behavior differs",
@@ -2819,24 +2765,6 @@
           "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
           "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
         ]
-      },
-      {
-        "file": "style-fonts.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 12,
-        "column": 1,
-        "field": "document/style-values",
-        "detail": "unresolved: Style field layout is compared independently; renderer-specific value conversion and fallback compatibility remain unresolved.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 248,
-          "End": 283
-        },
-        "sources": []
       },
       {
         "file": "style-fonts.ass",
@@ -3646,7 +3574,7 @@
         ]
       }
     ],
-    "summary": "Fixes available: 2 safe, 0 unsafe, 9 not auto-fixable.",
+    "summary": "Fixes available: 2 safe, 0 unsafe, 7 not auto-fixable.",
     "output_sha256": "7c5425d6cf69b7215c1b6e258ee742a0d9d2a04b735613d6feb14b3356607dfa",
     "changed": false
   },
@@ -3676,24 +3604,6 @@
       },
       {
         "file": "style-fonts.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 11,
-        "column": 1,
-        "field": "document/style-values",
-        "detail": "unresolved: Style field layout is compared independently; renderer-specific value conversion and fallback compatibility remain unresolved.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 208,
-          "End": 247
-        },
-        "sources": []
-      },
-      {
-        "file": "style-fonts.ass",
         "id": "ASS003",
         "severity": "warning",
         "title": "Renderer behavior differs",
@@ -3712,24 +3622,6 @@
           "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
           "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
         ]
-      },
-      {
-        "file": "style-fonts.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 12,
-        "column": 1,
-        "field": "document/style-values",
-        "detail": "unresolved: Style field layout is compared independently; renderer-specific value conversion and fallback compatibility remain unresolved.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 248,
-          "End": 283
-        },
-        "sources": []
       },
       {
         "file": "style-fonts.ass",
@@ -3800,7 +3692,7 @@
         "sources": []
       }
     ],
-    "summary": "Applied fixes: 2 safe, 0 unsafe. Fixes available: 0 safe, 0 unsafe, 8 not auto-fixable.",
+    "summary": "Applied fixes: 2 safe, 0 unsafe. Fixes available: 0 safe, 0 unsafe, 6 not auto-fixable.",
     "output_sha256": "0b9cfc6ed431341aba4ed5db0bedef5bda80ba12af1bc0bcc827e57845fd7805",
     "changed": true
   },
@@ -3830,24 +3722,6 @@
       },
       {
         "file": "style-fonts.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 11,
-        "column": 1,
-        "field": "document/style-values",
-        "detail": "unresolved: Style field layout is compared independently; renderer-specific value conversion and fallback compatibility remain unresolved.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 208,
-          "End": 247
-        },
-        "sources": []
-      },
-      {
-        "file": "style-fonts.ass",
         "id": "ASS003",
         "severity": "warning",
         "title": "Renderer behavior differs",
@@ -3866,24 +3740,6 @@
           "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
           "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
         ]
-      },
-      {
-        "file": "style-fonts.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 12,
-        "column": 1,
-        "field": "document/style-values",
-        "detail": "unresolved: Style field layout is compared independently; renderer-specific value conversion and fallback compatibility remain unresolved.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 248,
-          "End": 283
-        },
-        "sources": []
       },
       {
         "file": "style-fonts.ass",
@@ -3954,7 +3810,7 @@
         "sources": []
       }
     ],
-    "summary": "Applied fixes: 2 safe, 0 unsafe. Fixes available: 0 safe, 0 unsafe, 8 not auto-fixable.",
+    "summary": "Applied fixes: 2 safe, 0 unsafe. Fixes available: 0 safe, 0 unsafe, 6 not auto-fixable.",
     "output_sha256": "0b9cfc6ed431341aba4ed5db0bedef5bda80ba12af1bc0bcc827e57845fd7805",
     "changed": true
   }

@@ -667,24 +667,6 @@
       },
       {
         "file": "ordinary.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 11,
-        "column": 1,
-        "field": "document/style-values",
-        "detail": "unresolved: Style field layout is compared independently; renderer-specific value conversion and fallback compatibility remain unresolved.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 208,
-          "End": 247
-        },
-        "sources": []
-      },
-      {
-        "file": "ordinary.ass",
         "id": "ASS003",
         "severity": "warning",
         "title": "Renderer behavior differs",
@@ -703,27 +685,9 @@
           "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
           "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
         ]
-      },
-      {
-        "file": "ordinary.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 12,
-        "column": 1,
-        "field": "document/style-values",
-        "detail": "unresolved: Style field layout is compared independently; renderer-specific value conversion and fallback compatibility remain unresolved.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 248,
-          "End": 283
-        },
-        "sources": []
       }
     ],
-    "summary": "Fixes available: 0 safe, 0 unsafe, 4 not auto-fixable.",
+    "summary": "Fixes available: 0 safe, 0 unsafe, 2 not auto-fixable.",
     "output_sha256": "ef3337daa78e9ec2ac533aaebccbe0b2373e1bcf867c505b501f8e703ef59a65",
     "changed": false
   },
@@ -753,24 +717,6 @@
       },
       {
         "file": "ordinary.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 11,
-        "column": 1,
-        "field": "document/style-values",
-        "detail": "unresolved: Style field layout is compared independently; renderer-specific value conversion and fallback compatibility remain unresolved.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 208,
-          "End": 247
-        },
-        "sources": []
-      },
-      {
-        "file": "ordinary.ass",
         "id": "ASS003",
         "severity": "warning",
         "title": "Renderer behavior differs",
@@ -789,27 +735,9 @@
           "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
           "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
         ]
-      },
-      {
-        "file": "ordinary.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 12,
-        "column": 1,
-        "field": "document/style-values",
-        "detail": "unresolved: Style field layout is compared independently; renderer-specific value conversion and fallback compatibility remain unresolved.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 248,
-          "End": 283
-        },
-        "sources": []
       }
     ],
-    "summary": "Fixes available: 0 safe, 0 unsafe, 4 not auto-fixable.",
+    "summary": "Fixes available: 0 safe, 0 unsafe, 2 not auto-fixable.",
     "output_sha256": "ef3337daa78e9ec2ac533aaebccbe0b2373e1bcf867c505b501f8e703ef59a65",
     "changed": false
   },
@@ -839,24 +767,6 @@
       },
       {
         "file": "ordinary.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 11,
-        "column": 1,
-        "field": "document/style-values",
-        "detail": "unresolved: Style field layout is compared independently; renderer-specific value conversion and fallback compatibility remain unresolved.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 208,
-          "End": 247
-        },
-        "sources": []
-      },
-      {
-        "file": "ordinary.ass",
         "id": "ASS003",
         "severity": "warning",
         "title": "Renderer behavior differs",
@@ -875,27 +785,9 @@
           "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
           "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
         ]
-      },
-      {
-        "file": "ordinary.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 12,
-        "column": 1,
-        "field": "document/style-values",
-        "detail": "unresolved: Style field layout is compared independently; renderer-specific value conversion and fallback compatibility remain unresolved.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 248,
-          "End": 283
-        },
-        "sources": []
       }
     ],
-    "summary": "Fixes available: 0 safe, 0 unsafe, 4 not auto-fixable.",
+    "summary": "Fixes available: 0 safe, 0 unsafe, 2 not auto-fixable.",
     "output_sha256": "ef3337daa78e9ec2ac533aaebccbe0b2373e1bcf867c505b501f8e703ef59a65",
     "changed": false
   },
@@ -925,24 +817,6 @@
       },
       {
         "file": "ordinary.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 11,
-        "column": 1,
-        "field": "document/style-values",
-        "detail": "unresolved: Style field layout is compared independently; renderer-specific value conversion and fallback compatibility remain unresolved.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 208,
-          "End": 247
-        },
-        "sources": []
-      },
-      {
-        "file": "ordinary.ass",
         "id": "ASS003",
         "severity": "warning",
         "title": "Renderer behavior differs",
@@ -961,27 +835,9 @@
           "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
           "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
         ]
-      },
-      {
-        "file": "ordinary.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 12,
-        "column": 1,
-        "field": "document/style-values",
-        "detail": "unresolved: Style field layout is compared independently; renderer-specific value conversion and fallback compatibility remain unresolved.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
-        "source_span": {
-          "Start": 248,
-          "End": 283
-        },
-        "sources": []
       }
     ],
-    "summary": "Fixes available: 0 safe, 0 unsafe, 4 not auto-fixable.",
+    "summary": "Fixes available: 0 safe, 0 unsafe, 2 not auto-fixable.",
     "output_sha256": "ef3337daa78e9ec2ac533aaebccbe0b2373e1bcf867c505b501f8e703ef59a65",
     "changed": false
   }

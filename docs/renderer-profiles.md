@@ -51,9 +51,12 @@ importantly, even a list consisting entirely of verified signatures is not
 proof that every accepted arity has been enumerated: scalar handlers can
 consume only their first value or default a missing one. The generated matrix
 therefore contains a separate, renderer-scoped **exhaustive** declaration with
-independent pinned-source citations. Both pos and move claim this proof for all three renderers.
-Three-coordinate pos remains gated on _VSMOD. move accepts only four or six
-non-empty arguments; eight arguments are rejected.
+independent pinned-source citations. pos, move, clip and iclip claim this proof
+for all three renderers. Three-coordinate pos remains gated on _VSMOD. move
+accepts only four or six non-empty arguments; eight arguments are rejected.
+clip and iclip accept 0, 1, 2 or 4 arguments; three or five arguments are
+rejected. Every pinned clip handler falls through those arities without touching
+the clipper, so a rejected clip arity is a no-op that keeps the previous clip.
 Without that declaration, unlisted forms remain SignatureUnknown, not
 SignatureRejected. The rejection algorithm additionally requires every
 build-applicable signature to be verified and no conditional signature to

@@ -935,7 +935,7 @@
   <!-- ===== clip family ===== -->
 
   <tag name="clip" status="V">
-    <params status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:729-747,213-227 xy:src/subtitles/RTS.cpp:2352-2384 vsm:src/subtitles/RTS.cpp:2953-3000">
+    <params status="V" verified="libass xy vsm" exhaustive="libass xy vsm" exhaustive-cite="libass:libass/ass_parse.c:53-60,213-227,729-747 xy:src/subtitles/RTS.cpp:2141,2352-2384 vsm:src/subtitles/RTS.cpp:2460,2953-3000" cite="libass:libass/ass_parse.c:729-747,213-227 xy:src/subtitles/RTS.cpp:2352-2384 vsm:src/subtitles/RTS.cpp:2953-3000">
       <sig n="4" form="paren" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:729-747,213-227 xy:src/subtitles/RTS.cpp:2352-2384 vsm:src/subtitles/RTS.cpp:2953-3000">
         <p i="1" name="x1" kind="coord" range="rectangle, no clamp; consumed as integers per coord-round scen"/>
         <p i="2" name="y1" kind="coord" range="top edge"/>
@@ -984,7 +984,7 @@
   </tag>
 
   <tag name="iclip" status="V">
-    <params status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:405-423,213-227 xy:src/subtitles/RTS.cpp:2353-2384 vsm:src/subtitles/RTS.cpp:2953-3000">
+    <params status="V" verified="libass xy vsm" exhaustive="libass xy vsm" exhaustive-cite="libass:libass/ass_parse.c:53-60,213-227,405-423 xy:src/subtitles/RTS.cpp:2141,2353-2384 vsm:src/subtitles/RTS.cpp:2460,2953-3000" cite="libass:libass/ass_parse.c:405-423,213-227 xy:src/subtitles/RTS.cpp:2353-2384 vsm:src/subtitles/RTS.cpp:2953-3000">
       <sig n="4" form="paren" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:405-423 xy:src/subtitles/RTS.cpp:2353-2384 vsm:src/subtitles/RTS.cpp:2953-3000">
         <p i="1" name="x1" kind="coord" range="inverted rectangle; same domains as \clip"/>
         <p i="2" name="y1" kind="coord" range="top edge"/>
