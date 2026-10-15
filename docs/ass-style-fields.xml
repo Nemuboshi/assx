@@ -21,6 +21,13 @@
   A value-dependent field can agree for one input and differ for another. The
   comparison therefore resolves per value, not per field.
 
+  Scope limit (assx decision): for Style fields assx checks only that a value is
+  valid. It does not check cross-renderer equivalence of the stored form. A user
+  cannot easily make Style rows renderer-identical by hand, so Style values need
+  no deeper investigation than the tag matrix gives override tags. The linter
+  checks that a colour is hexadecimal RGB and that Alignment is 1 to 9. The
+  notes below record the conversion; they do not require an equivalence check.
+
   A row records the conversion. It does not resolve a renderer difference that
   the conversion feeds. The note field states that limit.
 
@@ -110,12 +117,13 @@
     <conv renderer="xy" parse="vsfilter-color" post="none" verified="xy" cite="xy:src/subtitles/STS.cpp:1510,1535"/>
     <conv renderer="vsm" parse="vsfilter-color" post="none" verified="vsm" cite="vsm:src/subtitles/STS.cpp:1864,1892-1896"/>
     <note>
-      Both renderers read one integer. libass byte-swaps it at parse
-      (parse_color_header, ass.c:338-342) and reads channels with the
+      assx checks only that the value is a valid hexadecimal RGB colour. It does
+      not check cross-renderer equivalence of the stored form. libass byte-swaps
+      at parse (parse_color_header, ass.c:338-342) and reads channels with the
       _r/_g/_b/_a macros (ass_parse.h:26-29). xy stores the integer as a
-      COLORREF and reverses red and blue at use (RTS.cpp:59-62,1278-1328).
-      The two byte orders were not followed to the drawn pixel. The conversion
-      stays unresolved until that check is complete.
+      COLORREF and reverses red and blue at use (RTS.cpp:59-62,1278-1328). The
+      byte order was not followed to the drawn pixel, and that check is out of
+      scope by decision.
     </note>
   </stylefield>
 
@@ -123,7 +131,7 @@
     <conv renderer="libass" parse="libass-color" post="none" verified="libass" cite="libass:libass/ass.c:338-342,693"/>
     <conv renderer="xy" parse="vsfilter-color" post="none" verified="xy" cite="xy:src/subtitles/STS.cpp:1510,1535"/>
     <conv renderer="vsm" parse="vsfilter-color" post="none" verified="vsm" cite="vsm:src/subtitles/STS.cpp:1864,1892-1896"/>
-    <note>Same byte-order question as primarycolour.</note>
+    <note>Same valid-value rule as primarycolour. Byte-order equivalence is out of scope.</note>
   </stylefield>
 
   <stylefield name="outlinecolour" status="V" kind="hexcolor">
@@ -133,7 +141,7 @@
     <note>
       libass reads the SSA TertiaryColour name here (ass.c:694). In SSA, libass
       then overwrites OutlineColour from BackColour (ass.c:696-697). The v4+
-      path does not. Same byte-order question as primarycolour.
+      path does not. Byte-order equivalence is out of scope.
     </note>
   </stylefield>
 
@@ -141,7 +149,7 @@
     <conv renderer="libass" parse="libass-color" post="none" verified="libass" cite="libass:libass/ass.c:338-342,695"/>
     <conv renderer="xy" parse="vsfilter-color" post="none" verified="xy" cite="xy:src/subtitles/STS.cpp:1510,1535"/>
     <conv renderer="vsm" parse="vsfilter-color" post="none" verified="vsm" cite="vsm:src/subtitles/STS.cpp:1864,1892-1896"/>
-    <note>Same byte-order question as primarycolour.</note>
+    <note>Same valid-value rule as primarycolour. Byte-order equivalence is out of scope.</note>
   </stylefield>
 
   <!-- ===== boolean flags ===== -->
@@ -215,10 +223,11 @@
     <conv renderer="xy" parse="vsfilter-float" post="clamp0" verified="xy" cite="xy:src/subtitles/STS.cpp:1517,1538"/>
     <conv renderer="vsm" parse="vsfilter-float" post="clamp0" verified="vsm" cite="vsm:src/subtitles/STS.cpp:1871,1899-1901"/>
     <note>
-      The negative clamp is build-conditional in VSFilterMod. The clamp sits
-      inside #ifndef _VSMOD (patch f002, STS.cpp:1899-1901), so a _VSMOD build
-      keeps a negative spacing. An unknown VSFilterMod build cannot resolve this
-      field.
+      Ignored by decision. assx does not check this field. The negative clamp is
+      build-conditional in VSFilterMod. The clamp sits inside #ifndef _VSMOD
+      (patch f002, STS.cpp:1899-1901), so a _VSMOD build keeps a negative
+      spacing. A mod-build-version question cannot be resolved from the pinned
+      source alone, so this field stays unmodeled for VSFilterMod.
     </note>
   </stylefield>
 
@@ -250,11 +259,13 @@
     <conv renderer="xy" parse="vsfilter-int" post="borderstyle" verified="xy" cite="xy:src/subtitles/STS.cpp:1519,1540"/>
     <conv renderer="vsm" parse="vsfilter-int" post="borderstyle" verified="vsm" cite="vsm:src/subtitles/STS.cpp:1873,1903"/>
     <note>
-      libass keeps the raw integer and tests 3 for an opaque box and 4 for a
-      background box (ass_render.c:2467,3009). xy and VSFilterMod map 1 to 0
-      and 3 to 1, and map every other value to 0. Values 1 and 3 agree. Value 4
-      selects a background box in libass and a plain outline in xy. Value 2
-      selects an outline in both. The conversion is value-dependent.
+      Deferred by decision. assx does not check this field yet. libass keeps the
+      raw integer and tests 3 for an opaque box and 4 for a background box
+      (ass_render.c:2467,3009). xy and VSFilterMod map 1 to 0 and 3 to 1, and map
+      every other value to 0. Values 1 and 3 agree. Value 4 selects a background
+      box in libass and a plain outline in xy. Value 2 selects an outline in
+      both. The conversion is value-dependent. Any future check must decide the
+      accepted set from this note; the conversion is not equivalence-proven.
     </note>
   </stylefield>
 
@@ -263,12 +274,13 @@
     <conv renderer="xy" parse="vsfilter-align" post="none" verified="xy" cite="xy:src/subtitles/STS.cpp:1522 xy:src/subtitles/RTS.cpp:3264-3268"/>
     <conv renderer="vsm" parse="vsfilter-align" post="none" verified="vsm" cite="vsm:src/subtitles/STS.cpp:1876"/>
     <note>
-      libass maps the value to HALIGN|VALIGN with numpad2align at parse
-      (ass.c:712). xy and VSFilterMod keep the raw integer and derive the
-      position at use from val%3 and val&lt;=3 or val&lt;=6 (RTS.cpp:3264-3268).
-      The two derivations agree for values 1 to 9. They were not shown to agree
-      for 0, for values above 9, or for negative values. The conversion stays
-      unresolved until that check is complete.
+      assx checks only that the value is in 1 to 9. It does not check
+      cross-renderer equivalence. libass maps the value to HALIGN|VALIGN with
+      numpad2align at parse (ass.c:712). xy and VSFilterMod keep the raw integer
+      and derive the position at use from val%3 and val&lt;=3 or val&lt;=6
+      (RTS.cpp:3264-3268). The two derivations were shown to agree for values 1
+      to 9 only. Values 0, values above 9 and negative values are not accepted
+      by this check and were not investigated.
     </note>
   </stylefield>
 
@@ -337,9 +349,9 @@
     <conv renderer="xy" parse="unmodeled" post="unmodeled" verified="" cite=""/>
     <conv renderer="vsm" parse="unmodeled" post="unmodeled" verified="" cite=""/>
     <note>
-      libass parses Justify (ass.c:615) but no pinned reader was found for the
-      stored value. xy and VSFilterMod have no Justify field at all. The field
-      stays unmodeled.
+      Retained, not an issue. libass parses Justify (ass.c:615) but no pinned
+      reader was found for the stored value. xy and VSFilterMod have no Justify
+      field at all. The field stays unmodeled and assx reports nothing for it.
     </note>
   </stylefield>
 </matrix>

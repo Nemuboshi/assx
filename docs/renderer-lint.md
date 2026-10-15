@@ -44,12 +44,18 @@ list to legalize VSFilterMod-only shapes.
   matched but unmodeled command, inferred signatures, and malformed/unresolved
   invocation shapes. The compatibility APIs use it for unresolved or ignored
   cross-renderer observations, including tracked-state agreement that the
-  shared proof gate cannot verify, and Style field value conversion. Verified
+  shared proof gate cannot verify. Verified
   equal tracked state reports `equivalent` and emits no finding. Neither class
   asserts a proven incompatibility; **ASS003** reports those. Style field
   conversion evidence is recorded separately in
   [the Style field matrix](ass-style-fields.xml). That matrix names each
   conversion; it does not by itself resolve the observation.
+- Style value checks are separate from conversion evidence. **ASS011** reports a
+  fractional integer field, **ASS012** reports a float-precision difference, and
+  **ASS022** reports a malformed colour. **ASS032** reports an ASS v4+
+  `Alignment` value outside 1 to 9. ASS032 checks a valid value only; it does not
+  compare renderer byte order or alignment equivalence. Legacy SSA `Alignment`
+  uses a bitfield mapping and is not checked by ASS032.
 - VSFilterMod's verified three-argument `\\pos` is allowed only in a build
   whose extension is enabled. Unknown build capabilities remain unresolved.
   First-wins effects and reset/style provenance are produced by the P05

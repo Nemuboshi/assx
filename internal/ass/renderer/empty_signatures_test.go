@@ -127,14 +127,31 @@ func TestNonExhaustiveSignatureSetsCannotReject(t *testing.T) {
 
 // libass dispatches clip only at nargs 4 or 1/2 through parse_vector_clip,
 // xy/VSMatch on GetCount 1, 2, or 4, and every empty component is filtered
-// before dispatch. No pinned handler consumes zero or three clip arguments.
+// before dispatch. The bare name and an all-empty body therefore consume zero
+// arguments and keep the previous clipper (matrix sig n=0, empty-arg scen).
+// Three arguments reach no pinned handler, so that shape rejects.
 func TestExhaustiveClipShapesReject(t *testing.T) {
-	for _, raw := range []string{`\clip`, `\clip()`, `\clip(1,2,3)`} {
+	for _, raw := range []string{`\clip(1,2,3)`, `\iclip(1,2,3)`} {
 		expr, source := first(t, raw)
 		for _, profile := range profiles(t) {
 			got := profile.Resolve(expr, source)
 			if got.Status != Matched || got.Signature != SignatureRejected {
 				t.Errorf("%s: %q must reject: %+v", profile.Kind(), raw, got)
+			}
+		}
+	}
+}
+
+// The empty clip forms are source-proven in all three renderers: every pinned
+// splitter drops empty components before dispatch, so no arity branch runs and
+// the previous clipper stays active. They must not be reported as rejected.
+func TestEmptyClipFormsStayAccepted(t *testing.T) {
+	for _, raw := range []string{`\clip`, `\clip()`, `\iclip`, `\iclip()`} {
+		expr, source := first(t, raw)
+		for _, profile := range profiles(t) {
+			got := profile.Resolve(expr, source)
+			if got.Status != Matched || got.Signature == SignatureRejected {
+				t.Errorf("%s: %q must stay accepted: %+v", profile.Kind(), raw, got)
 			}
 		}
 	}

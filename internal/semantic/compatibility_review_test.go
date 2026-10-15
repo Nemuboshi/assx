@@ -90,12 +90,16 @@ func TestCompatibilityCoordinateConversionDomain(t *testing.T) {
 			t.Fatalf("%s: missing unresolved conversion", source)
 		}
 	}
+	// A five-argument clip is a proven-rejected no-op in every compared profile
+	// (the matrix declares clip arity completeness). It performs no coordinate
+	// conversion, so no rounding dimension appears, and the signature dimension
+	// reports the shared rejection instead of an unresolved arity.
 	for _, f := range CompareDialogue(ass.ParseConcreteDialogue(`{\clip(1.5,0,10,10,20)}A`), nil, EvaluationOptions{}) {
-		if f.Dimension == "signature" && f.Status != CompatibilityUnresolved {
-			t.Fatalf("unverified arity acquired proof: %#v", f)
+		if f.Dimension == "signature" && f.Status != CompatibilityIgnored {
+			t.Fatalf("proven-rejected arity must report a shared rejection: %#v", f)
 		}
-		if f.Dimension == "behavior/coord-round" && f.Status != CompatibilityUnresolved {
-			t.Fatalf("unverified arity acquired rounding proof: %#v", f)
+		if f.Dimension == "behavior/coord-round" {
+			t.Fatalf("a rejected arity must not reach the rounding conversion: %#v", f)
 		}
 	}
 }

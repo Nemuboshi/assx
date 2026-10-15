@@ -114,31 +114,37 @@ func TestMalformedKaraokeNumericPrefixIsNotKnownTiming(t *testing.T) {
 	})
 }
 
-// A malformed clip has no reliable rectangular/vector shape. Both effective
-// slots and their provenance must be invalidated, including across Style reset.
-func TestMalformedClipArityInvalidatesBothStateSlots(t *testing.T) {
+// A proven-rejected clip arity is a no-op in all three pinned renderers: every
+// handler falls through without touching the clipper. The prior effective clip
+// value and its source therefore survive. The event stays a malformed barrier,
+// which revokes SafeFix proofs without changing the semantic state.
+func TestRejectedClipArityPreservesPriorState(t *testing.T) {
 	cases := []struct {
 		name string
 		text string
 	}{
 		{"clip after rectangular clip", "{\\clip(0,0,10,10)\\clip(1,2,3)}A"},
-		{"iclip invalidates earlier clip", "{\\clip(0,0,10,10)\\iclip(1,2,3)}A"},
-		{"clip invalidates earlier iclip", "{\\iclip(0,0,10,10)\\clip(1,2,3)}A"},
-		{"unknown clip remains unknown after reset", "{\\clip(0,0,10,10)\\clip(1,2,3)\\r}A"},
+		{"iclip after rectangular clip", "{\\clip(0,0,10,10)\\iclip(1,2,3)}A"},
+		{"clip after rectangular iclip", "{\\iclip(0,0,10,10)\\clip(1,2,3)}A"},
+		{"rejected arity before reset", "{\\clip(0,0,10,10)\\clip(1,2,3)\\r}A"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			seenRect := false
 			seenMalformed := false
-			assertUnknown := func(label string, view StateView) {
+			assertPreserved := func(label string, view StateView) {
 				t.Helper()
-				for _, slot := range []string{"clip_rect", "clip_vector"} {
-					if value := view.Value(slot); value.Known {
-						t.Errorf("%s: %s retained known state: %#v", label, slot, value)
-					}
-					if source := view.Source(slot); source != -1 {
-						t.Errorf("%s: %s retained source tag %d", label, slot, source)
-					}
+				if value := view.Value("clip_rect"); !value.Known {
+					t.Errorf("%s: clip_rect lost its known value: %#v", label, value)
+				}
+				if source := view.Source("clip_rect"); source != 0 {
+					t.Errorf("%s: clip_rect source = %d, want 0", label, source)
+				}
+				if value := view.Value("clip_vector"); value.Known {
+					t.Errorf("%s: clip_vector gained a value: %#v", label, value)
+				}
+				if source := view.Source("clip_vector"); source != -1 {
+					t.Errorf("%s: clip_vector source = %d, want -1", label, source)
 				}
 			}
 			evaluateLibass(ass.ParseConcreteDialogue(tc.text), EvaluationOptions{
@@ -148,26 +154,23 @@ func TestMalformedClipArityInvalidatesBothStateSlots(t *testing.T) {
 							if value := state.Value("clip_rect"); !value.Known {
 								t.Errorf("initial rectangular clip was not known: %#v", value)
 							}
-							if source := state.Source("clip_rect"); source != 0 {
-								t.Errorf("initial rectangular source = %d, want 0", source)
-							}
 							seenRect = true
 						}
 						if event.Index == 1 {
 							if event.Uncertainty != UncertaintyMalformed || !event.Barrier {
-								t.Errorf("malformed clip outcome = %#v", event)
+								t.Errorf("rejected clip outcome = %#v", event)
 							}
-							assertUnknown("malformed clip tag", state)
+							assertPreserved("rejected clip tag", state)
 							seenMalformed = true
 						}
 					},
 					Text: func(_ string, _ int, state StateView) {
-						assertUnknown("visible text", state)
+						assertPreserved("visible text", state)
 					},
 				},
 			})
 			if !seenRect || !seenMalformed {
-				t.Fatalf("missing tag callbacks: rectangle=%v malformed=%v", seenRect, seenMalformed)
+				t.Fatalf("missing tag callbacks: rectangle=%v rejected=%v", seenRect, seenMalformed)
 			}
 		})
 	}

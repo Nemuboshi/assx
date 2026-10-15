@@ -148,11 +148,14 @@ func TestRendererScopedTransformAndStateProvenance(t *testing.T) {
 		Observer: Observer{
 			Tag: func(e TagEvent, state StateView) {
 				events = append(events, e)
-				if e.Index >= 1 {
-					for _, slot := range []string{"clip_rect", "clip_vector"} {
-						if state.Value(slot).Known || state.Source(slot) != -1 {
-							t.Errorf("stale clip value/source after event %d: %s", e.Index, slot)
-						}
+				if e.Index == 1 {
+					// The proven-rejected arity is a no-op: it keeps the previous
+					// rectangular clip and its source tag.
+					if value := state.Value("clip_rect"); !value.Known {
+						t.Errorf("rejected arity dropped the prior clip: %#v", value)
+					}
+					if source := state.Source("clip_rect"); source != 0 {
+						t.Errorf("rejected arity changed the clip source: %d", source)
 					}
 				}
 			},

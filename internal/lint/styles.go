@@ -42,8 +42,14 @@ func AnalyzeStyles(doc ass.Document) []Diagnostic {
 
 func analyzeStyles(doc ass.Document) []Diagnostic {
 	var out []Diagnostic
+	sections := styleSections(doc)
 	for _, field := range doc.StyleFields {
 		fieldName := field.StyleName + "." + field.Name
+		if field.Name == "alignment" && isASSStyleSection(sections[field.Line]) {
+			if alignmentOutsideNumpad(field.Value) {
+				out = append(out, styleDiagnostic(IssueStyleAlignment, field, fieldName, ""))
+			}
+		}
 		if integerStyleFields[field.Name] {
 			value := strings.TrimSpace(field.Value)
 			decoded := ass.DecodeInteger(value)
@@ -93,6 +99,34 @@ func analyzeStyles(doc ass.Document) []Diagnostic {
 		}
 	}
 	return out
+}
+
+// styleSections maps a physical line to its section, so a Style field can be
+// classified as ASS v4+ or legacy SSA. The two dialects differ on Alignment.
+func styleSections(doc ass.Document) map[int]string {
+	sections := make(map[int]string, len(doc.Lines))
+	for _, line := range doc.Lines {
+		sections[line.Line] = line.Section
+	}
+	return sections
+}
+
+// isASSStyleSection reports an ASS v4+ Style row. SSA Alignment uses a legacy
+// bitfield mapping, so the 1-to-9 numpad range does not apply to it.
+func isASSStyleSection(section string) bool {
+	return section == "v4+ styles" || section == "v4++ styles"
+}
+
+// alignmentOutsideNumpad reports a whole-integer value that no pinned renderer
+// maps to a numpad position. A fractional or malformed value is left to ASS011,
+// so the two rules do not both report the same field.
+func alignmentOutsideNumpad(value string) bool {
+	trimmed := strings.TrimSpace(value)
+	decoded := ass.DecodeInteger(trimmed)
+	if decoded.Status != ass.ValueValid || decoded.Consumed != len(trimmed) {
+		return false
+	}
+	return decoded.Integer < 1 || decoded.Integer > 9
 }
 
 func styleColourMalformed(value string) bool {

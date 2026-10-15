@@ -100,9 +100,6 @@ func CompareDocument(tree ass.ConcreteDocument, profiles []renderer.Profile) []C
 				}
 				left, right := &Interpretation{Profile: unique[i], Present: a.Known}, &Interpretation{Profile: unique[j], Present: b.Known}
 				out = append(out, CompatibilityFinding{Source: span, Dimension: "document/" + a.Kind + "-layout", Status: status, Left: left, Right: right, Detail: fmt.Sprintf("%s: %s; %s: %s.", unique[i].Kind(), layoutDescription(a), unique[j].Kind(), layoutDescription(b)), Citations: []string{a.Citation, b.Citation}})
-				if a.Kind == "style" {
-					out = append(out, CompatibilityFinding{Source: span, Dimension: "document/style-values", Status: CompatibilityUnresolved, Left: left, Right: right, Detail: "Style field layout is compared independently; renderer-specific value conversion and fallback compatibility remain unresolved."})
-				}
 			}
 		}
 	}
