@@ -56,6 +56,12 @@ list to legalize VSFilterMod-only shapes.
   `Alignment` value outside 1 to 9. ASS032 checks a valid value only; it does not
   compare renderer byte order or alignment equivalence. Legacy SSA `Alignment`
   uses a bitfield mapping and is not checked by ASS032.
+- **ASS033** reports verified BorderStyle 3 box-scaling differences.
+  **ASS034** reports the BorderStyle 4 mode difference.
+  They compare declared ASS v4+ Styles only when the relevant resolved fields agree.
+  Their conditions and limits are in [the rule catalog](rules.md).
+  Both use separate IDs, physical field spans, and selected renderer pairs.
+  Neither warning supplies edits or claims final pixel differences.
 - VSFilterMod's verified three-argument `\\pos` is allowed only in a build
   whose extension is enabled. Unknown build capabilities remain unresolved.
   First-wins effects and reset/style provenance are produced by the P05
@@ -76,7 +82,8 @@ SafeFix edits or an edit safety classification**, including on shared
 document checks and the existing ASS006/ASS013/font APIs. Target-configured analysis supplies fixes only after proving every requested profile.
 Application recomputes authorized edits with that same primary and compatibility policy. Differential compatibility is provided separately by the
 [P07 comparison APIs](renderer-compatibility.md). Those APIs use ASS003 for
-proven differences and ASS031 for unresolved compatibility observations;
+proven tag and layout differences, ASS033/ASS034 for the specific Style
+differences, and ASS031 for unresolved compatibility observations;
 invocation validity remains the responsibility of the APIs described here.
 
 ## Implementation record: P06

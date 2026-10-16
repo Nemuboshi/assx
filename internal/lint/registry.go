@@ -33,6 +33,8 @@ const (
 	IssueKaraoke                 = "ASS030"
 	IssueRendererUnresolved      = "ASS031"
 	IssueStyleAlignment          = "ASS032"
+	IssueStyleBoxGeometry        = "ASS033"
+	IssueStyleBorderMode         = "ASS034"
 )
 
 type Severity string
@@ -190,6 +192,18 @@ var Rules = map[string]Rule{
 		Description: "The ASS Alignment style field is a numpad value. The supported renderers place text for values 1 to 9. A value outside this range is not a valid numpad alignment.",
 		Fix:         "Use an Alignment value in the range 1 to 9.",
 		Sources:     []string{"https://github.com/libass/libass/blob/f61db56/libass/ass.c#L712", "https://github.com/libass/libass/blob/f61db56/libass/ass_utils.h#L142-L158", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L3264-L3268"},
+	},
+	IssueStyleBoxGeometry: {
+		ID: IssueStyleBoxGeometry, Severity: Warning, Title: "BorderStyle box scaling differs",
+		Description: "A BorderStyle 3 definition uses font scaling that can change box dimensions across the selected renderers.",
+		Fix:         "Check box dimensions in each selected renderer before changing the Style.",
+		Sources:     []string{"https://github.com/libass/libass/blob/f61db567e6593df3470e91594bcd4ad2d0473aff/libass/ass_render.c#L1433-L1451", "https://github.com/Masaiki/xy-VSFilter/blob/135a30153a38fa846cb5c39df0f258403e92096e/src/subtitles/RTS.cpp#L561-L578", "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L284-L287"},
+	},
+	IssueStyleBorderMode: {
+		ID: IssueStyleBorderMode, Severity: Warning, Title: "BorderStyle rendering mode differs",
+		Description: "BorderStyle 4 selects a whole-event background in libass and a normal glyph outline in xy-VSFilter and VSFilterMod.",
+		Fix:         "Choose the intended background or outline behavior and verify it in each selected renderer.",
+		Sources:     []string{"https://github.com/libass/libass/blob/f61db567e6593df3470e91594bcd4ad2d0473aff/libass/ass_render.c#L3009-L3010", "https://github.com/Masaiki/xy-VSFilter/blob/135a30153a38fa846cb5c39df0f258403e92096e/src/subtitles/STS.cpp#L1540", "https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/STS.cpp#L1903"},
 	},
 	IssueKeywordCase: {
 		ID: IssueKeywordCase, Severity: Warning, Title: "Keyword case is libass-incompatible",

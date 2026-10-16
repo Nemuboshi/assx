@@ -100,6 +100,7 @@ func CompareDocument(tree ass.ConcreteDocument, profiles []renderer.Profile) []C
 				}
 				left, right := &Interpretation{Profile: unique[i], Present: a.Known}, &Interpretation{Profile: unique[j], Present: b.Known}
 				out = append(out, CompatibilityFinding{Source: span, Dimension: "document/" + a.Kind + "-layout", Status: status, Left: left, Right: right, Detail: fmt.Sprintf("%s: %s; %s: %s.", unique[i].Kind(), layoutDescription(a), unique[j].Kind(), layoutDescription(b)), Citations: []string{a.Citation, b.Citation}})
+				out = append(out, compareStyleBorders(a, b, left, right)...)
 			}
 		}
 	}
