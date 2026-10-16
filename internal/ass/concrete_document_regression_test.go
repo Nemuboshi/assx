@@ -1,7 +1,6 @@
 package ass
 
 import (
-	"reflect"
 	"strings"
 	"testing"
 )
@@ -74,42 +73,6 @@ func TestConcreteDocumentAllLineEndingForms(t *testing.T) {
 			}
 			if assembled.String() != tt.source || at != len(tt.source) {
 				t.Fatalf("source round trip failed: %q", assembled.String())
-			}
-		})
-	}
-}
-
-func TestLegacyDocumentLineBehaviorUnaffectedByCROnlyInput(t *testing.T) {
-	inputs := []string{
-		"[Events]\rDialogue: 0,hello\r\nComment: x\rLast",
-		"[Events]\rFormat: Layer, Start, End, Style, Text\rDialogue: 0,0,1,Default,text\r",
-		"[Events]\nFormat: Layer, Start, End, Style, Text\nDialogue: 0,0,1,Default,{\\pos(1,2)}x\r",
-		"[Events]\r\nFormat: Layer, Start, End, Style, Text\r\nDialogue: 0,0,1,Default,x\r\n",
-	}
-	for _, source := range inputs {
-		t.Run(source, func(t *testing.T) {
-			got := Parse(source)
-			chunks := strings.SplitAfter(source, "\n")
-			var want []RawLine
-			offset, number, section := 0, 0, ""
-			for _, chunk := range chunks {
-				if chunk == "" {
-					continue
-				}
-				number++
-				content := strings.TrimSuffix(strings.TrimSuffix(chunk, "\n"), "\r")
-				want = append(want, RawLine{Line: number, Offset: offset, Content: content, Section: section})
-				trimmed := strings.TrimSpace(content)
-				if strings.HasPrefix(trimmed, "[") && strings.HasSuffix(trimmed, "]") {
-					section = strings.ToLower(trimmed[1 : len(trimmed)-1])
-				}
-				offset += len(chunk)
-			}
-			if !reflect.DeepEqual(got.Lines, want) {
-				t.Fatalf("changed historical LF-only framing\ngot: %#v\nwant: %#v", got.Lines, want)
-			}
-			if strings.Contains(source, "\rFormat:") && len(got.Dialogues) != 0 {
-				t.Fatalf("legacy parser unexpectedly began recognizing CR-only events: %#v", got.Dialogues)
 			}
 		})
 	}

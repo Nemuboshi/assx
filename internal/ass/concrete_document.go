@@ -106,7 +106,7 @@ func ParseConcreteDocument(source string) ConcreteDocument {
 	document := ConcreteDocument{Source: source}
 	section := ""
 	number := 0
-	walkConcreteLines(source, func(start, end, contentEnd int) {
+	walkPhysicalLines(source, func(start, end, contentEnd int) {
 		number++
 		line := ConcreteLine{
 			Number:      number,
@@ -146,37 +146,21 @@ func ParseConcreteDocument(source string) ConcreteDocument {
 	return document
 }
 
-// walkConcreteLines preserves all three physical newline spellings.
-// This is syntax framing only, independent of renderer field acceptance.
-func walkConcreteLines(source string, visit func(start, end, contentEnd int)) {
-	walkPhysicalLines(source, true, visit)
-}
-
-// walkLegacyLines keeps the historical LF-only splitting behavior of Parse:
-// bare CR inside an LF-delimited chunk is content, except for a CR directly
-// before LF or at EOF, which the old parser stripped from that chunk.
-// Separating this policy prevents a new CST capability from silently changing
-// existing default diagnostics, line numbers, or event interpretation.
-func walkLegacyLines(source string, visit func(start, end, contentEnd int)) {
-	walkPhysicalLines(source, false, visit)
-}
-
-// walkPhysicalLines is the common allocation-free scanner. start/end are
-// half-open decoded-source byte coordinates. end always advances; CRLF is one
-// terminator and no synthetic empty line follows a final terminator.
-func walkPhysicalLines(source string, standaloneCR bool, visit func(start, end, contentEnd int)) {
+// walkPhysicalLines preserves all three physical newline spellings. This is
+// syntax framing only, independent of renderer field acceptance.
+//
+// start/end are half-open decoded-source byte coordinates. end always
+// advances; CRLF is one terminator and no synthetic empty line follows a
+// final terminator.
+func walkPhysicalLines(source string, visit func(start, end, contentEnd int)) {
 	for start := 0; start < len(source); {
 		end := len(source)
-		if standaloneCR {
-			if separator := strings.IndexAny(source[start:], "\r\n"); separator >= 0 {
-				at := start + separator
-				end = at + 1
-				if source[at] == '\r' && end < len(source) && source[end] == '\n' {
-					end++
-				}
+		if separator := strings.IndexAny(source[start:], "\r\n"); separator >= 0 {
+			at := start + separator
+			end = at + 1
+			if source[at] == '\r' && end < len(source) && source[end] == '\n' {
+				end++
 			}
-		} else if newline := strings.IndexByte(source[start:], '\n'); newline >= 0 {
-			end = start + newline + 1
 		}
 		contentEnd := end
 		if source[contentEnd-1] == '\n' {

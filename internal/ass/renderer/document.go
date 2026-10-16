@@ -12,7 +12,7 @@ var assStyleColumns = strings.Fields("name fontname fontsize primarycolour secon
 
 // RecordLayout describes source partitioning, not field validity or rendering.
 // Unknown dialects retain their source with Known=false rather than borrowing
-// the legacy document parser's field interpretation.
+// the default document parser's field interpretation.
 type RecordLayout struct {
 	Line     int
 	Source   ass.ConcreteSpan

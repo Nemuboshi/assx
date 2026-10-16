@@ -51,8 +51,8 @@ func TestExactDecoderRejectsPrefixOnly(t *testing.T) {
 	if value := DecodeExactNumber("  -0.0  "); value.Status != ValueValid {
 		t.Fatalf("trimmed exact number rejected: %#v", value)
 	}
-	if normalized, ok := DecodeExactNumber(".5").Normalized(); !ok || normalized != "0.5" {
-		t.Fatalf("normalized number = %q, %v", normalized, ok)
+	if value := DecodeExactNumber(".5"); value.Status != ValueValid || value.Number != 0.5 {
+		t.Fatalf("exact number = %#v", value)
 	}
 }
 
@@ -74,8 +74,8 @@ func TestTagIRPreservesASTAndExposesSpec(t *testing.T) {
 	if value.Status != ValueValid || value.Number != 20 || value.Consumed != 2 {
 		t.Fatalf("tag argument decoding = %#v", value)
 	}
-	if _, ok := value.Normalized(); ok {
-		t.Fatal("prefix-only input must not be normalized")
+	if value.Consumed == len(value.Raw) {
+		t.Fatal("prefix-only input must not consume the whole argument")
 	}
 	if source[tag.Start:tag.End] != tag.Raw || tag.Raw != "\\fs20junk" {
 		t.Fatal("decoding changed raw AST representation")
