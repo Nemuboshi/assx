@@ -131,11 +131,12 @@ The renderer-aware migration freezes the original `main@6ba745336615f102d5de39f7
 - Raw benchstat input: [baseline-6ba7453-windows-amd64.txt](performance/baseline-6ba7453-windows-amd64.txt)
 - Environment: Windows/amd64, Go 1.27.0
 - Sample settings: `-benchmem -benchtime=250ms -count=5`
-- Historical samples use the legacy dialogue parser and default semantic adapter.
+- Historical samples use the initial dialogue parser and default semantic adapter.
 - P10 uses the concrete parser and profile engine; timed boundaries now follow the current table.
 - Detailed regression and evidence contract: [renderer-contracts.md](renderer-contracts.md)
 
-P10 removes the legacy parser and adds default compatibility comparison.
+P10 replaces the LF-only line scanner with the concrete parser and adds default
+compatibility comparison.
 The parent integration compares benchmark samples, runs lint and frame checks, and records the measured effect.
 No new performance result is claimed here.
 

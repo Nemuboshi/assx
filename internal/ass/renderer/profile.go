@@ -1,5 +1,5 @@
 // Package renderer resolves neutral ASS syntax against pinned implementations.
-// It does not mutate the syntax tree or the historical default parser.
+// It does not mutate the syntax tree or the default document parser.
 package renderer
 
 import (

@@ -33,27 +33,6 @@ type DecodedArgument struct {
 	Hex      uint32
 }
 
-// Normalized returns a canonical scalar spelling only for an unambiguous,
-// completely consumed value. Renderer-aware state canonicalization (including
-// float32 rounding and resets) belongs to the semantic layer.
-func (arg DecodedArgument) Normalized() (string, bool) {
-	if arg.Status != ValueValid || arg.Consumed != len(arg.Raw) {
-		return "", false
-	}
-	switch arg.Kind {
-	case spec.IntegerValue, spec.BoldValue:
-		return strconv.FormatInt(arg.Integer, 10), true
-	case spec.NumberValue:
-		return strconv.FormatFloat(arg.Number, 'g', -1, 64), true
-	case spec.HexValue:
-		return strconv.FormatUint(uint64(arg.Hex), 16), true
-	case spec.FontNameValue:
-		return arg.Raw, true
-	default:
-		return "", false
-	}
-}
-
 // TagIR is a small, allocation-free view over the lossless syntax tree.
 // Decoding is on demand; no second copy of decoded arguments is stored in AST.
 type TagIR struct {

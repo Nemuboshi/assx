@@ -64,7 +64,7 @@ func TestDocumentCompatibilityDiagnosticsPhysicalLocations(t *testing.T) {
 	doc := ass.Parse(source)
 	findings := AnalyzeDocumentCompatibility(doc, nil)
 	if len(findings) == 0 {
-		t.Fatal("legacy parser's dropped event hid document incompatibility")
+		t.Fatal("an unrepresented event hid document incompatibility")
 	}
 	for _, d := range findings {
 		if d.Line != 5 {
