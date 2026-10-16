@@ -52,6 +52,7 @@ func Build(path string, diagnostics []lint.Diagnostic, document ass.Document) Su
 			proofs[diagnostic.FixProof.ID] = diagnostic.FixProof
 		}
 	}
+	fixIndex := lint.NewFixProofIndex(diagnostics)
 	for i := range diagnostics {
 		d := &diagnostics[i]
 		position := locate(d, textStarts, fields, tagSpans)
@@ -76,7 +77,7 @@ func Build(path string, diagnostics []lint.Diagnostic, document ass.Document) Su
 			Edits:        append([]lint.TextEdit(nil), d.Edits...),
 			Sources:      append([]string(nil), d.Sources...),
 		}
-		view.Outcome = outcomeOf(d, proofs)
+		view.Outcome = outcomeOf(d, proofs, fixIndex)
 		switch d.Severity {
 		case lint.Error:
 			group.Errors++
@@ -138,12 +139,12 @@ func locate(d *lint.Diagnostic, textStarts map[int]int, fields map[fieldKey]sour
 
 // outcomeOf derives the fix badge only from concrete edits and validated
 // per-diagnostic safety metadata.
-func outcomeOf(d *lint.Diagnostic, proofs map[string]*lint.FixProof) FixOutcome {
+func outcomeOf(d *lint.Diagnostic, proofs map[string]*lint.FixProof, index lint.FixProofIndex) FixOutcome {
 	items := []lint.Diagnostic{*d}
 	if d.FixProofRef != "" {
 		items = append(items, lint.Diagnostic{FixProof: proofs[d.FixProofRef]})
 	}
-	safe, unsafe, _ := lint.CountFixes(items)
+	safe, unsafe, _ := index.Count(items)
 	if safe != 0 {
 		return FixSafe
 	}
