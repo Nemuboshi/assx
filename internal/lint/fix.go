@@ -8,11 +8,33 @@ import (
 )
 
 func CountFixes(diagnostics []Diagnostic) (safe, unsafe, unfixable int) {
+	return NewFixProofIndex(diagnostics).Count(diagnostics)
+}
+
+// FixProofIndex is a reusable view of the SafeFix proofs in one diagnostic
+// set. CountFixes rebuilds it per call; presenters and callers that inspect
+// many diagnostics build it once.
+type FixProofIndex struct {
+	proofs map[string]*FixProof
+	valid  map[string]bool
+}
+
+// NewFixProofIndex indexes the proofs and validates each identity once.
+func NewFixProofIndex(diagnostics []Diagnostic) FixProofIndex {
 	proofs := fixProofsByID(diagnostics)
-	validProofs := make(map[string]bool, len(proofs))
+	valid := make(map[string]bool, len(proofs))
 	for id, proof := range proofs {
-		validProofs[id] = proofIdentityMatches(proof)
+		valid[id] = proofIdentityMatches(proof)
 	}
+	return FixProofIndex{proofs: proofs, valid: valid}
+}
+
+// Count reports the fix counts for one diagnostic set under this index.
+func (index FixProofIndex) Count(diagnostics []Diagnostic) (safe, unsafe, unfixable int) {
+	return countFixes(diagnostics, index.proofs, index.valid)
+}
+
+func countFixes(diagnostics []Diagnostic, proofs map[string]*FixProof, validProofs map[string]bool) (safe, unsafe, unfixable int) {
 	for _, diagnostic := range diagnostics {
 		if len(diagnostic.Edits) == 0 {
 			unfixable++
