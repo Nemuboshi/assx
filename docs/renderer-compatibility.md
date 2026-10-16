@@ -158,15 +158,14 @@ Each row states a parse step and a post step. A cited row names the pinned line
 for its own renderer. A row without a citation must use `unmodeled` for both
 steps, so an unverified conversion cannot read as evidence.
 
-This matrix records the conversion. For Style fields assx checks only that a
-value is valid. It does not check cross-renderer equivalence of the stored form.
-A user cannot easily make Style rows renderer-identical by hand, so Style values
-need no deeper investigation than the tag matrix gives override tags. The linter
-checks that a colour has a valid digit in its selected base and that ASS v4+
-`Alignment` is 1 to 9.
+This matrix records conversion and drawing evidence. Style validation checks
+colour syntax and the ASS v4+ `Alignment` range. Selected renderer comparisons
+also report two specific BorderStyle differences. ASS033 reports box scaling;
+ASS034 reports mode selection. These rules do not assert complete Style or frame
+equivalence. Their conditions are defined in [the rule catalog](rules.md).
 
 A Style row is not reported only because its value conversion is unresolved. The
-conversion is evidence for a future value-level check, not a per-line warning.
+conversion alone does not justify a per-line warning.
 The earlier `document/style-values` observation emitted one unresolved finding
 for every Style row whenever two profiles were compared. That observation is
 removed: it carried no actionable detail and it duplicated the per-field checks
@@ -177,16 +176,26 @@ The matrix records these limits as deliberate decisions:
 - Colour byte order was not followed to the drawn pixel. libass byte-swaps at
   parse; xy-VSFilter reverses red and blue at use. Only the valid digit in the
   selected base is checked. Equivalence is out of scope.
-- `Alignment` is checked as a numpad value in 1 to 9. The same derivations were
-  shown to agree for values 1 to 9. Values 0, values above 9 and negative values
-  are reported as invalid, not compared.
-- `BorderStyle` is deferred. assx does not check it yet.
+- `Alignment` is checked as a numpad value in 1 to 9. The source paths select
+  the same ordinary positions in that range. The matrix also records invalid
+  values, SSA conversion, and override handling. In VSFilter, zero or negative
+  Style alignment can prevent `\an` and `\a` from taking effect.
+- `BorderStyle` has no accepted-set check. ASS011 still checks fractional
+  integer input. The matrix now traces mode selection through drawing. Value 4
+  selects a whole-event background only in libass. Value 3 selects boxes in
+  all three renderers, but geometry, scaling, and draw-pass tests differ.
+  ASS033 reports positive non-100-percent box scaling when comparing Mod with
+  either traditional renderer. ASS034 reports the value-4 mode difference.
+  Both use the resolved BorderStyle field span and selected profile pair.
+  Neither rule supplies edits or applies to single-profile validation.
+  Matching modes do not prove frame equivalence.
 - The VSFilterMod `Spacing` clamp is build-conditional (`_VSMOD`, patch f002).
   A mod-build-version question cannot be resolved from the pinned source alone,
   so this field is ignored and documented, not checked.
-- `Justify` has a libass parse site but no pinned reader for the stored value,
-  and no field in either VSFilter loader. It is retained and documented, not
-  treated as an issue.
+- `Justify` is not read from ASS Style rows by the pinned loaders. The earlier
+  libass citation was from its host override API. libass reads that API value
+  during line layout. The matrix records this distinction. The field remains
+  unmodeled, and assx does not report an issue for it.
 
 ## Validation
 

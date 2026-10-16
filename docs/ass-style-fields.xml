@@ -21,13 +21,21 @@
   A value-dependent field can agree for one input and differ for another. The
   comparison therefore resolves per value, not per field.
 
-  Scope limit (assx decision): for Style fields assx checks only that a value is
-  valid. It does not check cross-renderer equivalence of the stored form. A user
-  cannot easily make Style rows renderer-identical by hand, so Style values need
-  no deeper investigation than the tag matrix gives override tags. The linter
-  checks that a colour has a valid digit in its selected base and that Alignment
-  is 1 to 9. The
-  notes below record the conversion; they do not require an equivalence check.
+  Scope limit (assx decision): Style validation checks valid values. Selected
+  profile comparisons also check specific BorderStyle scaling and mode differences.
+  They do not establish complete Style or frame equivalence. The linter checks that a
+  colour has a valid digit in its selected base and that Alignment is 1 to 9.
+  BorderStyle has no accepted-set check. These policy limits do not limit source
+  investigation. The notes separate conversion, drawing behavior, and lint policy.
+
+  Investigation scope: assx ce26c685712d7dd8a2dca7333ce903323d6f4f83 and the
+  renderer pins below. BorderStyle and Alignment findings cover ASS v4+ Style
+  rows with no host Style override. SSA differences are stated separately.
+  Drawing findings are source-verified unless a runtime check is stated.
+  VSFilterMod extensions, Lua handlers, and host settings can change drawing.
+  Recheck these findings when the pins, build flags, input dialect, or host
+  override assumptions change. Do not infer complete frame equivalence from
+  matching mode selection.
 
   A row records the conversion. It does not resolve a renderer difference that
   the conversion feeds. The note field states that limit.
@@ -258,32 +266,170 @@
   <!-- ===== integers ===== -->
 
   <stylefield name="borderstyle" status="V" kind="int">
-    <conv renderer="libass" parse="libass-int" post="none" verified="libass" cite="libass:libass/ass.c:613"/>
+    <conv renderer="libass" parse="libass-int" post="none" verified="libass" cite="libass:libass/ass.c:709"/>
     <conv renderer="xy" parse="vsfilter-int" post="borderstyle" verified="xy" cite="xy:src/subtitles/STS.cpp:1519,1540"/>
     <conv renderer="vsm" parse="vsfilter-int" post="borderstyle" verified="vsm" cite="vsm:src/subtitles/STS.cpp:1873,1903"/>
     <note>
-      Deferred by decision. assx does not check this field yet. libass keeps the
-      raw integer and tests 3 for an opaque box and 4 for a background box
-      (ass_render.c:2467,3009). xy and VSFilterMod map 1 to 0 and 3 to 1, and map
-      every other value to 0. Values 1 and 3 agree. Value 4 selects a background
-      box in libass and a plain outline in xy. Value 2 selects an outline in
-      both. The conversion is value-dependent. Any future check must decide the
-      accepted set from this note; the conversion is not equivalence-proven.
+      Policy: assx has no BorderStyle accepted-set check. ASS011 can still report
+      a fractional integer field. ASS033 reports the verified box-scaling condition;
+      ASS034 reports the value-4 mode difference. Neither rule supplies edits.
+      Both require matching resolved ASS v4+ fields and complete rows.
+      BorderStyle must be a whole decimal integer. ASS033 also requires positive
+      ScaleX, ScaleY, and Outline, with at least one scale different from 100.
+      Those numbers must have equal float32 and float64 values. Its target pair
+      must include Mod and either traditional renderer. ASS034 requires libass
+      and either VSFilter renderer. The rules describe Style definitions, including
+      unused Styles. They do not trace Dialogue overrides or prove final pixels.
+      Malformed, hexadecimal, SSA, and v4++ inputs remain outside these checks.
+      Status: source-verified for all three pinned renderers. Matching mode
+      selection does not prove equal pixels.
+
+      Conversion: libass keeps the integer from the Style row (ass.c:709).
+      ass_reset_render_context copies it into border_style (ass_render.c:1097).
+      xy maps file value 3 to internal value 1. File value 1 and every other
+      integer become internal value 0 (STS.cpp:1540). VSFilterMod uses the same
+      conversion (STS.cpp:1903). Internal 0 means outline; internal 1 means box.
+      File value 0 does not disable the outline. File values 2, 5, 6, and -1
+      also select the outline path in all three sources. libass tests exact
+      values 3 and 4; other integers use its normal border path
+      (ass_render.c:1419-1467,2467-2487,3009-3010).
+
+      Value 1: all three select a glyph outline and an offset shadow. Outline
+      controls border width. OutlineColour supplies the border colour.
+      BackColour supplies the shadow colour. Zero width can remove the outline;
+      the BorderStyle value alone does not promise a visible border.
+
+      Value 3: libass builds rectangles from glyph advance, spacing, ascent,
+      and descent. It combines these rectangles within bitmap runs
+      (ass_render.c:1419-1458,2643-2720). This is not one rectangle for the whole
+      event. The box uses OutlineColour; its offset shadow uses BackColour
+      (ass_render.c:827-848). xy creates a rectangle for each CWord from width,
+      ascent, and descent. It copies outline colour and alpha into the polygon
+      (RTS.cpp:561-578). PaintOutline and PaintShadow select that polygon
+      (xy_overlay_paint_machine.cpp:116-134). VSFilterMod creates the same kind
+      of CWord polygon (RTS.cpp:662-685). Its outline and shadow passes draw the
+      polygon with separate colour slots (RTS.cpp:1347-1397,1427-1468).
+      Word boundaries, Style changes, and line breaks can therefore affect boxes.
+      The term opaque box does not mean forced opacity; colour alpha still applies.
+
+      Value 3 limits: libass clamps each computed box padding component to at
+      least 64 internal units. It explicitly repeats font scaling to emulate VSFilter
+      (ass_render.c:1433-1451). xy keeps font scaling on the box polygon
+      (RTS.cpp:428-431,561-577). VSFilterMod marks the polygon isOpaqueBox and
+      uses scale 1 in Transform (RTS.cpp:286-287,683). Thus non-100 font scales
+      need separate checks. With Outline=0, the unshifted box is not drawn.
+      A nonzero Shadow can still draw a shifted box. With both values zero,
+      only text remains. libass selects box flags from border and shadow widths
+      (ass_render.c:1419-1421,2467-2487,2732-2740). xy gates the box outline on
+      rounded scaled widths (RTS.cpp:1259-1261). VSFilterMod tests the width sum
+      before drawing it (RTS.cpp:1427). Fractional widths can select different
+      passes. These paths do not establish equal geometry or blending.
+
+      Value 4: libass retains the normal glyph outline. render_text skips normal
+      shadow images (ass_render.c:829). After text rendering, add_background
+      adds one axis-aligned rectangle for the complete event bounds, including
+      all lines (ass_render.c:2759-2790,2994-3010). It uses final BackColour and
+      fade. Positive final shadow_x and shadow_y expand both sides of the bounds;
+      negative values add no padding. Outline contributes to the event bounds.
+      The rectangle is limited to the frame. It is added after glyph clipping,
+      so a vector clip does not cut its mask (ass_render.c:881,2781-2788).
+      xy and VSFilterMod convert file value 4 to outline mode. They do not reach
+      a whole-event background path from this Style value.
+
+      Resets: named and bare r restore BorderStyle with the other Style values.
+      libass copies BorderStyle in ass_reset_render_context (ass_render.c:1097).
+      xy and VSFilterMod replace the word Style (RTS.cpp:2643-2647,3589-3593).
+      libass chooses the whole-event background from final border_style, while
+      individual glyphs retain their own border_style (ass_render.c:2138,3009).
+      A reset between modes 3 and 4 therefore needs its own rendering check.
+
+      Build scope: the VSFilterMod loader mapping has no _VSMOD guard. Its box
+      transform scale exception also has no guard. _VSMOD changes colour,
+      blending, spacing, and clipping paths. _LUA can change box transforms
+      (RTS.cpp:124-169,1332-1468). The pinned subtitles project defines both
+      symbols (subtitles.vcxproj:95,113,132,145). The base mode comparison assumes
+      no extension tags or Lua handlers. No VSFilter binary was run here.
+
+      Runtime check: the existing Windows amd64 libass DLL reported the pinned
+      commit f61db567e6593df3470e91594bcd4ad2d0473aff. Its SHA-256 was
+      e605e7f73e84c734f06d5c529948998824b2f330c8450fecb946d27c3519e72d.
+      The Meson build used release and shared-library settings. Runtime logs
+      reported FriBidi 1.0.16 and HarfBuzz-ng 14.2.1. The existing rendercheck
+      helper compared exact RGBA frames at 640x360 and 25 fps. Fonts came only
+      from the pinned libass compare/test directory, with ASS_FONTPROVIDER_NONE.
+      The fixture used Aileron 32, two unequal text lines, ScaleX=ScaleY=100,
+      Alignment=2, Outline=3, and Shadow=4. OutlineColour was opaque red;
+      BackColour was half-transparent green. The event ran from 0 to 200 ms.
+      Each comparison sampled 12 frames, including timing boundaries.
+      Values 0, 2, 5, 6, and -1 matched value 1 exactly. Values 3 and 4 differed
+      from value 1 and each other. With Outline=Shadow=0, values 1 and 3 matched.
+      With Outline=0 and Shadow=4, they differed. These are libass-only checks.
+      They do not verify box geometry against either VSFilter binary.
+      Local fixtures, the check script, and full results are under
+      .pi/style-investigation/. Run C:/msys64/ucrt64/bin/python.exe
+      .pi/style-investigation/check.py from the repository root to repeat them.
+      These local artifacts are not tracked. The results file records commands
+      and renderer logs. Recreate the fixture above if those artifacts are absent.
     </note>
   </stylefield>
 
   <stylefield name="alignment" status="V" kind="int">
-    <conv renderer="libass" parse="libass-align" post="numpad" verified="libass" cite="libass:libass/ass.c:614,712 libass:libass/ass_utils.h:142-158"/>
+    <conv renderer="libass" parse="libass-align" post="numpad" verified="libass" cite="libass:libass/ass.c:710-719 libass:libass/ass_utils.h:142-158"/>
     <conv renderer="xy" parse="vsfilter-align" post="none" verified="xy" cite="xy:src/subtitles/STS.cpp:1522 xy:src/subtitles/RTS.cpp:3264-3268"/>
     <conv renderer="vsm" parse="vsfilter-align" post="none" verified="vsm" cite="vsm:src/subtitles/STS.cpp:1876"/>
     <note>
-      assx checks only that the value is in 1 to 9. It does not check
-      cross-renderer equivalence. libass maps the value to HALIGN|VALIGN with
-      numpad2align at parse (ass.c:712). xy and VSFilterMod keep the raw integer
-      and derive the position at use from val%3 and val&lt;=3 or val&lt;=6
-      (RTS.cpp:3264-3268). The two derivations were shown to agree for values 1
-      to 9 only. Values 0, values above 9 and negative values are not accepted
-      by this check and were not investigated.
+      Policy: ASS032 reports whole ASS v4+ Alignment integers outside 1 to 9.
+      It does not compare frames or apply a fix. SSA uses a separate mapping.
+      Status: source-verified for all three pinned renderers.
+
+      ASS values 1 to 9 select the usual numpad positions in all three sources.
+      libass converts the integer into HALIGN|VALIGN at parse
+      (ass.c:710-712; ass_utils.h:142-158). xy and VSFilterMod keep the integer.
+      GetSubtitle first negates it to mark alignment as unset, parses tags,
+      then applies abs before layout (xy RTS.cpp:2931,3001; VSFilterMod
+      RTS.cpp:3944,4044). Layout uses value%3 for left, centre, or right, and
+      value&lt;=3 or value&lt;=6 for bottom, middle, or top
+      (xy RTS.cpp:1570-1575,3264-3269; VSFilterMod RTS.cpp:1915-1920,4381-4382).
+      These different stored forms select the same ordinary positions.
+
+      Positive values above 9 are not rejected by these Style loaders.
+      Horizontal position repeats every three values; vertical position stays
+      at the top. For example, 10 selects top-left and 11 selects top-centre.
+      This describes base layout only. xy has another margin adjustment switch
+      with no case above the third row (RTS.cpp:4331-4336). Host margin settings
+      can therefore add differences. ASS032 still treats these values as invalid.
+
+      Negative values except INT32_MIN become absolute values before layout.
+      They can select the same base position as their positive counterpart.
+      However, xy and VSFilterMod first negate the Style integer. A negative
+      Style makes m_scrAlignment positive before tag parsing. Their an and a
+      handlers require m_scrAlignment&lt;0, so they ignore those tags
+      (xy RTS.cpp:2301-2313; VSFilterMod RTS.cpp:2903-2913).
+      Style value 0 also blocks those tags. libass uses parsed_tags separately
+      and accepts a valid an override in both cases (ass_parse.c:584-604).
+      Thus Style Alignment=-2 with {\an7} remains bottom-centre in VSFilter,
+      but selects top-left in libass. Style Alignment=0 has horizontal bits 0
+      in libass. Its positioned anchor and line alignment have no matching case
+      (ass_render.c:1943-1957,2324-2352). VSFilter combines a right-edge anchor
+      with a centre fallback in different layout steps (xy RTS.cpp:1570-1572,
+      3264-3266,3332-3334). Do not assign one stable numpad meaning to value 0.
+      INT32_MIN is a separate limit: libass chooses 2 to avoid signed overflow.
+      VSFilter negation and abs cannot represent its positive value. A binary
+      check is required; no portable result is claimed.
+
+      SSA: libass retains the legacy bitfield but changes 8 to 3 and 4 to 11
+      (ass.c:713-719). VSFilter loaders convert legacy bits to numpad values
+      (xy STS.cpp:1545-1547; VSFilterMod STS.cpp:1908-1910). Common SSA positions
+      agree. Legacy value 4 selects middle-right in all three base layouts.
+      Legacy value 8 selects bottom-right in all three base layouts.
+      Style-row conversion differs from the legacy a override, which has its
+      own invalid-value handling. Do not apply the ASS 1-to-9 rule to SSA.
+
+      Runtime check: the libass build and fixture scope are recorded under
+      BorderStyle. Alignment=-2 matched 2 without alignment tags. Alignment=10
+      matched 7. With Alignment=0, adding {\an7} changed the frames. With {\an7},
+      Alignment=-2 matched 2. All four comparisons met their expected results.
+      No VSFilter runtime comparison or INT32_MIN check was done.
     </note>
   </stylefield>
 
@@ -347,14 +493,26 @@
     </note>
   </stylefield>
 
-  <stylefield name="justify" status="V" kind="int">
-    <conv renderer="libass" parse="libass-int" post="unmodeled" verified="libass" cite="libass:libass/ass.c:615"/>
+  <stylefield name="justify" status="S" kind="int">
+    <conv renderer="libass" parse="unmodeled" post="unmodeled" verified="" cite=""/>
     <conv renderer="xy" parse="unmodeled" post="unmodeled" verified="" cite=""/>
     <conv renderer="vsm" parse="unmodeled" post="unmodeled" verified="" cite=""/>
     <note>
-      Retained, not an issue. libass parses Justify (ass.c:615) but no pinned
-      reader was found for the stored value. xy and VSFilterMod have no Justify
-      field at all. The field stays unmodeled and assx reports nothing for it.
+      Policy: retained, with no diagnostic. No Style-row conversion is modeled.
+      Correction, source-verified: ass.c:615 belongs to ass_process_force_style,
+      the host override API. It is not the ASS Style-row parser. process_style
+      has no Justify field handler (ass.c:688-728). Adding a Justify column to
+      a file therefore does not set ASS_Style.Justify in this pinned libass.
+      The previous claim that the stored value had no reader was incorrect.
+      init_render_context reads Style.Justify (ass_render.c:1152). align_lines
+      uses it to set line justification independently of event alignment
+      (ass_render.c:2305,2326-2350). Host values 1, 2, and 3 mean left, centre,
+      and right. Value 0 follows alignment (ass_types.h:83-86). xy and
+      VSFilterMod have no Justify field in their ASS Style loaders. This row
+      does not treat the libass host API as an ASS file-format extension.
+      Runtime check: changing the fixture Justify column from 0 to 3 produced
+      identical libass frames. The build and fixture scope are under BorderStyle.
+      The host override API was not run.
     </note>
   </stylefield>
 </matrix>

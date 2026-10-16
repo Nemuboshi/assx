@@ -25,7 +25,7 @@ func AnalyzeCompatibility(dialogue ass.Dialogue, profiles []renderer.Profile) []
 }
 
 // AnalyzeDocumentCompatibility uses the lossless document, including records
-// the historical parser dropped. All positions refer to doc.Text byte offsets.
+// the document view cannot represent. All positions refer to doc.Text byte offsets.
 func AnalyzeDocumentCompatibility(doc ass.Document, profiles []renderer.Profile) []Diagnostic {
 	tree := ass.ParseConcreteDocument(doc.Text)
 	findings := semantic.CompareDocument(tree, profiles)
@@ -61,10 +61,21 @@ func compatibilityDiagnostics(findings []semantic.CompatibilityFinding, location
 		id := IssueRendererUnresolved
 		if finding.Status == semantic.CompatibilityDivergent {
 			id = IssueRendererDiff
+			switch finding.Dimension {
+			case "document/style-box-scaling":
+				id = IssueStyleBoxGeometry
+			case "document/style-border-mode":
+				id = IssueStyleBorderMode
+			}
 		}
 		rule := Rules[id]
 		line, column := location(finding.Source)
-		out = append(out, Diagnostic{ID: id, Severity: rule.Severity, Title: rule.Title, Description: "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.", Fix: "Review both renderer interpretations and verify the intended rendering before changing the source.", Line: line, Column: column, Tag: finding.Left.Resolution.Name, Field: finding.Dimension, Detail: string(finding.Status) + ": " + finding.Detail, Renderer: scope, SourceSpan: &finding.Source, Sources: slices.Clone(finding.Citations)})
+		description := "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety."
+		fix := "Review both renderer interpretations and verify the intended rendering before changing the source."
+		if id == IssueStyleBoxGeometry || id == IssueStyleBorderMode {
+			description, fix = rule.Description, rule.Fix
+		}
+		out = append(out, Diagnostic{ID: id, Severity: rule.Severity, Title: rule.Title, Description: description, Fix: fix, Line: line, Column: column, Tag: finding.Left.Resolution.Name, Field: finding.Dimension, Detail: string(finding.Status) + ": " + finding.Detail, Renderer: scope, SourceSpan: &finding.Source, Sources: slices.Clone(finding.Citations)})
 	}
 	sort.SliceStable(out, func(i, j int) bool {
 		if out[i].Line == out[j].Line {

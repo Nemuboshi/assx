@@ -143,6 +143,44 @@ The `Alignment` field of an ASS v4+ Style row is a numpad value. The pinned rend
 
 Legacy SSA `Alignment` uses a bitfield mapping and is not checked by this rule. The rule has no automatic fix because the intended alignment is unknown. See [Style field conversion evidence](renderer-compatibility.md#style-field-conversion-evidence).
 
+## ASS033 — BorderStyle box scaling differs
+
+This warning reports a specific box-scaling difference in an ASS v4+ Style definition.
+It requires `BorderStyle=3`, positive `ScaleX` and `ScaleY`, and positive `Outline`.
+At least one scale must differ from 100.
+The selected profiles must include VSFilterMod and either libass or xy-VSFilter.
+libass and xy-VSFilter apply extra font scaling to box dimensions.
+VSFilterMod skips that extra scaling for its box polygon, without a build guard.
+
+The comparison requires matching resolved fields and complete Style rows.
+An unrelated layout difference does not hide this warning.
+It accepts whole decimal BorderStyle values and finite decimal scale and outline values.
+Scale and outline values must have the same float32 and float64 value.
+Missing, repeated, malformed, and precision-dependent fields do not establish this condition.
+Ordinary boxes at 100 percent do not produce this warning.
+Zero-outline boxes and shadow-only boxes are outside this check.
+
+This warning describes the declared Style, including an unused Style.
+It does not trace Dialogue overrides or predict final pixels.
+Check box dimensions in each selected renderer.
+There is no automatic fix. See [the source evidence](ass-style-fields.xml).
+
+## ASS034 — BorderStyle rendering mode differs
+
+This warning reports `BorderStyle=4` in an ASS v4+ Style definition.
+It requires libass and at least one VSFilter renderer in the selected profiles.
+libass selects a background around the complete event.
+xy-VSFilter and VSFilterMod select a normal glyph outline.
+A comparison between the two VSFilter renderers does not produce this warning.
+
+Both profiles must read BorderStyle from the same source field in complete Style rows.
+The value must be a whole decimal integer.
+SSA, v4++, malformed values, hexadecimal values, and mismatched BorderStyle fields are outside this check.
+It describes the declared Style, including an unused Style.
+Dialogue overrides, named resets, and host settings can change the final output.
+Review the intended mode in each selected renderer.
+There is no automatic fix. See [the source evidence](ass-style-fields.xml).
+
 ## Fixes
 
 Severity and fix safety are independent metadata: a diagnostic can have a `SafeFix` or an `UnsafeFix`.
