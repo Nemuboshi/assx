@@ -191,7 +191,7 @@ func expand(s string) string {
 	graphemes := uniseg.NewGraphemes(s)
 	for graphemes.Next() {
 		cluster := graphemes.Str()
-		if cluster == "\\t" {
+		if cluster == "\t" {
 			n := 4 - cell%4
 			out.WriteString(strings.Repeat(" ", n))
 			cell += n
