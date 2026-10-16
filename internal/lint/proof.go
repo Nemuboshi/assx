@@ -757,10 +757,6 @@ func parseFeatureName(name string) (renderer.Feature, error) {
 	}
 }
 
-func sameFixTargets(a, b []FixTarget) bool {
-	return reflect.DeepEqual(a, b)
-}
-
 func sameFixEditSet(a, b []FixEditProof) bool {
 	if len(a) != len(b) {
 		return false
@@ -795,7 +791,7 @@ func verifyFixProofs(source string, beforeDoc ass.Document, selected []FixEditPr
 	if !sameFixEditSet(selected, proof.SourceEdits) {
 		return fmt.Errorf("selected SafeFix edits do not match the proof")
 	}
-	if len(requested) == 0 || !sameFixTargets(proof.Targets, fixTargets(requested)) {
+	if len(requested) == 0 || !reflect.DeepEqual(proof.Targets, fixTargets(requested)) {
 		return fmt.Errorf("SafeFix proof does not match the requested renderer targets")
 	}
 	if !proofIdentityMatches(proof) {
@@ -810,7 +806,7 @@ func verifyFixProofs(source string, beforeDoc ass.Document, selected []FixEditPr
 		return err
 	}
 	if verified.ID != proof.ID || verified.EditedSHA256 != proof.EditedSHA256 ||
-		!reflect.DeepEqual(verified.SourceEdits, proof.SourceEdits) || !sameFixTargets(verified.Targets, proof.Targets) {
+		!reflect.DeepEqual(verified.SourceEdits, proof.SourceEdits) || !reflect.DeepEqual(verified.Targets, proof.Targets) {
 		return fmt.Errorf("SafeFix proof identity does not match the recomputed evidence")
 	}
 	return nil
