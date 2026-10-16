@@ -22,6 +22,21 @@ func TestFrameCropsByDisplayCellsAndExpandsTabs(t *testing.T) {
 	}
 }
 
+// A real tab in the source must advance to the next four-column stop, not
+// render as the control-character replacement.
+func TestExpandAdvancesRealTabsToTabStops(t *testing.T) {
+	for _, test := range []struct{ in, want string }{
+		{"a\tb", "a   b"},
+		{"ab\tc", "ab  c"},
+		{"abcd\te", "abcd    e"},
+		{"\t", "    "},
+	} {
+		if got := expand(test.in); got != test.want {
+			t.Fatalf("expand(%q) = %q, want %q", test.in, got, test.want)
+		}
+	}
+}
+
 func TestFrameUsesGraphemeCellWidths(t *testing.T) {
 	family := "👩‍👩‍👧‍👦"
 	line := "界é" + family + "\tX"
