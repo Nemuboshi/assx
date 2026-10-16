@@ -14,7 +14,7 @@ import (
 // AnalyzeForRenderer validates a dialogue under exactly one pinned renderer.
 // Findings are renderer-local observations, never all-target SafeFix proofs.
 func AnalyzeForRenderer(dialogue ass.Dialogue, profile renderer.Profile) []Diagnostic {
-	findings, _ := analyzeResolvedDialogue(dialogue, profile, nil, nil, nil, nil)
+	findings, _ := analyzeResolvedDialogue(dialogue, profile, nil, nil, nil)
 	return scopeDiagnostics(findings, profile)
 }
 
@@ -26,7 +26,6 @@ func AnalyzeDocumentForRenderer(doc ass.Document, profile renderer.Profile) []Di
 
 func analyzeDocumentForProfile(doc ass.Document, profile renderer.Profile) []Diagnostic {
 	doc = profile.DocumentView(doc)
-	context := &AnalysisContext{EditIndex: NewDialogueEditIndex(doc)}
 	diagnostics := AnalyzeHeaders(doc)
 	diagnostics = append(diagnostics, AnalyzeKeywords(doc)...)
 	diagnostics = append(diagnostics, analyzeStyles(doc)...)
@@ -40,7 +39,7 @@ func analyzeDocumentForProfile(doc ass.Document, profile renderer.Profile) []Dia
 		if collector != nil {
 			collector.allowEdits = true
 		}
-		findings, style := analyzeResolvedDialogue(dialogue, profile, styles, collector, nil, context)
+		findings, style := analyzeResolvedDialogue(dialogue, profile, styles, collector, nil)
 		diagnostics = append(diagnostics, findings...)
 		if style != nil {
 			redundant = append(redundant, *style)
@@ -86,14 +85,10 @@ func scopeDiagnostics(diagnostics []Diagnostic, profile renderer.Profile) []Diag
 	return out
 }
 
-func analyzeResolvedDialogue(dialogue ass.Dialogue, profile renderer.Profile, styles map[string]semantic.StyleState, collector *styleRunCollector, indexedTree *ass.ConcreteDialogue, context *AnalysisContext) ([]Diagnostic, *Diagnostic) {
-	tree := ass.ParseConcreteDialogue(dialogue.Text)
-	if indexedTree != nil {
-		tree = *indexedTree
-	} else if context != nil && context.EditIndex != nil {
-		if indexed, ok := context.EditIndex.DialogueTree(dialogue.TextStart); ok {
-			tree = indexed
-		}
+func analyzeResolvedDialogue(dialogue ass.Dialogue, profile renderer.Profile, styles map[string]semantic.StyleState, collector *styleRunCollector, tree *ass.ConcreteDialogue) ([]Diagnostic, *Diagnostic) {
+	if tree == nil {
+		parsed := ass.ParseConcreteDialogue(dialogue.Text)
+		tree = &parsed
 	}
 	analyzer := dialogueAnalyzer{line: dialogue.Line, textStart: dialogue.TextStart}
 	for _, node := range tree.Nodes {
@@ -127,7 +122,7 @@ func analyzeResolvedDialogue(dialogue ass.Dialogue, profile renderer.Profile, st
 			}
 		}
 	}
-	profile.WalkDialogue(tree, func(result renderer.Result, nested bool) bool {
+	profile.WalkDialogue(*tree, func(result renderer.Result, nested bool) bool {
 		tag := resolvedLintTag(result, nested)
 		analyzer.consumeResolved(tag, result, profile)
 		return true
@@ -155,7 +150,7 @@ func analyzeResolvedDialogue(dialogue ass.Dialogue, profile renderer.Profile, st
 			},
 		},
 	}
-	evaluation := semantic.EvaluateResolved(tree, profile, options)
+	evaluation := semantic.EvaluateResolved(*tree, profile, options)
 	for _, effect := range evaluation.NoEffects {
 		analyzer.add(IssueNoEffect, effect.Tag, noEffectDetail(effect))
 		finding := &analyzer.diagnostics[len(analyzer.diagnostics)-1]
@@ -164,7 +159,7 @@ func analyzeResolvedDialogue(dialogue ass.Dialogue, profile renderer.Profile, st
 			finding.Detail += " A later unmodeled operation prevents proving this fix safe for the selected renderer targets."
 			continue
 		}
-		finding.Edits = []TextEdit{noEffectRemovalEditConcrete(tree, effect.Tag, dialogue.TextStart)}
+		finding.Edits = []TextEdit{noEffectRemovalEditConcrete(*tree, effect.Tag, dialogue.TextStart)}
 	}
 	analyzer.diagnostics = append(analyzer.diagnostics, drawing.diagnostics()...)
 	if !dialogue.MissingFields {
