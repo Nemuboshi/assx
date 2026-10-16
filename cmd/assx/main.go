@@ -209,7 +209,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 }
 
 func outputWidth(writer io.Writer) int {
-	if file, ok := writer.(*os.File); ok && isTerminal(writer) {
+	if file, ok := terminalFile(writer); ok {
 		if width, _, err := term.GetSize(file.Fd()); err == nil && width > 0 {
 			return width
 		}
@@ -279,13 +279,23 @@ func reportColorAllowed(tty bool, term, noColor string) bool {
 	return tty && term != "dumb" && noColor == ""
 }
 
-func isTerminal(writer io.Writer) bool {
+// terminalFile reports the character device behind writer, if there is one.
+// It is the single place that decides what counts as a terminal.
+func terminalFile(writer io.Writer) (*os.File, bool) {
 	file, ok := writer.(*os.File)
 	if !ok {
-		return false
+		return nil, false
 	}
 	info, err := file.Stat()
-	return err == nil && info.Mode()&os.ModeCharDevice != 0
+	if err != nil || info.Mode()&os.ModeCharDevice == 0 {
+		return nil, false
+	}
+	return file, true
+}
+
+func isTerminal(writer io.Writer) bool {
+	_, ok := terminalFile(writer)
+	return ok
 }
 
 func terminalText(s string) string {
