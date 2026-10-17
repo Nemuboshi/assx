@@ -9,11 +9,11 @@ import (
 // AnalyzeDocumentForTargets validates only the primary renderer and reports
 // compatibility observations for the full selected profile set separately.
 func AnalyzeDocumentForTargets(doc ass.Document, targets AnalysisTargets) []Diagnostic {
-	return proveSafeFixes(doc, analyzeDocumentForTargetsUnproved(doc, targets), targets.Profiles())
+	return proveSafeFixes(doc, analyzeDocumentForTargetsUnproved(doc, targets, nil), targets.Profiles())
 }
 
-func analyzeDocumentForTargetsUnproved(doc ass.Document, targets AnalysisTargets) []Diagnostic {
-	findings := analyzeDocumentForProfile(doc, targets.Primary)
+func analyzeDocumentForTargetsUnproved(doc ass.Document, targets AnalysisTargets, policy RulePolicy) []Diagnostic {
+	findings := analyzeDocumentForProfile(doc, targets.Primary, policy)
 	for _, dialogue := range doc.Dialogues {
 		findings = append(findings, portabilityDiagnostics(dialogue, targets)...)
 	}
@@ -29,7 +29,7 @@ func analyzeDocumentForTargetsUnproved(doc ass.Document, targets AnalysisTargets
 		}
 		return findings[i].Line < findings[j].Line
 	})
-	return findings
+	return policy.apply(findings)
 }
 
 func AnalyzeDocument(doc ass.Document) []Diagnostic {

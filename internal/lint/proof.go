@@ -69,6 +69,11 @@ func defaultFixTargets() []renderer.Profile {
 	return DefaultAnalysisTargets().Profiles()
 }
 
+// proofBuilder is the single entry to SafeFix proof construction. Tests
+// observe invocation; production calls always resolve to
+// buildFixProofWithDocument.
+var proofBuilder = buildFixProofWithDocument
+
 func fixTargets(profiles []renderer.Profile) []FixTarget {
 	targets := make([]FixTarget, 0, len(profiles))
 	for _, profile := range profiles {
@@ -123,7 +128,7 @@ func proveSafeFixes(doc ass.Document, diagnostics []Diagnostic, profiles []rende
 	if len(proofDoc.Dialogues) == 0 {
 		proofDoc = proofDocument(doc.Text, selected)
 	}
-	if proof, err := buildFixProofWithDocument(doc.Text, proofDoc, selected, profiles, validEdits); err == nil {
+	if proof, err := proofBuilder(doc.Text, proofDoc, selected, profiles, validEdits); err == nil {
 		attachProofReferences(diagnostics, candidates, proof)
 		return diagnostics
 	}
@@ -141,7 +146,7 @@ func proveSafeFixes(doc ass.Document, diagnostics []Diagnostic, profiles []rende
 			continue
 		}
 		edits := fixEditsForDiagnostics(diagnostics, indexes)
-		proof, err := buildFixProofWithDocument(doc.Text, proofDoc, edits, profiles, validEdits)
+		proof, err := proofBuilder(doc.Text, proofDoc, edits, profiles, validEdits)
 		if err == nil {
 			attachProofReferences(diagnostics, indexes, proof)
 			continue
@@ -197,7 +202,7 @@ func attachProofReferences(diagnostics []Diagnostic, indexes []int, proof *FixPr
 
 func buildFixProof(source string, edits []FixEditProof, targets AnalysisTargets) (*FixProof, error) {
 	doc := proofDocument(source, edits)
-	return buildFixProofWithDocument(source, doc, edits, targets.Profiles(), fixEditIndex(analyzeDocumentForTargetsUnproved(doc, targets)))
+	return buildFixProofWithDocument(source, doc, edits, targets.Profiles(), fixEditIndex(analyzeDocumentForTargetsUnproved(doc, targets, nil)))
 }
 
 func buildFixProofWithDocument(source string, beforeDoc ass.Document, edits []FixEditProof, profiles []renderer.Profile, validEdits map[FixEditProof]struct{}) (*FixProof, error) {

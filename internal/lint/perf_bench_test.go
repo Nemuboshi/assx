@@ -1,6 +1,7 @@
 package lint
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"testing"
@@ -10,6 +11,8 @@ import (
 )
 
 var benchmarkDiagnostics []Diagnostic
+
+var benchmarkSession *Session
 
 // Measures all lint passes with document parsing excluded.
 func BenchmarkAnalyzeDocumentFixtures(b *testing.B) {
@@ -172,6 +175,49 @@ func BenchmarkParseAndAnalyzeDocumentFixtures(b *testing.B) {
 			for i := 0; i < b.N; i++ {
 				benchmarkDiagnostics = AnalyzeDocument(ass.Parse(test.Text))
 			}
+		})
+	}
+}
+
+// Measures discovery-only analysis: every lint pass without SafeFix proof
+// construction. Compare against BenchmarkAnalyzeDocumentFixtures.
+func BenchmarkSessionDiscovery(b *testing.B) {
+	for _, test := range perftest.Cases(b) {
+		doc := ass.Parse(test.Text)
+		reference, err := Discover(context.Background(), doc, DefaultAnalysisTargets(), nil)
+		if err != nil {
+			b.Fatal(err)
+		}
+		candidates := len(allCandidateHandles(reference))
+		b.Run(test.Name, func(b *testing.B) {
+			b.SetBytes(int64(len(test.Text)))
+			b.ReportAllocs()
+			b.ResetTimer()
+			for i := 0; i < b.N; i++ {
+				benchmarkSession, _ = Discover(context.Background(), doc, DefaultAnalysisTargets(), nil)
+			}
+			b.ReportMetric(float64(candidates), "cand/op")
+		})
+	}
+	for _, count := range perftest.ScalingCounts {
+		text := benchmarkLateProofFailure(count)
+		doc := ass.Parse(text)
+		reference, err := Discover(context.Background(), doc, DefaultAnalysisTargets(), nil)
+		if err != nil {
+			b.Fatal(err)
+		}
+		candidates := len(allCandidateHandles(reference))
+		if candidates == 0 || candidates >= 3*count {
+			b.Fatalf("discovery stage isolated no proof-free candidate set at %d dialogues", count)
+		}
+		b.Run(fmt.Sprintf("late_candidate_failure_%d", count), func(b *testing.B) {
+			b.SetBytes(int64(len(text)))
+			b.ReportAllocs()
+			b.ResetTimer()
+			for i := 0; i < b.N; i++ {
+				benchmarkSession, _ = Discover(context.Background(), doc, DefaultAnalysisTargets(), nil)
+			}
+			b.ReportMetric(float64(candidates), "cand/op")
 		})
 	}
 }

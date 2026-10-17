@@ -21,10 +21,10 @@ func AnalyzeForRenderer(dialogue ass.Dialogue, profile renderer.Profile) []Diagn
 // AnalyzeDocumentForRenderer provides renderer-local observations without fixes.
 // AnalyzeDocumentForTargets also applies compatibility policy and proves edits.
 func AnalyzeDocumentForRenderer(doc ass.Document, profile renderer.Profile) []Diagnostic {
-	return scopeDiagnostics(analyzeDocumentForProfile(doc, profile), profile)
+	return scopeDiagnostics(analyzeDocumentForProfile(doc, profile, nil), profile)
 }
 
-func analyzeDocumentForProfile(doc ass.Document, profile renderer.Profile) []Diagnostic {
+func analyzeDocumentForProfile(doc ass.Document, profile renderer.Profile, policy RulePolicy) []Diagnostic {
 	doc = profile.DocumentView(doc)
 	diagnostics := AnalyzeHeaders(doc)
 	diagnostics = append(diagnostics, AnalyzeKeywords(doc)...)
@@ -34,10 +34,16 @@ func analyzeDocumentForProfile(doc ass.Document, profile renderer.Profile) []Dia
 
 	styles := semantic.StyleStatesByName(doc.StyleFields)
 	var redundant []Diagnostic
+	// Policy drops disabled ASS013 before overlap suppression, so ASS006
+	// candidates keep their edits. Semantic state keeps running.
+	watchStyleOverrides := !policy.disabled(IssueRedundantStyleOverrides)
 	for _, dialogue := range doc.Dialogues {
-		collector := newStyleRunCollectorForRenderer(dialogue, styles)
-		if collector != nil {
-			collector.allowEdits = true
+		var collector *styleRunCollector
+		if watchStyleOverrides {
+			collector = newStyleRunCollectorForRenderer(dialogue, styles)
+			if collector != nil {
+				collector.allowEdits = true
+			}
 		}
 		findings, style := analyzeResolvedDialogue(dialogue, profile, styles, collector, nil)
 		diagnostics = append(diagnostics, findings...)
