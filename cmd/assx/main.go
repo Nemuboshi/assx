@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -17,7 +18,9 @@ import (
 
 	"github.com/charmbracelet/x/term"
 
+	"assx/internal/analysis"
 	"assx/internal/ass"
+	"assx/internal/ass/renderer"
 	"assx/internal/lint"
 	"assx/internal/report"
 	"assx/internal/report/plain"
@@ -93,7 +96,12 @@ func run(args []string, stdout, stderr io.Writer) int {
 		_, _ = fmt.Fprintln(stderr, err)
 		return 2
 	}
-	doc := ass.Parse(source.Text)
+	snapshot, err := analysis.NewSnapshot(path, source.Text, nil)
+	if err != nil {
+		progress.stop()
+		_, _ = fmt.Fprintln(stderr, err)
+		return 2
+	}
 	var fontChecker *lint.FontChecker
 	if *checkFonts {
 		fontChecker, err = lint.NewFontChecker(*fontDir)
@@ -103,8 +111,23 @@ func run(args []string, stdout, stderr io.Writer) int {
 			return 2
 		}
 	}
-	analyzeDoc := func(doc ass.Document) ([]lint.Diagnostic, error) {
-		diagnostics := lint.AnalyzeDocumentForTargets(doc, targets)
+	// A CLI target selection is always explicit. Keep an empty compatibility
+	// set non-nil so it never reads as the default-target sentinel.
+	if targets.Compatibility == nil {
+		targets.Compatibility = []renderer.Profile{}
+	}
+	options := analysis.Options{Targets: targets}
+	ctx := context.Background()
+	analyzeSnapshot := func(snapshot analysis.Snapshot) ([]lint.Diagnostic, error) {
+		result, err := analysis.Analyze(ctx, snapshot, options)
+		if err != nil {
+			return nil, err
+		}
+		diagnostics, err := result.Diagnostics(ctx)
+		if err != nil {
+			return nil, err
+		}
+		doc := ass.Parse(snapshot.Text())
 		if fontChecker != nil {
 			fontDiagnostics, err := lint.AnalyzeFontsForRenderer(doc, fontChecker, targets.Primary)
 			if err != nil {
@@ -120,16 +143,29 @@ func run(args []string, stdout, stderr io.Writer) int {
 		}
 		return diagnostics, nil
 	}
-	diagnostics, err := analyzeDoc(doc)
+	diagnostics, err := analyzeSnapshot(snapshot)
 	if err != nil {
 		progress.stop()
-		_, _ = fmt.Fprintf(stderr, "Font check failed: %v\n", err)
+		_, _ = fmt.Fprintln(stderr, err)
 		return 2
 	}
+	doc := ass.Parse(snapshot.Text())
 	var appliedSafe, appliedUnsafe int
 	if *fix || *unsafeFix {
-		availableSafe, availableUnsafe, _ := lint.CountFixes(diagnostics)
-		fixedText, count, err := lint.ApplyFixesForTargets(doc.Text, diagnostics, *unsafeFix, targets)
+		result, err := analysis.Analyze(ctx, snapshot, options)
+		if err != nil {
+			progress.stop()
+			_, _ = fmt.Fprintln(stderr, err)
+			return 2
+		}
+		merged, err := result.Diagnostics(ctx)
+		if err != nil {
+			progress.stop()
+			_, _ = fmt.Fprintln(stderr, err)
+			return 2
+		}
+		availableSafe, availableUnsafe, _ := lint.CountFixes(merged)
+		fixedText, count, err := result.ApplyFixes(ctx, merged, *unsafeFix)
 		if err != nil {
 			progress.stop()
 			_, _ = fmt.Fprintln(stderr, err)
@@ -156,11 +192,17 @@ func run(args []string, stdout, stderr io.Writer) int {
 			if *unsafeFix {
 				appliedUnsafe = availableUnsafe
 			}
-			doc = ass.Parse(fixedText)
-			diagnostics, err = analyzeDoc(doc)
+			snapshot, err = analysis.NewSnapshot(path, fixedText, nil)
 			if err != nil {
 				progress.stop()
-				_, _ = fmt.Fprintf(stderr, "Font check failed: %v\n", err)
+				_, _ = fmt.Fprintln(stderr, err)
+				return 2
+			}
+			doc = ass.Parse(fixedText)
+			diagnostics, err = analyzeSnapshot(snapshot)
+			if err != nil {
+				progress.stop()
+				_, _ = fmt.Fprintln(stderr, err)
 				return 2
 			}
 		}

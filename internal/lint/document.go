@@ -1,6 +1,8 @@
 package lint
 
 import (
+	"context"
+
 	"assx/internal/ass"
 	editpkg "assx/internal/edit"
 	"sort"
@@ -13,8 +15,22 @@ func AnalyzeDocumentForTargets(doc ass.Document, targets AnalysisTargets) []Diag
 }
 
 func analyzeDocumentForTargetsUnproved(doc ass.Document, targets AnalysisTargets, policy RulePolicy) []Diagnostic {
-	findings := analyzeDocumentForProfile(doc, targets.Primary, policy)
+	findings, _ := analyzeDocumentForTargetsUnprovedContext(context.Background(), doc, targets, policy)
+	return findings
+}
+
+func analyzeDocumentForTargetsUnprovedContext(ctx context.Context, doc ass.Document, targets AnalysisTargets, policy RulePolicy) ([]Diagnostic, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	findings, err := analyzeDocumentForProfileContext(ctx, doc, targets.Primary, policy)
+	if err != nil {
+		return nil, err
+	}
 	for _, dialogue := range doc.Dialogues {
+		if err := ctx.Err(); err != nil {
+			return nil, err
+		}
 		findings = append(findings, portabilityDiagnostics(dialogue, targets)...)
 	}
 	findings = append(findings, AnalyzeDocumentCompatibility(doc, targets.Profiles())...)
@@ -29,7 +45,7 @@ func analyzeDocumentForTargetsUnproved(doc ass.Document, targets AnalysisTargets
 		}
 		return findings[i].Line < findings[j].Line
 	})
-	return policy.apply(findings)
+	return policy.apply(findings), nil
 }
 
 func AnalyzeDocument(doc ass.Document) []Diagnostic {

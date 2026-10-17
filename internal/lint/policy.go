@@ -16,6 +16,10 @@ type RuleOverride struct {
 // transitions.
 type RulePolicy []RuleOverride
 
+// Validate rejects an override with no ID, a repeated ID, an unknown rule,
+// or an invalid severity. Nil and empty policies are valid.
+func (policy RulePolicy) Validate() error { return policy.validate() }
+
 func (policy RulePolicy) validate() error {
 	seen := make(map[string]bool, len(policy))
 	for _, override := range policy {

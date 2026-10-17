@@ -53,17 +53,23 @@ func newSessionID() uint64 {
 // Discover runs every lint pass and records fix candidates without proving
 // them. It rejects an invalid policy and honors cancellation.
 func Discover(ctx context.Context, doc ass.Document, targets AnalysisTargets, policy RulePolicy) (*Session, error) {
-	if err := ctx.Err(); err != nil {
-		return nil, err
-	}
 	if err := policy.validate(); err != nil {
 		return nil, err
 	}
-	findings := analyzeDocumentForTargetsUnproved(doc, targets, policy)
+	findings, err := analyzeDocumentForTargetsUnprovedContext(ctx, doc, targets, policy)
+	if err != nil {
+		return nil, err
+	}
 	session := &Session{id: newSessionID(), doc: doc, targets: targets, policy: policy}
 	for index, diagnostic := range findings {
 		if diagnostic.FixSafety != SafeFix || len(diagnostic.Edits) == 0 {
-			session.findings = append(session.findings, diagnostic)
+			// Proof strips a SafeFix label without edits, as today.
+			pending := diagnostic
+			if pending.FixSafety == SafeFix {
+				pending.FixSafety = ""
+				pending.FixProof = nil
+			}
+			session.findings = append(session.findings, pending)
 			continue
 		}
 		session.candidates = append(session.candidates, cloneDiagnostic(diagnostic))
@@ -114,7 +120,7 @@ func (s *Session) ProveFixes(ctx context.Context, handles []CandidateID) ([]Diag
 	for i, ordinal := range ordinals {
 		batch[i] = cloneDiagnostic(s.candidates[ordinal])
 	}
-	return proveSafeFixes(s.doc, batch, s.targets.Profiles()), nil
+	return proveSafeFixesContext(ctx, s.doc, batch, s.targets.Profiles())
 }
 
 func (s *Session) resolve(handles []CandidateID) ([]int, error) {

@@ -13,6 +13,7 @@ Check their stated phase before you use a rollout claim as a current contract.
 
 | Subject | Owner | Start here | Method |
 | --- | --- | --- | --- |
+| Snapshot analysis and deferred proof | `internal/analysis` | [Analysis](analysis.md) | Check request ownership, option copies, and cancellation. |
 | Syntax and source spans | `internal/ass` | [Syntax](renderer-syntax.md) | Check raw input, node spans, and round-trip tests. |
 | Tag signatures and dispatch | `internal/ass/spec`, `internal/ass/renderer` | [Profiles](renderer-profiles.md), [matrix](ass-tags.xml) | Check the exact form, source pin, and build guards. |
 | Style field conversion | `internal/ass/renderer` | [Style fields](ass-style-fields.xml), [compatibility](renderer-compatibility.md) | Check the parse step, the post step, the source pin, and the build guards. Check the valid-value rule in `internal/lint`. |
