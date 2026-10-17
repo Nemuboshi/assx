@@ -45,6 +45,24 @@ func (m *evaluator) policyFor(tag ass.Tag) (spec.TagSpec, bool) {
 // so parent no-effect checks cannot accidentally consult the global name table.
 // A flat explicit stack avoids recursive parsing on adversarial nesting.
 func resolveTokens(tree ass.ConcreteDialogue, profile renderer.Profile) ([]semanticToken, map[int]resolvedOperation) {
+	tokens, operations, _ := operationsFromTokens(tree, profile, false)
+	return tokens, operations
+}
+
+// resolvedEntry is one operation in renderer.Profile.WalkDialogue emission
+// order: the renderer's own resolution result and its transform nesting flag.
+// Prepared dialogues retain these entries so validation and compatibility
+// never resolve the same expression twice.
+type resolvedEntry struct {
+	result renderer.Result
+	nested bool
+}
+
+// operationsFromTokens is the single resolution walk. The token/operation
+// outputs feed the evaluator. With collectEntries set, the third result
+// replays renderer.Profile.WalkDialogue emission order. One-shot callers pass
+// false, which keeps the walk allocation shape of a plain evaluation.
+func operationsFromTokens(tree ass.ConcreteDialogue, profile renderer.Profile, collectEntries bool) ([]semanticToken, map[int]resolvedOperation, []resolvedEntry) {
 	source := tree.Source
 	type entry struct {
 		op     resolvedOperation
@@ -57,6 +75,10 @@ func resolveTokens(tree ass.ConcreteDialogue, profile renderer.Profile) ([]seman
 	}
 	var tokens []semanticToken
 	var entries []entry
+	var out []resolvedEntry
+	if collectEntries {
+		out = []resolvedEntry{}
+	}
 
 	for _, node := range tree.Nodes {
 		if node.Block == nil {
@@ -101,6 +123,9 @@ func resolveTokens(tree ass.ConcreteDialogue, profile renderer.Profile) ([]seman
 					},
 					parent: current.parent,
 				})
+				if collectEntries {
+					out = append(out, resolvedEntry{result: result, nested: current.nested})
+				}
 				tokens = append(tokens, semanticToken{tag: tag, hasTag: true})
 				if result.Status != renderer.Matched || result.Name != "t" || !current.expr.Parenthesized {
 					continue
@@ -133,5 +158,5 @@ func resolveTokens(tree ass.ConcreteDialogue, profile renderer.Profile) ([]seman
 			tokens[i].tag = operations[tokens[i].tag.Start].tag
 		}
 	}
-	return tokens, operations
+	return tokens, operations, out
 }

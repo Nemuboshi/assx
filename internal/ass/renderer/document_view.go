@@ -1,6 +1,7 @@
 package renderer
 
 import (
+	"context"
 	"slices"
 	"strings"
 
@@ -10,11 +11,43 @@ import (
 // DocumentView projects known ASS v4+ fixed-position VSFilter record groups for lint consumers.
 // Groups with unknown layouts retain the parser's original fields.
 func (p Profile) DocumentView(doc ass.Document) ass.Document {
-	if p.kind == Libass || len(doc.Lines) == 0 || len(doc.Dialogues) == 1 && len(doc.Dialogues[0].Fields) == 0 {
+	if p.skipsProjection(doc) {
 		return doc
 	}
 	tree := ass.ParseConcreteDocument(doc.Text)
-	layouts := p.ResolveDocumentLayouts(tree)
+	view, err := p.projectDocument(context.Background(), doc, tree, p.ResolveDocumentLayouts(tree))
+	if err != nil {
+		return doc
+	}
+	return view
+}
+
+// skipsProjection reports the guard cases that need no concrete document.
+func (p Profile) skipsProjection(doc ass.Document) bool {
+	return p.kind == Libass || len(doc.Lines) == 0 || len(doc.Dialogues) == 1 && len(doc.Dialogues[0].Fields) == 0
+}
+
+// ProjectsDocument reports whether projection can change this document.
+// Callers use it to skip concrete parsing and layout resolution that
+// DocumentViewFromConcrete would ignore anyway.
+func (p Profile) ProjectsDocument(doc ass.Document) bool { return !p.skipsProjection(doc) }
+
+// DocumentViewFromConcrete is the context-aware projection core. The caller
+// supplies one concrete document and that profile's resolved layouts, so a
+// request can share both across every consumer of one source version. A
+// canceled context returns no partial view; the same inputs stay usable for a
+// later request.
+func (p Profile) DocumentViewFromConcrete(ctx context.Context, doc ass.Document, tree ass.ConcreteDocument, layouts []RecordLayout) (ass.Document, error) {
+	return p.projectDocument(ctx, doc, tree, layouts)
+}
+
+func (p Profile) projectDocument(ctx context.Context, doc ass.Document, tree ass.ConcreteDocument, layouts []RecordLayout) (ass.Document, error) {
+	if err := ctx.Err(); err != nil {
+		return ass.Document{}, err
+	}
+	if p.skipsProjection(doc) {
+		return doc, nil
+	}
 	stylesKnown, dialoguesKnown := true, true
 	hasStyles, hasDialogues := false, false
 	for _, row := range layouts {
@@ -29,7 +62,7 @@ func (p Profile) DocumentView(doc ass.Document) ass.Document {
 	}
 	projectStyles, projectDialogues := hasStyles && stylesKnown, hasDialogues && dialoguesKnown
 	if !projectStyles && !projectDialogues {
-		return doc
+		return doc, nil
 	}
 	view := doc
 	if projectDialogues {
@@ -85,5 +118,5 @@ func (p Profile) DocumentView(doc ass.Document) ass.Document {
 		}
 		view.Dialogues = append(view.Dialogues, dialogue)
 	}
-	return view
+	return view, nil
 }

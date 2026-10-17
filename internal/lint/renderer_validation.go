@@ -26,17 +26,24 @@ func AnalyzeDocumentForRenderer(doc ass.Document, profile renderer.Profile) []Di
 }
 
 func analyzeDocumentForProfile(doc ass.Document, profile renderer.Profile, policy RulePolicy) []Diagnostic {
-	findings, _ := analyzeDocumentForProfileContext(context.Background(), doc, profile, policy)
+	findings, _ := analyzeDocumentForProfileContext(context.Background(), doc, profile, policy, nil)
 	return findings
 }
 
 // analyzeDocumentForProfileContext checks cancellation between dialogues.
 // One dialogue is the smallest unit of work and runs without a check.
-func analyzeDocumentForProfileContext(ctx context.Context, doc ass.Document, profile renderer.Profile, policy RulePolicy) ([]Diagnostic, error) {
+// A shared analysis supplies one projected view per profile and reuses
+// resolved dialogue operations across validation, compatibility, and the
+// redundant-Style collector, so each profile resolves an expression once.
+func analyzeDocumentForProfileContext(ctx context.Context, doc ass.Document, profile renderer.Profile, policy RulePolicy, shared *DocumentAnalysis) ([]Diagnostic, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	doc = profile.DocumentView(doc)
+	if view, ok := shared.viewFor(doc, profile); ok {
+		doc = view
+	} else {
+		doc = profile.DocumentView(doc)
+	}
 	diagnostics := AnalyzeHeaders(doc)
 	diagnostics = append(diagnostics, AnalyzeKeywords(doc)...)
 	diagnostics = append(diagnostics, analyzeStyles(doc)...)
@@ -52,14 +59,23 @@ func analyzeDocumentForProfileContext(ctx context.Context, doc ass.Document, pro
 		if err := ctx.Err(); err != nil {
 			return nil, err
 		}
+		var prepared *semantic.PreparedDialogue
+		if shared != nil {
+			prepared = shared.preparations.PrepareText(profile, dialogue.Text)
+		}
 		var collector *styleRunCollector
 		if watchStyleOverrides {
-			collector = newStyleRunCollectorForRenderer(dialogue, styles)
+			if prepared != nil {
+				tree := prepared.Tree()
+				collector = makeStyleRunCollector(dialogue, styles, tree.HasCandidates(), tree)
+			} else {
+				collector = newStyleRunCollectorForRenderer(dialogue, styles)
+			}
 			if collector != nil {
 				collector.allowEdits = true
 			}
 		}
-		findings, style := analyzeResolvedDialogue(dialogue, profile, styles, collector, nil)
+		findings, style := analyzeResolvedDialogue(dialogue, profile, styles, collector, prepared)
 		diagnostics = append(diagnostics, findings...)
 		if style != nil {
 			redundant = append(redundant, *style)
@@ -105,11 +121,13 @@ func scopeDiagnostics(diagnostics []Diagnostic, profile renderer.Profile) []Diag
 	return out
 }
 
-func analyzeResolvedDialogue(dialogue ass.Dialogue, profile renderer.Profile, styles map[string]semantic.StyleState, collector *styleRunCollector, tree *ass.ConcreteDialogue) ([]Diagnostic, *Diagnostic) {
-	if tree == nil {
-		parsed := ass.ParseConcreteDialogue(dialogue.Text)
-		tree = &parsed
+// analyzeResolvedDialogue validates one dialogue. A caller without request
+// preparation passes nil, and the dialogue resolves once for this pass.
+func analyzeResolvedDialogue(dialogue ass.Dialogue, profile renderer.Profile, styles map[string]semantic.StyleState, collector *styleRunCollector, prepared *semantic.PreparedDialogue) ([]Diagnostic, *Diagnostic) {
+	if prepared == nil {
+		prepared, _ = semantic.PrepareDialogue(context.Background(), ass.ParseConcreteDialogue(dialogue.Text), profile)
 	}
+	tree := prepared.Tree()
 	analyzer := dialogueAnalyzer{line: dialogue.Line, textStart: dialogue.TextStart}
 	for _, node := range tree.Nodes {
 		if node.Block == nil {
@@ -142,7 +160,7 @@ func analyzeResolvedDialogue(dialogue ass.Dialogue, profile renderer.Profile, st
 			}
 		}
 	}
-	profile.WalkDialogue(*tree, func(result renderer.Result, nested bool) bool {
+	prepared.EachOperation(func(result renderer.Result, nested bool) bool {
 		tag := resolvedLintTag(result, nested)
 		analyzer.consumeResolved(tag, result, profile)
 		return true
@@ -170,7 +188,7 @@ func analyzeResolvedDialogue(dialogue ass.Dialogue, profile renderer.Profile, st
 			},
 		},
 	}
-	evaluation := semantic.EvaluateResolved(*tree, profile, options)
+	evaluation := prepared.Evaluate(options)
 	for _, effect := range evaluation.NoEffects {
 		analyzer.add(IssueNoEffect, effect.Tag, noEffectDetail(effect))
 		finding := &analyzer.diagnostics[len(analyzer.diagnostics)-1]
@@ -179,7 +197,7 @@ func analyzeResolvedDialogue(dialogue ass.Dialogue, profile renderer.Profile, st
 			finding.Detail += " A later unmodeled operation prevents proving this fix safe for the selected renderer targets."
 			continue
 		}
-		finding.Edits = []TextEdit{noEffectRemovalEditConcrete(*tree, effect.Tag, dialogue.TextStart)}
+		finding.Edits = []TextEdit{noEffectRemovalEditConcrete(tree, effect.Tag, dialogue.TextStart)}
 	}
 	analyzer.diagnostics = append(analyzer.diagnostics, drawing.diagnostics()...)
 	if !dialogue.MissingFields {

@@ -15,6 +15,11 @@ import (
 // evaluator observes each renderer's own Text field. Layout agreement never
 // proves Style value interpretation or whole-document rendering equivalence.
 func CompareDocument(tree ass.ConcreteDocument, profiles []renderer.Profile) []CompatibilityFinding {
+	return CompareDocumentInMode(tree, profiles, ComparisonMode{})
+}
+
+// CompareDocumentInMode is the mode-aware document comparison core.
+func CompareDocumentInMode(tree ass.ConcreteDocument, profiles []renderer.Profile, mode ComparisonMode) []CompatibilityFinding {
 	if len(profiles) == 0 {
 		libass, _ := renderer.Standard(renderer.Libass)
 		xy, _ := renderer.Standard(renderer.XYVSFilter)
@@ -29,11 +34,12 @@ func CompareDocument(tree ass.ConcreteDocument, profiles []renderer.Profile) []C
 	if len(unique) < 2 {
 		return nil
 	}
+	preparations := mode.preparations()
 	layouts := make([]map[ass.ConcreteSpan]renderer.RecordLayout, len(unique))
 	runs := make([]map[ass.ConcreteSpan]*Interpretation, len(unique))
 	spans := make(map[ass.ConcreteSpan]bool)
 	for i, p := range unique {
-		rows := p.ResolveDocumentLayouts(tree)
+		rows := mode.layoutsFor(p, tree)
 		layouts[i] = make(map[ass.ConcreteSpan]renderer.RecordLayout, len(rows))
 		runs[i] = make(map[ass.ConcreteSpan]*Interpretation)
 		var fields []ass.StyleField
@@ -61,11 +67,16 @@ func CompareDocument(tree ass.ConcreteDocument, profiles []renderer.Profile) []C
 				continue
 			}
 			cell := row.Cells[text]
-			observations := observeInterpretation(ass.ParseConcreteDialogue(cell.Raw), p, EvaluationOptions{Styles: styles, DialogueStyle: layoutValue(row, "style")})
+			// Prepared operations belong to the dialogue text, not to the
+			// document, so equal cells under one profile resolve once.
+			observations := observePrepared(preparations.PrepareText(p, cell.Raw), EvaluationOptions{Styles: styles, DialogueStyle: layoutValue(row, "style")})
 			for span, o := range observations {
 				offset := cell.Span.Start
 				absolute := ass.ConcreteSpan{Start: span.Start + offset, End: span.End + offset}
+				// Argument spans shift in place, so the observation must not
+				// alias the shared prepared result.
 				o.Resolution.Source = absolute
+				o.Resolution.Args = slices.Clone(o.Resolution.Args)
 				for k := range o.Resolution.Args {
 					o.Resolution.Args[k].Span.Start += offset
 					o.Resolution.Args[k].Span.End += offset
@@ -99,7 +110,10 @@ func CompareDocument(tree ass.ConcreteDocument, profiles []renderer.Profile) []C
 					}
 				}
 				left, right := &Interpretation{Profile: unique[i], Present: a.Known}, &Interpretation{Profile: unique[j], Present: b.Known}
-				out = append(out, CompatibilityFinding{Source: span, Dimension: "document/" + a.Kind + "-layout", Status: status, Left: left, Right: right, Detail: fmt.Sprintf("%s: %s; %s: %s.", unique[i].Kind(), layoutDescription(a), unique[j].Kind(), layoutDescription(b)), Citations: []string{a.Citation, b.Citation}})
+				// Lint emits no equivalent layout observation; skip its detail string too.
+				if !mode.LintOnly || status != CompatibilityEquivalent {
+					out = append(out, CompatibilityFinding{Source: span, Dimension: "document/" + a.Kind + "-layout", Status: status, Left: left, Right: right, Detail: fmt.Sprintf("%s: %s; %s: %s.", unique[i].Kind(), layoutDescription(a), unique[j].Kind(), layoutDescription(b)), Citations: []string{a.Citation, b.Citation}})
+				}
 				out = append(out, compareStyleBorders(a, b, left, right)...)
 			}
 		}
@@ -124,7 +138,7 @@ func CompareDocument(tree ass.ConcreteDocument, profiles []renderer.Profile) []C
 		for i := range unique {
 			for j := i + 1; j < len(unique); j++ {
 				a, b := observationAt(runs[i], span, unique[i]), observationAt(runs[j], span, unique[j])
-				out = append(out, compareInterpretations(span, a, b)...)
+				out = append(out, compareInterpretations(span, a, b, mode.LintOnly)...)
 			}
 		}
 	}

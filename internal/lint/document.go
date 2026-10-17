@@ -15,15 +15,19 @@ func AnalyzeDocumentForTargets(doc ass.Document, targets AnalysisTargets) []Diag
 }
 
 func analyzeDocumentForTargetsUnproved(doc ass.Document, targets AnalysisTargets, policy RulePolicy) []Diagnostic {
-	findings, _ := analyzeDocumentForTargetsUnprovedContext(context.Background(), doc, targets, policy)
+	findings, _ := analyzeDocumentForTargetsUnprovedContext(context.Background(), doc, targets, policy, nil)
 	return findings
 }
 
-func analyzeDocumentForTargetsUnprovedContext(ctx context.Context, doc ass.Document, targets AnalysisTargets, policy RulePolicy) ([]Diagnostic, error) {
+// analyzeDocumentForTargetsUnprovedContext runs discovery with optional
+// request preparation. A shared analysis supplies the concrete document, the
+// projected views, and the dialogue operations, so each profile resolves a
+// given expression once per request instead of once per consumer.
+func analyzeDocumentForTargetsUnprovedContext(ctx context.Context, doc ass.Document, targets AnalysisTargets, policy RulePolicy, shared *DocumentAnalysis) ([]Diagnostic, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	findings, err := analyzeDocumentForProfileContext(ctx, doc, targets.Primary, policy)
+	findings, err := analyzeDocumentForProfileContext(ctx, doc, targets.Primary, policy, shared)
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +37,8 @@ func analyzeDocumentForTargetsUnprovedContext(ctx context.Context, doc ass.Docum
 		}
 		findings = append(findings, portabilityDiagnostics(dialogue, targets)...)
 	}
-	findings = append(findings, AnalyzeDocumentCompatibility(doc, targets.Profiles())...)
+	tree, _ := shared.concreteDocument(doc)
+	findings = append(findings, analyzeDocumentCompatibility(doc, tree, targets.Profiles(), shared.compatibilityMode())...)
 	for i := range findings {
 		if findings[i].Renderer == "" {
 			findings[i].Renderer = ProfileScope(targets.Primary)

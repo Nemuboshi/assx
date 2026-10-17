@@ -159,10 +159,16 @@ func EvaluateResolved(tree ass.ConcreteDialogue, profile renderer.Profile, optio
 	if options.Observer.Text == nil && !tree.HasCandidates() {
 		return Evaluation{}
 	}
-	name := DialogueStyleLookupName(options.DialogueStyle)
 	if profile.Kind() == renderer.VSFilterMod && profile.Build().Mod == renderer.FeatureEnabled {
 		options.Styles = modStyleStates(options.Styles)
 	}
+	tokens, operations := resolveTokens(tree, profile)
+	return evaluateResolvedCore(tokens, operations, profile, options)
+}
+
+// evaluateResolvedCore runs the state engine over prepared resolution output.
+func evaluateResolvedCore(tokens []semanticToken, operations map[int]resolvedOperation, profile renderer.Profile, options EvaluationOptions) Evaluation {
+	name := DialogueStyleLookupName(options.DialogueStyle)
 	m := evaluator{
 		options:          options,
 		profile:          profile,
@@ -194,7 +200,6 @@ func EvaluateResolved(tree ass.ConcreteDialogue, profile renderer.Profile, optio
 			}
 		}
 	}
-	tokens, operations := resolveTokens(tree, profile)
 	m.operations = operations
 	for _, token := range tokens {
 		visit(token)
