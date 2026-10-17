@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"assx/internal/ass"
+	"assx/internal/ass/renderer"
 	"assx/internal/perftest"
 )
 
@@ -37,3 +38,57 @@ func BenchmarkEvaluateDialogue(b *testing.B) {
 		})
 	}
 }
+
+// BenchmarkCompareResolvedProof measures both authorization outcomes on real
+// fixtures: an accepted comparison materializes the audit wire for the
+// caller, and a rejected comparison must materialize nothing.
+func BenchmarkCompareResolvedProof(b *testing.B) {
+	profile, err := renderer.Standard(renderer.Libass)
+	if err != nil {
+		b.Fatal(err)
+	}
+	options := EvaluationOptions{Styles: compactCorpusStyles(), DialogueStyle: "Default"}
+	for _, test := range perftest.Cases(b) {
+		doc := ass.Parse(test.Text)
+		if len(doc.Dialogues) > 50 {
+			doc.Dialogues = doc.Dialogues[:50]
+		}
+		trees := make([]ass.ConcreteDialogue, len(doc.Dialogues))
+		edits := make([]ass.ConcreteDialogue, len(doc.Dialogues))
+		removed := make([][]ass.ConcreteSpan, len(doc.Dialogues))
+		for i, dialogue := range doc.Dialogues {
+			trees[i] = ass.ParseConcreteDialogue(dialogue.Text)
+			for _, node := range trees[i].Nodes {
+				if node.Block != nil && len(node.Block.Content) != 0 && len(removed[i]) == 0 {
+					removed[i] = []ass.ConcreteSpan{node.Block.Span}
+					start, end := node.Block.Span.Start, node.Block.Span.End
+					edited := dialogue.Text[:start] + dialogue.Text[end:]
+					edits[i] = ass.ParseConcreteDialogue(edited)
+				}
+			}
+		}
+		b.Run(test.Name+"/self", func(b *testing.B) {
+			b.ReportAllocs()
+			b.ResetTimer()
+			for b.Loop() {
+				for _, tree := range trees {
+					benchmarkProofResult = CompareResolvedProof(tree, tree, profile, options, nil)
+				}
+			}
+		})
+		b.Run(test.Name+"/edited", func(b *testing.B) {
+			b.ReportAllocs()
+			b.ResetTimer()
+			for b.Loop() {
+				for i, tree := range trees {
+					if len(removed[i]) == 0 {
+						continue
+					}
+					benchmarkProofResult = CompareResolvedProof(tree, edits[i], profile, options, removed[i])
+				}
+			}
+		})
+	}
+}
+
+var benchmarkProofResult ProofComparison
