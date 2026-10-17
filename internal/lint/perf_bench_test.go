@@ -1,6 +1,7 @@
 package lint
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
@@ -23,15 +24,28 @@ func BenchmarkAnalyzeDocumentFixtures(b *testing.B) {
 			}
 		})
 	}
-	lateFailure := ass.Parse(benchmarkLateProofFailure(1000))
-	initial := AnalyzeDocument(lateFailure)
+	for _, count := range perftest.ScalingCounts {
+		benchmarkLateProofFailureStage(b, count)
+	}
+	benchmarkStyleEditStage(b)
+}
+
+func benchmarkLateProofFailureStage(b *testing.B, dialogues int) {
+	text := benchmarkLateProofFailure(dialogues)
+	failure := ass.Parse(text)
+	initial := AnalyzeDocument(failure)
 	firstProof, lateCandidate, lateProof := false, false, false
-	lastLine := lateFailure.Dialogues[len(lateFailure.Dialogues)-1].Line
+	lastLine := failure.Dialogues[len(failure.Dialogues)-1].Line
+	var candidates int
 	for _, diagnostic := range primaryFindings(initial) {
-		if diagnostic.ID != IssueNoEffect || diagnostic.Tag != "b" || diagnostic.Column != 6 {
+		if diagnostic.ID != IssueNoEffect {
 			continue
 		}
-		if diagnostic.Line == lateFailure.Dialogues[0].Line && diagnostic.FixSafety == SafeFix && diagnostic.FixProof != nil {
+		candidates++
+		if diagnostic.Tag != "b" || diagnostic.Column != 6 {
+			continue
+		}
+		if diagnostic.Line == failure.Dialogues[0].Line && diagnostic.FixSafety == SafeFix && diagnostic.FixProof != nil {
 			firstProof = true
 		}
 		if diagnostic.Line == lastLine {
@@ -40,14 +54,54 @@ func BenchmarkAnalyzeDocumentFixtures(b *testing.B) {
 		}
 	}
 	if !firstProof || !lateCandidate || lateProof {
-		b.Fatal("benchmark did not isolate the late unresolved SafeFix candidate")
+		b.Fatalf("late failure stage did not isolate the unresolved candidate at %d dialogues", dialogues)
 	}
-	b.Run("late_candidate_failure_1000", func(b *testing.B) {
+	if candidates != 3*dialogues {
+		b.Fatalf("late failure stage found %d candidates, want %d", candidates, 3*dialogues)
+	}
+	b.Run(fmt.Sprintf("late_candidate_failure_%d", dialogues), func(b *testing.B) {
+		b.SetBytes(int64(len(text)))
 		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			benchmarkDiagnostics = AnalyzeDocument(lateFailure)
+			benchmarkDiagnostics = AnalyzeDocument(failure)
 		}
+		b.ReportMetric(float64(candidates), "cand/op")
+	})
+}
+
+func benchmarkStyleEditStage(b *testing.B) {
+	text := perftest.StyleEdit(b)
+	doc := ass.Parse(text)
+	findings := AnalyzeDocument(doc)
+	var styleProofs, dialogueProofs int
+	for _, diagnostic := range primaryFindings(findings) {
+		if diagnostic.FixSafety != SafeFix || (diagnostic.FixProof == nil && diagnostic.FixProofRef == "") {
+			continue
+		}
+		switch diagnostic.ID {
+		case IssueStyleInteger:
+			styleProofs++
+		case IssueNoEffect:
+			dialogueProofs++
+		}
+	}
+	want := perftest.StyleEditDialogueCount * 3
+	if styleProofs != 1 || dialogueProofs != want {
+		b.Fatalf("style-edit stage proofs: style=%d dialogue=%d, want 1 and %d", styleProofs, dialogueProofs, want)
+	}
+	fixed, count, err := ApplyFixes(text, findings, false)
+	if err != nil || count != 1+want || strings.Contains(fixed, `,0.0,0,0,1`) {
+		b.Fatalf("style-edit stage fixed output: applied=%d err=%v", count, err)
+	}
+	b.Run(fmt.Sprintf("style_edit_proof_%d", perftest.StyleEditDialogueCount), func(b *testing.B) {
+		b.SetBytes(int64(len(text)))
+		b.ReportAllocs()
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			benchmarkDiagnostics = AnalyzeDocument(doc)
+		}
+		b.ReportMetric(float64(1+want), "cand/op")
 	})
 }
 

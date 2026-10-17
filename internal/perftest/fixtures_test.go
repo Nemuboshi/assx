@@ -13,13 +13,19 @@ import (
 
 func TestPerformanceFixturesHaveCompleteEvents(t *testing.T) {
 	wantCounts := map[string]int{
-		"dialogue":    96,
-		"typesetting": 48,
-		"drawing":     32,
-		"transforms":  48,
-		"long_10000":  perftest.LongDialogueCount,
+		"dialogue":      96,
+		"typesetting":   48,
+		"drawing":       32,
+		"transforms":    48,
+		"long_10000":    perftest.LongDialogueCount,
+		"scaling_250":   250,
+		"scaling_1000":  1000,
+		"scaling_4000":  4000,
+		"scaling_10000": 10000,
 	}
+	seen := make(map[string]bool, len(wantCounts))
 	for _, test := range perftest.Cases(t) {
+		seen[test.Name] = true
 		t.Run(test.Name, func(t *testing.T) {
 			doc := ass.Parse(test.Text)
 			if len(doc.Dialogues) != wantCounts[test.Name] {
@@ -37,6 +43,11 @@ func TestPerformanceFixturesHaveCompleteEvents(t *testing.T) {
 				}
 			}
 		})
+	}
+	for name := range wantCounts {
+		if !seen[name] {
+			t.Errorf("Cases missing fixture %q", name)
+		}
 	}
 }
 
@@ -90,6 +101,12 @@ func TestPerformanceFixtureFeatures(t *testing.T) {
 				requireFeature("parsed vector drawings", features.drawings)
 				requireFeature("bezier paths", features.bezierCommands)
 				requireFeature("vector clips", features.vectorClip+features.inverseVectorClip)
+			case "scaling_250", "scaling_1000", "scaling_4000", "scaling_10000":
+				requireFeature("override-block dialogue", features.tags["b"])
+				requireFeature("multilingual dialogue", features.nonASCIIDialogues)
+				requireFeature("typesetting position", features.tags["pos"])
+				requireFeature("nested transforms", features.nestedTransforms)
+				requireFeature("parsed vector drawings", features.drawings)
 			default:
 				t.Fatalf("missing fixture feature assertions for %q", test.Name)
 			}

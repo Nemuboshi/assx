@@ -67,7 +67,7 @@ func Cases(tb testing.TB) []struct {
 	cases := make([]struct {
 		Name string
 		Text string
-	}, 0, len(Workloads)+1)
+	}, 0, len(Workloads)+1+len(ScalingCounts))
 	for _, name := range Workloads {
 		cases = append(cases, struct {
 			Name string
@@ -78,5 +78,6 @@ func Cases(tb testing.TB) []struct {
 		Name string
 		Text string
 	}{fmt.Sprintf("long_%d", LongDialogueCount), Long(tb)})
+	cases = append(cases, Scaling(tb)...)
 	return cases
 }
