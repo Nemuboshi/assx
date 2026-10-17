@@ -1,6 +1,7 @@
 package lint
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -104,6 +105,20 @@ func featureName(feature renderer.Feature) string {
 }
 
 func proveSafeFixes(doc ass.Document, diagnostics []Diagnostic, profiles []renderer.Profile) []Diagnostic {
+	proved, err := proveSafeFixesContext(context.Background(), doc, diagnostics, profiles)
+	if err != nil {
+		return diagnostics
+	}
+	return proved
+}
+
+// proveSafeFixesContext proves candidates for a deferred request. After a
+// cancellation it returns no diagnostics, so no partial proof output is
+// visible.
+func proveSafeFixesContext(ctx context.Context, doc ass.Document, diagnostics []Diagnostic, profiles []renderer.Profile) ([]Diagnostic, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
 	var candidates []int
 	var selected []FixEditProof
 	for i, diagnostic := range diagnostics {
@@ -121,7 +136,7 @@ func proveSafeFixes(doc ass.Document, diagnostics []Diagnostic, profiles []rende
 		}
 	}
 	if len(candidates) == 0 {
-		return diagnostics
+		return diagnostics, nil
 	}
 	validEdits := fixEditIndex(diagnostics)
 	proofDoc := doc
@@ -129,8 +144,11 @@ func proveSafeFixes(doc ass.Document, diagnostics []Diagnostic, profiles []rende
 		proofDoc = proofDocument(doc.Text, selected)
 	}
 	if proof, err := proofBuilder(doc.Text, proofDoc, selected, profiles, validEdits); err == nil {
+		if err := ctx.Err(); err != nil {
+			return nil, err
+		}
 		attachProofReferences(diagnostics, candidates, proof)
-		return diagnostics
+		return diagnostics, nil
 	}
 
 	// shortcut: stop after 64 proof builds; raise the cap if measured workloads leave valid SafeFix edits unproved.
@@ -140,6 +158,9 @@ func proveSafeFixes(doc ass.Document, diagnostics []Diagnostic, profiles []rende
 		queue = append(queue, candidates[:len(candidates)/2], candidates[len(candidates)/2:])
 	}
 	for attempts := 1; len(queue) > 0 && attempts < maxProofAttempts; attempts++ {
+		if err := ctx.Err(); err != nil {
+			return nil, err
+		}
 		indexes := queue[0]
 		queue = queue[1:]
 		if len(indexes) == 0 {
@@ -148,6 +169,9 @@ func proveSafeFixes(doc ass.Document, diagnostics []Diagnostic, profiles []rende
 		edits := fixEditsForDiagnostics(diagnostics, indexes)
 		proof, err := proofBuilder(doc.Text, proofDoc, edits, profiles, validEdits)
 		if err == nil {
+			if err := ctx.Err(); err != nil {
+				return nil, err
+			}
 			attachProofReferences(diagnostics, indexes, proof)
 			continue
 		}
@@ -164,7 +188,7 @@ func proveSafeFixes(doc ass.Document, diagnostics []Diagnostic, profiles []rende
 			diagnostics[index].FixProofRef = ""
 		}
 	}
-	return diagnostics
+	return diagnostics, nil
 }
 
 func fixEditsForDiagnostics(diagnostics []Diagnostic, indexes []int) []FixEditProof {

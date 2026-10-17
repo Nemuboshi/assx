@@ -1,6 +1,7 @@
 package lint
 
 import (
+	"context"
 	"fmt"
 	"sort"
 	"strconv"
@@ -25,6 +26,16 @@ func AnalyzeDocumentForRenderer(doc ass.Document, profile renderer.Profile) []Di
 }
 
 func analyzeDocumentForProfile(doc ass.Document, profile renderer.Profile, policy RulePolicy) []Diagnostic {
+	findings, _ := analyzeDocumentForProfileContext(context.Background(), doc, profile, policy)
+	return findings
+}
+
+// analyzeDocumentForProfileContext checks cancellation between dialogues.
+// One dialogue is the smallest unit of work and runs without a check.
+func analyzeDocumentForProfileContext(ctx context.Context, doc ass.Document, profile renderer.Profile, policy RulePolicy) ([]Diagnostic, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
 	doc = profile.DocumentView(doc)
 	diagnostics := AnalyzeHeaders(doc)
 	diagnostics = append(diagnostics, AnalyzeKeywords(doc)...)
@@ -38,6 +49,9 @@ func analyzeDocumentForProfile(doc ass.Document, profile renderer.Profile, polic
 	// candidates keep their edits. Semantic state keeps running.
 	watchStyleOverrides := !policy.disabled(IssueRedundantStyleOverrides)
 	for _, dialogue := range doc.Dialogues {
+		if err := ctx.Err(); err != nil {
+			return nil, err
+		}
 		var collector *styleRunCollector
 		if watchStyleOverrides {
 			collector = newStyleRunCollectorForRenderer(dialogue, styles)
@@ -53,7 +67,7 @@ func analyzeDocumentForProfile(doc ass.Document, profile renderer.Profile, polic
 	}
 	diagnostics = suppressOverlappingNoEffect(diagnostics, redundant)
 	diagnostics = append(diagnostics, redundant...)
-	return diagnostics
+	return diagnostics, nil
 }
 
 // scopeDiagnostics annotates the explicit scope and enforces the P08 proof
