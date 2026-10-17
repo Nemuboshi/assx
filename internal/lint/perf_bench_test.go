@@ -221,3 +221,49 @@ func BenchmarkSessionDiscovery(b *testing.B) {
 		})
 	}
 }
+
+// Measures one proof request over a session's candidates: the batch proof
+// path with its fallback schedule, without discovery. Compare against
+// BenchmarkSessionDiscovery and BenchmarkAnalyzeDocumentFixtures for the
+// proof share of each workload.
+func BenchmarkSessionProveFixes(b *testing.B) {
+	for _, test := range perftest.Cases(b) {
+		proveFixesStage(b, test.Name, test.Text)
+	}
+	for _, count := range perftest.ScalingCounts {
+		text := benchmarkLateProofFailure(count)
+		proveFixesStage(b, fmt.Sprintf("late_candidate_failure_%d", count), text)
+	}
+	proveFixesStage(b, fmt.Sprintf("style_edit_proof_%d", perftest.StyleEditDialogueCount), perftest.StyleEdit(b))
+}
+
+func proveFixesStage(b *testing.B, name, text string) {
+	b.Helper()
+	session, err := Discover(context.Background(), ass.Parse(text), DefaultAnalysisTargets(), nil)
+	if err != nil {
+		b.Fatal(err)
+	}
+	handles := allCandidateHandles(session)
+	authorized, err := session.ProveFixes(context.Background(), handles)
+	if err != nil {
+		b.Fatal(err)
+	}
+	var proved int
+	for _, diagnostic := range authorized {
+		if diagnostic.FixSafety == SafeFix && (diagnostic.FixProof != nil || diagnostic.FixProofRef != "") {
+			proved++
+		}
+	}
+	b.Run(name, func(b *testing.B) {
+		if len(handles) == 0 {
+			b.Skip("fixture has no fix candidates")
+		}
+		b.SetBytes(int64(len(text)))
+		b.ReportAllocs()
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			benchmarkDiagnostics, _ = session.ProveFixes(context.Background(), handles)
+		}
+		b.ReportMetric(float64(proved), "proved/op")
+	})
+}

@@ -71,9 +71,12 @@ func defaultFixTargets() []renderer.Profile {
 }
 
 // proofBuilder is the single entry to SafeFix proof construction. Tests
-// observe invocation; production calls always resolve to
-// buildFixProofWithDocument.
-var proofBuilder = buildFixProofWithDocument
+// observe invocation; production calls resolve to the request batch build.
+var proofBuilder = buildFixProofBatch
+
+func buildFixProofBatch(batch *proofBatch, edits []FixEditProof, validEdits map[FixEditProof]struct{}) (*FixProof, error) {
+	return batch.build(edits, validEdits)
+}
 
 func fixTargets(profiles []renderer.Profile) []FixTarget {
 	targets := make([]FixTarget, 0, len(profiles))
@@ -105,17 +108,19 @@ func featureName(feature renderer.Feature) string {
 }
 
 func proveSafeFixes(doc ass.Document, diagnostics []Diagnostic, profiles []renderer.Profile) []Diagnostic {
-	proved, err := proveSafeFixesContext(context.Background(), doc, diagnostics, profiles)
+	proved, err := proveSafeFixesBatchContext(context.Background(), doc, diagnostics, profiles, nil)
 	if err != nil {
 		return diagnostics
 	}
 	return proved
 }
 
-// proveSafeFixesContext proves candidates for a deferred request. After a
-// cancellation it returns no diagnostics, so no partial proof output is
+// proveSafeFixesBatchContext proves one request's candidates. The batch owns
+// the preparation every build in this run shares; a nil or mismatched batch
+// starts a fresh one, so before work never crosses sources or requests. After
+// a cancellation it returns no diagnostics, so no partial proof output is
 // visible.
-func proveSafeFixesContext(ctx context.Context, doc ass.Document, diagnostics []Diagnostic, profiles []renderer.Profile) ([]Diagnostic, error) {
+func proveSafeFixesBatchContext(ctx context.Context, doc ass.Document, diagnostics []Diagnostic, profiles []renderer.Profile, batch *proofBatch) ([]Diagnostic, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
@@ -143,7 +148,10 @@ func proveSafeFixesContext(ctx context.Context, doc ass.Document, diagnostics []
 	if len(proofDoc.Dialogues) == 0 {
 		proofDoc = proofDocument(doc.Text, selected)
 	}
-	if proof, err := proofBuilder(doc.Text, proofDoc, selected, profiles, validEdits); err == nil {
+	if batch == nil || !batch.usable(doc.Text, proofDoc, profiles) {
+		batch = newProofBatch(doc.Text, proofDoc, profiles)
+	}
+	if proof, err := proofBuilder(batch, selected, validEdits); err == nil {
 		if err := ctx.Err(); err != nil {
 			return nil, err
 		}
@@ -167,7 +175,7 @@ func proveSafeFixesContext(ctx context.Context, doc ass.Document, diagnostics []
 			continue
 		}
 		edits := fixEditsForDiagnostics(diagnostics, indexes)
-		proof, err := proofBuilder(doc.Text, proofDoc, edits, profiles, validEdits)
+		proof, err := proofBuilder(batch, edits, validEdits)
 		if err == nil {
 			if err := ctx.Err(); err != nil {
 				return nil, err
@@ -229,178 +237,11 @@ func buildFixProof(source string, edits []FixEditProof, targets AnalysisTargets)
 	return buildFixProofWithDocument(source, doc, edits, targets.Profiles(), fixEditIndex(analyzeDocumentForTargetsUnproved(doc, targets, nil)))
 }
 
+// buildFixProofWithDocument verifies one edit set against one source with a
+// fresh one-off batch. Apply-time verification re-derives the exact proof, so
+// it shares no before work with any other request.
 func buildFixProofWithDocument(source string, beforeDoc ass.Document, edits []FixEditProof, profiles []renderer.Profile, validEdits map[FixEditProof]struct{}) (*FixProof, error) {
-	for _, profile := range profiles {
-		if profile.Kind() == renderer.VSFilterMod && (profile.Build().Mod == renderer.FeatureUnknown || profile.Build().Lua != renderer.FeatureDisabled) {
-			return nil, fmt.Errorf("VSFilterMod proof requires a known Mod capability and disabled Lua")
-		}
-	}
-	if len(profiles) == 0 {
-		return nil, fmt.Errorf("SafeFix proof has no renderer targets")
-	}
-	for _, sourceEdit := range edits {
-		if !supportedProofRule(sourceEdit.ID) {
-			return nil, fmt.Errorf("rule %s has no renderer proof", sourceEdit.ID)
-		}
-		if _, ok := validEdits[sourceEdit]; !ok {
-			return nil, fmt.Errorf("rule %s edit does not match a current lint finding", sourceEdit.ID)
-		}
-	}
-	targets := fixTargets(profiles)
-	for i := range targets {
-		if targets[i].Version == "" {
-			return nil, fmt.Errorf("renderer %s has no pinned version", targets[i].Renderer)
-		}
-		for j := 0; j < i; j++ {
-			if targets[i] == targets[j] {
-				return nil, fmt.Errorf("duplicate renderer target %s", targets[i].Renderer)
-			}
-		}
-	}
-	changed, err := edit.Apply(source, proofTextEdits(edits))
-	if err != nil {
-		return nil, err
-	}
-	var afterDoc ass.Document
-	if hasStyleFieldEdits(edits) {
-		afterDoc = proofDocument(changed, edits)
-		if len(beforeDoc.Dialogues) != len(afterDoc.Dialogues) || !reflect.DeepEqual(beforeDoc.EventFormat, afterDoc.EventFormat) {
-			for _, profile := range profiles {
-				view := profile.DocumentView(afterDoc)
-				if len(view.Dialogues) == len(beforeDoc.Dialogues) && reflect.DeepEqual(view.EventFormat, beforeDoc.EventFormat) {
-					afterDoc = view
-					break
-				}
-			}
-		}
-	} else {
-		afterDoc, err = editedDialogueDocument(beforeDoc, changed, edits)
-		if err != nil {
-			return nil, err
-		}
-		afterDoc.Text = changed
-	}
-	if len(beforeDoc.Dialogues) != len(afterDoc.Dialogues) || !reflect.DeepEqual(beforeDoc.EventFormat, afterDoc.EventFormat) {
-		return nil, fmt.Errorf("edit changed document event parsing")
-	}
-	if !sameDocumentShape(beforeDoc, afterDoc, edits) {
-		return nil, fmt.Errorf("edit changed document structure outside a verified style integer field")
-	}
-	stylesBefore := semantic.StyleStatesByName(beforeDoc.StyleFields)
-	stylesAfter := semantic.StyleStatesByName(afterDoc.StyleFields)
-	if !reflect.DeepEqual(stylesBefore, stylesAfter) {
-		return nil, fmt.Errorf("edit changed modeled Style state")
-	}
-	styleEvidence, err := verifyStyleIntegerEdits(beforeDoc, afterDoc, edits)
-	if err != nil {
-		return nil, err
-	}
-	syntaxOnly := len(edits) != 0
-	for _, sourceEdit := range edits {
-		if sourceEdit.ID != IssueEmptyOverrideBlock {
-			syntaxOnly = false
-			break
-		}
-		if !isEmptyOverrideEdit(beforeDoc, sourceEdit.Edit) {
-			return nil, fmt.Errorf("ASS018 edit does not match an empty override block")
-		}
-	}
-
-	proof := &FixProof{
-		SourceSHA256: hashSource(source), EditedSHA256: hashSource(changed),
-		SourceEdits: slices.Clone(edits), Targets: targets,
-		VerificationBasis: []string{
-			"Compare interpretations within every pinned target renderer.",
-			"Require verified signatures and citations for every command affected by a semantic edit.",
-			"Compare the full trace when an edit removes only an empty override block.",
-			"Compare visible text, tracked state values, and source provenance before and after the edit.",
-			"Reject edits that change document parsing or an unresolved semantic operation.",
-			"Compare integer Style fields by the exact integer consumed before and after the edit.",
-			"Use libass rendercheck for pixel regression fixtures; use pinned-source and trace evidence for xy-VSFilter.",
-		},
-	}
-	byDialogue := dialogueEditsByIndex(beforeDoc, edits)
-	affected := affectedDialogues(beforeDoc, edits, byDialogue)
-	for _, profile := range profiles {
-		profileBefore, profileAfter := profile.DocumentView(beforeDoc), profile.DocumentView(afterDoc)
-		if len(beforeDoc.Lines) == 0 {
-			profileBefore, profileAfter = beforeDoc, afterDoc
-		}
-		profileStyles := semantic.StyleStatesByName(profileBefore.StyleFields)
-		if !reflect.DeepEqual(profileStyles, semantic.StyleStatesByName(profileAfter.StyleFields)) {
-			return nil, fmt.Errorf("%s edit changes interpreted Style state", profile.Kind())
-		}
-		profileStyleEvidence, err := verifyStyleIntegerEdits(profileBefore, profileAfter, edits)
-		if err != nil {
-			return nil, fmt.Errorf("%s: %w", profile.Kind(), err)
-		}
-		if len(profileStyleEvidence) != len(styleEvidence) {
-			return nil, fmt.Errorf("%s cannot verify every edited Style field", profile.Kind())
-		}
-		byLineBefore, byLineAfter := make(map[int]ass.Dialogue), make(map[int]ass.Dialogue)
-		for _, dialogue := range profileBefore.Dialogues {
-			byLineBefore[dialogue.Line] = dialogue
-		}
-		for _, dialogue := range profileAfter.Dialogues {
-			byLineAfter[dialogue.Line] = dialogue
-		}
-		target := FixTargetProof{Target: FixTarget{
-			Renderer: profile.Kind().String(), Version: profile.Version(),
-			Capabilities: proofCapabilities(profile.Kind(), profile.Build()),
-		}}
-		for _, dialogueIndex := range affected {
-			baseDialogue := beforeDoc.Dialogues[dialogueIndex]
-			beforeDialogue, beforePresent := byLineBefore[baseDialogue.Line]
-			afterDialogue, afterPresent := byLineAfter[baseDialogue.Line]
-			if !beforePresent || !afterPresent || beforeDialogue.TextStart != baseDialogue.TextStart || beforeDialogue.Style != baseDialogue.Style || beforeDialogue.MissingFields || afterDialogue.MissingFields {
-				return nil, fmt.Errorf("%s cannot verify the edited Dialogue layout", profile.Kind())
-			}
-			dialogueEdits := byDialogue[dialogueIndex]
-			var comparison semantic.ProofComparison
-			if syntaxOnly {
-				comparison = semantic.CompareSyntaxProof(
-					ass.ParseConcreteDialogue(beforeDialogue.Text),
-					ass.ParseConcreteDialogue(afterDialogue.Text), profile,
-					semantic.EvaluationOptions{Styles: profileStyles, DialogueStyle: beforeDialogue.Style},
-				)
-			} else {
-				comparison = semantic.CompareResolvedProof(
-					ass.ParseConcreteDialogue(beforeDialogue.Text),
-					ass.ParseConcreteDialogue(afterDialogue.Text),
-					profile,
-					semantic.EvaluationOptions{Styles: profileStyles, DialogueStyle: beforeDialogue.Style},
-					removedRanges(beforeDialogue, dialogueEdits),
-				)
-			}
-			if !comparison.Equivalent {
-				return nil, fmt.Errorf("%s dialogue line %d: %s", profile.Kind(), beforeDialogue.Line, comparison.Reason)
-			}
-			beforeHash, err := hashJSON(comparison.Before)
-			if err != nil {
-				return nil, err
-			}
-			afterHash, err := hashJSON(comparison.After)
-			if err != nil {
-				return nil, err
-			}
-			ranges := dialogueRanges(beforeDialogue, dialogueEdits)
-			target.Dialogues = append(target.Dialogues, ProofDialogue{
-				Line:              beforeDialogue.Line,
-				BeforeTraceSHA256: beforeHash, AfterTraceSHA256: afterHash,
-				Before: relevantSteps(comparison.Before.Steps, ranges),
-				After:  relevantSteps(comparison.After.Steps, ranges),
-			})
-		}
-		target.StyleFields = slices.Clone(profileStyleEvidence)
-		proof.Interpretations = append(proof.Interpretations, target)
-	}
-	identity := *proof
-	identity.ID = ""
-	proof.ID, err = hashJSON(identity)
-	if err != nil {
-		return nil, err
-	}
-	return proof, nil
+	return newProofBatch(source, beforeDoc, profiles).build(edits, validEdits)
 }
 
 func isEmptyOverrideEdit(doc ass.Document, edit TextEdit) bool {

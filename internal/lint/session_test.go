@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"assx/internal/ass"
-	"assx/internal/ass/renderer"
 	"assx/internal/perftest"
 )
 
@@ -70,9 +69,9 @@ func redundantStyleDoc() ass.Document {
 func TestSessionDiscoveryStripsSafeFixAndNeverBuildsProof(t *testing.T) {
 	calls := 0
 	old := proofBuilder
-	proofBuilder = func(source string, beforeDoc ass.Document, edits []FixEditProof, profiles []renderer.Profile, validEdits map[FixEditProof]struct{}) (*FixProof, error) {
+	proofBuilder = func(batch *proofBatch, edits []FixEditProof, validEdits map[FixEditProof]struct{}) (*FixProof, error) {
 		calls++
-		return old(source, beforeDoc, edits, profiles, validEdits)
+		return old(batch, edits, validEdits)
 	}
 	t.Cleanup(func() { proofBuilder = old })
 
