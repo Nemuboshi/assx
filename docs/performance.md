@@ -66,7 +66,8 @@ Use the same benchmark environment and Go toolchain, preferably with background
 processes minimized. Record the full commit, Go version, and OS/architecture.
 Before publishing benchmark samples, replace host-specific CPU metadata
 with the value 'undisclosed' and omit processor models, core counts, and
-other device details.
+other device details. Go appends the parallelism level to each benchmark
+name (for example `-8`); strip that suffix before publishing.
 Keep hardware-specific notes outside the repository.
 
 ~~~sh
@@ -124,7 +125,7 @@ summed to reconstruct an end-to-end run; GC and object lifetimes differ.
 - **All raw samples:** [baseline-2564e74-windows-amd64.txt](performance/baseline-2564e74-windows-amd64.txt)
 - The rows below show the median of five samples for each workload/stage.
 
-| Lint stage (proved candidates/op) | ns/op | B/op | allocs/op |
+| Lint stage | ns/op | B/op | allocs/op |
 | --- | ---: | ---: | ---: |
 | `typesetting` | 25,353,638 | 13,355,338 | 103,607 |
 | `long_10000` | 1,995,520,800 | 1,682,278,176 | 7,262,831 |
@@ -138,37 +139,59 @@ summed to reconstruct an end-to-end run; GC and object lifetimes differ.
 | `late_candidate_failure_10000` (30,000) | 8,906,064,500 | 4,039,018,400 | 24,721,213 |
 | `style_edit_proof_250` (751) | 232,570,850 | 101,686,392 | 620,714 |
 
-The `scaling_*` lint rows carry two override candidates per dialogue
-(500, 2,000, 8,000, and 20,000 respectively; recorded by
-`BenchmarkEvaluateDialogue` as `cand/op`). The late-failure and Style-edit
-stage guards assert their candidate counts.
+The late-failure and Style-edit stage guards assert their candidate counts
+(3 per dialogue, plus one Style edit; 3 proved per earlier dialogue, and the
+barriered final dialogue keeps its findings without any automatic edit).
 
 Source bytes: `scaling_250` 37,076; `scaling_1000` 145,685;
 `scaling_4000` 586,541; `scaling_10000` 1,464,770; `long_10000` 1,081,230;
 `style_edit_proof_250` 26,793. The `late_candidate_failure_*` documents reuse
 the uniform benchmark dialogue line and scale with dialogue count.
 
+The candidate funnel for the curated `scaling_*` stages and `long_10000`
+(SafeFix candidates discovered before proof, versus candidates that leave
+`AnalyzeDocument` with a proof) is:
+
+| Stage | discovered | proved |
+| --- | ---: | ---: |
+| `typesetting` | 16 | 16 |
+| `scaling_250` | 480 | 342 |
+| `scaling_1000` | 1,924 | 753 |
+| `scaling_4000` | 7,647 | 119 |
+| `scaling_10000` | 19,136 | 0 |
+| `long_10000` | 1,776 | 0 |
+
 Reading the stages:
 
 - Scaling cost is dominated by the SafeFix proof path, not by source scans.
-  `scaling_10000` carries 1.46 MB (comparable to `long_10000`'s 1.08 MB) but
-  20,000 candidates, and costs 2.0x the time and 2.0x the bytes of
-  `long_10000`, which has no proved candidates. Candidate count, not byte
-  count, drives lint analysis cost here.
-- Between `scaling_250` and `scaling_1000`, bytes grow 3.9x (candidates 4.0x)
-  while allocations grow 2.7x: proof work rises with candidate count, and the
-  rest of the analysis grows sublinearly against its own share.
-- `late_candidate_failure_10000` (30,000 candidates) allocates 4.04 GB,
-  2.4x its candidate-count share of `scaling_10000` alone. The bounded
-  subdivision retries repeat whole-source hashing and document-wide
-  evaluation after the final-dialogue barrier revokes proof authorization.
+  `scaling_10000` carries 1.46 MB of text (comparable to `long_10000`'s
+  1.08 MB) and 19,136 discovered candidates, and costs 2.0x the time and
+  2.0x the bytes of `long_10000`, which proved none of its 1,776
+  discovered candidates.
+- The funnel above is the bounded subdivision schedule, not a per-candidate
+  semantic change. One failing candidate sends its group through the queue of
+  at most 64 proof builds. Curated documents mix provable and unprovable
+  edits, so many groups split until attempts run out, and unattached
+  candidates lose their automatic edits. At `scaling_10000` and `long_10000`
+  no group survived. Whether the unproved candidates are individually
+  provable is not established here; Task 6 measures reused proof work
+  against this funnel.
+- `late_candidate_failure_10000` proves 29,997 of its 30,000 candidates: the
+  final dialogue's unknown tag revokes exactly its three candidates during
+  semantic evaluation, before proof batching. The uniform document's first
+  aggregate build therefore succeeds, and its 4.04 GB still costs 2.0x the
+  time of `scaling_10000`, which proves nothing. The aggregate proof itself —
+  every dialogue, every target, full traces — dominates.
 - `style_edit_proof_250` measures the document-wide path a Style edit forces:
-  the same 750 dialogue candidates plus one Style edit, 232 ms and 102 MB.
-  The Style proof selects every dialogue regardless of edit locality.
-- Evaluation cost is linear in candidates: `BenchmarkEvaluateDialogue`
-  allocates 22.6 MB at `scaling_1000` and 93.2 MB at `scaling_4000`
-  (4.1x over 4.0x candidates). Compatibility findings per candidate grow
-  with dialogue count because each pair compares every tag.
+  the same three dialogue candidates per dialogue plus one Style edit, all
+  751 proved, 232 ms and 102 MB. The Style proof selects every dialogue
+  regardless of edit locality.
+- Evaluation cost is linear in the semantic work, not in proof outcome:
+  `BenchmarkEvaluateDialogue` allocates 22.6 MB at `scaling_1000` (2,000
+  no-effect records) and 93.2 MB at `scaling_4000` (8,000 records), 4.1x over
+  4.0x records. `long_10000` (517,996 records) allocates 80.7 MB: record
+  count alone does not predict evaluation cost, because candidate-free
+  dialogues take the skip path.
 
 These are median single-stage samples on one machine. They do not establish
 a speed ratio against other revisions and no quadratic claim is made;
