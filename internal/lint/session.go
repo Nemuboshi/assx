@@ -103,7 +103,9 @@ type PendingFinding struct {
 
 // Session holds one discovery pass: pending findings, fix candidates with
 // their edits, analysis targets, and rule policy. Proof and application use
-// the stored document source.
+// the stored document source. The session's proof batch owns the before-side
+// preparation its discoveries proved reusable: discovery's projected views
+// feed every later proof build for this exact source.
 type Session struct {
 	id          uint64
 	doc         ass.Document
@@ -112,6 +114,7 @@ type Session struct {
 	findings    []Diagnostic
 	candidates  []Diagnostic
 	candidateOf []int
+	proof       *proofBatch
 }
 
 func newSessionID() uint64 {
@@ -143,6 +146,7 @@ func Discover(ctx context.Context, doc ass.Document, targets AnalysisTargets, po
 		return nil, err
 	}
 	session := &Session{id: newSessionID(), doc: doc, targets: targets, policy: policy}
+	session.proof = newSessionProofBatch(doc, targets.Profiles(), shared.views)
 	for index, diagnostic := range findings {
 		if diagnostic.FixSafety != SafeFix || len(diagnostic.Edits) == 0 {
 			// Proof strips a SafeFix label without edits, as today.
@@ -202,7 +206,7 @@ func (s *Session) ProveFixes(ctx context.Context, handles []CandidateID) ([]Diag
 	for i, ordinal := range ordinals {
 		batch[i] = cloneDiagnostic(s.candidates[ordinal])
 	}
-	return proveSafeFixesContext(ctx, s.doc, batch, s.targets.Profiles())
+	return proveSafeFixesBatchContext(ctx, s.doc, batch, s.targets.Profiles(), s.proof)
 }
 
 func (s *Session) resolve(handles []CandidateID) ([]int, error) {
