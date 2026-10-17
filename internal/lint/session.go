@@ -8,7 +8,83 @@ import (
 	"slices"
 
 	"assx/internal/ass"
+	"assx/internal/ass/renderer"
+	"assx/internal/semantic"
 )
+
+// DocumentAnalysis holds the shared preparation for one analysis request:
+// one source version, its concrete document, each target profile's record
+// layouts, and each profile's projected document view. Pass it to the context
+// analysis paths so validation and compatibility read the same bytes; a nil
+// value keeps the legacy single-use behavior.
+type DocumentAnalysis struct {
+	text         string
+	concrete     *ass.ConcreteDocument
+	layouts      map[renderer.Profile][]renderer.RecordLayout
+	views        map[renderer.Profile]ass.Document
+	preparations *semantic.DialoguePreparations
+}
+
+// PrepareDocument parses the concrete document once and resolves layouts and
+// views for each exact profile. The projection core returns the document
+// unchanged for a profile that does not project, so those entries cost no
+// extra parse. Dialogue operations are cached per profile and source text.
+// A canceled context returns no partial preparation.
+func PrepareDocument(ctx context.Context, doc ass.Document, profiles []renderer.Profile) (*DocumentAnalysis, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	analysis := &DocumentAnalysis{
+		text:         doc.Text,
+		layouts:      make(map[renderer.Profile][]renderer.RecordLayout, len(profiles)),
+		views:        make(map[renderer.Profile]ass.Document, len(profiles)),
+		preparations: semantic.NewDialoguePreparations(),
+	}
+	tree := ass.ParseConcreteDocument(doc.Text)
+	analysis.concrete = &tree
+	for _, profile := range profiles {
+		if err := ctx.Err(); err != nil {
+			return nil, err
+		}
+		layouts := profile.ResolveDocumentLayouts(tree)
+		analysis.layouts[profile] = layouts
+		view, err := profile.DocumentViewFromConcrete(ctx, doc, tree, layouts)
+		if err != nil {
+			return nil, err
+		}
+		analysis.views[profile] = view
+	}
+	return analysis, nil
+}
+
+// textMatches reports whether the analysis was prepared for this exact source.
+func (a *DocumentAnalysis) textMatches(doc ass.Document) bool {
+	return a != nil && a.text == doc.Text
+}
+
+func (a *DocumentAnalysis) viewFor(doc ass.Document, profile renderer.Profile) (ass.Document, bool) {
+	if !a.textMatches(doc) {
+		return ass.Document{}, false
+	}
+	view, ok := a.views[profile]
+	return view, ok
+}
+
+func (a *DocumentAnalysis) concreteDocument(doc ass.Document) (*ass.ConcreteDocument, bool) {
+	if !a.textMatches(doc) {
+		return nil, false
+	}
+	return a.concrete, a.concrete != nil
+}
+
+// compatibilityMode requests only the differences lint can emit, and shares
+// this request's layouts and dialogue operations with the comparison pass.
+func (a *DocumentAnalysis) compatibilityMode() semantic.ComparisonMode {
+	if a == nil {
+		return semantic.ComparisonMode{LintOnly: true}
+	}
+	return semantic.ComparisonMode{LintOnly: true, Preparations: a.preparations, Layouts: a.layouts}
+}
 
 // CandidateID names one fix candidate in one session. The identity is opaque
 // outside this package; a handle from another session fails.
@@ -51,12 +127,18 @@ func newSessionID() uint64 {
 }
 
 // Discover runs every lint pass and records fix candidates without proving
-// them. It rejects an invalid policy and honors cancellation.
+// them. It rejects an invalid policy and honors cancellation. It prepares the
+// document once for the selected targets, so validation and compatibility
+// share layouts, views, and resolved dialogue operations.
 func Discover(ctx context.Context, doc ass.Document, targets AnalysisTargets, policy RulePolicy) (*Session, error) {
 	if err := policy.validate(); err != nil {
 		return nil, err
 	}
-	findings, err := analyzeDocumentForTargetsUnprovedContext(ctx, doc, targets, policy)
+	shared, err := PrepareDocument(ctx, doc, targets.Profiles())
+	if err != nil {
+		return nil, err
+	}
+	findings, err := analyzeDocumentForTargetsUnprovedContext(ctx, doc, targets, policy, shared)
 	if err != nil {
 		return nil, err
 	}

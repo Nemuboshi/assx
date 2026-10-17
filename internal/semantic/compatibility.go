@@ -44,10 +44,40 @@ type CompatibilityFinding struct {
 	Citations   []string
 }
 
+// ComparisonMode controls one comparison pass.
+// LintOnly keeps only findings that lint can emit: it drops equivalent
+// observations before their detail strings exist.
+// Preparations shares resolved operations across consumers of one request.
+// Nil creates a per-call value, so each profile resolves one text once even
+// when both the walk replay and the evaluation consume it.
+// Layouts optionally supplies record layouts resolved once for the tree,
+// keyed by exact profile.
+type ComparisonMode struct {
+	LintOnly     bool
+	Preparations *DialoguePreparations
+	Layouts      map[renderer.Profile][]renderer.RecordLayout
+}
+
+func (m ComparisonMode) preparations() *DialoguePreparations { return m.Preparations }
+
+// layoutsFor returns the caller's layouts for this profile when supplied,
+// so one request resolves record layouts once.
+func (m ComparisonMode) layoutsFor(p renderer.Profile, tree ass.ConcreteDocument) []renderer.RecordLayout {
+	if rows := m.Layouts[p]; rows != nil {
+		return rows
+	}
+	return p.ResolveDocumentLayouts(tree)
+}
+
 // CompareDialogue compares every pair of requested profiles. No profiles
 // selects the frozen traditional compatibility scope: libass + xy-VSFilter.
 // Input options supply Style context; caller observers are not used.
 func CompareDialogue(tree ass.ConcreteDialogue, profiles []renderer.Profile, options EvaluationOptions) []CompatibilityFinding {
+	return CompareDialogueInMode(tree, profiles, options, ComparisonMode{})
+}
+
+// CompareDialogueInMode is the mode-aware dialogue comparison core.
+func CompareDialogueInMode(tree ass.ConcreteDialogue, profiles []renderer.Profile, options EvaluationOptions, mode ComparisonMode) []CompatibilityFinding {
 	if len(profiles) == 0 {
 		libass, _ := renderer.Standard(renderer.Libass)
 		xy, _ := renderer.Standard(renderer.XYVSFilter)
@@ -63,10 +93,11 @@ func CompareDialogue(tree ass.ConcreteDialogue, profiles []renderer.Profile, opt
 	if len(unique) < 2 || !tree.HasCandidates() {
 		return nil
 	}
+	preparations := mode.preparations()
 	runs := make([]map[ass.ConcreteSpan]*Interpretation, len(unique))
 	spans := make(map[ass.ConcreteSpan]bool)
 	for i, p := range unique {
-		runs[i] = observeInterpretation(tree, p, options)
+		runs[i] = observePrepared(preparations.Prepare(p, tree), options)
 		for span := range runs[i] {
 			spans[span] = true
 		}
@@ -86,7 +117,7 @@ func CompareDialogue(tree ass.ConcreteDialogue, profiles []renderer.Profile, opt
 		for i := range unique {
 			for j := i + 1; j < len(unique); j++ {
 				left, right := observationAt(runs[i], span, unique[i]), observationAt(runs[j], span, unique[j])
-				out = append(out, compareInterpretations(span, left, right)...)
+				out = append(out, compareInterpretations(span, left, right, mode.LintOnly)...)
 			}
 		}
 	}
@@ -100,17 +131,21 @@ func observationAt(run map[ass.ConcreteSpan]*Interpretation, span ass.ConcreteSp
 	return &Interpretation{Profile: profile}
 }
 
-func observeInterpretation(tree ass.ConcreteDialogue, profile renderer.Profile, options EvaluationOptions) map[ass.ConcreteSpan]*Interpretation {
+// observePrepared replays one prepared resolution: the walk view fills each
+// source span, then the evaluator decorates the same observations. Consumers
+// that rewrite argument spans (the document pass) clone first.
+func observePrepared(prepared *PreparedDialogue, options EvaluationOptions) map[ass.ConcreteSpan]*Interpretation {
+	profile := prepared.Profile()
 	out := make(map[ass.ConcreteSpan]*Interpretation)
-	profile.WalkDialogue(tree, func(r renderer.Result, _ bool) bool {
+	prepared.EachOperation(func(r renderer.Result, _ bool) bool {
 		out[r.Source] = &Interpretation{Profile: profile, Resolution: r, Present: true}
 		return true
 	})
 	var indexSpans []ass.ConcreteSpan
 	options.Observer = Observer{Tag: func(event TagEvent, state StateView) {
 		span := ass.ConcreteSpan{Start: event.Tag.Start, End: event.Tag.End}
-		indexSpans = append(indexSpans, span)
 		observation := out[span]
+		indexSpans = append(indexSpans, span)
 		event.Slots = slices.Clone(event.Slots)
 		// Nested operations have their own source-aligned observations;
 		// retaining recursive child views would duplicate the same subtree.
@@ -127,12 +162,14 @@ func observeInterpretation(tree ass.ConcreteDialogue, profile renderer.Profile, 
 		}
 		out[span] = observation
 	}}
-	EvaluateResolved(tree, profile, options)
+	evaluatePrepared(prepared, options)
 	return out
 }
 
-func compareInterpretations(span ass.ConcreteSpan, a, b *Interpretation) []CompatibilityFinding {
+func compareInterpretations(span ass.ConcreteSpan, a, b *Interpretation, lintOnly bool) []CompatibilityFinding {
 	out := make([]CompatibilityFinding, 0, 8)
+	// Lint emits no equivalent observation; skip its detail string too.
+	drops := func(status CompatibilityStatus) bool { return lintOnly && status == CompatibilityEquivalent }
 	add := func(dimension string, status CompatibilityStatus, detail string, citations ...string) {
 		sources := slices.Clone(citations)
 		sources = slices.DeleteFunc(sources, func(s string) bool { return s == "" })
@@ -154,7 +191,9 @@ func compareInterpretations(span ass.ConcreteSpan, a, b *Interpretation) []Compa
 	} else if ar.Status != renderer.Matched {
 		dispatch = CompatibilityIgnored
 	}
-	add("dispatch", dispatch, fmt.Sprintf("%s selects %s; %s selects %s.", a.Profile.Kind(), dispatchDescription(ar), b.Profile.Kind(), dispatchDescription(br)), dispatchSources...)
+	if !drops(dispatch) {
+		add("dispatch", dispatch, fmt.Sprintf("%s selects %s; %s selects %s.", a.Profile.Kind(), dispatchDescription(ar), b.Profile.Kind(), dispatchDescription(br)), dispatchSources...)
+	}
 	if dispatch == CompatibilityUnresolved || dispatch == CompatibilityIgnored {
 		return out
 	}
@@ -167,7 +206,9 @@ func compareInterpretations(span ass.ConcreteSpan, a, b *Interpretation) []Compa
 	if !slices.Equal(ar.Args, br.Args) && (ar.Form == renderer.Bare && br.Form == renderer.Bare || verifiedSignature(ar.Signature) && verifiedSignature(br.Signature)) {
 		args = CompatibilityDivergent
 	}
-	add("arguments", args, fmt.Sprintf("%s resolves %s; %s resolves %s.", a.Profile.Kind(), argumentDescription(ar), b.Profile.Kind(), argumentDescription(br)), ar.Citation, br.Citation)
+	if !drops(args) {
+		add("arguments", args, fmt.Sprintf("%s resolves %s; %s resolves %s.", a.Profile.Kind(), argumentDescription(ar), b.Profile.Kind(), argumentDescription(br)), ar.Citation, br.Citation)
+	}
 	signature := CompatibilityUnresolved
 	if verifiedSignature(ar.Signature) && verifiedSignature(br.Signature) {
 		signature = CompatibilityEquivalent
@@ -177,7 +218,9 @@ func compareInterpretations(span ass.ConcreteSpan, a, b *Interpretation) []Compa
 			signature = CompatibilityIgnored
 		}
 	}
-	add("signature", signature, fmt.Sprintf("%s: %s; %s: %s.", a.Profile.Kind(), signatureDescription(ar.Signature), b.Profile.Kind(), signatureDescription(br.Signature)), ar.Citation, br.Citation)
+	if !drops(signature) {
+		add("signature", signature, fmt.Sprintf("%s: %s; %s: %s.", a.Profile.Kind(), signatureDescription(ar.Signature), b.Profile.Kind(), signatureDescription(br.Signature)), ar.Citation, br.Citation)
+	}
 	ae, be := a.Event, b.Event
 	// Application and ownership are observations, not broader proof. Require
 	// source-verified accepted/rejected forms and certain evaluator transitions.
@@ -189,7 +232,9 @@ func compareInterpretations(span ass.ConcreteSpan, a, b *Interpretation) []Compa
 			application = CompatibilityDivergent
 		}
 	}
-	add("application", application, fmt.Sprintf("%s: applied=%t, ignored=%t; %s: applied=%t, ignored=%t.", a.Profile.Kind(), ae.Applied, ae.Ignored, b.Profile.Kind(), be.Applied, be.Ignored), ar.Citation, br.Citation)
+	if !drops(application) {
+		add("application", application, fmt.Sprintf("%s: applied=%t, ignored=%t; %s: applied=%t, ignored=%t.", a.Profile.Kind(), ae.Applied, ae.Ignored, b.Profile.Kind(), be.Applied, be.Ignored), ar.Citation, br.Citation)
+	}
 	if ae.Policy == spec.FirstWins || be.Policy == spec.FirstWins {
 		ownership := CompatibilityUnresolved
 		if certain {
@@ -198,7 +243,9 @@ func compareInterpretations(span ass.ConcreteSpan, a, b *Interpretation) []Compa
 				ownership = CompatibilityDivergent
 			}
 		}
-		add("ownership", ownership, fmt.Sprintf("%s owners: %s; %s owners: %s.", a.Profile.Kind(), ownersDescription(a.Owners), b.Profile.Kind(), ownersDescription(b.Owners)), ar.Citation, br.Citation)
+		if !drops(ownership) {
+			add("ownership", ownership, fmt.Sprintf("%s owners: %s; %s owners: %s.", a.Profile.Kind(), ownersDescription(a.Owners), b.Profile.Kind(), ownersDescription(b.Owners)), ar.Citation, br.Citation)
+		}
 	}
 	if ar.Name == br.Name && ar.Status == renderer.Matched && br.Status == renderer.Matched {
 		as, bs := candidateScenarios(a), candidateScenarios(b)
@@ -209,6 +256,9 @@ func compareInterpretations(span ass.ConcreteSpan, a, b *Interpretation) []Compa
 			status := compareScenarioOutcomes(ar.Name, scenario, av, bv)
 			if scenario == "coord-round" && !slices.Equal(ar.Args, br.Args) {
 				status = CompatibilityUnresolved
+			}
+			if drops(status) {
+				continue
 			}
 			add("behavior/"+scenario, status, fmt.Sprintf("%s: %s; %s: %s.", a.Profile.Kind(), behaviorDescription(av), b.Profile.Kind(), behaviorDescription(bv)), av.Citation, bv.Citation)
 		}
@@ -227,7 +277,9 @@ func compareInterpretations(span ass.ConcreteSpan, a, b *Interpretation) []Compa
 			stateStatus = CompatibilityEquivalent
 		}
 	}
-	add("state", stateStatus, fmt.Sprintf("%s: %s, active Style %q; %s: %s, active Style %q. Tracked state alone cannot prove rendering compatibility.", a.Profile.Kind(), stateDescription(ae), a.ActiveStyle, b.Profile.Kind(), stateDescription(be), b.ActiveStyle))
+	if !drops(stateStatus) {
+		add("state", stateStatus, fmt.Sprintf("%s: %s, active Style %q; %s: %s, active Style %q. Tracked state alone cannot prove rendering compatibility.", a.Profile.Kind(), stateDescription(ae), a.ActiveStyle, b.Profile.Kind(), stateDescription(be), b.ActiveStyle))
+	}
 	return out
 }
 

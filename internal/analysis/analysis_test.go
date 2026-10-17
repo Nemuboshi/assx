@@ -475,8 +475,10 @@ func (c *budgetContext) Err() error {
 }
 func (c *budgetContext) Value(any) any { return nil }
 
-func TestAnalyzeCancellationMidDocumentReturnsNoResult(t *testing.T) {
+func TestAnalyzeCancellationMidRequestReturnsNoResult(t *testing.T) {
 	snapshot := mustSnapshot(t, perftest.StyleEdit(t))
+	// Budget: Analyze entry and request-preparation entry; the first
+	// per-profile layout check then stops the request.
 	budget := &budgetContext{Context: context.Background(), remaining: 2}
 	result, err := Analyze(budget, snapshot, Options{})
 	if err == nil || result != nil {
@@ -497,11 +499,12 @@ func TestAnalyzeOneLargeDialogueIsAtomic(t *testing.T) {
 		"Dialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,," + block + "large\n" +
 		"Dialogue: 0,0:00:01.00,0:00:02.00,Default,,0,0,0,,{\\fs20\\fs20}second\n"
 	snapshot := mustSnapshot(t, text)
-	// Budget: Analyze entry, discovery entry, profile-pass entry, and the
-	// dialogue-0 boundary check. The large dialogue then runs whole, and the
-	// dialogue-1 boundary stops the request. That proves one dialogue is the
-	// atomic unit: no partial dialogue state is returned.
-	budget := &budgetContext{Context: context.Background(), remaining: 4}
+	// Budget: Analyze entry, request-preparation entry, one check per target
+	// profile layout plus one per projection, discovery entry, profile-pass
+	// entry, and the dialogue-0 boundary check. The large dialogue then runs
+	// whole, and the dialogue-1 boundary stops the request. That proves one
+	// dialogue is the atomic unit: no partial dialogue state is returned.
+	budget := &budgetContext{Context: context.Background(), remaining: 9}
 	result, err := Analyze(budget, snapshot, Options{})
 	if err == nil || result != nil {
 		t.Fatalf("canceled discovery returned a result: %v %#v", err, result)

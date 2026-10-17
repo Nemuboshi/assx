@@ -27,8 +27,21 @@ func AnalyzeCompatibility(dialogue ass.Dialogue, profiles []renderer.Profile) []
 // AnalyzeDocumentCompatibility uses the lossless document, including records
 // the document view cannot represent. All positions refer to doc.Text byte offsets.
 func AnalyzeDocumentCompatibility(doc ass.Document, profiles []renderer.Profile) []Diagnostic {
-	tree := ass.ParseConcreteDocument(doc.Text)
-	findings := semantic.CompareDocument(tree, profiles)
+	return analyzeDocumentCompatibility(doc, nil, profiles, semantic.ComparisonMode{})
+}
+
+// analyzeDocumentCompatibility converts findings with a request-supplied
+// concrete document and comparison mode. A nil tree parses doc.Text.
+// A single profile has no pair to compare, so it emits no finding.
+func analyzeDocumentCompatibility(doc ass.Document, tree *ass.ConcreteDocument, profiles []renderer.Profile, mode semantic.ComparisonMode) []Diagnostic {
+	if len(profiles) == 1 {
+		return nil
+	}
+	if tree == nil {
+		parsed := ass.ParseConcreteDocument(doc.Text)
+		tree = &parsed
+	}
+	findings := semantic.CompareDocumentInMode(*tree, profiles, mode)
 	return compatibilityDiagnostics(findings, func(span ass.ConcreteSpan) (int, int) {
 		index := sort.Search(len(tree.Lines), func(i int) bool { return tree.Lines[i].Span.End > span.Start })
 		if index == len(tree.Lines) {
