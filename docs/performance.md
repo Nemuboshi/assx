@@ -19,10 +19,21 @@ and Events sections.
 | `drawing.ass` | 32 | Vector drawings, bezier paths, rectangular/vector clipping |
 | `transforms.ass` | 48 | Nested/repeated transforms, resets and animated properties |
 | `long_10000` | 10,000 | Deterministically cycles through all four checked-in files' Dialogue lines |
+| `scaling_250` … `scaling_10000` | 250, 1000, 4000, 10000 | Curated dialogue lines under one header, each prefixed with one no-effect override block |
+| `late_candidate_failure_250` … `_10000` | 250, 1000, 4000, 10000 | Uniform benchmark dialogues; one unknown tag in the final dialogue revokes its three SafeFix candidates |
+| `style_edit_proof_250` | 250 | One fractional-integer Style field edit plus two proved no-effect edits per dialogue |
 
-`internal/perftest.Long` constructs the long document **before benchmark
-timing**; no bulky generated file is tracked. Existing synthetic benchmarks
-remain available, including `nested_1000` as a pathological stress case.
+`internal/perftest.Long` constructs the long document and
+`internal/perftest.Scaling` the scaling documents **before benchmark
+timing**; no bulky generated file is tracked. `internal/perftest.StyleEdit`
+builds the Style-edit workload the same way. The late-proof-failure workload
+reuses `benchmarkASSDocument` and replaces the final dialogue's override
+block with an unknown tag. Existing synthetic benchmarks remain available,
+including `nested_1000` as a pathological stress case.
+The lint stage records `cand/op` (SafeFix candidates) and the semantic
+compatibility stage records `finding/op`, so allocation cost is readable per
+candidate. Stage tests assert fixture findings and fixed output before any
+timing.
 These feature-focused fixtures are not an empirical sample of real subtitle
 frequency distributions. Licensed/anonymized real-world corpus input may be
 a useful later extension.
@@ -34,8 +45,16 @@ a useful later extension.
 | `BenchmarkParseConcreteDialogueFixtures` | Lossless CST parsing for each Dialogue, without document parsing |
 | `BenchmarkASSDocumentParse` | `ass.Parse` document fields and spans, without dialogue CST construction |
 | `BenchmarkEvaluateDialogue` | Explicit libass effective-state evaluation on pre-parsed CSTs |
-| `BenchmarkAnalyzeDocumentFixtures` | All lint passes on a pre-parsed document |
+| `BenchmarkCompareDialogue` | Pairwise compatibility comparison on pre-parsed CSTs |
+| `BenchmarkAnalyzeDocumentFixtures` | All lint passes on a pre-parsed document, including the `late_candidate_failure_N` and `style_edit_proof_N` stages |
 | `BenchmarkParseAndAnalyzeDocumentFixtures` | Complete `ass.Parse` plus `lint.AnalyzeDocument` |
+
+The scaling fixtures (`scaling_250` … `scaling_10000`) separate source-size
+growth from feature mix. The lint analysis of `long_10000` is dominated by
+source scans shared with other stages; the `scaling_*` and
+`late_candidate_failure_*` stages isolate the SafeFix proof path, where
+candidate count scales with document size. Discovery, proof, and application
+stage benchmarks arrive with their deferred APIs.
 
 Each operation processes one **whole fixture**. Fixture loading, large-input
 construction, and prerequisite parsing are outside timed regions. Go reports
@@ -96,6 +115,81 @@ no fixed performance threshold: shared CI runners are noisy.
 
 The independently measured stage timings and allocations should **not** be
 summed to reconstruct an end-to-end run; GC and object lifetimes differ.
+
+## Implementation record: scaling and proof-stage baseline
+
+- **Measured commit:** `2564e744464af3b30412afd8dd1cab625aad9d99`
+- **Environment:** Windows/amd64, Go 1.27.0, GOMAXPROCS 8
+- **Flags:** `-benchmem -benchtime=250ms -count=5`
+- **All raw samples:** [baseline-2564e74-windows-amd64.txt](performance/baseline-2564e74-windows-amd64.txt)
+- The rows below show the median of five samples for each workload/stage.
+
+| Lint stage (proved candidates/op) | ns/op | B/op | allocs/op |
+| --- | ---: | ---: | ---: |
+| `typesetting` | 25,353,638 | 13,355,338 | 103,607 |
+| `long_10000` | 1,995,520,800 | 1,682,278,176 | 7,262,831 |
+| `scaling_250` | 412,252,300 | 261,423,656 | 1,669,880 |
+| `scaling_1000` | 1,295,661,200 | 758,743,168 | 4,555,926 |
+| `scaling_4000` | 2,340,116,200 | 1,715,716,072 | 9,582,038 |
+| `scaling_10000` | 4,024,070,500 | 3,395,075,744 | 18,311,642 |
+| `late_candidate_failure_250` (750) | 181,016,000 | 101,138,708 | 617,900 |
+| `late_candidate_failure_1000` (3,000) | 779,539,900 | 405,230,784 | 2,472,205 |
+| `late_candidate_failure_4000` (12,000) | 3,005,337,700 | 1,617,665,448 | 9,888,606 |
+| `late_candidate_failure_10000` (30,000) | 8,906,064,500 | 4,039,018,400 | 24,721,213 |
+| `style_edit_proof_250` (751) | 232,570,850 | 101,686,392 | 620,714 |
+
+The `scaling_*` lint rows carry two override candidates per dialogue
+(500, 2,000, 8,000, and 20,000 respectively; recorded by
+`BenchmarkEvaluateDialogue` as `cand/op`). The late-failure and Style-edit
+stage guards assert their candidate counts.
+
+Source bytes: `scaling_250` 37,076; `scaling_1000` 145,685;
+`scaling_4000` 586,541; `scaling_10000` 1,464,770; `long_10000` 1,081,230;
+`style_edit_proof_250` 26,793. The `late_candidate_failure_*` documents reuse
+the uniform benchmark dialogue line and scale with dialogue count.
+
+Reading the stages:
+
+- Scaling cost is dominated by the SafeFix proof path, not by source scans.
+  `scaling_10000` carries 1.46 MB (comparable to `long_10000`'s 1.08 MB) but
+  20,000 candidates, and costs 2.0x the time and 2.0x the bytes of
+  `long_10000`, which has no proved candidates. Candidate count, not byte
+  count, drives lint analysis cost here.
+- Between `scaling_250` and `scaling_1000`, bytes grow 3.9x (candidates 4.0x)
+  while allocations grow 2.7x: proof work rises with candidate count, and the
+  rest of the analysis grows sublinearly against its own share.
+- `late_candidate_failure_10000` (30,000 candidates) allocates 4.04 GB,
+  2.4x its candidate-count share of `scaling_10000` alone. The bounded
+  subdivision retries repeat whole-source hashing and document-wide
+  evaluation after the final-dialogue barrier revokes proof authorization.
+- `style_edit_proof_250` measures the document-wide path a Style edit forces:
+  the same 750 dialogue candidates plus one Style edit, 232 ms and 102 MB.
+  The Style proof selects every dialogue regardless of edit locality.
+- Evaluation cost is linear in candidates: `BenchmarkEvaluateDialogue`
+  allocates 22.6 MB at `scaling_1000` and 93.2 MB at `scaling_4000`
+  (4.1x over 4.0x candidates). Compatibility findings per candidate grow
+  with dialogue count because each pair compares every tag.
+
+These are median single-stage samples on one machine. They do not establish
+a speed ratio against other revisions and no quadratic claim is made;
+`-count=5` distributions are in the raw file, and `benchstat` remains the
+comparison tool.
+
+Allocation profiles for `long_10000`, `late_candidate_failure_1000`, and
+`scaling_10000` on this commit (captured outside the repository with
+`-cpuprofile`/`-memprofile`, read with `go tool pprof -top -alloc_space`):
+
+- Proof hashing and evidence dominate: `lint.hashSource` 9.3–9.6% flat and
+  `lint.hashJSON` 7.9% flat (45.2% cumulative in the late-failure profile),
+  reached through `buildFixProofWithDocument` (cumulative 78.4% in the
+  long profile).
+- Semantic preparation repeats: `semantic.resolveTokens` ~10% cumulative and
+  `semantic.StateView.Snapshot` 7.5–9.6% flat per stage.
+- The long CPU profile shows `encoding/json/v2` struct marshaling at 27.6%
+  cumulative and GC scanning (`runtime.tryDeferToSpanScan`,
+  `runtime.scanObject*`) above 10%, consistent with the trace-heavy proof
+  path.
+
 
 ## Implementation record: CPU and allocation profiling
 

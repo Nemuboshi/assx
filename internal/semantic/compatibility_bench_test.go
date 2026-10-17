@@ -17,14 +17,21 @@ func BenchmarkCompareDialogue(b *testing.B) {
 			trees[i] = ass.ParseConcreteDialogue(dialogue.Text)
 			size += len(dialogue.Text)
 		}
+		benchmarkCompatibilityFindings = nil
+		for _, tree := range trees {
+			benchmarkCompatibilityFindings = append(benchmarkCompatibilityFindings, CompareDialogue(tree, nil, EvaluationOptions{})...)
+		}
+		findings := len(benchmarkCompatibilityFindings)
 		b.Run(fixture.Name, func(b *testing.B) {
 			b.SetBytes(int64(size))
 			b.ReportAllocs()
+			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
 				for _, tree := range trees {
 					benchmarkCompatibilityFindings = CompareDialogue(tree, nil, EvaluationOptions{})
 				}
 			}
+			b.ReportMetric(float64(findings), "finding/op")
 		})
 	}
 }

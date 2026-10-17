@@ -19,6 +19,11 @@ func BenchmarkEvaluateDialogue(b *testing.B) {
 			trees[i] = ass.ParseConcreteDialogue(dialogue.Text)
 			bytes += len(dialogue.Text)
 		}
+		benchmarkEffects = nil
+		for _, tree := range trees {
+			benchmarkEffects = append(benchmarkEffects, evaluateLibassNoEffects(tree)...)
+		}
+		candidates := len(benchmarkEffects)
 		b.Run(test.Name, func(b *testing.B) {
 			b.SetBytes(int64(bytes))
 			b.ReportAllocs()
@@ -28,6 +33,7 @@ func BenchmarkEvaluateDialogue(b *testing.B) {
 					benchmarkEffects = evaluateLibassNoEffects(tree)
 				}
 			}
+			b.ReportMetric(float64(candidates), "cand/op")
 		})
 	}
 }
