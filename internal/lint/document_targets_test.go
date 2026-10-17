@@ -58,7 +58,7 @@ func TestSafeFixProofUsesEachTargetsStyleLayout(t *testing.T) {
 	}
 
 	// Recreate a primary-projected proof to verify application rechecks the source layouts.
-	projected := proveSafeFixes(xy.DocumentView(doc), analyzeDocumentForTargetsUnproved(doc, targets), targets.Profiles())
+	projected := proveSafeFixes(xy.DocumentView(doc), analyzeDocumentForTargetsUnproved(doc, targets, nil), targets.Profiles())
 	if safe, _, _ := CountFixes(projected); safe == 0 {
 		t.Fatal("test input did not reproduce a primary-view proof")
 	}

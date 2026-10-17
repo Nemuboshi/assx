@@ -87,10 +87,12 @@ func ApplyFixes(text string, diagnostics []Diagnostic, includeUnsafe bool) (stri
 
 // ApplyFixesForTargets checks every SafeFix against the same analysis policy.
 func ApplyFixesForTargets(text string, diagnostics []Diagnostic, includeUnsafe bool, targets AnalysisTargets) (string, int, error) {
-	return applyFixes(text, diagnostics, includeUnsafe, targets)
+	return applyFixes(text, diagnostics, includeUnsafe, targets, nil)
 }
 
-func applyFixes(text string, diagnostics []Diagnostic, includeUnsafe bool, targets AnalysisTargets) (string, int, error) {
+// applyFixes re-authorizes every SafeFix under the given rule policy before
+// it writes anything. A nil policy means the default rule catalog.
+func applyFixes(text string, diagnostics []Diagnostic, includeUnsafe bool, targets AnalysisTargets, policy RulePolicy) (string, int, error) {
 	proofs := fixProofsByID(diagnostics)
 	for _, diagnostic := range diagnostics {
 		if diagnostic.FixProofRef == "" {
@@ -147,7 +149,7 @@ func applyFixes(text string, diagnostics []Diagnostic, includeUnsafe bool, targe
 	}
 	if len(safeEdits) != 0 {
 		doc := proofDocument(text, safeEdits)
-		validEdits := fixEditIndex(analyzeDocumentForTargetsUnproved(doc, targets))
+		validEdits := fixEditIndex(analyzeDocumentForTargetsUnproved(doc, targets, policy))
 		for _, group := range groups {
 			if err := verifyFixProofs(text, doc, group.edits, group.proof, targets.Profiles(), validEdits); err != nil {
 				return "", 0, fmt.Errorf("verify SafeFix edits: %w", err)

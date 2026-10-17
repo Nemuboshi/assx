@@ -47,14 +47,16 @@ a useful later extension.
 | `BenchmarkEvaluateDialogue` | Explicit libass effective-state evaluation on pre-parsed CSTs |
 | `BenchmarkCompareDialogue` | Pairwise compatibility comparison on pre-parsed CSTs |
 | `BenchmarkAnalyzeDocumentFixtures` | All lint passes on a pre-parsed document, including the `late_candidate_failure_N` and `style_edit_proof_N` stages |
+| `BenchmarkSessionDiscovery` | `lint.Discover` on the same documents: every lint pass and candidate recording, no SafeFix proof construction |
 | `BenchmarkParseAndAnalyzeDocumentFixtures` | Complete `ass.Parse` plus `lint.AnalyzeDocument` |
 
 The scaling fixtures (`scaling_250` … `scaling_10000`) separate source-size
 growth from feature mix. The lint analysis of `long_10000` is dominated by
 source scans shared with other stages; the `scaling_*` and
 `late_candidate_failure_*` stages isolate the SafeFix proof path, where
-candidate count scales with document size. Discovery, proof, and application
-stage benchmarks arrive with their deferred APIs.
+candidate count scales with document size. `BenchmarkSessionDiscovery`
+measures the same documents with proof construction removed. Proof and
+application stage benchmarks arrive with their deferred APIs.
 
 Each operation processes one **whole fixture**. Fixture loading, large-input
 construction, and prerequisite parsing are outside timed regions. Go reports
