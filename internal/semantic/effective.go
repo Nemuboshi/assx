@@ -65,8 +65,7 @@ type TagEvent struct {
 // StateView is valid only during an observer callback. It exposes the same
 // authoritative state and source provenance to lint and future formatters.
 type StateView struct {
-	values        map[string]StateValue
-	sources       map[string]owner
+	store         *slotStore
 	styles        map[string]StyleState
 	activeStyle   string
 	originalStyle string
@@ -74,7 +73,7 @@ type StateView struct {
 }
 
 func (v StateView) Value(slot string) StateValue {
-	if value, exists := v.values[slot]; exists {
+	if value, exists := v.store.get(slot); exists {
 		return value
 	}
 	if !v.baseValid {
@@ -88,8 +87,10 @@ func (v StateView) Value(slot string) StateValue {
 	}
 }
 func (v StateView) Source(slot string) int {
-	if source, ok := v.sources[slot]; ok && source.proven {
-		return source.index
+	if v.store.hasOwner(slot) {
+		if source := v.store.owner(slot); source.proven {
+			return source.index
+		}
 	}
 	return -1
 }
@@ -141,10 +142,7 @@ type evaluator struct {
 	collisionDisabled bool
 	proofsDisabled    bool
 	tagIndex          int
-	active            map[string]owner
-	state             map[string]StateValue
-	latched           map[string]int
-	uncertainLatches  map[string]bool
+	store             slotStore
 	allTags           []ass.Tag
 	live              map[int]bool
 	candidates        map[int]noEffectCandidate
@@ -170,18 +168,15 @@ func EvaluateResolved(tree ass.ConcreteDialogue, profile renderer.Profile, optio
 func evaluateResolvedCore(tokens []semanticToken, operations map[int]resolvedOperation, profile renderer.Profile, options EvaluationOptions) Evaluation {
 	name := DialogueStyleLookupName(options.DialogueStyle)
 	m := evaluator{
-		options:          options,
-		profile:          profile,
-		active:           make(map[string]owner),
-		state:            make(map[string]StateValue),
-		latched:          make(map[string]int),
-		uncertainLatches: make(map[string]bool),
-		live:             make(map[int]bool),
-		candidates:       make(map[int]noEffectCandidate),
-		originalStyle:    name,
-		activeStyle:      name,
-		baseValid:        true,
+		options:       options,
+		profile:       profile,
+		live:          make(map[int]bool),
+		candidates:    make(map[int]noEffectCandidate),
+		originalStyle: name,
+		activeStyle:   name,
+		baseValid:     true,
 	}
+	m.store.init()
 	if options.SkipNoEffectProofs {
 		m.proofsDisabled = true
 	}
@@ -220,7 +215,7 @@ func evaluateResolvedCore(tokens []semanticToken, operations map[int]resolvedOpe
 
 func (m *evaluator) view() StateView {
 	return StateView{
-		values: m.state, sources: m.active, styles: m.options.Styles,
+		store: &m.store, styles: m.options.Styles,
 		activeStyle: m.activeStyle, originalStyle: m.originalStyle,
 		baseValid: m.baseValid,
 	}
@@ -237,11 +232,11 @@ func (m *evaluator) markActiveLive() {
 	if m.options.SkipNoEffectProofs {
 		return
 	}
-	for _, active := range m.active {
-		if active.index >= 0 {
-			m.live[active.index] = true
+	m.store.eachOwner(func(_ string, witness owner) {
+		if witness.index >= 0 {
+			m.live[witness.index] = true
 		}
-	}
+	})
 }
 
 func (m *evaluator) consumeTag(tag ass.Tag) TagEvent {
@@ -269,7 +264,7 @@ func (m *evaluator) consumeTag(tag ass.Tag) TagEvent {
 		m.markActiveLive()
 		m.invalidateAll()
 		for _, slot := range []string{"position", "origin", "fade", "alignment", "clip_vector"} {
-			m.uncertainLatches[slot] = true
+			m.store.markUncertain(slot)
 		}
 		m.blockProofs(&event, UncertaintyRendererDependent)
 		return event
@@ -313,7 +308,7 @@ func (m *evaluator) consumeTag(tag ass.Tag) TagEvent {
 		m.invalidateAll()
 		if tag.Name == "mover" || tag.Name == "moves3" || tag.Name == "moves4" {
 			// These extensions can claim the same EF_MOVE latch as pos/move.
-			m.uncertainLatches["position"] = true
+			m.store.markUncertain("position")
 		}
 		m.blockProofs(&event, UncertaintyUnsupported)
 		return event
@@ -325,7 +320,7 @@ func (m *evaluator) consumeTag(tag ass.Tag) TagEvent {
 			// supported in this build. Preserve both value and provenance.
 			owned := true
 			for _, slot := range tagSpec.Slots {
-				if _, exists := m.latched[slot]; !exists {
+				if m.store.latch(slot) == noLatch {
 					owned = false
 					break
 				}
@@ -342,7 +337,7 @@ func (m *evaluator) consumeTag(tag ass.Tag) TagEvent {
 			reason = UncertaintyUnresolved
 			if tagSpec.Behavior == spec.FirstWins {
 				for _, slot := range tagSpec.Slots {
-					m.uncertainLatches[slot] = true
+					m.store.markUncertain(slot)
 				}
 			}
 		}
@@ -422,30 +417,32 @@ func (m *evaluator) consumeTag(tag ass.Tag) TagEvent {
 	var assignedSlots, assignedValues []string
 	for slotIndex, slot := range slots {
 		if behavior == spec.FirstWins {
-			if m.uncertainLatches[slot] {
+			if m.store.uncertainLatch(slot) {
 				// A prior unresolved command might have claimed this
 				// first-wins slot. Later valid commands cannot restore a
 				// definite value or a proved owner.
-				m.state[slot] = UnknownValue()
-				m.active[slot] = owner{index: -1, start: m.position}
+				m.store.set(slot, UnknownValue())
+				m.store.setOwner(slot, owner{index: -1, start: m.position})
 				continue
 			}
-			if first, exists := m.latched[slot]; exists {
-				if !m.proofsDisabled && !m.uncertainLatches[slot] {
+			if first := m.store.latch(slot); first != noLatch {
+				if !m.proofsDisabled && !m.store.uncertainLatch(slot) {
 					m.markCandidate(index, tag, FirstWinsIgnored, first, false)
 				}
 				continue
 			}
-			m.latched[slot] = index
+			m.store.setLatch(slot, index)
 			if !valuesKnown {
-				m.uncertainLatches[slot] = true
+				m.store.markUncertain(slot)
 			}
 		}
-		if previous, exists := m.active[slot]; exists && previous.index >= 0 &&
-			previous.start == m.position && previous.proven && !m.proofsDisabled {
-			m.markCandidate(previous.index, m.tagAt(previous.index), OverwrittenBeforeUse, index, false)
+		if m.store.hasOwner(slot) {
+			previous := m.store.owner(slot)
+			if previous.index >= 0 && previous.start == m.position && previous.proven && !m.proofsDisabled {
+				m.markCandidate(previous.index, m.tagAt(previous.index), OverwrittenBeforeUse, index, false)
+			}
 		}
-		m.active[slot] = owner{index: index, start: m.position, proven: valuesKnown}
+		m.store.setOwner(slot, owner{index: index, start: m.position, proven: valuesKnown})
 		assignedSlots = append(assignedSlots, slot)
 		if slot == "position" || slot == "origin" {
 			m.collisionDisabled = true
@@ -454,7 +451,7 @@ func (m *evaluator) consumeTag(tag ass.Tag) TagEvent {
 			assignedValues = append(assignedValues, values[slotIndex])
 		}
 	}
-	SetSlotValues(m.state, assignedSlots, assignedValues, valuesKnown)
+	m.store.setAssigned(assignedSlots, assignedValues, valuesKnown)
 	event.Applied = len(assignedSlots) > 0
 	m.fillValues(&event.After, slots)
 	return event
@@ -490,22 +487,12 @@ func (m *evaluator) fillValues(dst *[4]StateValue, slots []string) {
 }
 
 func (m *evaluator) invalidate(slots []string) {
-	for _, slot := range slots {
-		m.state[slot] = UnknownValue()
-		delete(m.active, slot)
-	}
+	m.store.invalidate(slots)
 }
 
 func (m *evaluator) invalidateAll() {
 	m.baseValid = false
-	for slot := range m.state {
-		m.state[slot] = UnknownValue()
-		m.active[slot] = owner{index: -1, start: m.position}
-	}
-	// These have built-in defaults and must not magically become known again
-	// at a later Style reset, because the reset preserves them.
-	m.state["drawing_scale"] = UnknownValue()
-	m.state["karaoke_cursor"] = UnknownValue()
+	m.store.invalidateAllFrom(m.position)
 }
 
 // revokeProofs is a dialogue-wide fence: no prior or subsequent no-effect

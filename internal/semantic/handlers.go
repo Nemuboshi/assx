@@ -76,7 +76,7 @@ func (m *evaluator) applyModPositionDepth(tag ass.Tag, index int, event *TagEven
 	event.Policy = spec.FirstWins
 	event.Slots = []string{"position", "z_depth"}
 	m.fillValues(&event.Before, event.Slots)
-	if _, occupied := m.latched["position"]; occupied {
+	if m.store.latch("position") != noLatch {
 		event.Ignored = true
 		m.fillValues(&event.After, event.Slots)
 		return
@@ -84,18 +84,18 @@ func (m *evaluator) applyModPositionDepth(tag ass.Tag, index int, event *TagEven
 	m.markActiveLive()
 	m.blockProofs(event, UncertaintyRendererDependent)
 	if m.operationFor(tag).signature != renderer.SignatureVerified {
-		m.uncertainLatches["position"] = true
+		m.store.markUncertain("position")
 	}
-	if m.uncertainLatches["position"] {
+	if m.store.uncertainLatch("position") {
 		// A preceding extension may have claimed EF_MOVE and blocked depth.
 		m.invalidate(event.Slots)
 		m.fillValues(&event.After, event.Slots)
 		return
 	}
-	m.latched["position"] = index
+	m.store.setLatch("position", index)
 	m.collisionDisabled = true
-	m.state["position"] = UnknownValue()
-	m.active["position"] = owner{index: index, start: m.position}
+	m.store.set("position", UnknownValue())
+	m.store.setOwner("position", owner{index: index, start: m.position})
 	depth := UnknownValue()
 	decoded := ass.DecodeExactNumber(tag.Args[2])
 	if decoded.Status == ass.ValueValid && !strings.ContainsFunc(tag.Raw, func(r rune) bool {
@@ -105,8 +105,8 @@ func (m *evaluator) applyModPositionDepth(tag ass.Tag, index int, event *TagEven
 			depth = KnownValue(value)
 		}
 	}
-	m.state["z_depth"] = depth
-	m.active["z_depth"] = owner{index: index, start: m.position, proven: depth.Known}
+	m.store.set("z_depth", depth)
+	m.store.setOwner("z_depth", owner{index: index, start: m.position, proven: depth.Known})
 	event.Applied = true
 	m.fillValues(&event.After, event.Slots)
 }
@@ -202,8 +202,8 @@ func (m *evaluator) assignmentValues(tag ass.Tag, tagSpec spec.TagSpec, slots []
 // cannot justify SafeFix decisions after the timeline becomes uncertain.
 func (m *evaluator) invalidateKaraoke(reason SemanticUncertainty) SemanticUncertainty {
 	const slot = "karaoke_cursor"
-	m.state[slot] = UnknownValue()
-	m.active[slot] = owner{index: -1, start: m.position}
+	m.store.set(slot, UnknownValue())
+	m.store.setOwner(slot, owner{index: -1, start: m.position})
 	return reason
 }
 
@@ -234,8 +234,8 @@ func (m *evaluator) accumulate(tag ass.Tag) SemanticUncertainty {
 	if duration > int64(^uint64(0)>>1)-previous {
 		return m.invalidateKaraoke(UncertaintyMalformed)
 	}
-	m.state[slot] = KnownValue(strconv.FormatInt(previous+duration, 10))
-	m.active[slot] = owner{index: m.tagIndex - 1, start: m.position, proven: true}
+	m.store.set(slot, KnownValue(strconv.FormatInt(previous+duration, 10)))
+	m.store.setOwner(slot, owner{index: m.tagIndex - 1, start: m.position, proven: true})
 	return UncertaintyNone
 }
 
@@ -270,26 +270,27 @@ func (m *evaluator) resetStyle(tag ass.Tag) bool {
 	}
 	// Reset clears explicit overrides, exposing the new Style defaults. It
 	// cannot clear first-wins slots nor state explicitly kept across resets.
-	for slot, previous := range m.active {
-		if spec.KeepOnStyleReset[slot] {
-			continue
-		}
-		if _, latched := m.latched[slot]; latched {
-			continue
+	var dropValues, dropOwners []string
+	m.store.eachOwner(func(slot string, previous owner) {
+		if spec.KeepOnStyleReset[slot] || m.store.latch(slot) != noLatch {
+			return
 		}
 		if previous.index >= 0 && previous.start == m.position && previous.proven && !m.proofsDisabled {
 			m.markCandidate(previous.index, m.tagAt(previous.index), ResetBeforeUse, -1, false)
 		}
-		delete(m.active, slot)
+		dropOwners = append(dropOwners, slot)
+	})
+	m.store.eachPresent(func(slot string) {
+		if spec.KeepOnStyleReset[slot] || m.store.latch(slot) != noLatch {
+			return
+		}
+		dropValues = append(dropValues, slot)
+	})
+	for _, slot := range dropOwners {
+		m.store.dropOwner(slot)
 	}
-	for slot := range m.state {
-		if spec.KeepOnStyleReset[slot] {
-			continue
-		}
-		if _, latched := m.latched[slot]; latched {
-			continue
-		}
-		delete(m.state, slot)
+	for _, slot := range dropValues {
+		m.store.delete(slot)
 	}
 	m.activeStyle = target
 	_, known := m.options.Styles[target]
@@ -311,5 +312,5 @@ func (m *evaluator) invalidateMalformedTag(tagSpec spec.TagSpec, index int) {
 	m.invalidate([]string{"clip_rect", "clip_vector"})
 	// Unknown clip shape prevents a proof about the vector latch, but does
 	// not create a first-wins owner for a tag with rejected arguments.
-	m.uncertainLatches["clip_vector"] = true
+	m.store.markUncertain("clip_vector")
 }
