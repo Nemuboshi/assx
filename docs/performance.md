@@ -243,6 +243,157 @@ allocations. This issue does not attempt such optimizations; future changes
 must preserve correctness, SafeFix behavior, and renderer-equivalence checks,
 and should be compared against this baseline with `benchstat`.
 
+## Implementation record: secondary scans, hashing, and AST storage
+
+This record covers the secondary-scan removal, the digest paths, and the
+concrete-AST evaluation. It replaces no earlier number; measure every claim
+here with the commands it names.
+
+### Secondary scans no longer dominate large edit sets
+
+Two passes compared every element against every other element. Both are now
+indexed, and both keep a counter so a test decides the shape of the work
+instead of a wall-clock reading:
+
+- Redundant-Style suppression (`suppressOverlappingNoEffect`,
+  `internal/lint/document.go`) compared every candidate edit against every
+  redundant edit through `Interval.Overlaps`. It now answers the same
+  half-open predicate from a start-sorted interval index with a prefix
+  maximum of interval ends: one binary search plus one comparison per query.
+- SafeFix edit authorization (`applyFixes`, `internal/lint/fix.go`) scanned a
+  proof's whole source-edit list for every candidate edit. It now tests one
+  map membership of the complete proof entry.
+
+Measured with the counters `overlapComparisons` and
+`proofMembershipComparisons`:
+
+| Workload | Suppression decisions, before | after | Membership decisions, before | after |
+| --- | --- | --- | --- | --- |
+| 250 dialogues | 62,750 | 500 | 45,450 (300 edits) | 300 |
+| 1000 dialogues | 1,001,000 | 2,000 | 721,800 (1200 edits) | 1,200 |
+| 4000 dialogues | — | 8,000 | — | 4,800 |
+
+The before columns grew 15.95× and 15.9× for a 4× input, which is the square
+of the edit count. The after columns are two decisions per dialogue in the
+suppression pass and exactly one decision per edit in authorization, so
+`BenchmarkApplyFixesScaling` reports `membership/op` equal to `edit/op` at
+every scale. The index is tested against the predicate it replaced: a corpus
+of touching, zero-width, contained, disjoint, and reversed intervals, then
+deterministic random interval sets, must agree with `Interval.Overlaps` on
+every probe. Suppression output is unchanged, so overlap semantics — half-open
+ranges, where touching intervals do not overlap — are exact.
+
+### Digest paths
+
+`hashJSON` hashed its own encoding through `string(encoded)`, which copies the
+marshaled bytes twice. A byte path halves the copies and the proof-trace
+digest no longer rounds through a string. Measured by `AllocsPerRun` over the
+same value: **7 allocations before, 5 after**, which is marshaling plus the
+digest, so no copy remains.
+
+The proof batch also re-hashed the whole source on every fallback attempt,
+even though no edit can change it. One batch now computes its source digest
+once (`proofBatch.sourceDigest`) and every attempt reuses it. The scaling
+workloads drive **64 proof attempts** per run:
+
+| Workload | Source bytes | Proof attempts | Source digests, before | after |
+| --- | --- | --- | --- | --- |
+| scaling_250 | 37,076 | 64 | 64 | 1 |
+| scaling_1000 | 145,685 | 64 | 64 | 1 |
+
+`BenchmarkProofHashing` isolates the two paths on a 1 MB source
+(`source_digest` covers a whole source and runs once per batch;
+`proof_digest` covers a marshaled trace). Neither change uses an unsafe
+conversion, and both leave every proof byte identical: a one-off rebuild of
+each group still marshals equal to the batch proof.
+
+### Benchmark comparison against the previous commit
+
+`benchstat` compares the previous commit (`5579100`, Task 6) with this
+change on the same host: `-benchmem -benchtime=200ms -count=5`, five samples
+per stage. The allocation columns are the stable result. The timing columns
+carry the host noise.
+
+| Lint stage | ns/op: base → this | B/op: base → this | allocs/op: base → this |
+| --- | ---: | ---: | ---: |
+| `dialogue` (96) | 1459.0m → 1133.0m | 977.4Ki → 976.4Ki | 5.958k → 5.957k |
+| `drawing` (32) | 7785.0m → 7771.0m | 5.250Mi → 4.909Mi | 27.61k → 27.59k |
+| `transforms` (48) | 16450.0m → 16090.0m | 10.61Mi → 10.41Mi | 88.50k → 88.42k |
+| `scaling_250` | 301.1m → 288.7m | 212.9Mi → 196.3Mi | 915.3k → 914.2k |
+| `scaling_1000` | 744.1m → 756.9m | 595.1Mi → 558.2Mi | 2.345M → 2.343M |
+| `scaling_4000` | 1633.0m → 1526.0m | 1.287Gi → 1.226Gi | 5.091M → 5.089M |
+| `scaling_10000` | 3218.0m → 2980.0m | 2.506Gi → 2.400Gi | 9.831M → 9.829M |
+| `late_candidate_failure_250` | 179.0m → 156.0m | 104.15Mi → 90.24Mi | 417.8k → 416.7k |
+| `late_candidate_failure_1000` | 643.0m → 637.3m | 416.6Mi → 361.6Mi | 1.669M → 1.665M |
+| `late_candidate_failure_4000` | 2601.0m → 2465.0m | 1.625Gi → 1.410Gi | 6.673M → 6.657M |
+| `style_edit_proof_250` | 167.2m → 191.0m | 104.60Mi → 90.69Mi | 419.7k → 418.7k |
+| geomean | 189.0m → 180.4m (−4.55%) | −7.81% | −0.13% |
+
+Allocated bytes fall on every stage. The proof-heavy stages fall most:
+about 13% at the four `late_candidate_failure_*` and `style_edit_proof_*`
+stages, where one whole-document proof trace is large. That is the removed
+`string(encoded)` copy: a proof build no longer duplicates its marshaled
+trace to hash it. The `scaling_*` stages fall 4–8%, which is that copy plus
+the 63 saved source digests. Allocation counts stay almost equal, because
+the change removes bytes copied, not allocation events.
+
+The timings need care on this host. Rows that `benchstat` marks as not
+significant at p<0.05 are noise. The `dialogue` row reports −22% in the
+first sample set; that did not reproduce when both sides were re-measured
+in alternating rounds (`dialogue` median about 1.20–1.25 ms at the base
+against about 1.17 ms here), so this record claims nothing for that stage.
+The significant timing rows agree with the byte reduction: less allocation
+means less garbage collection. No stage regressed significantly;
+`style_edit_proof_250` reads +14% at p=0.095, which is not significant and
+is the one row to re-measure if a later change touches that path.
+
+### Concrete AST storage
+
+The issue asked whether node or argument storage in the concrete AST is worth
+restructuring. Allocations say no. Sampling
+`BenchmarkAnalyzeDocumentFixtures/{transforms,drawing}` (the transform-heaviest
+workloads) with `-memprofile` and reading `alloc_space`:
+
+- `internal/ass`, the whole concrete-AST package: **478.29 MB, 8.04%** of
+  5951.03 MB. Node storage is `parseConcreteItems` at 2.82% cumulative and
+  `ParseConcreteDialogue.func1` at 0.31%; lazily materialized argument storage
+  is `ConcreteExpression.Components` at 0.75% cumulative.
+- `internal/semantic`, the semantic state: **2087.08 MB, 35.07%** — 4.4× the
+  entire AST package. Its largest single sites are `captureCompactState`
+  (14.73% flat) and `materializeCompactState` (9.71% flat).
+- The largest allocation site outside both is the proof-trace wire encoding:
+  `encoding/json/v2`, with `bytes.Clone` at 7.32% flat inside
+  `json/v2.Marshal`.
+
+Arguments reach the AST by reference: `Head`, `Raw`, `Content`, and item text
+are slices of `Source`, so parsing copies no argument text. Argument storage
+that does allocate lives in the semantic layer, where resolved tags build
+their own `Args` strings — that is semantic state, not AST layout. A compact
+node layout would therefore trade roughly 3% of allocations for a parse-time
+copy and a lossless-parsing risk, against a semantic layer that is 35%. The
+AST keeps its source-backed, lossless storage.
+
+### The final operation lookup pass
+
+`operationsFromTokens` ends by repopulating each token's tag from the
+operation map, because children are appended bottom-up after the tokens are
+built. Removing that pass is conditional on a measured gain. Profiling the
+transform-heavy workloads gives it **40 ms of 62.13 s sampled, 0.06%** (map
+build 0.48%, final lookup 0.05%, loop 0.02%), and the map is a return value
+the evaluator reads through `operationFor` on every tag, so it cannot be
+dropped. The pass stays.
+
+### Reproduce
+
+~~~sh
+go test ./internal/lint -run '^$' \
+  -bench '^BenchmarkProofHashing$|^BenchmarkApplyFixesScaling$' -benchmem
+go test ./internal/lint -run '^$' \
+  -bench '^BenchmarkAnalyzeDocumentFixtures$/(transforms|drawing)$' \
+  -benchtime=6x -memprofile alloc.mem
+go tool pprof -sample_index=alloc_space -focus 'assx/internal/ass\.' -top alloc.mem
+~~~
+
 ## Renderer architecture baseline (issue #17)
 
 The renderer-aware migration freezes the original `main@6ba745336615f102d5de39f76550f0a45da7bbb6` performance separately from the issue #2 optimization baseline.

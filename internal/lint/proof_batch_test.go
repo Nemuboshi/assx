@@ -222,6 +222,22 @@ func TestProofBatchFallbackReusesBeforeWork(t *testing.T) {
 	}
 }
 
+// TestProofBatchHashesSourceOnce drives the fallback schedule and checks that
+// the batch hashes its source once. Every attempt's proof carries the same
+// source digest, so a later attempt must not repeat that hash over the source.
+func TestProofBatchHashesSourceOnce(t *testing.T) {
+	doc := ass.Parse(scalingCase(t, "scaling_250"))
+	calls := instrumentProofBuilder(t)
+	resetProofBatchCounters()
+	AnalyzeDocument(doc)
+	if *calls < 2 {
+		t.Fatalf("proof attempts = %d, want the fallback schedule to halve a failing batch", *calls)
+	}
+	if hashes := proofBatchSourceHashes.Load(); hashes != 1 {
+		t.Fatalf("source digests = %d for %d proof attempts, want 1", hashes, *calls)
+	}
+}
+
 // TestProofBatchFallbackGroupsApplyAndReject applies every independent group
 // in one write and rejects stale sources, changed evidence, and changed
 // targets.

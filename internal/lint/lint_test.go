@@ -178,6 +178,130 @@ func TestApplyFixesRejectsOverlappingEdits(t *testing.T) {
 	}
 }
 
+// provedNoEffectFix returns one source and its one proved no-effect finding.
+func provedNoEffectFix(t *testing.T) (string, Diagnostic) {
+	t.Helper()
+	doc := parseFontOverrideText(`{\fs21\fs21}A`)
+	for _, diagnostic := range AnalyzeDocument(doc) {
+		if diagnostic.ID == IssueNoEffect && diagnostic.FixProof != nil && len(diagnostic.Edits) == 1 {
+			return doc.Text, diagnostic
+		}
+	}
+	t.Fatal("test document has no proved no-effect finding")
+	return "", Diagnostic{}
+}
+
+// A candidate edit is authorized by the complete proof entry: its rule
+// identity, source span, and replacement text must all match a proof edit.
+func TestApplyFixesAuthorizesOnlyTheProvedEdit(t *testing.T) {
+	source, proved := provedNoEffectFix(t)
+	provedEdit := proved.FixProof.SourceEdits[0].Edit
+	cases := []struct {
+		name    string
+		id      string
+		edit    TextEdit
+		outside bool
+	}{
+		{"proved edit", proved.ID, provedEdit, false},
+		{"different replacement", proved.ID, TextEdit{Start: provedEdit.Start, End: provedEdit.End, Replacement: `\fs22`}, true},
+		{"wider span", proved.ID, TextEdit{Start: provedEdit.Start, End: provedEdit.End + 1, Replacement: provedEdit.Replacement}, true},
+		{"narrower span", proved.ID, TextEdit{Start: provedEdit.Start, End: provedEdit.End - 1, Replacement: provedEdit.Replacement}, true},
+		{"different rule", IssueRepeatedSlash, provedEdit, true},
+	}
+	for _, test := range cases {
+		t.Run(test.name, func(t *testing.T) {
+			diagnostic := proved
+			diagnostic.ID = test.id
+			diagnostic.Edits = []TextEdit{test.edit}
+			fixed, count, err := ApplyFixes(source, []Diagnostic{diagnostic}, false)
+			outside := err != nil && strings.Contains(err.Error(), "outside its proof scope")
+			if outside != test.outside {
+				t.Fatalf("ApplyFixes error = %v, want outside-proof-scope %v", err, test.outside)
+			}
+			if test.outside {
+				return
+			}
+			if err != nil || count != 1 || fixed == source {
+				t.Fatalf("proved edit application = (%q, %d, %v)", fixed, count, err)
+			}
+		})
+	}
+}
+
+// Repeated proof entries authorize the same edit: membership is a set of
+// complete entries, not a count. Verification still rejects the duplicate
+// later, which is where a proof carrying a repeated edit cannot survive.
+func TestApplyFixesAuthorizesRepeatedProofEntry(t *testing.T) {
+	source, proved := provedNoEffectFix(t)
+	entry := proved.FixProof.SourceEdits[0]
+	proof := *proved.FixProof
+	proof.SourceEdits = []FixEditProof{entry, entry}
+	diagnostic := proved
+	diagnostic.Edits = []TextEdit{entry.Edit, entry.Edit}
+	diagnostic.FixProof = &proof
+	if _, _, err := ApplyFixes(source, []Diagnostic{diagnostic}, false); err == nil || strings.Contains(err.Error(), "outside its proof scope") {
+		t.Fatalf("repeated proof entries lost authorization: %v", err)
+	}
+}
+
+// The membership index must answer exactly what the linear scan answers. An
+// index broader than the scan authorizes a foreign edit; one narrower rejects a
+// proved edit. Rule identity, span, and replacement text are all part of the
+// key, and one span can carry two rule identities.
+func TestProofEditMembershipMatchesLinearScan(t *testing.T) {
+	proved := []FixEditProof{
+		{ID: IssueNoEffect, Edit: TextEdit{Start: 1, End: 4, Replacement: `\b1`}},
+		{ID: IssueNoEffect, Edit: TextEdit{Start: 9, End: 14}},
+		{ID: IssueRepeatedSlash, Edit: TextEdit{Start: 9, End: 14}},
+	}
+	proof := &FixProof{SourceEdits: proved}
+	membership := proofEditsOf(proof)
+	probes := append([]FixEditProof{}, proved...)
+	probes = append(probes,
+		FixEditProof{ID: IssueNoEffect, Edit: TextEdit{Start: 1, End: 4}},
+		FixEditProof{ID: IssueNoEffect, Edit: TextEdit{Start: 1, End: 5, Replacement: `\b1`}},
+		FixEditProof{ID: IssueNoEffect, Edit: TextEdit{Start: 0, End: 4, Replacement: `\b1`}},
+		FixEditProof{ID: IssueUnknownTag, Edit: TextEdit{Start: 9, End: 14}},
+		FixEditProof{ID: IssueNoEffect, Edit: TextEdit{Start: 100, End: 101}},
+	)
+	for _, probe := range probes {
+		got, want := membership.contains(probe), proofContainsEdit(proof, probe)
+		if got != want {
+			t.Fatalf("membership index and linear scan disagree on %#v: index=%v scan=%v", probe, got, want)
+		}
+	}
+	if !membership.contains(proved[0]) {
+		t.Fatal("membership index rejected a proved edit")
+	}
+	if membership.contains(probes[len(proved)]) {
+		t.Fatal("membership index authorized an edit the proof does not contain")
+	}
+	if proofEditsOf(&FixProof{}).contains(proved[0]) {
+		t.Fatal("empty proof authorized an edit")
+	}
+}
+
+// Authorization work must grow with the edit count, not with its square.
+func TestApplyFixesDoesNotScanEveryProofEdit(t *testing.T) {
+	measure := func(dialogues int) (int, int) {
+		doc := ass.Parse(benchmarkASSDocument(dialogues))
+		findings := AnalyzeDocument(doc)
+		before := proofMembershipComparisons.Load()
+		fixed, count, err := ApplyFixes(doc.Text, findings, false)
+		work := int(proofMembershipComparisons.Load() - before)
+		if err != nil || count != 3*dialogues || fixed == doc.Text {
+			t.Fatalf("applying %d proved edits: count=%d err=%v", 3*dialogues, count, err)
+		}
+		return work, count
+	}
+	small, smallEdits := measure(100)
+	large, largeEdits := measure(400)
+	if large > small*8 {
+		t.Fatalf("membership comparisons grew with the square of the edit count: %d for %d edits, %d for %d edits",
+			small, smallEdits, large, largeEdits)
+	}
+}
+
 func TestRuleRegistryHasStableMetadata(t *testing.T) {
 	rules := []struct {
 		id, want string

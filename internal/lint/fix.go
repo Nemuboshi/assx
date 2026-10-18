@@ -3,6 +3,7 @@ package lint
 import (
 	"fmt"
 	"reflect"
+	"sync/atomic"
 
 	"assx/internal/edit"
 )
@@ -79,6 +80,37 @@ func fixProofsByID(diagnostics []Diagnostic) map[string]*FixProof {
 type safeProofEdits struct {
 	proof *FixProof
 	edits []FixEditProof
+	// known authorizes this group's candidate edits from the proof's own list,
+	// built once per proof instead of scanned once per edit.
+	known proofEditMembership
+}
+
+// proofMembershipComparisons counts the source-edit membership decisions the
+// fix application pass performs: one per candidate edit plus one per proof
+// source edit examined while the pass scanned the proof's list, and one per
+// candidate edit under the membership index. Tests watch it to prove
+// authorization does not rescan a proof's whole edit list for every edit.
+var proofMembershipComparisons atomic.Int64
+
+// proofEditMembership indexes one proof's own source edits so one candidate
+// edit is authorized in constant time. The key is the complete proof entry, so
+// an entry with a different rule identity, source span, or replacement text
+// stays outside the proof's scope, and repeated entries authorize the same
+// edit.
+type proofEditMembership map[FixEditProof]struct{}
+
+func proofEditsOf(proof *FixProof) proofEditMembership {
+	membership := make(proofEditMembership, len(proof.SourceEdits))
+	for _, sourceEdit := range proof.SourceEdits {
+		membership[sourceEdit] = struct{}{}
+	}
+	return membership
+}
+
+func (membership proofEditMembership) contains(candidate FixEditProof) bool {
+	proofMembershipComparisons.Add(1)
+	_, ok := membership[candidate]
+	return ok
 }
 
 func ApplyFixes(text string, diagnostics []Diagnostic, includeUnsafe bool) (string, int, error) {
@@ -125,13 +157,13 @@ func applyFixes(text string, diagnostics []Diagnostic, includeUnsafe bool, targe
 			if !exists {
 				groupIndex = len(groups)
 				groupIndexes[proof.ID] = groupIndex
-				groups = append(groups, safeProofEdits{proof: proof})
+				groups = append(groups, safeProofEdits{proof: proof, known: proofEditsOf(proof)})
 			} else if !reflect.DeepEqual(groups[groupIndex].proof, proof) {
 				return "", 0, fmt.Errorf("SafeFix proof ID %q has conflicting evidence", proof.ID)
 			}
 			for _, sourceEdit := range diagnostic.Edits {
 				item := FixEditProof{ID: diagnostic.ID, Edit: sourceEdit}
-				if !proofContainsEdit(proof, item) {
+				if !groups[groupIndex].known.contains(item) {
 					return "", 0, fmt.Errorf("SafeFix edit is outside its proof scope")
 				}
 				groups[groupIndex].edits = append(groups[groupIndex].edits, item)
@@ -172,8 +204,12 @@ func applyFixes(text string, diagnostics []Diagnostic, includeUnsafe bool, targe
 	return fixed, fixes, nil
 }
 
+// proofContainsEdit is the linear membership scan the indexed authorization
+// path is tested against.
 func proofContainsEdit(proof *FixProof, candidate FixEditProof) bool {
+	proofMembershipComparisons.Add(1)
 	for _, sourceEdit := range proof.SourceEdits {
+		proofMembershipComparisons.Add(1)
 		if sourceEdit == candidate {
 			return true
 		}
