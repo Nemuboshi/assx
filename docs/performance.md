@@ -347,6 +347,132 @@ means less garbage collection. No stage regressed significantly;
 `style_edit_proof_250` reads +14% at p=0.095, which is not significant and
 is the one row to re-measure if a later change touches that path.
 
+### Acceptance run against the historical baseline
+
+The acceptance run measured this branch (`387fc97`) against the committed
+baseline (`2564e74`) on one host with one toolchain, five samples per stage:
+`-benchmem -benchtime=250ms -count=5`. Raw samples:
+[baseline-2564e74-windows-amd64.txt](performance/baseline-2564e74-windows-amd64.txt)
+and
+[optimized-387fc97-windows-amd64.txt](performance/optimized-387fc97-windows-amd64.txt).
+
+Five samples are fewer than the six `benchstat` needs for a confidence
+interval, so no interval is available and 0.008 is the smallest p value this
+sample size can produce. Read `p=0.008` as "the samples differ", not as a
+precise significance. The comparison against `5579100` above re-measures both
+sides in this checkout. That comparison stays the primary evidence for the
+last three commits; this run against the committed baseline is the end-to-end
+corroboration, and its allocation columns are the stable part.
+
+| `AnalyzeDocumentFixtures` stage | sec/op: base → this | B/op: base → this | allocs/op: base → this |
+| --- | ---: | ---: | ---: |
+| `typesetting` (48) | 25.35m → 17.66m (−30.33%) | 12.74Mi → 11.10Mi (−12.83%) | 103.61k → 58.45k (−43.58%) |
+| `dialogue` (96) | 2.404m → 1.084m (−54.92%) | 1170.6Ki → 975.9Ki (−16.64%) | 16.723k → 5.957k (−64.38%) |
+| `drawing` (32) | 10.620m → 8.460m (−20.34%) | 5.588Mi → 4.911Mi (−12.11%) | 47.12k → 27.59k (−41.44%) |
+| `transforms` (48) | 21.49m → 16.94m (−21.18%) | 13.21Mi → 10.41Mi (−21.21%) | 128.37k → 88.42k (−31.12%) |
+| `long_10000` | 1.996s → 1.103s (−44.71%) | 1.567Gi → 1.024Gi (−34.66%) | 7.263M → 3.666M (−49.53%) |
+| `scaling_250` | 412.3m → 272.8m (−33.82%) | 249.3Mi → 196.2Mi (−21.32%) | 1669.9k → 914.1k (−45.26%) |
+| `scaling_1000` | 1295.7m → 635.5m (−50.95%) | 723.6Mi → 558.2Mi (−22.85%) | 4.556M → 2.343M (−48.57%) |
+| `scaling_4000` | 2.340s → 1.352s (−42.23%) | 1.598Gi → 1.226Gi (−23.24%) | 9.582M → 5.089M (−46.89%) |
+| `scaling_10000` | 4.024s → 2.555s (−36.50%) | 3.162Gi → 2.400Gi (−24.09%) | 18.312M → 9.829M (−46.32%) |
+| `late_candidate_failure_10000` | 8.906s → 5.571s (−37.45%) | 3.762Gi → 3.521Gi (−6.41%) | 24.72M → 16.64M (−32.68%) |
+| `style_edit_proof_250` | 232.6m → 142.8m (−38.60%) | 96.98Mi → 90.67Mi (−6.50%) | 620.7k → 418.7k (−32.55%) |
+| geomean, both lint document benchmarks | 268.6m → 93.43m (−42.08%) | −18.02% | −43.75% |
+
+The long and scaling fixtures carry the required result: allocated bytes fall
+21–35% and allocation events fall 45–50%. The proof-bearing stages fall most
+in allocation events — 32.6% at `late_candidate_failure_*` and
+`style_edit_proof_250` — which is the removed trace copy and the digested
+proof work. `ParseAndAnalyzeDocumentFixtures` shows the same shape
+(`long_10000` −54.84% time, `scaling_*` −50.8…−56.4%).
+
+These new stages did not exist at `2564e74`, so they state cost, not
+improvement:
+
+| New stage (head only) | sec/op | B/op | allocs/op |
+| --- | ---: | ---: | ---: |
+| `SessionDiscovery/typesetting` | 3.406m | 2.911Mi | 17.58k |
+| `SessionProveFixes/typesetting` | 26.42m | 4.808Mi | 19.78k |
+| `SessionProveFixes/scaling_1000` | 721.4m | 380.7Mi | 1.319M |
+| `SessionProveFixes/style_edit_proof_250` | 69.51m | 67.75Mi | 232.0k |
+| `ApplyFixesScaling/dialogues_4000` | 2.732s | 1.662Gi | 7.239M |
+| `OverlapSuppressionScaling/4000_dialogues` | 69.02m | 64.29Mi | 352.2k |
+| `ProofHashing/source_digest` (1 MB source) | 269.4µ | 104.1Ki | 3 |
+| `ProofHashing/proof_digest` | 5.070µ | 1.156Ki | 5 |
+
+Three measurements move the wrong way. Each one is a measured trade, not an
+unnoticed regression:
+
+- **`CompareDialogue` bytes, +6.75…+11.17% on every shared fixture, with
+  allocation events −11.5…−12.9% and time equal or better (−5.1…−21.6% on
+  the large fixtures).** One prepared view per dialogue now keeps its replay
+  entries, which is the +~9.5% retained bytes measured when the shared view
+  was introduced, so lint validity and the document compatibility pass
+  resolve each dialogue once. The accepted comparison then decides on compact
+  state and materializes its wire trace, which allocates the trace twice. The
+  bytes pay for one resolution per dialogue and for fewer allocation events.
+- **`EvaluateDialogue` bytes, +0.67…+2.62%, with allocation events
+  −8.83…−20.37% and time equal or −2.71%.** The slot index keeps dense
+  `[44]` tables — values, owner index, owner start, latches — where a map
+  allocated and freed per state. A state therefore retains a small fixed
+  array instead of paying a map per slot. A state that overflows the modeled
+  table falls back to the map storage and stays correct.
+- **The `internal/ass` parse stages, up to +23.7% time on individual
+  fixtures (`scaling_250`, `ASSDocumentParse/scaling_4000` +19.9%).** The
+  parse section geomean is +0.39% (sec/op), and every parse fixture reports
+  byte-identical `B/op` and `allocs/op` — `benchstat` prints "all samples are
+  equal" for them — so the timed work is identical. `git diff 2564e74 387fc97
+  -- internal/ass` changes one file, `ass/renderer/document_view.go`, and no
+  parser file. The individual parse rows move in both directions on this host
+  (the same section shows −7.15% and −6.46%). The judgement is host noise,
+  not a regression.
+
+**Diagnostic-only requests build no proof.** `TestSessionDiscoveryStripsSafeFixAndNeverBuildsProof`
+(in `internal/lint/session_test.go`) wraps the proof-builder seam and asserts
+that `Discover` calls it zero times, that every pending candidate carries an
+empty `FixSafety`, no edits, and no proof reference, and that only a later
+`ProveFixes` call reaches the seam. The measured stages agree: at
+`typesetting`, discovery alone costs 3.406 ms and 2.911Mi B/op, against
+17.66 ms and 11.10Mi B/op for the eager document stage that also builds
+proofs.
+
+**The eager path keeps its contracts.** `TestAnalyzeEmptyOptionsMatchDefaultTargets`
+(in `internal/analysis`) compares the snapshot path with
+`lint.AnalyzeDocumentForTargets` on the same document: pending findings,
+proved findings, and merged diagnostics are `DeepEqual`, their JSON bytes are
+identical, and `ApplyFixes` returns the same fixed text and count. The CLI
+suites pin the report bytes and statuses (`TestRunJSONStaysValidAndReportsUnknownTagsAsSuggestion`,
+`TestPlainPresenterPreservesLegacyBytes`, `TestRunSafeFixAndConciseSummary`,
+`TestRunUnsafeFixIsOptInAndPreservesExitStatus`), and
+`TestRendererBaselineContracts` pins the renderer output.
+
+**Remaining cost, reported and not concealed:**
+
+- An accepted proof still materializes its complete wire trace and hashes it.
+  Bounded trace hashing was not added, because the condition for it was not
+  met; the repeated digest work was removed by deduplication instead. This is
+  the second allocation above: it is why `CompareDialogue` and
+  `EvaluateDialogue` bytes rise while their allocation counts fall.
+- The bounded subdivision schedule stays. A SafeFix batch proves at most 64
+  builds — the aggregate first, then halves. A document whose split reaches
+  that bound loses its automatic edits for the remaining candidates. It never
+  takes an unsafe path. `late_candidate_failure_10000` measures that path at
+  5.571s, −37.45%.
+- The retained before-side cache trades allocations for live heap inside one
+  request. At `GOMAXPROCS=1` the proof path is slower on large documents
+  (`late_1000` session: 1290 ms against 922 ms) because the collector marks
+  the retained trees; the same run with `GOGC=400` takes 313 ms. At the
+  default parallelism the same stage is faster and proof-only allocations
+  fall 44.7%. The CLI runs at default parallelism, so a `GOMAXPROCS=1` user
+  on a 1000-dialogue file is the caller who pays this.
+
+~~~sh
+go test ./internal/ass ./internal/semantic ./internal/lint -run '^$' \
+  -bench '^Benchmark(ASSDocumentParse|ParseConcreteDialogueFixtures|EvaluateDialogue|CompareDialogue|AnalyzeDocumentFixtures|ParseAndAnalyzeDocumentFixtures|SessionDiscovery|SessionProveFixes|ApplyFixesScaling|ProofHashing|OverlapSuppressionScaling)' \
+  -benchmem -benchtime=250ms -count=5 > optimized.txt
+benchstat baseline-2564e74-windows-amd64.txt optimized.txt
+~~~
+
 ### Concrete AST storage
 
 The issue asked whether node or argument storage in the concrete AST is worth
