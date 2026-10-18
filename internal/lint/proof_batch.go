@@ -107,7 +107,8 @@ type proofProfilePrep struct {
 	styles map[string]semantic.StyleState
 	byLine map[int]ass.Dialogue
 	before map[int]*proofBeforeDialogue
-	after  map[string]*proofAfterDialogue
+	trees  map[string]ass.ConcreteDialogue
+	hashes map[proofAfterKey]string
 }
 
 // proofBeforeDialogue is one verified before dialogue: its view row, parsed
@@ -119,9 +120,13 @@ type proofBeforeDialogue struct {
 	hash     string
 }
 
-type proofAfterDialogue struct {
-	tree ass.ConcreteDialogue
-	hash string
+// proofAfterKey identifies one accepted after trace: the edited dialogue text
+// and the Dialogue Style the comparison interpreted it under. A trace covers
+// the interpreted Style, so two dialogues that share a text under different
+// Styles own different digests and never share one.
+type proofAfterKey struct {
+	text  string
+	style string
 }
 
 // build runs the full gate and evidence pipeline for one exact edit set,
@@ -266,7 +271,7 @@ func (b *proofBatch) build(edits []FixEditProof, validEdits map[FixEditProof]str
 			if err != nil {
 				return nil, err
 			}
-			afterHash, err := prep.afterHash(afterDialogue.Text, comparison.After)
+			afterHash, err := prep.afterHash(afterDialogue.Text, beforeEntry.dialogue.Style, comparison.After)
 			if err != nil {
 				return nil, err
 			}
@@ -346,7 +351,8 @@ func (b *proofBatch) prep(profile renderer.Profile) *proofProfilePrep {
 		styles: semantic.StyleStatesByName(view.StyleFields),
 		byLine: make(map[int]ass.Dialogue, len(view.Dialogues)),
 		before: make(map[int]*proofBeforeDialogue),
-		after:  make(map[string]*proofAfterDialogue),
+		trees:  make(map[string]ass.ConcreteDialogue),
+		hashes: make(map[proofAfterKey]string),
 	}
 	for _, dialogue := range view.Dialogues {
 		prep.byLine[dialogue.Line] = dialogue
@@ -373,19 +379,20 @@ func (p *proofProfilePrep) beforeDialogue(line int) (*proofBeforeDialogue, bool)
 }
 
 // afterDialogue returns one after dialogue's parsed tree: the before tree
-// when the text is unchanged, else a per-text parse kept once per batch. The
-// map belongs to one profile of one request, so no tree outlives the source.
+// when the text is unchanged, else a per-text parse kept once per batch. A
+// tree is a pure function of its text, so the text key is exact. The map
+// belongs to one profile of one request, so no tree outlives the source.
 func (p *proofProfilePrep) afterDialogue(text string, before *proofBeforeDialogue) ass.ConcreteDialogue {
 	if before != nil && before.dialogue.Text == text {
 		return before.tree
 	}
-	if cached, ok := p.after[text]; ok {
+	if cached, ok := p.trees[text]; ok {
 		proofBatchReuse.Add(1)
-		return cached.tree
+		return cached
 	}
 	proofBatchTrees.Add(1)
 	tree := ass.ParseConcreteDialogue(text)
-	p.after[text] = &proofAfterDialogue{tree: tree}
+	p.trees[text] = tree
 	return tree
 }
 
@@ -407,23 +414,21 @@ func (p *proofProfilePrep) beforeHash(before *proofBeforeDialogue, trace semanti
 	return hash, nil
 }
 
-// afterHash returns one after trace's digest, computed once per distinct
-// after text per batch for the same reason.
-func (p *proofProfilePrep) afterHash(text string, trace semantic.ProofTrace) (string, error) {
-	entry := p.after[text]
-	if entry == nil {
-		entry = &proofAfterDialogue{}
-		p.after[text] = entry
-	}
-	if entry.hash != "" {
+// afterHash returns one after trace's digest, computed once per distinct after
+// text and Dialogue Style per batch for the same reason. The trace covers the
+// interpreted Style, so the Style is part of the key: two dialogues that share
+// a text under different Styles must never share a digest.
+func (p *proofProfilePrep) afterHash(text, style string, trace semantic.ProofTrace) (string, error) {
+	key := proofAfterKey{text: text, style: style}
+	if hash, ok := p.hashes[key]; ok {
 		proofBatchReuse.Add(1)
-		return entry.hash, nil
+		return hash, nil
 	}
 	proofBatchHashes.Add(1)
 	hash, err := hashJSON(trace)
 	if err != nil {
 		return "", err
 	}
-	entry.hash = hash
+	p.hashes[key] = hash
 	return hash, nil
 }
