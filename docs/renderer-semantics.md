@@ -141,6 +141,9 @@ the sections above describe.
   compatibility pass, so one request resolves each dialogue once.
 
 Interpretation results, proof hashes, and `FixProof` bytes are unchanged.
+The after-trace digest cache keys on the edited text and the Dialogue Style,
+because a trace covers the interpreted Style: two dialogues that share a text
+under different Styles keep separate digests.
 Cost and benefit measurements are in [performance](performance.md).
 
 ## Validation
