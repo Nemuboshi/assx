@@ -122,6 +122,27 @@ See [usage](../README.md) and [reports](diagnostic-reports.md).
 P05 preserved the then-default adapter while introducing resolved evaluation.
 P10 removed that adapter after targeted regressions and reviewed baseline corrections.
 
+## Implementation record: analysis and SafeFix performance
+
+The analysis and SafeFix performance work (#42, #57, #7) changed
+representation, not modeled semantics. Every consumer still calls
+`EvaluateResolved`, and validity, uncertainty, and proof barriers behave as
+the sections above describe.
+
+- Slot state is indexed by the modeled slot table, with maps as the fallback
+  for a name outside it. A name beyond the table stays correct and only
+  loses the index. The latches keep their maps, because the engine sets them
+  only for spec-declared first-wins slots, which the table lists today.
+- Comparison decides on compact state and materializes the wire audit trace
+  at the serialization boundary. A rejected comparison carries no steps.
+  The test suite keeps a full-trace oracle and runs both paths on every
+  `go test`, including the asymmetric missing-owner case.
+- One prepared view per dialogue serves both lint validity and the document
+  compatibility pass, so one request resolves each dialogue once.
+
+Interpretation results, proof hashes, and `FixProof` bytes are unchanged.
+Cost and benefit measurements are in [performance](performance.md).
+
 ## Validation
 
 Use the checked-in contract golden files; do not regenerate a mismatch
