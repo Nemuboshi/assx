@@ -466,6 +466,17 @@ suites pin the report bytes and statuses (`TestRunJSONStaysValidAndReportsUnknow
   fall 44.7%. The CLI runs at default parallelism, so a `GOMAXPROCS=1` user
   on a 1000-dialogue file is the caller who pays this.
 
+Serial work still dominates. One goroutine runs discovery, proof, application,
+and reporting. This branch lowers the cost of each stage. It does not divide
+the work.
+
+No concurrency change is part of this plan. The plan forbids a worker pool, and
+no parallel variant was measured, so a concurrency change has no evidence
+here. Such a change needs its own design: a deterministic order for findings
+and for proof entries, race tests over the shared session, and a measurement
+against this serial baseline. The `GOMAXPROCS=1` row above is the cost of one
+lane; the rows at default parallelism are what a caller sees today.
+
 ~~~sh
 go test ./internal/ass ./internal/semantic ./internal/lint -run '^$' \
   -bench '^Benchmark(ASSDocumentParse|ParseConcreteDialogueFixtures|EvaluateDialogue|CompareDialogue|AnalyzeDocumentFixtures|ParseAndAnalyzeDocumentFixtures|SessionDiscovery|SessionProveFixes|ApplyFixesScaling|ProofHashing|OverlapSuppressionScaling)' \
