@@ -103,11 +103,32 @@ func TestStyleMatrixRendererSourcePins(t *testing.T) {
 	}
 }
 
+// pinnedSourceMissing returns the first pinned renderer checkout that is absent
+// under root. The pins name a local, git-ignored tree (ref/, see .gitignore),
+// so a citation can only be resolved where that tree exists.
+func pinnedSourceMissing(root string) (string, bool) {
+	for _, name := range styleMatrixRenderers {
+		pin := styleMatrixPins[rendererForToken(name)]
+		path := filepath.Join(root, filepath.FromSlash(pin.path))
+		if _, err := os.Stat(path); err != nil {
+			return path, true
+		}
+	}
+	return "", false
+}
+
 // Every citation must name a real pinned file and a line range inside it. A
 // citation that does not resolve is worse than no citation: it reads as proof.
 func TestStyleMatrixCitationsResolve(t *testing.T) {
 	m := loadStyleMatrix(t)
 	root := filepath.Join("..", "..", "..")
+	// The pinned sources are a local, git-ignored checkout (ref/, see
+	// .gitignore), so a host without them cannot resolve a citation. That host
+	// skips this check instead of failing it, as evidence_test.go does for the
+	// same tree. A host that has the sources still resolves every citation.
+	if path, missing := pinnedSourceMissing(root); missing {
+		t.Skipf("optional pinned source checkout absent: %s", path)
+	}
 	for _, field := range m.Fields {
 		for _, conv := range field.Convs {
 			where := "stylefield " + field.Name + "/" + conv.Renderer
