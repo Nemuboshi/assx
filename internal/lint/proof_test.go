@@ -1,12 +1,49 @@
 package lint
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"strings"
 	"testing"
 
 	"assx/internal/ass/renderer"
 )
+
+// benchmarkHash keeps a hash result observable so the allocation tests cannot
+// be optimized away.
+var benchmarkHash string
+
+// hashJSON hashes its own encoding, so it may not copy that encoding into a
+// string on the way. Its allocation count must not exceed marshaling the value
+// plus hashing those bytes.
+func TestHashJSONDoesNotCopyItsEncoding(t *testing.T) {
+	value := FixProof{
+		SourceSHA256:      hashSource("source"),
+		EditedSHA256:      hashSource("edited"),
+		SourceEdits:       []FixEditProof{{ID: IssueNoEffect, Edit: TextEdit{Start: 6, End: 11, Replacement: `\fs21`}}},
+		Targets:           fixTargets(defaultFixTargets()),
+		VerificationBasis: []string{"Compare interpretations within every pinned target renderer."},
+	}
+	reference := testing.AllocsPerRun(50, func() {
+		encoded, err := json.Marshal(value)
+		if err != nil {
+			t.Fatal(err)
+		}
+		sum := sha256.Sum256(encoded)
+		benchmarkHash = hex.EncodeToString(sum[:])
+	})
+	got := testing.AllocsPerRun(50, func() {
+		hash, err := hashJSON(value)
+		if err != nil {
+			t.Fatal(err)
+		}
+		benchmarkHash = hash
+	})
+	if got > reference {
+		t.Fatalf("hashJSON allocated %.0f times; marshaling and hashing the bytes allocated %.0f", got, reference)
+	}
+}
 
 func TestSafeFixProofCarriesEveryDefaultRenderer(t *testing.T) {
 	doc := parseFontOverrideText(`{\fs21\fs21}A`)

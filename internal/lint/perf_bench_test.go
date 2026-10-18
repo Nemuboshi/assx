@@ -12,6 +12,8 @@ import (
 
 var benchmarkDiagnostics []Diagnostic
 
+var benchmarkFixed string
+
 var benchmarkSession *Session
 
 // Measures all lint passes with document parsing excluded.
@@ -162,6 +164,66 @@ func TestBenchmarkLateProofFailure(t *testing.T) {
 	want := strings.Replace(doc.Text, `\b1\b1\fs20\fs20`, `\b1`, dialogues-1)
 	if err != nil || count != 3*(dialogues-1) || fixed != want {
 		t.Fatalf("safe prefix application: count=%d err=%v, source matches=%v", count, err, fixed == want)
+	}
+}
+
+// Measures the two digest paths a proof build uses. source_digest covers the
+// whole original source and runs once per batch; proof_digest covers a
+// marshaled proof trace and runs once per distinct trace.
+func BenchmarkProofHashing(b *testing.B) {
+	text := benchmarkLateProofFailure(1000)
+	proof := FixProof{
+		SourceSHA256: hashSource(text), EditedSHA256: hashSource(text),
+		SourceEdits: []FixEditProof{{ID: IssueNoEffect, Edit: TextEdit{Start: 6, End: 11, Replacement: `\b1`}}},
+		Targets:     fixTargets(defaultFixTargets()),
+		VerificationBasis: []string{
+			"Compare interpretations within every pinned target renderer.",
+			"Require verified signatures and citations for every command affected by a semantic edit.",
+		},
+	}
+	b.Run("source_digest", func(b *testing.B) {
+		b.SetBytes(int64(len(text)))
+		b.ReportAllocs()
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			benchmarkHash = hashSource(text)
+		}
+	})
+	b.Run("proof_digest", func(b *testing.B) {
+		b.ReportAllocs()
+		b.ResetTimer()
+		for i := 0; i < b.N; i++ {
+			hash, err := hashJSON(proof)
+			if err != nil {
+				b.Fatal(err)
+			}
+			benchmarkHash = hash
+		}
+	})
+}
+
+// Measures fix authorization over the proved edits of one scale. membership/op
+// counts the authorization decisions, so the metric grows with the edit count,
+// never with its square.
+func BenchmarkApplyFixesScaling(b *testing.B) {
+	for _, dialogues := range []int{250, 1000, 4000} {
+		doc := ass.Parse(benchmarkASSDocument(dialogues))
+		findings := AnalyzeDocument(doc)
+		b.Run(fmt.Sprintf("dialogues_%d", dialogues), func(b *testing.B) {
+			b.SetBytes(int64(len(doc.Text)))
+			b.ReportAllocs()
+			b.ResetTimer()
+			for i := 0; i < b.N; i++ {
+				before := proofMembershipComparisons.Load()
+				fixed, count, err := ApplyFixes(doc.Text, findings, false)
+				if err != nil || count != 3*dialogues {
+					b.Fatalf("apply: count=%d err=%v", count, err)
+				}
+				benchmarkFixed = fixed
+				b.ReportMetric(float64(proofMembershipComparisons.Load()-before), "membership/op")
+			}
+			b.ReportMetric(float64(3*dialogues), "edit/op")
+		})
 	}
 }
 

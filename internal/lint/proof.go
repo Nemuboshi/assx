@@ -558,12 +558,19 @@ func hashSource(source string) string {
 	return hex.EncodeToString(sum[:])
 }
 
+// hashBytes digests bytes that are already in memory, so a caller holding an
+// encoding does not copy it into a string and back.
+func hashBytes(data []byte) string {
+	sum := sha256.Sum256(data)
+	return hex.EncodeToString(sum[:])
+}
+
 func hashJSON(value any) (string, error) {
 	encoded, err := json.Marshal(value)
 	if err != nil {
 		return "", fmt.Errorf("encode proof trace: %w", err)
 	}
-	return hashSource(string(encoded)), nil
+	return hashBytes(encoded), nil
 }
 
 func profilesFromProof(targets []FixTarget) ([]renderer.Profile, error) {

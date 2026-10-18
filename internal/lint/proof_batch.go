@@ -22,6 +22,9 @@ var (
 	proofBatchComparisons atomic.Int64
 	proofBatchHashes      atomic.Int64
 	proofBatchReuse       atomic.Int64
+	// proofBatchSourceHashes counts source digests. A digest covers only the
+	// original source, so one batch must hash it once.
+	proofBatchSourceHashes atomic.Int64
 )
 
 func resetProofBatchCounters() {
@@ -30,6 +33,7 @@ func resetProofBatchCounters() {
 	proofBatchComparisons.Store(0)
 	proofBatchHashes.Store(0)
 	proofBatchReuse.Store(0)
+	proofBatchSourceHashes.Store(0)
 }
 
 // proofBatch owns the request's proof work items. Every proof build in one
@@ -57,6 +61,9 @@ type proofBatch struct {
 	seeded    map[renderer.Profile]ass.Document
 	targets   []FixTarget
 	preps     map[renderer.Profile]*proofProfilePrep
+	// sourceHash is the digest of the batch's own source. No edit can change
+	// it, so every attempt reuses it instead of hashing the whole source again.
+	sourceHash string
 }
 
 func newProofBatch(source string, beforeDoc ass.Document, profiles []renderer.Profile) *proofBatch {
@@ -195,7 +202,7 @@ func (b *proofBatch) build(edits []FixEditProof, validEdits map[FixEditProof]str
 	}
 
 	proof := &FixProof{
-		SourceSHA256: hashSource(b.source), EditedSHA256: hashSource(changed),
+		SourceSHA256: b.sourceDigest(), EditedSHA256: hashSource(changed),
 		SourceEdits: slices.Clone(edits), Targets: slices.Clone(targets),
 		VerificationBasis: []string{
 			"Compare interpretations within every pinned target renderer.",
@@ -281,6 +288,17 @@ func (b *proofBatch) build(edits []FixEditProof, validEdits map[FixEditProof]str
 		return nil, err
 	}
 	return proof, nil
+}
+
+// sourceDigest returns the digest of the batch's source, computed once per
+// batch. Every attempt's proof carries this same value, so only the first
+// attempt hashes the whole source.
+func (b *proofBatch) sourceDigest() string {
+	if b.sourceHash == "" {
+		proofBatchSourceHashes.Add(1)
+		b.sourceHash = hashSource(b.source)
+	}
+	return b.sourceHash
 }
 
 // fixTargetsChecked builds the target list once per batch and re-applies the
