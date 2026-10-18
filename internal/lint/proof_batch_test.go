@@ -445,3 +445,85 @@ func TestProofBatchReplacesForeignSourceBatch(t *testing.T) {
 		t.Errorf("session prove prepared %d extra views; it must reuse its own discovery views", got-before)
 	}
 }
+
+// styleVariantDoc carries two dialogues with identical text under two Styles,
+// plus one fractional Style integer. The Style edit selects every dialogue, so
+// one proof covers two dialogues whose before and after texts are equal while
+// the Styles they are interpreted under are not.
+func styleVariantDoc() ass.Document {
+	text := "[Script Info]\nPlayResX: 1920\nPlayResY: 1080\nYCbCr Matrix: None\n" +
+		"[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\n" +
+		"Style: Default,Arial,20,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,2,2,0.0,0,0,1\n" +
+		"Style: Alt,Arial,30,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,2,2,0,0,0,1\n" +
+		"[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n" +
+		"Dialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,Benchmark subtitle\n" +
+		"Dialogue: 0,0:00:01.00,0:00:02.00,Alt,,0,0,0,,Benchmark subtitle\n"
+	return ass.Parse(text)
+}
+
+// TestProofBatchKeysAfterTraceDigestByDialogue proves one Style edit that
+// selects two dialogues whose texts are identical under two different Styles.
+// Both dialogues share one after text, so a digest keyed by text alone reports
+// one dialogue's trace under the other dialogue's line. Every published digest
+// must describe its own dialogue: a Style field edit changes no dialogue text
+// and no interpreted Style state, so each dialogue's before and after traces
+// are identical bytes and must hash equal, while the two dialogues, whose
+// active Styles differ, must not share a digest.
+func TestProofBatchKeysAfterTraceDigestByDialogue(t *testing.T) {
+	doc := styleVariantDoc()
+	findings := AnalyzeDocument(doc)
+	proofs, _ := proofGroups(findings)
+	if len(proofs) != 1 {
+		t.Fatalf("aggregate groups = %d, want the single Style-edit proof", len(proofs))
+	}
+	for id, proof := range proofs {
+		if len(proof.Interpretations) == 0 {
+			t.Fatalf("proof %s carries no interpretation", id)
+		}
+		for _, interpretation := range proof.Interpretations {
+			target := interpretation.Target.Renderer
+			dialogues := interpretation.Dialogues
+			if len(dialogues) != 2 {
+				t.Fatalf("proof %s %s covers %d dialogues, want the two Style-edit dialogues", id, target, len(dialogues))
+			}
+			if dialogues[0].BeforeTraceSHA256 == dialogues[1].BeforeTraceSHA256 {
+				t.Fatalf("proof %s %s: both dialogues share one before digest; the fixture must interpret them under different Styles", id, target)
+			}
+			if dialogues[0].AfterTraceSHA256 == dialogues[1].AfterTraceSHA256 {
+				t.Errorf("proof %s %s: the two dialogues share after digest %s although their Styles differ",
+					id, target, dialogues[0].AfterTraceSHA256)
+			}
+			for _, dialogue := range dialogues {
+				if dialogue.AfterTraceSHA256 != dialogue.BeforeTraceSHA256 {
+					t.Errorf("proof %s %s line %d: after digest %s, want this dialogue's own before digest %s; the Style edit changed no dialogue text",
+						id, target, dialogue.Line, dialogue.AfterTraceSHA256, dialogue.BeforeTraceSHA256)
+				}
+			}
+		}
+	}
+}
+
+// TestProofBatchRequiresTheSameDocumentShape requires the batch gate to
+// compare the document the batch was built for with the document it is
+// offered. Source equality cannot replace that comparison, because the same
+// text parses to the same source: the line and dialogue counts are what tell a
+// batch that its prepared views, trees, and digests do not describe this
+// document.
+func TestProofBatchRequiresTheSameDocumentShape(t *testing.T) {
+	doc := ass.Parse(perftest.StyleEdit(t))
+	profiles := DefaultAnalysisTargets().Profiles()
+	batch := newProofBatch(doc.Text, doc, profiles)
+	truncated := doc
+	truncated.Dialogues = doc.Dialogues[:1]
+	shortened := doc
+	shortened.Lines = doc.Lines[:1]
+	if !batch.usable(doc.Text, doc, profiles) {
+		t.Fatal("a batch rejected its own document")
+	}
+	if batch.usable(doc.Text, truncated, profiles) {
+		t.Error("a batch accepted a document with fewer dialogues")
+	}
+	if batch.usable(doc.Text, shortened, profiles) {
+		t.Error("a batch accepted a document with fewer lines")
+	}
+}
