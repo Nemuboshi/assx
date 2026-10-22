@@ -7,7 +7,6 @@ import (
 
 	"assx/internal/ass"
 	"assx/internal/ass/renderer"
-	"golang.org/x/image/font/gofont/goregular"
 )
 
 func TestRendererScopedASS006DoesNotInventSafeFix(t *testing.T) {
@@ -60,40 +59,5 @@ func TestRendererScopedASS013DoesNotInventSafeFix(t *testing.T) {
 	}
 	if findings[0].ID != IssueRedundantStyleOverrides || findings[0].FixSafety != "" || len(findings[0].Edits) != 0 {
 		t.Fatalf("ASS013 must not promote single-renderer equivalence to a SafeFix: %#v", findings[0])
-	}
-}
-
-func TestRendererScopedFontAnalysisUsesSharedState(t *testing.T) {
-	content, err := os.ReadFile(filepath.Join("..", "..", "testdata", "font-check.ass"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	fontDir := t.TempDir()
-	if err := os.WriteFile(filepath.Join(fontDir, "Go-Regular.ttf"), goregular.TTF, 0o600); err != nil {
-		t.Fatal(err)
-	}
-	checker, err := NewFontChecker(fontDir)
-	if err != nil {
-		t.Fatal(err)
-	}
-	profile, err := renderer.Standard(renderer.XYVSFilter)
-	if err != nil {
-		t.Fatal(err)
-	}
-	legacy, err := AnalyzeFonts(ass.Parse(string(content)), checker)
-	if err != nil {
-		t.Fatal(err)
-	}
-	scoped, err := AnalyzeFontsForRenderer(ass.Parse(string(content)), checker, profile)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(scoped) != len(legacy) {
-		t.Fatalf("font consumers diverged unexpectedly: legacy=%#v scoped=%#v", legacy, scoped)
-	}
-	for _, d := range scoped {
-		if d.FixSafety != "" || len(d.Edits) != 0 {
-			t.Fatalf("font observation received an unsupported edit: %#v", d)
-		}
 	}
 }

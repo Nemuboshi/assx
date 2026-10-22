@@ -21,6 +21,7 @@ import (
 	"assx/internal/analysis"
 	"assx/internal/ass"
 	"assx/internal/ass/renderer"
+	"assx/internal/fontcheck"
 	"assx/internal/lint"
 	"assx/internal/report"
 	"assx/internal/report/plain"
@@ -102,9 +103,9 @@ func run(args []string, stdout, stderr io.Writer) int {
 		_, _ = fmt.Fprintln(stderr, err)
 		return 2
 	}
-	var fontChecker *lint.FontChecker
+	var fontChecker *fontcheck.Catalog
 	if *checkFonts {
-		fontChecker, err = lint.NewFontChecker(*fontDir)
+		fontChecker, err = fontcheck.NewCatalog(fontcheck.Source{Directory: legacyFontDirectory(*fontDir)})
 		if err != nil {
 			progress.stop()
 			_, _ = fmt.Fprintf(stderr, "Failed to scan fonts: %v\n", err)
@@ -129,7 +130,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 		}
 		doc := ass.Parse(snapshot.Text())
 		if fontChecker != nil {
-			fontDiagnostics, err := lint.AnalyzeFontsForRenderer(doc, fontChecker, targets.Primary)
+			fontDiagnostics, err := legacyFontDiagnostics(doc, fontChecker, targets.Primary)
 			if err != nil {
 				return nil, err
 			}
