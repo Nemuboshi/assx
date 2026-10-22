@@ -1,5 +1,6 @@
 package lint
 
+// ASS015 and ASS016 are retired font checks. Do not reuse these IDs.
 const (
 	IssueArgumentCount           = "ASS001"
 	IssueInvalidValue            = "ASS002"
@@ -15,8 +16,6 @@ const (
 	IssueStyleFloat              = "ASS012"
 	IssueRedundantStyleOverrides = "ASS013"
 	IssueRepeatedOpenBrace       = "ASS014"
-	IssueFontMissing             = "ASS015"
-	IssueMissingGlyphs           = "ASS016"
 	IssueUndefinedStyle          = "ASS017"
 	IssueEmptyOverrideBlock      = "ASS018"
 	IssueOverrideJunk            = "ASS019"
@@ -141,16 +140,6 @@ var Rules = map[string]Rule{
 		Description: "Only the first of consecutive opening braces starts the override block; the extras are ignored while tags are parsed.",
 		Fix:         "Remove the extra opening brace(s).",
 		Sources:     []string{"https://github.com/libass/libass/blob/f61db56/libass/ass_render.c#L2066-L2075", "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L282-L290", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2954-L2958", "https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2075-L2082"},
-	},
-	IssueFontMissing: {
-		ID: IssueFontMissing, Severity: Suggestion, Title: "Subtitle font is missing",
-		Description: "The font family used by subtitle text was not found in the selected font set.",
-		Fix:         "Install the font or point --font-dir at a folder containing it.",
-	},
-	IssueMissingGlyphs: {
-		ID: IssueMissingGlyphs, Severity: Suggestion, Title: "Font is missing subtitle characters",
-		Description: "The selected font does not contain glyphs for some subtitle characters.",
-		Fix:         "Use a font that contains the missing characters.",
 	},
 	IssueUndefinedStyle: {
 		ID: IssueUndefinedStyle, Severity: Warning, Title: "Undefined style reference",

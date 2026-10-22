@@ -2,6 +2,7 @@ package fontcheck
 
 import (
 	"cmp"
+	"fmt"
 	"slices"
 	"strings"
 
@@ -32,14 +33,16 @@ type Finding struct {
 	Matched []Face  `json:"matched_faces"`
 }
 
-// Analyze checks known visible requests. The caller must report catalog issues.
-// It preserves the legacy per-line request grouping during migration.
+// Analyze checks known visible requests against a complete catalog.
 func Analyze(doc ass.Document, catalog *Catalog, profile renderer.Profile) ([]Finding, error) {
 	return AnalyzeUsages(ExtractUsages(doc, profile), catalog)
 }
 
 // AnalyzeUsages checks extracted requests without evaluating the source again.
 func AnalyzeUsages(usages []Usage, catalog *Catalog) ([]Finding, error) {
+	if len(catalog.Issues) != 0 {
+		return nil, fmt.Errorf("font catalog is incomplete: %s: %s", catalog.Issues[0].Path, catalog.Issues[0].Detail)
+	}
 	type key struct {
 		line    int
 		context fontContext
@@ -105,5 +108,5 @@ func (c *Catalog) selectedFaces(context fontContext) []Face {
 			selected = append(selected, Face{Path: face.path, Index: face.index, Bold: face.bold, Italic: face.italic})
 		}
 	}
-	return selected
+	return slices.Compact(selected)
 }
