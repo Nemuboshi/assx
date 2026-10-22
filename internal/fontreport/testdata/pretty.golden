@@ -1,0 +1,14 @@
+Font check: assx  sample.ass
+1 advisory findings
+Font catalog: exclusive directory "/fonts".
+Renderer: libass@f61db567e6593df3470e91594bcd4ad2d0473aff (_VSMOD=unknown,
+_LUA=unknown)
+Unchecked text runs: 0 (unknown semantic state).
+Glyph lookup does not test renderer fallback or shaping.
+
+info[FONT001]  Font dependency  1:1
+  1 | é
+    | ^
+  Font family "Absent" was not found in the scanned font set.
+
+1 diagnostics

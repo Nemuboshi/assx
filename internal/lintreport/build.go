@@ -1,6 +1,7 @@
-package report
+package lintreport
 
 import (
+	"assx/internal/report"
 	"strings"
 
 	"assx/internal/ass"
@@ -9,10 +10,10 @@ import (
 
 // Build assembles the presenter view from final diagnostics. It preserves the
 // public diagnostic order and normalizes positions with document byte spans.
-func Build(path string, diagnostics []lint.Diagnostic, document ass.Document) Summary {
-	var summary Summary
+func Build(path string, diagnostics []lint.Diagnostic, document ass.Document) report.Summary {
+	var summary report.Summary
 	summary.Total = len(diagnostics)
-	group := Group{File: path}
+	group := report.Group{File: path}
 	textStarts := make(map[int]int, len(document.Dialogues))
 	tagSpans := make(map[tagKey]sourcePosition)
 	fields := make(map[fieldKey]sourcePosition)
@@ -59,13 +60,13 @@ func Build(path string, diagnostics []lint.Diagnostic, document ass.Document) Su
 		if d.SourceSpan != nil {
 			position = sourcePosition{column: d.SourceSpan.Start - lineOffsets[d.Line] + 1, width: max(1, d.SourceSpan.End-d.SourceSpan.Start)}
 		}
-		view := Diagnostic{
+		view := report.Diagnostic{
 			Line:         d.Line,
 			Column:       d.Column,
 			SourceColumn: position.column,
 			SourceWidth:  position.width,
 			ID:           d.ID,
-			Severity:     d.Severity,
+			Severity:     string(d.Severity),
 			Title:        d.Title,
 			Description:  d.Description,
 			Detail:       d.Detail,
@@ -73,8 +74,6 @@ func Build(path string, diagnostics []lint.Diagnostic, document ass.Document) Su
 			Tag:          d.Tag,
 			Field:        d.Field,
 			Renderer:     d.Renderer,
-			FixSafety:    d.FixSafety,
-			Edits:        append([]lint.TextEdit(nil), d.Edits...),
 			Sources:      append([]string(nil), d.Sources...),
 		}
 		view.Outcome = outcomeOf(d, proofs, fixIndex)
@@ -87,13 +86,13 @@ func Build(path string, diagnostics []lint.Diagnostic, document ass.Document) Su
 			group.Suggestions++
 		}
 		switch view.Outcome {
-		case FixSafe:
+		case report.FixSafe:
 			group.FixAvailable.Safe++
 			summary.Remaining.Safe++
-		case FixUnsafe:
+		case report.FixUnsafe:
 			group.FixAvailable.Unsafe++
 			summary.Remaining.Unsafe++
-		case FixNone:
+		case report.FixNone:
 			group.FixAvailable.Unfixable++
 			summary.Remaining.Unfixable++
 		}
@@ -139,17 +138,17 @@ func locate(d *lint.Diagnostic, textStarts map[int]int, fields map[fieldKey]sour
 
 // outcomeOf derives the fix badge only from concrete edits and validated
 // per-diagnostic safety metadata.
-func outcomeOf(d *lint.Diagnostic, proofs map[string]*lint.FixProof, index lint.FixProofIndex) FixOutcome {
+func outcomeOf(d *lint.Diagnostic, proofs map[string]*lint.FixProof, index lint.FixProofIndex) report.FixOutcome {
 	items := []lint.Diagnostic{*d}
 	if d.FixProofRef != "" {
 		items = append(items, lint.Diagnostic{FixProof: proofs[d.FixProofRef]})
 	}
 	safe, unsafe, _ := index.Count(items)
 	if safe != 0 {
-		return FixSafe
+		return report.FixSafe
 	}
 	if unsafe != 0 {
-		return FixUnsafe
+		return report.FixUnsafe
 	}
-	return FixNone
+	return report.FixNone
 }

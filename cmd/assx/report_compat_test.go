@@ -5,14 +5,14 @@ import (
 	"testing"
 	"time"
 
-	"assx/internal/lint"
+	"assx/internal/report"
 	"assx/internal/report/plain"
 )
 
 func TestPlainPresenterPreservesLegacyBytes(t *testing.T) {
-	diagnostics := []lint.Diagnostic{
-		{ID: "ASS002", Severity: lint.Warning, Title: "Second", Line: 4, Column: 9, Detail: "detail"},
-		{ID: "ASS001", Severity: lint.Error, Title: "First", Line: 2, Column: 3, Tag: "pos"},
+	diagnostics := []report.Diagnostic{
+		{ID: "ASS002", Severity: "warning", Title: "Second", Line: 4, Column: 9, Detail: "detail"},
+		{ID: "ASS001", Severity: "error", Title: "First", Line: 2, Column: 3, Tag: "pos"},
 	}
 	var out strings.Builder
 	if err := plain.Render(&out, "sample.ass", diagnostics, 12*time.Millisecond, "Fixes available: 0 safe, 0 unsafe, 2 not auto-fixable."); err != nil {

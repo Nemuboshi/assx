@@ -13,7 +13,6 @@ import (
 	"github.com/charmbracelet/x/ansi"
 	"github.com/rivo/uniseg"
 
-	"assx/internal/lint"
 	"assx/internal/report"
 )
 
@@ -23,8 +22,15 @@ func Render(output io.Writer, summary report.Summary, source string, color bool,
 	w := bufio.NewWriter(output)
 	lines := strings.Split(strings.NewReplacer("\r\n", "\n", "\r", "\n").Replace(source), "\n")
 	for _, group := range summary.Groups {
-		writeWrapped(w, "", "assx  "+group.File, width)
-		writeWrapped(w, "", fmt.Sprintf("%d errors  |  %d warnings  |  %d suggestions", group.Errors, group.Warnings, group.Suggestions), width)
+		writeWrapped(w, "", summary.Heading+"assx  "+group.File, width)
+		if summary.Advisory {
+			writeWrapped(w, "", fmt.Sprintf("%d advisory findings", summary.Total), width)
+		} else {
+			writeWrapped(w, "", fmt.Sprintf("%d errors  |  %d warnings  |  %d suggestions", group.Errors, group.Warnings, group.Suggestions), width)
+		}
+		for _, note := range summary.Notes {
+			writeWrapped(w, "", note, width)
+		}
 		_, _ = fmt.Fprintln(w)
 		if len(group.Diagnostics) == 0 {
 			_, _ = fmt.Fprintln(w, "No issues found.")
@@ -79,16 +85,18 @@ func Render(output io.Writer, summary report.Summary, source string, color bool,
 			} else if d.Detail != "" {
 				writeWrapped(w, "  ", d.Detail, width)
 			}
-			switch d.Outcome {
-			case report.FixSafe:
-				writeWrapped(w, "  ", "Safe fix: "+d.Fix, width)
-			case report.FixUnsafe:
-				writeWrapped(w, "  ", "Unsafe fix (use --unsafe-fix): "+d.Fix, width)
-			default:
-				if d.Fix != "" {
-					writeWrapped(w, "  ", "Fix: edit manually ("+d.Fix+")", width)
-				} else {
-					_, _ = fmt.Fprintln(w, "  Fix: edit manually")
+			if !summary.Advisory {
+				switch d.Outcome {
+				case report.FixSafe:
+					writeWrapped(w, "  ", "Safe fix: "+d.Fix, width)
+				case report.FixUnsafe:
+					writeWrapped(w, "  ", "Unsafe fix (use --unsafe-fix): "+d.Fix, width)
+				default:
+					if d.Fix != "" {
+						writeWrapped(w, "  ", "Fix: edit manually ("+d.Fix+")", width)
+					} else {
+						_, _ = fmt.Fprintln(w, "  Fix: edit manually")
+					}
 				}
 			}
 			if i+1 < len(group.Diagnostics) {
@@ -101,7 +109,9 @@ func Render(output io.Writer, summary report.Summary, source string, color bool,
 		}
 		_, _ = fmt.Fprintln(w)
 		writeWrapped(w, "", footer, width)
-		writeWrapped(w, "", fmt.Sprintf("Fixes available: %d safe, %d unsafe, %d not auto-fixable.", summary.Remaining.Safe, summary.Remaining.Unsafe, summary.Remaining.Unfixable), width)
+		if !summary.Advisory {
+			writeWrapped(w, "", fmt.Sprintf("Fixes available: %d safe, %d unsafe, %d not auto-fixable.", summary.Remaining.Safe, summary.Remaining.Unsafe, summary.Remaining.Unfixable), width)
+		}
 	}
 	return w.Flush()
 }
@@ -173,12 +183,12 @@ func writeWrapped(w *bufio.Writer, indent, text string, width int) {
 	}
 }
 
-func severityStyle(severity lint.Severity) lipgloss.Style {
+func severityStyle(severity string) lipgloss.Style {
 	style := lipgloss.NewStyle().Bold(true)
 	switch severity {
-	case lint.Error:
+	case "error":
 		return style.Foreground(lipgloss.Color("9"))
-	case lint.Warning:
+	case "warning":
 		return style.Foreground(lipgloss.Color("3"))
 	default:
 		return style.Foreground(lipgloss.Color("6"))
