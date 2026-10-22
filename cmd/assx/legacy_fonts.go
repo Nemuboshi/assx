@@ -2,12 +2,22 @@ package main
 
 import (
 	"fmt"
+	"strings"
 
 	"assx/internal/ass"
 	"assx/internal/ass/renderer"
 	"assx/internal/fontcheck"
 	"assx/internal/lint"
 )
+
+// The removed checker treated whitespace-only directories as system scope.
+// Keep that behavior only in the temporary legacy CLI path.
+func legacyFontDirectory(directory string) string {
+	if strings.TrimSpace(directory) == "" {
+		return ""
+	}
+	return directory
+}
 
 // legacyFontDiagnostics preserves the optional lint contract through F02 only.
 func legacyFontDiagnostics(doc ass.Document, catalog *fontcheck.Catalog, profile renderer.Profile) ([]lint.Diagnostic, error) {

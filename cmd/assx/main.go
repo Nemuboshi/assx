@@ -117,7 +117,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 	}
 	var fontChecker *fontcheck.Catalog
 	if *checkFonts {
-		fontChecker, err = fontcheck.NewCatalog(fontcheck.Source{Directory: *fontDir})
+		fontChecker, err = fontcheck.NewCatalog(fontcheck.Source{Directory: legacyFontDirectory(*fontDir)})
 		if err != nil {
 			progress.stop()
 			_, _ = fmt.Fprintf(stderr, "Failed to scan fonts: %v\n", err)
