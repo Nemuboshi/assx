@@ -558,8 +558,8 @@ Analysis uses `testdata/font-check.ass`, with `MISSING_GLYPH` replaced by U+10FF
 
 | Benchmark | Before median | F03 median | Before allocations | F03 allocations |
 | --- | --- | --- | --- | --- |
-| Font catalog | 1.138 ms/op | 0.865 ms/op | 116/op | 119/op |
-| Font analysis | 36.59 us/op | 26.06 us/op | 132/op | 116/op |
+| Font catalog | 1.138 ms/op | 0.927 ms/op | 116/op | 122/op |
+| Font analysis | 36.59 us/op | 22.02 us/op | 132/op | 116/op |
 | Lint, 100 dialogues | 105.37 ms/op | 105.62 ms/op | 168,551/op | 168,583/op |
 | Lint, 1,000 dialogues | 867.23 ms/op | 939.60 ms/op | 1,666,682/op | 1,666,686/op |
 

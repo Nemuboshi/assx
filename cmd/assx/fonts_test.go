@@ -2,12 +2,14 @@ package main
 
 import (
 	"bytes"
+	"encoding/binary"
 	"encoding/json"
 	"errors"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+	"unicode/utf16"
 
 	"golang.org/x/image/font/gofont/goregular"
 )
@@ -166,5 +168,42 @@ func TestFontsCommandRendererScope(t *testing.T) {
 		if tc.flag == "vsfiltermod" && (result.Renderer.Mod != "enabled" || result.Renderer.Lua != "disabled") {
 			t.Fatalf("wrong build: %#v", result)
 		}
+	}
+}
+
+func TestFontsCommandUTF16UsesDecodedSourceSpans(t *testing.T) {
+	path, fonts, source := fontCommandFixture(t)
+	encoded := []byte{0xff, 0xfe}
+	for _, unit := range utf16.Encode([]rune(string(source))) {
+		encoded = binary.LittleEndian.AppendUint16(encoded, unit)
+	}
+	if err := os.WriteFile(path, encoded, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	var out, stderr bytes.Buffer
+	if code := run([]string{"fonts", "check", "--format=json", "--font-dir", fonts, path}, &out, &stderr); code != 0 {
+		t.Fatalf("exit %d: %s", code, &stderr)
+	}
+	var result struct {
+		Findings []struct {
+			ID     string
+			Usages []struct {
+				Span struct{ Start, End int } `json:"source_span"`
+			}
+		}
+	}
+	if err := json.Unmarshal(out.Bytes(), &result); err != nil {
+		t.Fatal(err)
+	}
+	if len(result.Findings) != 2 || result.Findings[1].ID != "FONT001" {
+		t.Fatalf("findings: %#v", result)
+	}
+	span := result.Findings[1].Usages[0].Span
+	if string(source[span.Start:span.End]) != "中" {
+		t.Fatalf("encoded offsets used instead of decoded offsets: %#v", span)
+	}
+	after, err := os.ReadFile(path)
+	if err != nil || !bytes.Equal(encoded, after) {
+		t.Fatal("UTF-16 file changed")
 	}
 }
