@@ -18,8 +18,16 @@ func Build(path string, diagnostics []lint.Diagnostic, document ass.Document) re
 	tagSpans := make(map[tagKey]sourcePosition)
 	fields := make(map[fieldKey]sourcePosition)
 	lineOffsets := make(map[int]int, len(document.Lines))
+	lineEnds := make(map[int]int, len(document.Lines))
 	for _, line := range document.Lines {
 		lineOffsets[line.Line] = line.Offset
+		lineEnds[line.Line] = line.Offset + len(line.Content)
+	}
+	if len(document.Lines) == 0 {
+		for _, line := range ass.ParseConcreteDocument(document.Text).Lines {
+			lineOffsets[line.Number] = line.Span.Start
+			lineEnds[line.Number] = line.ContentSpan.End
+		}
 	}
 	for _, dialogue := range document.Dialogues {
 		textOffset := dialogue.TextStart - dialogue.LineStart
@@ -57,7 +65,7 @@ func Build(path string, diagnostics []lint.Diagnostic, document ass.Document) re
 	for i := range diagnostics {
 		d := &diagnostics[i]
 		position := locate(d, textStarts, fields, tagSpans)
-		if d.SourceSpan != nil {
+		if d.SourceSpan != nil && d.SourceSpan.Start >= lineOffsets[d.Line] && d.SourceSpan.End <= lineEnds[d.Line] {
 			position = sourcePosition{column: d.SourceSpan.Start - lineOffsets[d.Line] + 1, width: max(1, d.SourceSpan.End-d.SourceSpan.Start)}
 		}
 		view := diagnosticView(d)

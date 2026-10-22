@@ -140,7 +140,8 @@ func analyzeResolvedDialogue(dialogue ass.Dialogue, profile renderer.Profile, st
 				Description: rule.Description, Fix: rule.Fix,
 				Line: dialogue.Line, Column: node.Block.Span.Start + 1,
 				FixSafety: rule.FixSafety, Edits: []TextEdit{{Start: dialogue.TextStart + node.Block.Span.Start, End: dialogue.TextStart + node.Block.Span.End}},
-				Sources: rule.Sources,
+				Sources:    rule.Sources,
+				SourceSpan: &ass.ConcreteSpan{Start: dialogue.TextStart + node.Block.Span.Start, End: dialogue.TextStart + node.Block.Span.End},
 			})
 			continue
 		}
@@ -154,8 +155,9 @@ func analyzeResolvedDialogue(dialogue ass.Dialogue, profile renderer.Profile, st
 		for _, item := range node.Block.Items {
 			if item.Expression == nil {
 				if junk := meaningfulRawJunk(item.Raw); junk != "" {
+					start := dialogue.TextStart + item.Span.Start + strings.Index(item.Raw, junk)
 					analyzer.diagnostics = append(analyzer.diagnostics,
-						overrideJunkDiagnostic(dialogue, item.Span.Start+1, junk))
+						overrideJunkDiagnostic(dialogue, item.Span.Start+1, junk, ass.ConcreteSpan{Start: start, End: start + len(junk)}))
 				}
 			}
 		}
@@ -290,8 +292,16 @@ func (a *dialogueAnalyzer) consumeResolved(tag ass.Tag, result renderer.Result, 
 	}
 	a.validateIR(tag, ir, enforceCounts)
 	if tail := ignoredTagTailIR(tag, ir); tail != "" {
+		span := result.Source.AtDocumentOffset(a.textStart)
+		if len(result.Args) > 0 {
+			span = result.Args[0].Span.AtDocumentOffset(a.textStart)
+			if at := strings.LastIndex(result.Args[0].Raw, tail); at >= 0 {
+				span.Start += at
+				span.End = span.Start + len(tail)
+			}
+		}
 		a.diagnostics = append(a.diagnostics, overrideJunkDiagnostic(
-			ass.Dialogue{Line: a.line}, tag.Column, tail))
+			ass.Dialogue{Line: a.line}, tag.Column, tail, span))
 	}
 }
 
@@ -338,6 +348,7 @@ func (d *resolvedDrawingCollector) flush() {
 			Description: rule.Description, Fix: rule.Fix,
 			Line: d.dialogue.Line, Column: problem.Start + 1,
 			Detail: problem.Detail, Sources: rule.Sources,
+			SourceSpan: &ass.ConcreteSpan{Start: d.dialogue.TextStart + problem.Start, End: d.dialogue.TextStart + problem.End},
 		})
 	}
 	d.fragments = nil
