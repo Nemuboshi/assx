@@ -1,6 +1,7 @@
-package lint
+package fontcheck
 
 import (
+	"assx/internal/ass/renderer"
 	"os"
 	"path/filepath"
 	"strings"
@@ -25,40 +26,26 @@ func TestAnalyzeFontsReportsMissingFamilyAndGlyph(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(fontDir, "regular.ttf"), goregular.TTF, 0o600); err != nil {
 		t.Fatal(err)
 	}
-	checker, err := NewFontChecker(filepath.Dir(fontDir))
+	checker, err := newTestCatalog(filepath.Dir(fontDir))
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	diagnostics, err := AnalyzeFonts(doc, checker)
+	diagnostics, err := Analyze(doc, checker, renderer.Profile{})
 	if err != nil {
 		t.Fatal(err)
 	}
-	counts := map[string]int{}
+	counts := map[Kind]int{}
 	for _, diagnostic := range diagnostics {
-		counts[diagnostic.ID]++
-		if diagnostic.Severity != Suggestion {
-			t.Errorf("font finding %s severity = %q, want %q", diagnostic.ID, diagnostic.Severity, Suggestion)
-		}
-		if diagnostic.FixSafety != "" || len(diagnostic.Edits) != 0 {
-			t.Errorf("font finding %s has automatic fix metadata: %#v", diagnostic.ID, diagnostic)
-		}
+		counts[diagnostic.Kind]++
 	}
-	if counts[IssueFontMissing] != 2 || counts[IssueMissingGlyphs] != 1 || len(diagnostics) != 3 {
+	if counts[FamilyAbsent] != 2 || counts[MissingCharacters] != 1 || len(diagnostics) != 3 {
 		t.Fatalf("diagnostics = %#v", diagnostics)
-	}
-	if safe, unsafe, unfixable := CountFixes(diagnostics); safe != 0 || unsafe != 0 || unfixable != 3 {
-		t.Fatalf("fix counts = (%d, %d, %d), want (0, 0, 3)", safe, unsafe, unfixable)
-	}
-	for _, diagnostic := range diagnostics {
-		if diagnostic.ID == IssueMissingGlyphs && !strings.Contains(diagnostic.Detail, "characters") {
-			t.Fatalf("missing-glyph detail = %q", diagnostic.Detail)
-		}
 	}
 }
 
 func TestFontDirectoryDoesNotFallBackToSystemFonts(t *testing.T) {
-	checker, err := NewFontChecker(t.TempDir())
+	checker, err := newTestCatalog(t.TempDir())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -76,7 +63,7 @@ func TestAnalyzeFontsUsesRendererStyleLookup(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(fontDir, "regular.ttf"), goregular.TTF, 0o600); err != nil {
 		t.Fatal(err)
 	}
-	checker, err := NewFontChecker(fontDir)
+	checker, err := newTestCatalog(fontDir)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -92,18 +79,20 @@ Dialogue: 0,0:00:00.00,0:00:01.00,Main,,0,0,0,,A
 Dialogue: 0,0:00:01.00,0:00:02.00,main,,0,0,0,,B
 Dialogue: 0,0:00:02.00,0:00:03.00,default,,0,0,0,,C
 `)
-	diagnostics, err := AnalyzeFonts(doc, checker)
+	diagnostics, err := Analyze(doc, checker, renderer.Profile{})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	var missing []Diagnostic
+	var missing []Finding
 	for _, diagnostic := range diagnostics {
-		if diagnostic.ID == IssueFontMissing {
+		if diagnostic.Kind == FamilyAbsent {
 			missing = append(missing, diagnostic)
 		}
 	}
-	if len(missing) != 1 || !strings.Contains(missing[0].Detail, "Definitely Missing") {
+	if len(missing) != 1 || !strings.Contains(missing[0].Usages[0].Request.Family, "Definitely Missing") {
 		t.Fatalf("font diagnostics = %#v", diagnostics)
 	}
 }
+
+func newTestCatalog(dir string) (*Catalog, error) { return NewCatalog(Source{Directory: dir}) }
