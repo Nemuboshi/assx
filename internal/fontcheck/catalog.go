@@ -120,6 +120,16 @@ func NewCatalog(source Source) (*Catalog, error) {
 				} else {
 					delete(cache, path)
 				}
+			} else {
+				// Permissions and sharing locks can change without changing the cache key.
+				file, readErr := os.Open(path)
+				if readErr == nil {
+					readErr = file.Close()
+				}
+				if readErr != nil {
+					checker.Issues = append(checker.Issues, CatalogIssue{Path: path, Detail: readErr.Error()})
+					return nil
+				}
 			}
 			for _, face := range faces.faces {
 				face.path = path

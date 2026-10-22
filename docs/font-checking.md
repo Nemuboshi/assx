@@ -64,7 +64,8 @@ Drawing text is excluded. Unknown renderer state remains unchecked, including un
 Font checks retain the delivered semantic and text-escape behavior. They add no new renderer model.
 
 System directories differ on Windows, macOS, and Linux. Results describe that scanned set, not every installed font provider.
-The cache uses file size and modification time. Changes that preserve both can leave stale metadata.
+The cache uses target file size and modification time, including font-file symlink targets.
+Cache hits also check read access. Permission changes and sharing locks make a catalog incomplete. Changes that preserve both can leave stale metadata.
 The cache contains metadata, not glyph maps. Selected files are read for coverage in each process.
 Discarding the cache is safe. Cache write failure does not change scan results.
 

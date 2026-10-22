@@ -81,3 +81,11 @@ Files: CLI flags, lint registry, baseline test harness, new cutover tests, READM
 - Performance comparisons are recorded in `docs/performance.md`. No new runtime dependency or renderer model was added.
 - Ruling: retain single-primary font scope and reject incomplete catalogs. A conservative operational error avoids ungrounded absence findings.
 - Ruling: submit ordered PRs without merging main. Link issue closure to merges; do not claim unrun platform or pixel gates passed.
+
+- Review: two explicit reviewer model endpoints did not complete. The inherited-model reviewer inspected the font core and CLI.
+- Review finding: a warm cache could hide denied read access. A Windows sharing-lock test reproduced the false absence finding.
+- The read-access fix passes that regression. A Unix permission test covers Linux/macOS CI; it skips only for privileged readers.
+- `golang.org/x/sys` remains at the existing version. It is now a direct test dependency for the Windows sharing-lock fixture.
+- Final local gate: 1183 Go tests in 17 packages; 125 race tests in the font, report, and CLI packages. Vet/build pass.
+- Additional UTF-16 font-output tests verify decoded byte spans and unchanged original bytes.
+- F01/F02 retain whitespace-only legacy directory behavior through a temporary normalization helper. F03 removes it with the adapter.
