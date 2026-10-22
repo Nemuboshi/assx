@@ -36,6 +36,8 @@ The font command returns 0 when checks complete, or 2 for usage and operational 
 Lint rejects the removed `--check-fonts` and `--font-dir` flags.
 See [font checking and migration](docs/font-checking.md) for catalog scope, JSON, cache behavior, and limits.
 
+`assx lsp` starts an LSP 3.17 server on stdio. This stage supports document synchronization only. It does not yet publish diagnostics or offer editor features. See [LSP status](docs/lsp.md).
+
 All analysis uses the lossless concrete syntax tree and pinned profile engine.
 SafeFix application recomputes authorized edits under the caller's primary and compatibility policy.
 See [renderer contracts](docs/renderer-contracts.md) for evidence scope and limits.
