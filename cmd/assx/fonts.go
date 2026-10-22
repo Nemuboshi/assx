@@ -19,6 +19,7 @@ func runFonts(args []string, stdout, stderr io.Writer) int {
 	flags.SetOutput(stderr)
 	format := flags.String("format", "pretty", "output: pretty, plain, or json")
 	directory := flags.String("font-dir", "", "exclusive font directory (default: system directories)")
+	forceASS := flags.Bool("force-ass", false, "analyze unrecognized ASS input explicitly")
 	primary := flags.String("renderer", "libass", "primary renderer: libass, xy-vsfilter, or vsfiltermod")
 	modName := flags.String("mod-build", "unknown", "VSFilterMod capability: unknown, enabled, or disabled")
 	luaName := flags.String("lua-build", "unknown", "Lua capability: unknown, enabled, or disabled")
@@ -77,6 +78,15 @@ func runFonts(args []string, stdout, stderr io.Writer) int {
 	source, err := ass.DecodeSource(data)
 	if err != nil {
 		return fail(err)
+	}
+	recognition := ass.Recognize(source.Text)
+	if !*forceASS {
+		switch recognition.Class {
+		case ass.Rejected:
+			return fail(fmt.Errorf("input is not recognized as ASS/SSA; no font check was run. Use --force-ass to override input recognition"))
+		case ass.Tentative:
+			_, _ = fmt.Fprintln(stderr, "Input has tentative ASS/SSA structure; font analysis may be incomplete.")
+		}
 	}
 	doc := ass.Parse(source.Text)
 	catalog, err := fontcheck.NewCatalog(fontcheck.Source{Directory: *directory})

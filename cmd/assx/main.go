@@ -49,6 +49,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 	explain := flags.Bool("explain", false, "include expanded rule explanations and evidence in pretty output")
 	fix := flags.Bool("fix", false, "apply safe fixes")
 	unsafeFix := flags.Bool("unsafe-fix", false, "apply safe and unsafe fixes")
+	forceASS := flags.Bool("force-ass", false, "analyze unrecognized ASS input explicitly")
 	rendererName := flags.String("renderer", "libass", "primary renderer: libass, xy-vsfilter, or vsfiltermod")
 	compatNames := flags.String("compat", "", "additional compatibility renderers (comma-separated)")
 	modBuildName := flags.String("mod-build", "unknown", "VSFilterMod build capability: unknown, enabled, or disabled")
@@ -56,7 +57,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 	// Usage and fallback diagnostics on stderr are best-effort: their write
 	// failures cannot be reported through the same failing stream.
 	flags.Usage = func() {
-		_, _ = fmt.Fprintln(stderr, "Usage: assx [lint] [--format pretty|plain|json] [--renderer=libass|xy-vsfilter|vsfiltermod] [--compat=RENDERERS] [--mod-build=unknown|enabled|disabled] [--lua-build=unknown|enabled|disabled] [--explain] [--fix] [--unsafe-fix] file.ass")
+		_, _ = fmt.Fprintln(stderr, "Usage: assx [lint] [--format pretty|plain|json] [--renderer=libass|xy-vsfilter|vsfiltermod] [--compat=RENDERERS] [--mod-build=unknown|enabled|disabled] [--lua-build=unknown|enabled|disabled] [--explain] [--fix] [--unsafe-fix] [--force-ass] file.ass")
 	}
 	if err := flags.Parse(args); err != nil {
 		if strings.Contains(err.Error(), "flag provided but not defined: -check-fonts") || strings.Contains(err.Error(), "flag provided but not defined: -font-dir") {
@@ -108,6 +109,17 @@ func run(args []string, stdout, stderr io.Writer) int {
 		_, _ = fmt.Fprintln(stderr, err)
 		return 2
 	}
+	recognition := ass.Recognize(source.Text)
+	if !*forceASS {
+		switch recognition.Class {
+		case ass.Rejected:
+			progress.stop()
+			_, _ = fmt.Fprintln(stderr, "Input is not recognized as ASS/SSA; no lint or fixes were run. Use --force-ass to override input recognition.")
+			return 2
+		case ass.Tentative:
+			_, _ = fmt.Fprintln(stderr, "Input has tentative ASS/SSA structure; analysis is allowed, but fixes will not be written. Use --force-ass to override input recognition.")
+		}
+	}
 	snapshot, err := analysis.NewSnapshot(path, source.Text, nil)
 	if err != nil {
 		progress.stop()
@@ -140,7 +152,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 	}
 	doc := ass.Parse(snapshot.Text())
 	var appliedSafe, appliedUnsafe int
-	if *fix || *unsafeFix {
+	if (*fix || *unsafeFix) && (*forceASS || recognition.Class == ass.Recognized) {
 		result, err := analysis.Analyze(ctx, snapshot, options)
 		if err != nil {
 			progress.stop()

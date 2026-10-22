@@ -41,6 +41,14 @@ Dialogue spans are text-relative. Document spans are document-relative.
 `Source.Encode` restores the original encoding and BOM.
 SafeFix requires byte-exact round-trip equality before replacing the file.
 
+## Input recognition
+
+`ass.Recognize` classifies decoded content before CLI analysis. It uses physical lines and section context from `ParseConcreteDocument`. It does not use the filename suffix, lint rules, or a renderer profile. Its evidence contains stable identifiers and physical line numbers.
+
+`Recognized` requires a credible record inside `[Events]`, a Style section, or `[Script Info]`. A meaningful event or Style `Format:` also qualifies. A `Comment:` record alone stays `Tentative`. A known section without credible records is `Tentative`. Text without credible ASS structure is `Rejected`. A NUL or other disallowed control byte rejects the input. A WebVTT marker or subtitle timing arrow rejects sparse input. Credible ASS records take precedence over foreign-looking text elsewhere. Unknown sections and malformed ASS values do not cause rejection by themselves.
+
+The CLI returns exit 2 for rejected input before lint or font checks. It permits lint of tentative input but does not write fixes. `--force-ass` bypasses recognition, including its write restriction. It does not bypass source decoding, byte-exact round-trip protection, or fix proof. Input notices go to stderr; JSON diagnostics stay on stdout. Recognition is an input policy, not a semantic validity rule.
+
 See [reports](diagnostic-reports.md) for display coordinates and
 [contracts](renderer-contracts.md) for reviewed snapshots and fix evidence.
 

@@ -1,5 +1,7 @@
 # Font checking
 
+`assx fonts check` checks ASS/SSA content before it scans fonts. It rejects unrecognized input with exit 2. Tentative input gets a notice on stderr. `--force-ass` bypasses content recognition but does not change font checks or source decoding.
+
 Use `assx fonts check file.ass` to check font dependencies.
 Use `--font-dir ./fonts` to scan one directory and its child directories.
 An explicit directory never falls back to system fonts.
