@@ -548,3 +548,32 @@ The parent integration compares benchmark samples, runs lint and frame checks, a
 No new performance result is claimed here.
 
 Treat the two baseline commits as distinct measurement points. Compare P02–P10 against the renderer architecture baseline using equivalent software and hardware; use `benchstat` instead of treating single-sample differences as regressions.
+
+## Implementation record: font separation (#32)
+
+The F03 font benchmarks use Go 1.27.0 on Windows/amd64, with an Intel Core i5-9300H.
+The comparison uses `ae5e147` before extraction and the F03 implementation.
+Each row uses three samples. Catalog timing includes metadata cache I/O and one Go Regular TTF.
+Analysis uses `testdata/font-check.ass`, with `MISSING_GLYPH` replaced by U+10FFFF and a warm catalog.
+
+| Benchmark | Before median | F03 median | Before allocations | F03 allocations |
+| --- | --- | --- | --- | --- |
+| Font catalog | 1.138 ms/op | 0.927 ms/op | 116/op | 122/op |
+| Font analysis | 36.59 us/op | 22.02 us/op | 132/op | 116/op |
+| Lint, 100 dialogues | 105.37 ms/op | 105.62 ms/op | 168,551/op | 168,583/op |
+| Lint, 1,000 dialogues | 867.23 ms/op | 939.60 ms/op | 1,666,682/op | 1,666,686/op |
+
+Lint timing ranges overlap: 90.52-106.79 versus 102.21-112.25 ms for 100 dialogues.
+For 1,000 dialogues, ranges are 719.56-1,063.91 versus 848.06-993.20 ms.
+These short local samples do not establish a timing regression or a general speed improvement.
+Font analysis memory decreases from 21,431 to 20,355 bytes/op in this fixture.
+The extraction does not change the lint analyzer.
+
+Run the font checks with:
+
+```sh
+go test ./internal/fontcheck -run '^$' -bench 'BenchmarkFont.*Comparison$' -benchmem -count=3
+```
+
+The same harness ran against the archived baseline with `NewFontChecker` and `AnalyzeFonts` instead of the extracted APIs.
+Recheck after changes to catalog I/O, usage extraction, matching, or the shared evaluator.

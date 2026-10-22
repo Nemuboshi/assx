@@ -17,9 +17,8 @@ const (
 	FixUnsafe
 )
 
-// Diagnostic is the immutable presenter view of one finding. Coordinates are
-// carried verbatim from lint.Diagnostic so the JSON contract and fix behavior
-// stay the public truth; presenters normalize them before drawing frames.
+// Diagnostic is a presenter view. Domain adapters supply source coordinates
+// and any verified fix outcome. Domain JSON contracts remain separate.
 type Diagnostic struct {
 	Line         int
 	Column       int

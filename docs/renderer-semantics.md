@@ -106,7 +106,7 @@ Consumers can request renderer-local observations:
 
 - `lint.AnalyzeNoEffectsForRenderer` for ASS006 observations;
 - `lint.AnalyzeRedundantStyleOverridesForRenderer` for ASS013;
-- `lint.AnalyzeFontsForRenderer` for font state and drawing visibility.
+- `fontcheck.ExtractUsages` for font state, uncertainty, source spans, and drawing visibility.
 
 These observations carry no automatic edits. See [scoped lint](renderer-lint.md)
 for validity diagnostics, [compatibility](renderer-compatibility.md) for renderer

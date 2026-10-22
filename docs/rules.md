@@ -101,13 +101,11 @@ A run such as `{{\i1}` has one extra opening brace before a matched override blo
 
 References: libass [event override parsing](https://github.com/libass/libass/blob/f61db56/libass/ass_render.c#L2066-L2075) and [tag scanning](https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L282-L290); VSFilter [override block parsing](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2954-L2958) and [tag scanning](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2075-L2082).
 
-## ASS015 — Subtitle font is missing
+## ASS015 and ASS016 - Retired font checks
 
-With `--check-fonts`, this finding reports an effective font family that was not found. The checker scans system font folders by default; `--font-dir DIR` makes it scan only that folder recursively. Font checks are disabled unless `--check-fonts` is set. Family matching ignores case but preserves punctuation and regional suffixes such as `JP`, `SC`, and `TC`. `\fn0` restores the Style font, while `\fn 0` selects the literal family `0`. Font and bold/italic reset tags restore Style values when renderer defaults agree; differing defaults after a named reset are skipped. A bare `\p` ends drawing mode.
-
-## ASS016 — Font is missing subtitle characters
-
-The selected font family exists, but does not contain glyphs for one or more characters used by dialogue text. The finding lists the missing characters. Both font findings are informational suggestions with no automatic fixes.
+These IDs are reserved. They are not active lint rules and must not be reused.
+Use `assx fonts check` for `FONT001` and `FONT002`.
+See [font checking](font-checking.md) for their scope and migration.
 
 ## ASS017 — Undefined style reference
 
