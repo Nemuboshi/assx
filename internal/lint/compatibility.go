@@ -88,7 +88,7 @@ func compatibilityDiagnostics(findings []semantic.CompatibilityFinding, location
 		if id == IssueStyleBoxGeometry || id == IssueStyleBorderMode {
 			description, fix = rule.Description, rule.Fix
 		}
-		out = append(out, Diagnostic{ID: id, Severity: rule.Severity, Title: rule.Title, Description: description, Fix: fix, Line: line, Column: column, Tag: finding.Left.Resolution.Name, Field: finding.Dimension, Detail: string(finding.Status) + ": " + finding.Detail, Renderer: scope, SourceSpan: &finding.Source, Sources: slices.Clone(finding.Citations)})
+		out = append(out, Diagnostic{ID: id, Severity: rule.Severity, Title: rule.Title, Description: description, Fix: fix, Line: line, Column: column, Tag: finding.Left.Resolution.Name, Field: finding.Dimension, Detail: string(finding.Status) + ": " + finding.Detail, Renderer: scope, SourceSpan: &finding.Source, Sources: slices.Clone(finding.Citations), spanJSON: true})
 	}
 	sort.SliceStable(out, func(i, j int) bool {
 		if out[i].Line == out[j].Line {

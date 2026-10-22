@@ -145,6 +145,7 @@ func styleDiagnostic(id string, field ass.StyleField, name, replacement string) 
 		ID: rule.ID, Severity: rule.Severity, FixSafety: rule.FixSafety,
 		Title: rule.Title, Description: rule.Description, Fix: rule.Fix,
 		Line: field.Line, Column: field.ValueColumn, Field: name, Sources: rule.Sources,
+		SourceSpan: &ass.ConcreteSpan{Start: field.ValueStart, End: field.ValueEnd},
 	}
 	if replacement != "" {
 		diagnostic.Edits = []TextEdit{{Start: field.ValueStart, End: field.ValueEnd, Replacement: replacement}}

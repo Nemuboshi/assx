@@ -33,6 +33,7 @@ type Diagnostic struct {
 	Renderer    string            `json:"renderer,omitempty"`
 	SourceSpan  *ass.ConcreteSpan `json:"source_span,omitempty"`
 	Sources     []string          `json:"sources"`
+	spanJSON    bool
 }
 
 func analyzeUnterminatedBlocks(dialogue ass.Dialogue) []Diagnostic {
@@ -50,7 +51,7 @@ func analyzeUnterminatedBlocks(dialogue ass.Dialogue) []Diagnostic {
 				ID: rule.ID, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
 				Fix: rule.Fix, Line: dialogue.Line, Column: open + 1,
 				Detail:  fmt.Sprintf("No closing brace follows the '{' at column %d; the rest of the line renders as literal text.", open+1),
-				Sources: rule.Sources,
+				Sources: rule.Sources, SourceSpan: &ass.ConcreteSpan{Start: dialogue.TextStart + open, End: dialogue.TextStart + open + 1},
 			})
 			break
 		}
@@ -68,10 +69,24 @@ type dialogueAnalyzer struct {
 func (d Diagnostic) MarshalJSON() ([]byte, error) {
 	type diagnosticJSON Diagnostic
 	value := diagnosticJSON(d)
+	if !d.spanJSON {
+		value.SourceSpan = nil
+	}
 	if d.FixProofRef != "" {
 		value.FixProof = nil
 	}
 	return json.Marshal(value)
+}
+
+func (d *Diagnostic) UnmarshalJSON(data []byte) error {
+	type diagnosticJSON Diagnostic
+	var value diagnosticJSON
+	if err := json.Unmarshal(data, &value); err != nil {
+		return err
+	}
+	*d = Diagnostic(value)
+	d.spanJSON = d.SourceSpan != nil
+	return nil
 }
 
 func Analyze(dialogue ass.Dialogue) []Diagnostic {
@@ -127,10 +142,11 @@ func noEffectDetail(effect semantic.NoEffect) string {
 
 func (a *dialogueAnalyzer) add(id string, tag ass.Tag, detail string) {
 	rule := Rules[id]
+	span := ass.ConcreteSpan{Start: a.textStart + tag.Start, End: a.textStart + tag.End}
 	a.diagnostics = append(a.diagnostics, Diagnostic{
 		ID: rule.ID, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
 		Fix: rule.Fix, FixSafety: rule.FixSafety, Line: a.line, Column: tag.Column, Tag: tag.Name,
-		Detail: detail, Sources: rule.Sources,
+		Detail: detail, Sources: rule.Sources, SourceSpan: &span,
 	})
 }
 
@@ -226,7 +242,7 @@ func analyzeRepeatedOpenBraces(dialogue ass.Dialogue) []Diagnostic {
 				ID: rule.ID, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
 				Fix: rule.Fix, FixSafety: rule.FixSafety, Line: dialogue.Line, Column: open + 2,
 				Edits:   []TextEdit{{Start: dialogue.TextStart + open + 1, End: dialogue.TextStart + runEnd}},
-				Sources: rule.Sources,
+				Sources: rule.Sources, SourceSpan: &ass.ConcreteSpan{Start: dialogue.TextStart + open + 1, End: dialogue.TextStart + runEnd},
 			})
 		}
 		offset = close + 1
