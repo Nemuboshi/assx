@@ -1,12 +1,8 @@
 // Package report holds the renderer-independent view model for assx
-// diagnostic output. It is assembled from lint results only; it never
+// diagnostic output. It receives domain adapters; it never
 // re-parses ASS, resolves semantics, or classifies fix safety. Presenters
 // (plain and pretty) consume these views instead of touching lint internals directly.
 package report
-
-import (
-	"assx/internal/lint"
-)
 
 // FixOutcome is one of three trustworthy outcomes derived from per-diagnostic
 // metadata, not from rule-level suggestions:
@@ -30,7 +26,7 @@ type Diagnostic struct {
 	SourceColumn int
 	SourceWidth  int
 	ID           string
-	Severity     lint.Severity
+	Severity     string
 	Title        string
 	Description  string
 	Detail       string
@@ -38,8 +34,6 @@ type Diagnostic struct {
 	Tag          string
 	Renderer     string
 	Field        string
-	FixSafety    lint.FixSafety
-	Edits        []lint.TextEdit
 	Sources      []string
 	Outcome      FixOutcome
 }
@@ -66,6 +60,9 @@ func (c FixCounts) Total() int { return c.Safe + c.Unsafe + c.Unfixable }
 // Summary carries one run of results. Presenters must derive every visible
 // count from structured data here; they never guess from messages.
 type Summary struct {
+	Heading   string
+	Advisory  bool
+	Notes     []string
 	Groups    []Group
 	Total     int
 	Remaining FixCounts // fixes still available after this run
