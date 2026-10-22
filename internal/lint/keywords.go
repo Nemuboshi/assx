@@ -49,9 +49,10 @@ func AnalyzeKeywords(doc ass.Document) []Diagnostic {
 				diagnostics = append(diagnostics, Diagnostic{
 					ID: rule.ID, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
 					Fix: rule.Fix, Line: raw.Line, Column: len(raw.Content) - len(trimmed) + 1,
-					Field:   canonical,
-					Detail:  fmt.Sprintf("libass only accepts the exact keyword %q; the %q spelling here is honored by VSFilter but dropped by libass.", keyword, prefix+":"),
-					Sources: rule.Sources,
+					Field:      canonical,
+					Detail:     fmt.Sprintf("libass only accepts the exact keyword %q; the %q spelling here is honored by VSFilter but dropped by libass.", keyword, prefix+":"),
+					Sources:    rule.Sources,
+					SourceSpan: &ass.ConcreteSpan{Start: raw.Offset + len(raw.Content) - len(trimmed), End: raw.Offset + len(raw.Content) - len(trimmed) + colon + 1},
 				})
 			}
 			if strings.EqualFold(canonical, prefix) {

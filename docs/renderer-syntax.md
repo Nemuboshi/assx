@@ -41,6 +41,8 @@ Dialogue spans are text-relative. Document spans are document-relative.
 `Source.Encode` restores the original encoding and BOM.
 SafeFix requires byte-exact round-trip equality before replacing the file.
 
+`internal/sourcepos` indexes decoded UTF-8 text for LSP positions. It maps byte spans to zero-based UTF-16 lines and characters. It rejects offsets inside UTF-8 runes or CRLF and positions inside surrogate pairs. A final newline starts an empty LSP line. Raw file byte offsets do not enter this index.
+
 ## Input recognition
 
 `ass.Recognize` classifies decoded content before CLI analysis. It uses physical lines and section context from `ParseConcreteDocument`. It does not use the filename suffix, lint rules, or a renderer profile. Its evidence contains stable identifiers and physical line numbers.
