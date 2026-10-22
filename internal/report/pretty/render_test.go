@@ -7,7 +7,6 @@ import (
 
 	"github.com/charmbracelet/x/ansi"
 
-	"assx/internal/lint"
 	"assx/internal/report"
 )
 
@@ -109,8 +108,8 @@ func TestPrettyShowsMultipleFindingsOnOneComplexDialogueLine(t *testing.T) {
 	fsStart := strings.Index(source, `\fsbad`)
 	view := report.Summary{Total: 2, Remaining: report.FixCounts{Unfixable: 2}, Groups: []report.Group{{
 		File: "sample.ass", Errors: 2, Diagnostics: []report.Diagnostic{
-			{Line: 1, Column: 1, SourceColumn: posStart + 1, SourceWidth: len(`\pos(1,2,3)`), ID: "ASS001", Severity: lint.Error, Title: "Bad position", Detail: "Expected two coordinates."},
-			{Line: 1, Column: 2, SourceColumn: fsStart + 1, SourceWidth: len(`\fsbad`), ID: "ASS002", Severity: lint.Error, Title: "Bad font size", Detail: "Expected a number."},
+			{Line: 1, Column: 1, SourceColumn: posStart + 1, SourceWidth: len(`\pos(1,2,3)`), ID: "ASS001", Severity: "error", Title: "Bad position", Detail: "Expected two coordinates."},
+			{Line: 1, Column: 2, SourceColumn: fsStart + 1, SourceWidth: len(`\fsbad`), ID: "ASS002", Severity: "error", Title: "Bad font size", Detail: "Expected a number."},
 		},
 	}}}
 	var out strings.Builder
@@ -128,7 +127,7 @@ func TestPrettyReprintsChangedViewportAndAlignsEachCaret(t *testing.T) {
 	columns := []int{35, 180}
 	diagnostics := make([]report.Diagnostic, 0, len(columns))
 	for i, column := range columns {
-		diagnostics = append(diagnostics, report.Diagnostic{Line: 1, Column: column, SourceColumn: column, SourceWidth: 1, ID: fmt.Sprintf("ASS%03d", i), Severity: lint.Error, Title: "Finding"})
+		diagnostics = append(diagnostics, report.Diagnostic{Line: 1, Column: column, SourceColumn: column, SourceWidth: 1, ID: fmt.Sprintf("ASS%03d", i), Severity: "error", Title: "Finding"})
 	}
 	view := report.Summary{Total: len(diagnostics), Groups: []report.Group{{File: "sample.ass", Errors: len(diagnostics), Diagnostics: diagnostics}}}
 	var out strings.Builder
@@ -163,7 +162,7 @@ func TestPrettySortsPresentationByPhysicalSourcePosition(t *testing.T) {
 	columns := []int{52, 62, 71, 35}
 	diagnostics := make([]report.Diagnostic, 0, len(columns))
 	for _, column := range columns {
-		diagnostics = append(diagnostics, report.Diagnostic{Line: 1, Column: column, SourceColumn: column, SourceWidth: 1, ID: fmt.Sprintf("ASS%03d", column), Severity: lint.Warning, Title: "Finding"})
+		diagnostics = append(diagnostics, report.Diagnostic{Line: 1, Column: column, SourceColumn: column, SourceWidth: 1, ID: fmt.Sprintf("ASS%03d", column), Severity: "warning", Title: "Finding"})
 	}
 	view := report.Summary{Total: len(diagnostics), Groups: []report.Group{{File: "sample.ass", Warnings: len(diagnostics), Diagnostics: diagnostics}}}
 	var out strings.Builder
@@ -184,7 +183,7 @@ func TestPrettySortsPresentationByPhysicalSourcePosition(t *testing.T) {
 func TestWholeReportFitsCommonTerminalWidths(t *testing.T) {
 	view := report.Summary{Total: 1234, Remaining: report.FixCounts{Safe: 111, Unsafe: 222, Unfixable: 901}, Groups: []report.Group{{
 		File: strings.Repeat("very-long-directory/", 8) + "sample.ass", Errors: 123, Warnings: 456, Suggestions: 655,
-		Diagnostics: []report.Diagnostic{{Line: 1, Column: 2, SourceColumn: 2, SourceWidth: 1, ID: "ASS001", Severity: lint.Error, Title: strings.Repeat("A long diagnostic title ", 4), Detail: strings.Repeat("A detailed explanation with several words. ", 4), Outcome: report.FixUnsafe, Fix: strings.Repeat("Review this change carefully. ", 4)}},
+		Diagnostics: []report.Diagnostic{{Line: 1, Column: 2, SourceColumn: 2, SourceWidth: 1, ID: "ASS001", Severity: "error", Title: strings.Repeat("A long diagnostic title ", 4), Detail: strings.Repeat("A detailed explanation with several words. ", 4), Outcome: report.FixUnsafe, Fix: strings.Repeat("Review this change carefully. ", 4)}},
 	}}}
 	for _, width := range []int{40, 80, 120} {
 		var out strings.Builder
@@ -202,7 +201,7 @@ func TestWholeReportFitsCommonTerminalWidths(t *testing.T) {
 func TestPrettyReportGoldenNoColor(t *testing.T) {
 	view := report.Summary{Total: 1, Remaining: report.FixCounts{Unfixable: 1}, Groups: []report.Group{{
 		File: "sample.ass", Errors: 1, Diagnostics: []report.Diagnostic{{
-			Line: 1, Column: 2, SourceColumn: 12, SourceWidth: 6, ID: "ASS001", Severity: lint.Error,
+			Line: 1, Column: 2, SourceColumn: 12, SourceWidth: 6, ID: "ASS001", Severity: "error",
 			Title: "Bad tag", Detail: "Invalid font size.", Outcome: report.FixNone,
 		}},
 	}}}

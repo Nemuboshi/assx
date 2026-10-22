@@ -5,7 +5,6 @@ package fontcheck
 import (
 	"cmp"
 	"fmt"
-	"golang.org/x/image/font/sfnt"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -13,6 +12,8 @@ import (
 	"slices"
 	"strings"
 	"sync"
+
+	"golang.org/x/image/font/sfnt"
 )
 
 // Source selects either system directories or one exclusive directory.
@@ -68,6 +69,11 @@ func NewCatalog(source Source) (*Catalog, error) {
 		if err != nil {
 			return nil, fmt.Errorf("font directory %q: %w", fontDir, err)
 		}
+		dir, err = filepath.Abs(dir)
+		if err != nil {
+			return nil, fmt.Errorf("font directory %q: %w", fontDir, err)
+		}
+		source.Directory = dir
 		dirs = []string{dir}
 	} else {
 		dirs = systemFontDirs()
@@ -84,6 +90,9 @@ func NewCatalog(source Source) (*Catalog, error) {
 				if custom {
 					return walkErr
 				}
+				if !os.IsNotExist(walkErr) {
+					checker.Issues = append(checker.Issues, CatalogIssue{Path: path, Detail: walkErr.Error()})
+				}
 				return nil
 			}
 			if entry.IsDir() || !isFontFile(path) {
@@ -95,15 +104,17 @@ func NewCatalog(source Source) (*Catalog, error) {
 			seen[path] = true
 			info, err := entry.Info()
 			if err != nil {
+				checker.Issues = append(checker.Issues, CatalogIssue{Path: path, Detail: err.Error()})
 				return nil
 			}
 			faces, ok := cache[path]
 			if !ok || faces.size != info.Size() || faces.modTime != info.ModTime().UnixNano() {
-				faces = cachedFontFaces{size: info.Size(), modTime: info.ModTime().UnixNano(), faces: readFontFaces(path)}
-				if len(faces.faces) == 0 {
-					checker.Issues = append(checker.Issues, CatalogIssue{Path: path, Detail: "No readable font faces."})
+				parsed, readErr := readFontFaces(path)
+				faces = cachedFontFaces{size: info.Size(), modTime: info.ModTime().UnixNano(), faces: parsed}
+				if readErr != nil {
+					checker.Issues = append(checker.Issues, CatalogIssue{Path: path, Detail: readErr.Error()})
 				}
-				if len(faces.faces) > 0 {
+				if readErr == nil && len(faces.faces) > 0 {
 					cache[path] = faces
 				} else {
 					delete(cache, path)
@@ -173,19 +184,21 @@ func isFontFile(path string) bool {
 	}
 }
 
-func readFontFaces(path string) []fontFace {
+func readFontFaces(path string) ([]fontFace, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 	collection, err := sfnt.ParseCollection(data)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 	faces := make([]fontFace, 0, collection.NumFonts())
+	var faceError error
 	for i := 0; i < collection.NumFonts(); i++ {
 		font, err := collection.Font(i)
 		if err != nil {
+			faceError = err
 			continue
 		}
 		var buf sfnt.Buffer
@@ -206,6 +219,7 @@ func readFontFaces(path string) []fontFace {
 			}
 		}
 		if len(families) == 0 {
+			faceError = fmt.Errorf("face %d has no readable family name", i)
 			continue
 		}
 		subfamily := strings.ToLower(fontName(font, &buf, sfnt.NameIDTypographicSubfamily, sfnt.NameIDSubfamily))
@@ -215,7 +229,10 @@ func readFontFaces(path string) []fontFace {
 			italic: strings.Contains(subfamily, "italic") || strings.Contains(subfamily, "oblique"),
 		})
 	}
-	return faces
+	if len(faces) == 0 && faceError == nil {
+		faceError = fmt.Errorf("no readable font faces")
+	}
+	return faces, faceError
 }
 
 func fontName(font *sfnt.Font, buf *sfnt.Buffer, ids ...sfnt.NameID) string {

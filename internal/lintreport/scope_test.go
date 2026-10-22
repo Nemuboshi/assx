@@ -1,4 +1,4 @@
-package report
+package lintreport
 
 import (
 	"strings"

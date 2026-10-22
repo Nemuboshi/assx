@@ -3,6 +3,7 @@ package fontcheck
 import (
 	"cmp"
 	"slices"
+	"strings"
 
 	"assx/internal/ass"
 	"assx/internal/ass/renderer"
@@ -34,13 +35,18 @@ type Finding struct {
 // Analyze checks known visible requests. The caller must report catalog issues.
 // It preserves the legacy per-line request grouping during migration.
 func Analyze(doc ass.Document, catalog *Catalog, profile renderer.Profile) ([]Finding, error) {
+	return AnalyzeUsages(ExtractUsages(doc, profile), catalog)
+}
+
+// AnalyzeUsages checks extracted requests without evaluating the source again.
+func AnalyzeUsages(usages []Usage, catalog *Catalog) ([]Finding, error) {
 	type key struct {
 		line    int
 		context fontContext
 	}
 	var groups []Finding
 	indexes := make(map[key]int)
-	for _, usage := range ExtractUsages(doc, profile) {
+	for _, usage := range usages {
 		if !usage.Known || usage.Drawing || usage.Text == "" {
 			continue
 		}
@@ -57,11 +63,11 @@ func Analyze(doc ass.Document, catalog *Catalog, profile renderer.Profile) ([]Fi
 	for _, group := range groups {
 		request := group.Usages[0].Request
 		context := fontContext{request.Family, request.Bold, request.Italic}
-		var text string
+		var text strings.Builder
 		for _, usage := range group.Usages {
-			text += usage.Text
+			text.WriteString(usage.Text)
 		}
-		missing, found, err := catalog.missingRunes(context, text)
+		missing, found, err := catalog.missingRunes(context, text.String())
 		if err != nil {
 			return nil, err
 		}
