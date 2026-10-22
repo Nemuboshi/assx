@@ -23,7 +23,7 @@ import (
 	"assx/internal/ass/renderer"
 	"assx/internal/fontcheck"
 	"assx/internal/lint"
-	"assx/internal/report"
+	"assx/internal/lintreport"
 	"assx/internal/report/plain"
 	"assx/internal/report/pretty"
 )
@@ -33,6 +33,18 @@ func main() {
 }
 
 func run(args []string, stdout, stderr io.Writer) int {
+	if len(args) > 0 {
+		switch args[0] {
+		case "fonts":
+			if len(args) < 2 || args[1] != "check" {
+				_, _ = fmt.Fprintln(stderr, "Usage: assx fonts check [options] file.ass")
+				return 2
+			}
+			return runFonts(args[2:], stdout, stderr)
+		case "lint":
+			args = args[1:]
+		}
+	}
 	flags := flag.NewFlagSet("assx", flag.ContinueOnError)
 	flags.SetOutput(stderr)
 	format := flags.String("format", "pretty", "diagnostic output: pretty, plain, or json")
@@ -229,12 +241,12 @@ func run(args []string, stdout, stderr io.Writer) int {
 		}
 		_, _ = fmt.Fprintln(stderr, summary)
 	case "plain":
-		if err := plain.Render(stdout, path, diagnostics, elapsed, summary); err != nil {
+		if err := plain.Render(stdout, path, lintreport.Build(path, diagnostics, doc).Groups[0].Diagnostics, elapsed, summary); err != nil {
 			_, _ = fmt.Fprintln(stderr, err)
 			return 2
 		}
 	default:
-		view := report.Build(path, diagnostics, targets.Primary.DocumentView(doc))
+		view := lintreport.Build(path, diagnostics, targets.Primary.DocumentView(doc))
 		view.Explain = *explain
 		view.Applied.Safe, view.Applied.Unsafe = appliedSafe, appliedUnsafe
 		if err := pretty.Render(stdout, view, doc.Text, colorAllowed(stdout), outputWidth(stdout)); err != nil {

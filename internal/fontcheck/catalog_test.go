@@ -49,6 +49,30 @@ func TestCatalogInvalidationAndCorruptFiles(t *testing.T) {
 	}
 }
 
+func TestCatalogRelativeDirectoryIsAnAbsoluteScope(t *testing.T) {
+	isolateCache(t)
+	dir := t.TempDir()
+	t.Chdir(dir)
+	if err := os.Mkdir("fonts", 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join("fonts", "go.ttf"), goregular.TTF, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	catalog, err := NewCatalog(Source{Directory: "fonts"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !filepath.IsAbs(catalog.Source.Directory) {
+		t.Fatalf("relative catalog scope: %q", catalog.Source.Directory)
+	}
+	for _, face := range catalog.selectedFaces(fontContext{family: "Go"}) {
+		if !filepath.IsAbs(face.Path) {
+			t.Fatalf("relative face path: %q", face.Path)
+		}
+	}
+}
+
 func TestCatalogCollectionAndConcurrentCoverage(t *testing.T) {
 	isolateCache(t)
 	dir := t.TempDir()

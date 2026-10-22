@@ -8,14 +8,14 @@ import (
 	"strings"
 	"time"
 
-	"assx/internal/lint"
+	"assx/internal/report"
 )
 
 // Render preserves the existing plain diagnostic layout.
-func Render(output io.Writer, path string, diagnostics []lint.Diagnostic, elapsed time.Duration, fixSummary string) error {
+func Render(output io.Writer, path string, diagnostics []report.Diagnostic, elapsed time.Duration, fixSummary string) error {
 	// Formatting errors are retained by the buffer and returned by Flush.
 	writer := bufio.NewWriter(output)
-	ordered := append([]lint.Diagnostic(nil), diagnostics...)
+	ordered := append([]report.Diagnostic(nil), diagnostics...)
 	sort.SliceStable(ordered, func(i, j int) bool {
 		if ordered[i].Line == ordered[j].Line {
 			if ordered[i].Column == ordered[j].Column {
@@ -51,11 +51,11 @@ func Render(output io.Writer, path string, diagnostics []lint.Diagnostic, elapse
 	errors, warnings, suggestions := 0, 0, 0
 	for _, d := range ordered {
 		switch d.Severity {
-		case lint.Error:
+		case "error":
 			errors++
-		case lint.Warning:
+		case "warning":
 			warnings++
-		case lint.Suggestion:
+		case "suggestion":
 			suggestions++
 		}
 	}

@@ -1,6 +1,7 @@
-package report
+package lintreport
 
 import (
+	"assx/internal/report"
 	"strings"
 	"testing"
 
@@ -60,7 +61,7 @@ func TestBuildUsesDocumentTextStartAndConcreteFixMetadata(t *testing.T) {
 	if got.Groups[0].Diagnostics[2].SourceColumn != 22 || got.Groups[0].Diagnostics[2].SourceWidth != 5 {
 		t.Fatalf("field source = %d:%d, want 22:5", got.Groups[0].Diagnostics[2].SourceColumn, got.Groups[0].Diagnostics[2].SourceWidth)
 	}
-	if got.Groups[0].Diagnostics[0].Outcome != FixNone || got.Groups[0].Diagnostics[1].Outcome != FixNone {
+	if got.Groups[0].Diagnostics[0].Outcome != report.FixNone || got.Groups[0].Diagnostics[1].Outcome != report.FixNone {
 		t.Fatalf("fix outcomes = %v, %v", got.Groups[0].Diagnostics[0].Outcome, got.Groups[0].Diagnostics[1].Outcome)
 	}
 }

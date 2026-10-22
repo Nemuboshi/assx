@@ -6,6 +6,7 @@ testdata/contracts/cases/utf8bom.ass binary
 
 # Snapshot comparisons use exact bytes produced by encoding/json.
 testdata/contracts/golden/*.json text eol=lf
+internal/fontreport/testdata/*.golden text eol=lf
 
 # Raw benchstat input is line-oriented and platform-neutral.
 docs/performance/baseline-6ba7453-windows-amd64.txt text eol=lf

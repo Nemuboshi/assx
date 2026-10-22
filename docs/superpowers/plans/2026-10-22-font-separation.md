@@ -70,3 +70,5 @@ Files: CLI flags, lint registry, baseline test harness, new cutover tests, READM
 - Use a feature branch in the current checkout. No worktree or new CLI dependency is required for this change.
 
 - F01: domain tests and unchanged CLI baseline pass. Full suite: 1164 tests in 15 packages. Vet, build, and font race tests pass. Catalog scan: 0.89-1.15 ms/op, 113 allocs/op (warm metadata, one Go Regular file).
+
+- F02: independent command, domain JSON, font report goldens, and lint-free presentation model are implemented. Full suite: 1175 tests in 17 packages before the additional output-failure test. Vet/build and font/CLI race checks pass. Legacy baseline files are unchanged. The CI font job covers Linux, Windows, and macOS.
