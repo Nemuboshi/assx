@@ -184,8 +184,9 @@ func (c *styleRunCollector) diagnostic() (Diagnostic, bool) {
 		ID: rule.ID, Severity: rule.Severity, FixSafety: safety,
 		Title: rule.Title, Description: rule.Description, Fix: rule.Fix, Sources: rule.Sources,
 		Line: c.dialogue.Line, Column: first.Column, Tag: first.Name,
-		Detail: "The override tags leave the active Style properties unchanged across dialogue text.",
-		Edits:  edits,
+		Detail:     "The override tags leave the active Style properties unchanged across dialogue text.",
+		Edits:      edits,
+		SourceSpan: &ass.ConcreteSpan{Start: c.dialogue.TextStart + first.Start, End: c.dialogue.TextStart + first.End},
 	}, true
 }
 
