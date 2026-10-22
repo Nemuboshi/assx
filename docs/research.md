@@ -22,6 +22,7 @@ Check their stated phase before you use a rollout claim as a current contract.
 | Renderer differences | `internal/semantic` | [Compatibility](renderer-compatibility.md) | Compare the same input in each selected renderer. |
 | SafeFix and source edits | `internal/semantic`, `internal/lint`, `internal/edit` | [Contracts](renderer-contracts.md) | Prove each selected renderer's result before and after the edit. |
 | Frame comparison | `tools/rendercheck` | [Rendercheck](../tools/rendercheck/README.md) | Compare frames in the stated renderer and build. |
+| Font dependencies | `internal/fontcheck`, `internal/fontreport` | [Font checking](font-checking.md) | Check primary renderer state, catalog scope, uncertainty, and selected faces. |
 | CLI reports | `cmd/assx`, `internal/report` | [Reports](diagnostic-reports.md), [usage](../README.md) | Check output, exit status, and file changes. |
 | Performance | The affected package | [Performance](performance.md) | Compare the same workload, toolchain, and machine. |
 

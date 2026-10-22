@@ -3,7 +3,7 @@ assx checks ASS subtitle files for lint issues.
 ## Usage
 
 ```text
-assx [--renderer=libass|xy-vsfilter|vsfiltermod] [--compat=RENDERERS] [--mod-build=unknown|enabled|disabled] [--lua-build=unknown|enabled|disabled] [--format pretty|plain|json] [--explain] [--fix] [--unsafe-fix] [--check-fonts] [--font-dir DIR] file.ass
+assx [lint] [--renderer=libass|xy-vsfilter|vsfiltermod] [--compat=RENDERERS] [--mod-build=unknown|enabled|disabled] [--lua-build=unknown|enabled|disabled] [--format pretty|plain|json] [--explain] [--fix] [--unsafe-fix] file.ass
 ```
 
 - `file.ass`: the ASS file to check.
@@ -19,11 +19,19 @@ assx [--renderer=libass|xy-vsfilter|vsfiltermod] [--compat=RENDERERS] [--mod-bui
 - `--explain`: include expanded rule descriptions and evidence URLs in pretty output.
 - `--fix`: apply safe fixes. If the input is a symbolic link, update its target and preserve the link.
 - `--unsafe-fix`: apply safe and unsafe fixes.
-- `--check-fonts`: check whether used font families are available and contain dialogue characters. Disabled by default.
-- `--font-dir DIR`: recursively scan this folder for fonts instead of searching system font folders. Used with `--check-fonts`.
 
 
-Font indexing is cached under the operating system's user cache directory. Font files are still discovered on every run, so added or removed fonts take effect immediately; cached metadata is reused only while a file's size and modification time match.
+Font checks are separate from lint:
+
+```sh
+assx fonts check file.ass
+assx fonts check --font-dir ./fonts --format json file.ass
+```
+
+Font checks return advisory `FONT001` and `FONT002` findings. They do not change lint counts, fixes, or exit status.
+The font command returns 0 when checks complete, or 2 for usage and operational failures.
+Lint rejects the removed `--check-fonts` and `--font-dir` flags.
+See [font checking and migration](docs/font-checking.md) for catalog scope, JSON, cache behavior, and limits.
 
 All analysis uses the lossless concrete syntax tree and pinned profile engine.
 SafeFix application recomputes authorized edits under the caller's primary and compatibility policy.

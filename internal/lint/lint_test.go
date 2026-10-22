@@ -313,7 +313,7 @@ func TestRuleRegistryHasStableMetadata(t *testing.T) {
 		{IssueLayoutRes, "ASS009"}, {IssueRepeatedSlash, "ASS010"},
 		{IssueStyleInteger, "ASS011"}, {IssueStyleFloat, "ASS012"},
 		{IssueRedundantStyleOverrides, "ASS013"}, {IssueRepeatedOpenBrace, "ASS014"},
-		{IssueFontMissing, "ASS015"}, {IssueMissingGlyphs, "ASS016"}, {IssueUndefinedStyle, "ASS017"},
+		{IssueUndefinedStyle, "ASS017"},
 		{IssueEmptyOverrideBlock, "ASS018"}, {IssueOverrideJunk, "ASS019"}, {IssueMalformedDrawing, "ASS020"},
 		{IssueStyleBoxGeometry, "ASS033"}, {IssueStyleBorderMode, "ASS034"},
 	}

@@ -10,7 +10,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -21,7 +20,6 @@ import (
 	"assx/internal/analysis"
 	"assx/internal/ass"
 	"assx/internal/ass/renderer"
-	"assx/internal/fontcheck"
 	"assx/internal/lint"
 	"assx/internal/lintreport"
 	"assx/internal/report/plain"
@@ -51,8 +49,6 @@ func run(args []string, stdout, stderr io.Writer) int {
 	explain := flags.Bool("explain", false, "include expanded rule explanations and evidence in pretty output")
 	fix := flags.Bool("fix", false, "apply safe fixes")
 	unsafeFix := flags.Bool("unsafe-fix", false, "apply safe and unsafe fixes")
-	checkFonts := flags.Bool("check-fonts", false, "check subtitle font availability and character coverage")
-	fontDir := flags.String("font-dir", "", "font folder to scan instead of system fonts (requires --check-fonts)")
 	rendererName := flags.String("renderer", "libass", "primary renderer: libass, xy-vsfilter, or vsfiltermod")
 	compatNames := flags.String("compat", "", "additional compatibility renderers (comma-separated)")
 	modBuildName := flags.String("mod-build", "unknown", "VSFilterMod build capability: unknown, enabled, or disabled")
@@ -60,9 +56,12 @@ func run(args []string, stdout, stderr io.Writer) int {
 	// Usage and fallback diagnostics on stderr are best-effort: their write
 	// failures cannot be reported through the same failing stream.
 	flags.Usage = func() {
-		_, _ = fmt.Fprintln(stderr, "Usage: assx [--format pretty|plain|json] [--renderer=libass|xy-vsfilter|vsfiltermod] [--compat=RENDERERS] [--mod-build=unknown|enabled|disabled] [--lua-build=unknown|enabled|disabled] [--explain] [--fix] [--unsafe-fix] [--check-fonts] [--font-dir DIR] file.ass")
+		_, _ = fmt.Fprintln(stderr, "Usage: assx [lint] [--format pretty|plain|json] [--renderer=libass|xy-vsfilter|vsfiltermod] [--compat=RENDERERS] [--mod-build=unknown|enabled|disabled] [--lua-build=unknown|enabled|disabled] [--explain] [--fix] [--unsafe-fix] file.ass")
 	}
 	if err := flags.Parse(args); err != nil {
+		if strings.Contains(err.Error(), "flag provided but not defined: -check-fonts") || strings.Contains(err.Error(), "flag provided but not defined: -font-dir") {
+			_, _ = fmt.Fprintln(stderr, "Font checks moved to: assx fonts check [--font-dir DIR] file.ass")
+		}
 		if err == flag.ErrHelp {
 			return 0
 		}
@@ -115,15 +114,6 @@ func run(args []string, stdout, stderr io.Writer) int {
 		_, _ = fmt.Fprintln(stderr, err)
 		return 2
 	}
-	var fontChecker *fontcheck.Catalog
-	if *checkFonts {
-		fontChecker, err = fontcheck.NewCatalog(fontcheck.Source{Directory: *fontDir})
-		if err != nil {
-			progress.stop()
-			_, _ = fmt.Fprintf(stderr, "Failed to scan fonts: %v\n", err)
-			return 2
-		}
-	}
 	// A CLI target selection is always explicit. Keep an empty compatibility
 	// set non-nil so it never reads as the default-target sentinel.
 	if targets.Compatibility == nil {
@@ -139,20 +129,6 @@ func run(args []string, stdout, stderr io.Writer) int {
 		diagnostics, err := result.Diagnostics(ctx)
 		if err != nil {
 			return nil, err
-		}
-		doc := ass.Parse(snapshot.Text())
-		if fontChecker != nil {
-			fontDiagnostics, err := legacyFontDiagnostics(doc, fontChecker, targets.Primary)
-			if err != nil {
-				return nil, err
-			}
-			diagnostics = append(diagnostics, fontDiagnostics...)
-			sort.SliceStable(diagnostics, func(i, j int) bool {
-				if diagnostics[i].Line == diagnostics[j].Line {
-					return diagnostics[i].Column < diagnostics[j].Column
-				}
-				return diagnostics[i].Line < diagnostics[j].Line
-			})
 		}
 		return diagnostics, nil
 	}
@@ -241,7 +217,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 		}
 		_, _ = fmt.Fprintln(stderr, summary)
 	case "plain":
-		if err := plain.Render(stdout, path, lintreport.Build(path, diagnostics, doc).Groups[0].Diagnostics, elapsed, summary); err != nil {
+		if err := plain.Render(stdout, path, lintreport.Plain(diagnostics), elapsed, summary); err != nil {
 			_, _ = fmt.Fprintln(stderr, err)
 			return 2
 		}

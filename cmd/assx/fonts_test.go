@@ -134,3 +134,37 @@ func TestFontsCommandEmptyCatalogAndOutputFailure(t *testing.T) {
 		}
 	}
 }
+
+func TestFontsCommandRendererScope(t *testing.T) {
+	path, fonts, _ := fontCommandFixture(t)
+	for _, tc := range []struct{ flag, name, revision string }{
+		{"libass", "libass", "f61db567e6593df3470e91594bcd4ad2d0473aff"},
+		{"xy-vsfilter", "xy-VSFilter", "135a30153a38fa846cb5c39df0f258403e92096e"},
+		{"vsfiltermod", "VSFilterMod", "7a00567e4a49b6310691b9a6791646b2a018bfa2"},
+	} {
+		var out, stderr bytes.Buffer
+		args := []string{"fonts", "check", "--format=json", "--font-dir", fonts, "--renderer", tc.flag}
+		if tc.flag == "vsfiltermod" {
+			args = append(args, "--mod-build=enabled", "--lua-build=disabled")
+		}
+		if code := run(append(args, path), &out, &stderr); code != 0 {
+			t.Fatalf("%s: exit %d: %s", tc.flag, code, &stderr)
+		}
+		var result struct {
+			Renderer struct {
+				Name, Revision string
+				Mod            string `json:"mod_build"`
+				Lua            string `json:"lua_build"`
+			}
+		}
+		if err := json.Unmarshal(out.Bytes(), &result); err != nil {
+			t.Fatal(err)
+		}
+		if result.Renderer.Name != tc.name || result.Renderer.Revision != tc.revision {
+			t.Fatalf("wrong scope: %#v", result)
+		}
+		if tc.flag == "vsfiltermod" && (result.Renderer.Mod != "enabled" || result.Renderer.Lua != "disabled") {
+			t.Fatalf("wrong build: %#v", result)
+		}
+	}
+}

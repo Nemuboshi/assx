@@ -14,7 +14,6 @@ import (
 	"assx/internal/lint"
 	"assx/internal/report"
 	"assx/internal/report/plain"
-	"golang.org/x/image/font/gofont/goregular"
 )
 
 func TestReportColorPolicy(t *testing.T) {
@@ -267,76 +266,6 @@ func TestPrettyFramesDecodeUTF16Source(t *testing.T) {
 	}
 	if !strings.Contains(stdout.String(), `\pos(1,2,3)`) || !strings.Contains(stdout.String(), "^~~~~~~~~") {
 		t.Fatalf("UTF-16 source frame missing or misaligned: %s", stdout.String())
-	}
-}
-
-func TestRunFontChecksAreOptionalAndNotAutoFixed(t *testing.T) {
-	fixture, err := os.ReadFile(filepath.Join("..", "..", "testdata", "font-check.ass"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	input := strings.ReplaceAll(string(fixture), "MISSING_GLYPH", string(rune(0x10ffff)))
-	path := filepath.Join(t.TempDir(), "font-check.ass")
-	if err := os.WriteFile(path, []byte(input), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	fontDir := filepath.Join(t.TempDir(), "fonts", "nested")
-	if err := os.MkdirAll(fontDir, 0o700); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(fontDir, "regular.ttf"), goregular.TTF, 0o600); err != nil {
-		t.Fatal(err)
-	}
-
-	var stdout, stderr strings.Builder
-	if code := run([]string{"--font-dir", filepath.Dir(fontDir), path}, &stdout, &stderr); code != 0 {
-		t.Fatalf("default font-check run returned %d: %s", code, stderr.String())
-	}
-	if strings.Contains(stdout.String(), lint.IssueFontMissing) || strings.Contains(stdout.String(), lint.IssueMissingGlyphs) {
-		t.Fatalf("font checks ran without --check-fonts: %s", stdout.String())
-	}
-
-	stdout.Reset()
-	stderr.Reset()
-	args := []string{"--compat=", "--check-fonts", "--font-dir", filepath.Dir(fontDir), "--format", "json", "--fix", path}
-	if code := run(args, &stdout, &stderr); code != 0 {
-		t.Fatalf("font-check run returned %d: %s", code, stderr.String())
-	}
-	var diagnostics []lint.Diagnostic
-	if err := json.Unmarshal([]byte(stdout.String()), &diagnostics); err != nil {
-		t.Fatalf("invalid JSON: %v\n%s", err, stdout.String())
-	}
-	counts := map[string]int{}
-	for _, diagnostic := range diagnostics {
-		counts[diagnostic.ID]++
-		if diagnostic.Severity != lint.Suggestion {
-			t.Errorf("font finding %s severity = %q, want %q", diagnostic.ID, diagnostic.Severity, lint.Suggestion)
-		}
-		if diagnostic.FixSafety != "" || len(diagnostic.Edits) != 0 {
-			t.Errorf("font finding %s has automatic fix metadata: %#v", diagnostic.ID, diagnostic)
-		}
-	}
-	if counts[lint.IssueFontMissing] != 2 || counts[lint.IssueMissingGlyphs] != 1 || len(diagnostics) != 3 {
-		t.Fatalf("diagnostics = %#v", diagnostics)
-	}
-	if !strings.Contains(stderr.String(), "Fixes available: 0 safe, 0 unsafe, 3 not auto-fixable.") {
-		t.Fatalf("fix summary = %q", stderr.String())
-	}
-	after, err := os.ReadFile(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if string(after) != input {
-		t.Fatal("font check modified the ASS file")
-	}
-
-	stdout.Reset()
-	stderr.Reset()
-	if code := run([]string{"--check-fonts", "--font-dir", filepath.Dir(fontDir), "--format", "plain", path}, &stdout, &stderr); code != 0 {
-		t.Fatalf("plain font-check run returned %d: %s", code, stderr.String())
-	}
-	if !strings.Contains(stdout.String(), "SUGGESTION[ASS016]") || !strings.Contains(stdout.String(), "does not contain these characters:") {
-		t.Fatalf("font detail was not rendered by diagnostic data: %q", stdout.String())
 	}
 }
 

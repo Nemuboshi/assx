@@ -102,7 +102,8 @@ func NewCatalog(source Source) (*Catalog, error) {
 				return nil
 			}
 			seen[path] = true
-			info, err := entry.Info()
+			// Read target metadata for font-file symlinks, as ReadFile does.
+			info, err := os.Stat(path)
 			if err != nil {
 				checker.Issues = append(checker.Issues, CatalogIssue{Path: path, Detail: err.Error()})
 				return nil

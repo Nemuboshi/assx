@@ -60,22 +60,9 @@ func Build(path string, diagnostics []lint.Diagnostic, document ass.Document) re
 		if d.SourceSpan != nil {
 			position = sourcePosition{column: d.SourceSpan.Start - lineOffsets[d.Line] + 1, width: max(1, d.SourceSpan.End-d.SourceSpan.Start)}
 		}
-		view := report.Diagnostic{
-			Line:         d.Line,
-			Column:       d.Column,
-			SourceColumn: position.column,
-			SourceWidth:  position.width,
-			ID:           d.ID,
-			Severity:     string(d.Severity),
-			Title:        d.Title,
-			Description:  d.Description,
-			Detail:       d.Detail,
-			Fix:          d.Fix,
-			Tag:          d.Tag,
-			Field:        d.Field,
-			Renderer:     d.Renderer,
-			Sources:      append([]string(nil), d.Sources...),
-		}
+		view := diagnosticView(d)
+		view.SourceColumn = position.column
+		view.SourceWidth = position.width
 		view.Outcome = outcomeOf(d, proofs, fixIndex)
 		switch d.Severity {
 		case lint.Error:
