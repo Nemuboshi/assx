@@ -146,6 +146,16 @@ because a trace covers the interpreted Style: two dialogues that share a text
 under different Styles keep separate digests.
 Cost and benefit measurements are in [performance](performance.md).
 
+## Implementation record: unused helper removal
+
+At `85b236b`, `semantic.ParseHex`, `SameSlotValues`, and `SetSlotValues` had no callers, including tests.
+Go `deadcode` v0.52.0 with `-test ./...` and `gopls references` confirmed this on Windows/amd64 with Go 1.27.0.
+The cleanup removes these helpers without changing renderer behavior.
+Commit `ff992a7` replaced slot comparison with `evaluator.sameSlotValues`.
+Commit `5e58e05` replaced slot assignment with `slotStore.setAssigned`.
+This finding is source-verified for the default build at that revision.
+Check again if the source or build scope changes.
+
 ## Validation
 
 Use the checked-in contract golden files; do not regenerate a mismatch

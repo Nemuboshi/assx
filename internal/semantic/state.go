@@ -198,31 +198,3 @@ func ParseFloat(raw string) (float64, bool) {
 	value := ass.DecodeExactNumber(raw)
 	return value.Number, value.Status == ass.ValueValid
 }
-
-func ParseHex(raw string) (uint64, bool) {
-	value := ass.DecodeExactHex(raw)
-	return uint64(value.Hex), value.Status == ass.ValueValid
-}
-
-func SameSlotValues(state map[string]StateValue, slots, values []string) bool {
-	if len(slots) == 0 || len(slots) != len(values) {
-		return false
-	}
-	for i, slot := range slots {
-		current := state[slot]
-		if !current.Known || current.Value != values[i] {
-			return false
-		}
-	}
-	return true
-}
-
-func SetSlotValues(state map[string]StateValue, slots, values []string, known bool) {
-	for i, slot := range slots {
-		value := StateValue{Known: known}
-		if known && i < len(values) {
-			value.Value = values[i]
-		}
-		state[slot] = value
-	}
-}
