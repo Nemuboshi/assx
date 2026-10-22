@@ -1,6 +1,8 @@
-package lint
+package fontcheck
 
 import (
+	"assx/internal/ass"
+	"assx/internal/ass/renderer"
 	"os"
 	"path/filepath"
 	"testing"
@@ -15,26 +17,26 @@ func TestFontFamiliesKeepRegionalSuffixesAndPunctuation(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(dir, "regular.ttf"), goregular.TTF, 0o600); err != nil {
 		t.Fatal(err)
 	}
-	checker, err := NewFontChecker(dir)
+	checker, err := newTestCatalog(dir)
 	if err != nil {
 		t.Fatal(err)
 	}
 	for _, family := range []string{"Go JP", "Go SC", "Go TC", "Go-JP", "Go.JP", "G-o"} {
 		doc := parseStyleOverrideText("Name, Fontname", "Default,"+family, "A")
-		diagnostics, err := AnalyzeFonts(doc, checker)
-		if err != nil || len(diagnostics) != 1 || diagnostics[0].ID != IssueFontMissing {
+		diagnostics, err := Analyze(doc, checker, renderer.Profile{})
+		if err != nil || len(diagnostics) != 1 || diagnostics[0].Kind != FamilyAbsent {
 			t.Fatalf("family %q: %#v / %v", family, diagnostics, err)
 		}
 	}
 	for _, text := range []string{`{\fn 0}A`, "{\\fn\t0}A"} {
 		doc := parseStyleOverrideText("Name, Fontname", "Default,Go", text)
-		if diagnostics, err := AnalyzeFonts(doc, checker); err != nil || len(diagnostics) != 1 || diagnostics[0].ID != IssueFontMissing {
+		if diagnostics, err := Analyze(doc, checker, renderer.Profile{}); err != nil || len(diagnostics) != 1 || diagnostics[0].Kind != FamilyAbsent {
 			t.Fatalf("literal zero family %q: %#v / %v", text, diagnostics, err)
 		}
 	}
 	for _, family := range []string{"Go", "GO", "go"} {
 		doc := parseStyleOverrideText("Name, Fontname", "Default,"+family, "A")
-		if diagnostics, err := AnalyzeFonts(doc, checker); err != nil || len(diagnostics) != 0 {
+		if diagnostics, err := Analyze(doc, checker, renderer.Profile{}); err != nil || len(diagnostics) != 0 {
 			t.Fatalf("case variant %q: %#v / %v", family, diagnostics, err)
 		}
 	}
@@ -68,7 +70,7 @@ func TestFontChecksFollowOverrideResets(t *testing.T) {
 					t.Fatal(err)
 				}
 			}
-			checker, err := NewFontChecker(dir)
+			checker, err := newTestCatalog(dir)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -81,16 +83,27 @@ func TestFontChecksFollowOverrideResets(t *testing.T) {
 				}
 			}
 			doc := parseStyleDefinitionsText("Name, Fontname, Bold, Italic", test.definitions, "Default", test.text+string(rune(0x10ffff)))
-			diagnostics, err := AnalyzeFonts(doc, checker)
+			diagnostics, err := Analyze(doc, checker, renderer.Profile{})
 			if test.selected == "" {
 				if err != nil || len(diagnostics) != 0 {
 					t.Fatalf("renderer-dependent font state was reported as certain: %#v / %v", diagnostics, err)
 				}
 				return
 			}
-			if err != nil || len(diagnostics) != 1 || diagnostics[0].ID != IssueMissingGlyphs {
+			if err != nil || len(diagnostics) != 1 || diagnostics[0].Kind != MissingCharacters {
 				t.Fatalf("text %q: %#v / %v", test.text, diagnostics, err)
 			}
 		})
 	}
+}
+
+func parseStyleOverrideText(format, style, text string) ass.Document {
+	return parseStyleDefinitionsText(format, "Style: "+style+"\n", "Default", text)
+}
+
+func parseStyleDefinitionsText(format, definitions, dialogueStyle, text string) ass.Document {
+	return ass.Parse("[Script Info]\nPlayResX: 640\nPlayResY: 480\nYCbCr Matrix: None\nLayoutResX: 640\nLayoutResY: 480\n" +
+		"[V4+ Styles]\nFormat: " + format + "\n" + definitions +
+		"[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n" +
+		"Dialogue: 0, 0:00:00.00, 0:00:02.00, " + dialogueStyle + ",,0,0,0,," + text + "\n")
 }
