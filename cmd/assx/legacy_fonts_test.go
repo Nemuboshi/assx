@@ -10,6 +10,16 @@ import (
 	"testing"
 )
 
+func TestLegacyFontDirectoryNormalization(t *testing.T) {
+	for _, tc := range []struct{ input, want string }{
+		{"", ""}, {" \t", ""}, {" fonts ", " fonts "}, {"fonts", "fonts"},
+	} {
+		if got := legacyFontDirectory(tc.input); got != tc.want {
+			t.Fatalf("directory %q became %q, want %q", tc.input, got, tc.want)
+		}
+	}
+}
+
 func TestRendererScopedFontAnalysisUsesSharedState(t *testing.T) {
 	content, err := os.ReadFile(filepath.Join("..", "..", "testdata", "font-check.ass"))
 	if err != nil {
