@@ -22,6 +22,7 @@ import (
 	"assx/internal/ass/renderer"
 	"assx/internal/lint"
 	"assx/internal/lintreport"
+	"assx/internal/lsp"
 	"assx/internal/report/plain"
 	"assx/internal/report/pretty"
 )
@@ -39,6 +40,8 @@ func run(args []string, stdout, stderr io.Writer) int {
 				return 2
 			}
 			return runFonts(args[2:], stdout, stderr)
+		case "lsp":
+			return runLSP(args[1:], os.Stdin, stdout, stderr)
 		case "lint":
 			args = args[1:]
 		}
@@ -247,6 +250,19 @@ func run(args []string, stdout, stderr io.Writer) int {
 		if diagnostic.Severity == lint.Error {
 			return 1
 		}
+	}
+	return 0
+}
+
+func runLSP(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
+	if len(args) != 0 {
+		_, _ = fmt.Fprintln(stderr, "Usage: assx lsp")
+		return 2
+	}
+	server := lsp.Server{Log: stderr}
+	if err := server.Run(context.Background(), stdin, stdout); err != nil {
+		_, _ = fmt.Fprintln(stderr, err)
+		return 1
 	}
 	return 0
 }
