@@ -14,7 +14,6 @@ import (
 	"assx/internal/ass"
 	"assx/internal/lint"
 	"assx/internal/semantic"
-	"golang.org/x/image/font/gofont/goregular"
 )
 
 // These are observations from main@6ba745336615f102d5de39f76550f0a45da7bbb6.
@@ -189,23 +188,13 @@ func sha(data []byte) string {
 	return hex.EncodeToString(sum[:])
 }
 
-func snapshotCLI(t *testing.T, filename string, raw []byte, font bool, fixMode string) baselineCLI {
+func snapshotCLI(t *testing.T, filename string, raw []byte, fixMode string) baselineCLI {
 	t.Helper()
 	path := filepath.Join(t.TempDir(), filename)
 	if err := os.WriteFile(path, raw, 0o600); err != nil {
 		t.Fatal(err)
 	}
 	args := []string{"--format", "json"}
-	if font {
-		fontDir := filepath.Join(t.TempDir(), "fonts")
-		if err := os.MkdirAll(fontDir, 0o700); err != nil {
-			t.Fatal(err)
-		}
-		if err := os.WriteFile(filepath.Join(fontDir, "Go-Regular.ttf"), goregular.TTF, 0o600); err != nil {
-			t.Fatal(err)
-		}
-		args = append(args, "--check-fonts", "--font-dir", fontDir)
-	}
 	if fixMode != "" {
 		args = append(args, fixMode)
 	}
@@ -243,6 +232,9 @@ type baselineRecord struct {
 }
 
 func TestRendererBaselineContracts(t *testing.T) {
+	if *updateContracts || *reviewContracts {
+		t.Fatal("The post-cutover harness cannot rewrite the historical baseline. Use separate font contracts.")
+	}
 	for _, filename := range []string{
 		"ordinary.ass", "renderer-collisions.ass", "semantic-barriers.ass",
 		"style-fonts.ass", "utf8bom.ass", "utf16le.ass",
@@ -270,36 +262,31 @@ func TestRendererBaselineContracts(t *testing.T) {
 			for _, dialogue := range doc.Dialogues {
 				record.Dialogues = append(record.Dialogues, snapshotDialogue(dialogue, styles))
 			}
-			record.CLI = snapshotCLI(t, filename, raw, false, "")
-			record.CLIFonts = snapshotCLI(t, filename, raw, true, "")
-			record.CLISafeFix = snapshotCLI(t, filename, raw, false, "--fix")
-			record.CLIUnsafeFix = snapshotCLI(t, filename, raw, false, "--unsafe-fix")
+			record.CLI = snapshotCLI(t, filename, raw, "")
+			record.CLISafeFix = snapshotCLI(t, filename, raw, "--fix")
+			record.CLIUnsafeFix = snapshotCLI(t, filename, raw, "--unsafe-fix")
 			actual, err := json.MarshalIndent(record, "", "  ")
 			if err != nil {
 				t.Fatal(err)
 			}
 			actual = append(actual, '\n')
 			golden := filepath.Join("..", "..", "testdata", "contracts", "golden", filename+".json")
-			if *reviewContracts {
-				candidate := filepath.Join("..", "..", ".pi", "contracts-review", filename+".json")
-				if err := os.MkdirAll(filepath.Dir(candidate), 0o755); err != nil {
-					t.Fatal(err)
-				}
-				if err := os.WriteFile(candidate, actual, 0o644); err != nil {
-					t.Fatal(err)
-				}
-				return
-			}
-			if *updateContracts {
-				if err := os.WriteFile(golden, actual, 0o644); err != nil {
-					t.Fatal(err)
-				}
-				return
-			}
 			want, err := os.ReadFile(golden)
 			if err != nil {
-				t.Fatalf("read golden %s: %v (run go test ./cmd/assx -run TestRendererBaselineContracts -update-contracts only when establishing a reviewed baseline)", golden, err)
+				t.Fatalf("read historical golden %s: %v; restore the original evidence file", golden, err)
 			}
+			// cli_fonts records the removed pre-cutover command. Keep the file
+			// immutable and compare every other contract field as before.
+			var historical baselineRecord
+			if err := json.Unmarshal(want, &historical); err != nil {
+				t.Fatal(err)
+			}
+			historical.CLIFonts = baselineCLI{}
+			want, err = json.MarshalIndent(historical, "", "  ")
+			if err != nil {
+				t.Fatal(err)
+			}
+			want = append(want, '\n')
 			if !bytes.Equal(actual, want) {
 				t.Errorf("baseline drift in %s: inspect golden diff; do not update without verified evidence and a documented correction (want %s, got %s)", filename, sha(want), sha(actual))
 			}

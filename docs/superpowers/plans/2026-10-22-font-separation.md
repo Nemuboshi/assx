@@ -33,11 +33,11 @@ Files: `internal/fontcheck/{catalog,cache,coverage,usage,analyze}.go`, domain te
 
 Interfaces: `Source{Directory string}`, `NewCatalog(Source) (*Catalog, error)`, `ExtractUsages(ass.Document, renderer.Profile) []Usage`, and `Analyze(ass.Document, *Catalog, renderer.Profile) ([]Finding, error)`.
 
-- [ ] Add tests for typed requests, spans, unknown state, catalog isolation, and cache invalidation. Check failure first.
-- [ ] Move the existing engine. Keep request extraction separate from I/O and coverage.
-- [ ] Add a temporary CLI adapter for legacy IDs, details, scope, and order.
-- [ ] Run unchanged CLI baseline tests and domain tests. Run tests, vet, build, and benchmarks.
-- [ ] Commit F01 separately.
+- [x] Add tests for typed requests, spans, unknown state, catalog isolation, and cache invalidation. Check failure first.
+- [x] Move the existing engine. Keep request extraction separate from I/O and coverage.
+- [x] Add a temporary CLI adapter for legacy IDs, details, scope, and order.
+- [x] Run unchanged CLI baseline tests and domain tests. Run tests, vet, build, and benchmarks.
+- [x] Commit F01 separately.
 
 ## F02: Independent Command and Reports
 
@@ -45,21 +45,21 @@ Files: `cmd/assx/fonts.go`, `internal/fontreport`, report view/adapter files, CL
 
 Interfaces: `runFonts(args []string, stdout, stderr io.Writer) int`. Font JSON carries domain, catalog, renderer, usage, matched faces, findings, and unknown coverage.
 
-- [ ] Add failing CLI tests for commands, formats, exits, and invalid flag scopes.
-- [ ] Add `fonts check` and `lint` dispatch. Reuse renderer flag validation.
-- [ ] Separate the lint report adapter from presentation primitives. Add domain-specific font JSON and source frames.
-- [ ] Test empty/corrupt catalogs, output errors, Unicode, deterministic order, and read-only behavior.
-- [ ] Document the command and matching limits. Run all checks and commit F02 separately.
+- [x] Add failing CLI tests for commands, formats, exits, and invalid flag scopes.
+- [x] Add `fonts check` and `lint` dispatch. Reuse renderer flag validation.
+- [x] Separate the lint report adapter from presentation primitives. Add domain-specific font JSON and source frames.
+- [x] Test empty/corrupt catalogs, output errors, Unicode, deterministic order, and read-only behavior.
+- [x] Document the command and matching limits. Run all checks and commit F02 separately.
 
 ## F03: Cutover
 
 Files: CLI flags, lint registry, baseline test harness, new cutover tests, README, rules, and report documentation.
 
-- [ ] Add failing tests for removed flags and font-free lint output in all formats.
-- [ ] Remove the temporary adapter and active ASS015/ASS016 rules.
-- [ ] Preserve historical JSON snapshots. Compare unchanged baseline fields; test new font behavior separately.
-- [ ] Publish command, ID, JSON, and failure-policy migration tables.
-- [ ] Run tests, vet, build, race checks, rendercheck, and benchmark comparisons. Inspect the diff and obtain a fresh review.
+- [x] Add failing tests for removed flags and font-free lint output in all formats.
+- [x] Remove the temporary adapter and active ASS015/ASS016 rules.
+- [x] Preserve historical JSON snapshots. Compare unchanged baseline fields; test new font behavior separately.
+- [x] Publish command, ID, JSON, and failure-policy migration tables.
+- [ ] Complete verification and fresh review. Pixel comparisons require the pinned libass CI build.
 - [ ] Submit three reviewable changes. Do not close incomplete issues.
 
 ## Execution Record
@@ -72,3 +72,20 @@ Files: CLI flags, lint registry, baseline test harness, new cutover tests, READM
 - F01: domain tests and unchanged CLI baseline pass. Full suite: 1164 tests in 15 packages. Vet, build, and font race tests pass. Catalog scan: 0.89-1.15 ms/op, 113 allocs/op (warm metadata, one Go Regular file).
 
 - F02: independent command, domain JSON, font report goldens, and lint-free presentation model are implemented. Full suite: 1175 tests in 17 packages before the additional output-failure test. Vet/build and font/CLI race checks pass. Legacy baseline files are unchanged. The CI font job covers Linux, Windows, and macOS.
+
+- F03: cutover tests pass. Original baseline files remain unchanged; the harness excludes only the removed `cli_fonts` observation.
+- Final checks so far: 1181 Go tests in 17 packages, vet, build, font/CLI race tests, generated renderer evidence, and six Rust tests pass.
+- The first generator command used the wrong directory and failed. Both checks pass from `internal/ass/renderer`.
+- Three real font-error reproductions failed before fixes and now pass: incomplete catalog, invalid cmap lookup, and changed symlink target.
+- Plain lint output uses a lightweight adapter. It does not repeat source parsing or proof validation.
+- Performance comparisons are recorded in `docs/performance.md`. No new runtime dependency or renderer model was added.
+- Ruling: retain single-primary font scope and reject incomplete catalogs. A conservative operational error avoids ungrounded absence findings.
+- Ruling: submit ordered PRs without merging main. Link issue closure to merges; do not claim unrun platform or pixel gates passed.
+
+- Review: two explicit reviewer model endpoints did not complete. The inherited-model reviewer inspected the font core and CLI.
+- Review finding: a warm cache could hide denied read access. A Windows sharing-lock test reproduced the false absence finding.
+- The read-access fix passes that regression. A Unix permission test covers Linux/macOS CI; it skips only for privileged readers.
+- `golang.org/x/sys` remains at the existing version. It is now a direct test dependency for the Windows sharing-lock fixture.
+- Final local gate: 1183 Go tests in 17 packages; 125 race tests in the font, report, and CLI packages. Vet/build pass.
+- Additional UTF-16 font-output tests verify decoded byte spans and unchanged original bytes.
+- F01/F02 retain whitespace-only legacy directory behavior through a temporary normalization helper. F03 removes it with the adapter.

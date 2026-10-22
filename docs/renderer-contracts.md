@@ -4,6 +4,11 @@ Epic [#16](https://github.com/Nemuboshi/assx/issues/16), implementation [#17](ht
 
 ## Baseline and current contract
 
+Post-#32 font migration: the original snapshots remain unchanged.
+The current harness compares all fields except the removed `cli_fonts` command observation.
+See [font checking](font-checking.md#implementation-record-32) for the separate post-cutover tests.
+The original font observations remain available as historical evidence.
+
 **Production behavior baseline:** `main@6ba745336615f102d5de39f76550f0a45da7bbb6`.
 
 The six cases in `testdata/contracts/cases/` and their checked-in
