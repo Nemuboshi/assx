@@ -129,8 +129,11 @@ func signatureStatus(result renderer.Result) string {
 
 func (server *Server) hover(ctx context.Context, raw jsontext.Value) (*hoverResult, error) {
 	doc, location, ok, err := server.commandAt(raw)
-	if err != nil || !ok {
+	if err != nil {
 		return nil, err
+	}
+	if !ok {
+		return server.fieldHover(ctx, doc, raw)
 	}
 	if err := ctx.Err(); err != nil {
 		return nil, err
@@ -159,6 +162,56 @@ func (server *Server) hover(ctx context.Context, raw jsontext.Value) (*hoverResu
 	hover := &hoverResult{Range: rangeValue}
 	hover.Contents.Kind = "plaintext"
 	hover.Contents.Value = strings.Join(lines, "\n")
+	return hover, nil
+}
+
+func (server *Server) fieldHover(ctx context.Context, doc document, raw jsontext.Value) (*hoverResult, error) {
+	if doc.text == "" {
+		return nil, nil
+	}
+	var params struct {
+		Position sourcepos.Position `json:"position"`
+	}
+	if err := json.Unmarshal(raw, &params); err != nil {
+		return nil, err
+	}
+	offset, err := doc.index.Offset(params.Position)
+	if err != nil {
+		return nil, err
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	index := server.indexSymbols(doc)
+	for _, use := range index.uses {
+		if offset >= use.span.Start && offset < use.span.End && len(index.definitions[use.name]) == 1 {
+			return plainHover(doc, use.span, "Style reference: "+use.name)
+		}
+	}
+	section := ""
+	for _, line := range ass.ParseConcreteDocument(doc.text).Lines {
+		if line.Header != nil {
+			section = strings.ToLower(strings.TrimSpace(line.Header.RawName))
+		}
+		if section != "script info" || line.Record == nil || offset < line.Record.KeySpan.Start || offset >= line.Record.KeySpan.End {
+			continue
+		}
+		key := strings.ToLower(strings.TrimSpace(line.Record.Key))
+		if _, known := doc.parsed.Headers[key]; known {
+			return plainHover(doc, line.Record.KeySpan, "Script field: "+line.Record.Key)
+		}
+	}
+	return nil, nil
+}
+
+func plainHover(doc document, span ass.ConcreteSpan, value string) (*hoverResult, error) {
+	rangeValue, err := doc.index.Range(span.Start, span.End)
+	if err != nil {
+		return nil, err
+	}
+	hover := &hoverResult{Range: rangeValue}
+	hover.Contents.Kind = "plaintext"
+	hover.Contents.Value = value
 	return hover, nil
 }
 

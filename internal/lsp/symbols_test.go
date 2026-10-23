@@ -108,3 +108,24 @@ func TestDefaultStyleAliasAndCaseSensitiveNames(t *testing.T) {
 		}
 	}
 }
+
+func TestDocumentSymbolsHaveGlobalLimit(t *testing.T) {
+	const uri = "file:///large.ass"
+	var text strings.Builder
+	text.WriteString("[Events]\n")
+	for range 1500 {
+		text.WriteString("Dialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,x\n")
+	}
+	var server Server
+	if err := server.documents.Open(uri, 1, text.String()); err != nil {
+		t.Fatal(err)
+	}
+	request, err := json.Marshal(map[string]any{"textDocument": map[string]string{"uri": uri}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	symbols, err := server.documentSymbols(t.Context(), request)
+	if err != nil || len(symbols) != 1 || len(symbols[0].Children) > 999 {
+		t.Fatalf("unbounded symbols: sections=%d, children=%d, err=%v", len(symbols), len(symbols[0].Children), err)
+	}
+}
