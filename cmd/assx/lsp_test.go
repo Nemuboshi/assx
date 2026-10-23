@@ -24,3 +24,18 @@ func TestLSPCommandWritesOnlyProtocolFrames(t *testing.T) {
 		t.Fatalf("stdout is not protocol-only: %q", stdout.String())
 	}
 }
+
+func TestLSPAcceptsLanguageClientStdioFlag(t *testing.T) {
+	var input bytes.Buffer
+	for _, message := range []string{
+		`{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}`,
+		`{"jsonrpc":"2.0","id":2,"method":"shutdown"}`,
+		`{"jsonrpc":"2.0","method":"exit"}`,
+	} {
+		fmt.Fprintf(&input, "Content-Length: %d\r\n\r\n%s", len(message), message)
+	}
+	var stdout, stderr strings.Builder
+	if code := runLSP([]string{"--stdio"}, &input, &stdout, &stderr); code != 0 || stderr.Len() != 0 || !strings.HasPrefix(stdout.String(), "Content-Length: ") {
+		t.Fatalf("exit %d, stderr %q, stdout %q", code, stderr.String(), stdout.String())
+	}
+}
