@@ -1,0 +1,35 @@
+{
+  "name": "assx-language-client",
+  "displayName": "assx ASS Language Server",
+  "description": "ASS and SSA language support from the assx server.",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "packageManager": "pnpm@12.9.0",
+  "engines": { "vscode": "^1.100.0" },
+  "main": "./dist/extension.js",
+  "activationEvents": ["onLanguage:ass", "onLanguage:ssa"],
+  "contributes": {
+    "languages": [
+      { "id": "ass", "aliases": ["ASS", "Advanced SubStation Alpha"], "extensions": [".ass"] },
+      { "id": "ssa", "aliases": ["SSA", "SubStation Alpha"], "extensions": [".ssa"] }
+    ],
+    "configuration": {
+      "title": "assx",
+      "properties": {
+        "assx.serverPath": { "type": "string", "default": "assx", "description": "Path to the assx executable on PATH or an absolute path." },
+        "assx.primaryRenderer": { "type": "string", "enum": ["libass", "xy-vsfilter", "vsfiltermod"], "default": "libass" },
+        "assx.compatibilityRenderers": { "type": "array", "items": { "type": "string", "enum": ["libass", "xy-vsfilter", "vsfiltermod"] }, "default": ["xy-vsfilter"] },
+        "assx.vsfilterMod.mod": { "type": "string", "enum": ["unknown", "disabled", "enabled"], "default": "unknown" },
+        "assx.vsfilterMod.lua": { "type": "string", "enum": ["unknown", "disabled", "enabled"], "default": "unknown" }
+      }
+    }
+  },
+  "scripts": {
+    "build": "tsc -p .",
+    "check": "tsc -p . --noEmit",
+    "test": "pnpm build && node --test dist/settings.test.js"
+  },
+  "dependencies": { "vscode-languageclient": "11.0.0" },
+  "devDependencies": { "@types/node": "26.6.5", "@types/vscode": "1.140.0", "typescript": "7.0.2" }
+}

@@ -2,6 +2,14 @@
 
 Run `assx lsp` from an LSP client. The server uses stdio for JSON-RPC messages. It writes protocol frames only to stdout. It writes at most ten document warnings to stderr per session. No server command reads or writes an open document on disk.
 
+## Editors and release
+
+The [VS Code adapter](../editors/vscode) starts the configured `assx lsp` executable. Install its Node dependencies only to build the adapter. Set `assx.serverPath` to an executable path if `assx` is not on `PATH`. Set `assx.primaryRenderer`, `assx.compatibilityRenderers`, and the two `assx.vsfilterMod` flags in VS Code settings. Renderer changes refresh open documents. Reload VS Code after a server path change. The adapter does not download a server or parse ASS.
+
+Copy the [Neovim example](../editors/neovim/init.lua) into Neovim 0.11+ configuration or the [Helix example](../editors/helix/languages.toml) into Helix language configuration. Both require `assx` on `PATH`. The examples configure diagnostics and basic language features. They do not certify Quick Fix versioned-edit support in those clients. Refer to the [Neovim LSP configuration](https://neovim.io/doc/user/lsp/) and [Helix language configuration](https://docs.helix-editor.com/languages.html) for client settings.
+
+The VS Code adapter has its own `0.x` version. It requires the assx LSP 3.17 behavior documented here. Build the server with `go build ./cmd/assx`. Build and check the adapter with `pnpm install --frozen-lockfile`, `pnpm check`, and `pnpm test` in `editors/vscode`. Before a release, run both check suites, test a valid ASS file in the target editor, verify a proven Quick Fix and renderer refresh, and package the server binary separately from the adapter. Marketplace publication is a separate decision.
+
 ## Current capabilities
 
 The server uses LSP 3.17 and UTF-16 positions. It advertises incremental text synchronization, open and close notifications, and save notifications. It supports `initialize`, `initialized`, `shutdown`, `exit`, and `$/cancelRequest`.
