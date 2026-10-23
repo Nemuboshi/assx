@@ -40,6 +40,7 @@ type Server struct {
 	settings           settings
 	settingsGeneration int
 	editSupport        bool
+	snippetSupport     bool
 	Log                io.Writer
 }
 
@@ -124,6 +125,13 @@ func (server *Server) handleRequest(ctx context.Context, output io.Writer, messa
 		var params struct {
 			InitializationOptions jsontext.Value `json:"initializationOptions"`
 			Capabilities          struct {
+				TextDocument struct {
+					Completion struct {
+						CompletionItem struct {
+							SnippetSupport bool `json:"snippetSupport"`
+						} `json:"completionItem"`
+					} `json:"completion"`
+				} `json:"textDocument"`
 				Workspace struct {
 					WorkspaceEdit struct {
 						DocumentChanges bool `json:"documentChanges"`
@@ -141,6 +149,7 @@ func (server *Server) handleRequest(ctx context.Context, output io.Writer, messa
 		}
 		server.settings = configured
 		server.editSupport = params.Capabilities.Workspace.WorkspaceEdit.DocumentChanges
+		server.snippetSupport = params.Capabilities.TextDocument.Completion.CompletionItem.SnippetSupport
 		server.initialized = true
 		capabilities := struct {
 			PositionEncoding string `json:"positionEncoding"`
@@ -157,6 +166,9 @@ func (server *Server) handleRequest(ctx context.Context, output io.Writer, messa
 			DocumentSymbolProvider bool `json:"documentSymbolProvider"`
 			DefinitionProvider     bool `json:"definitionProvider"`
 			ReferencesProvider     bool `json:"referencesProvider"`
+			CompletionProvider     struct {
+				TriggerCharacters []string `json:"triggerCharacters"`
+			} `json:"completionProvider"`
 		}{PositionEncoding: "utf-16"}
 		capabilities.TextDocumentSync.OpenClose = true
 		capabilities.TextDocumentSync.Change = 2
@@ -167,6 +179,7 @@ func (server *Server) handleRequest(ctx context.Context, output io.Writer, messa
 		capabilities.DocumentSymbolProvider = true
 		capabilities.DefinitionProvider = true
 		capabilities.ReferencesProvider = true
+		capabilities.CompletionProvider.TriggerCharacters = []string{"\\", ","}
 		return server.reply(output, message.ID, struct {
 			Capabilities any `json:"capabilities"`
 		}{Capabilities: capabilities}, nil)
@@ -224,6 +237,13 @@ func (server *Server) handleRequest(ctx context.Context, output io.Writer, messa
 			return server.reply(output, message.ID, nil, &rpcError{-32602, "Invalid params"})
 		}
 		return server.reply(output, message.ID, links, nil)
+	}
+	if message.Method == "textDocument/completion" {
+		items, err := server.completion(ctx, message.Params)
+		if err != nil {
+			return server.reply(output, message.ID, nil, &rpcError{-32602, "Invalid params"})
+		}
+		return server.reply(output, message.ID, items, nil)
 	}
 	return server.reply(output, message.ID, nil, &rpcError{-32601, "Method not found"})
 }
