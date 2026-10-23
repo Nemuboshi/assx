@@ -43,6 +43,10 @@ jobs:
         run: go run ./cmd/genmatrix -check && go run ./cmd/genstylematrix -check
       - name: Test
         run: go test ./...
+      - name: LSP race tests
+        run: go test -race ./internal/lsp ./internal/analysis ./internal/sourcepos
+      - name: LSP benchmark smoke test
+        run: go test ./internal/lsp -run '^$' -bench '^BenchmarkLSP' -benchtime=1x
       - name: Renderer evidence and baseline contracts
         run: go test ./cmd/assx ./internal/ass/spec -run '^Test(RendererBaselineContracts|MatrixRendererSourcePins|MatrixVerifiedCellScope|MatrixSignatureApplicabilityMutations|DefaultRejectsModOnlyPositionArity|PrefixCollisionsDoNotAuthorizeSafeFix|UnknownOperationBlocksRetroactiveSafeFix|DefaultProfilePrefixCorrections|RendererTargetCLI|PrimaryValidityAndCompatibilityScopes|VSFilterModOptionalBuildCapabilities)$' -count=1
       - name: Benchmark smoke test
