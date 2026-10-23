@@ -149,12 +149,18 @@ func (server *Server) handleRequest(ctx context.Context, output io.Writer, messa
 				Change    int  `json:"change"`
 				Save      bool `json:"save"`
 			} `json:"textDocumentSync"`
-			CodeActionProvider bool `json:"codeActionProvider,omitzero"`
+			CodeActionProvider    bool `json:"codeActionProvider,omitzero"`
+			HoverProvider         bool `json:"hoverProvider"`
+			SignatureHelpProvider struct {
+				TriggerCharacters []string `json:"triggerCharacters"`
+			} `json:"signatureHelpProvider"`
 		}{PositionEncoding: "utf-16"}
 		capabilities.TextDocumentSync.OpenClose = true
 		capabilities.TextDocumentSync.Change = 2
 		capabilities.TextDocumentSync.Save = true
 		capabilities.CodeActionProvider = server.editSupport
+		capabilities.HoverProvider = true
+		capabilities.SignatureHelpProvider.TriggerCharacters = []string{"(", ","}
 		return server.reply(output, message.ID, struct {
 			Capabilities any `json:"capabilities"`
 		}{Capabilities: capabilities}, nil)
@@ -178,6 +184,20 @@ func (server *Server) handleRequest(ctx context.Context, output io.Writer, messa
 			return server.reply(output, message.ID, nil, &rpcError{-32602, "Invalid params"})
 		}
 		return server.reply(output, message.ID, actions, nil)
+	}
+	if message.Method == "textDocument/hover" {
+		hover, err := server.hover(ctx, message.Params)
+		if err != nil {
+			return server.reply(output, message.ID, nil, &rpcError{-32602, "Invalid params"})
+		}
+		return server.reply(output, message.ID, hover, nil)
+	}
+	if message.Method == "textDocument/signatureHelp" {
+		help, err := server.signatureHelp(ctx, message.Params)
+		if err != nil {
+			return server.reply(output, message.ID, nil, &rpcError{-32602, "Invalid params"})
+		}
+		return server.reply(output, message.ID, help, nil)
 	}
 	return server.reply(output, message.ID, nil, &rpcError{-32601, "Method not found"})
 }
