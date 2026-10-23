@@ -255,8 +255,8 @@ func run(args []string, stdout, stderr io.Writer) int {
 }
 
 func runLSP(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
-	if len(args) != 0 {
-		_, _ = fmt.Fprintln(stderr, "Usage: assx lsp")
+	if len(args) != 0 && (len(args) != 1 || args[0] != "--stdio") {
+		_, _ = fmt.Fprintln(stderr, "Usage: assx lsp [--stdio]")
 		return 2
 	}
 	server := lsp.Server{Log: stderr}
