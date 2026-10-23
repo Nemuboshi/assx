@@ -208,3 +208,26 @@ func TestSignatureHelpOnlyInsideArgumentsAndNoCommentHover(t *testing.T) {
 		t.Fatalf("comment hover = %+v, %v", hover, err)
 	}
 }
+
+func TestHoverDescribesUniqueStyleReferenceAndKnownScriptField(t *testing.T) {
+	const uri = "file:///fields.ass"
+	text := "[Script Info]\nPlayResX: 1920\n[V4+ Styles]\nStyle: Star,Arial,20\n[Events]\nDialogue: 0,0:00:00.00,0:00:01.00,Star,,0,0,0,,x\n"
+	var server Server
+	if err := server.documents.Open(uri, 1, text); err != nil {
+		t.Fatal(err)
+	}
+	doc := server.documents.items[uri]
+	for _, tc := range []struct {
+		needle string
+		want   string
+	}{{"Star,,", "Style reference: Star"}, {"PlayResX", "Script field: PlayResX"}} {
+		position, err := doc.index.Position(strings.Index(text, tc.needle) + 1)
+		if err != nil {
+			t.Fatal(err)
+		}
+		hover, err := server.hover(t.Context(), languageParams(t, uri, position))
+		if err != nil || hover == nil || !strings.Contains(hover.Contents.Value, tc.want) {
+			t.Fatalf("%q hover = %+v, %v", tc.needle, hover, err)
+		}
+	}
+}

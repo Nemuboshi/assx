@@ -1,6 +1,7 @@
 package lsp
 
 import (
+	"bytes"
 	"strings"
 	"testing"
 )
@@ -43,6 +44,18 @@ func TestCompletionUsesRendererEligibilityAndUTF16Edit(t *testing.T) {
 		}
 	}
 	t.Fatal("missing enabled Mod completion")
+}
+
+func TestInitializeNegotiatesCompletionSnippets(t *testing.T) {
+	input := framedMessages(t,
+		`{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"capabilities":{"textDocument":{"completion":{"completionItem":{"snippetSupport":true}}}}}}`,
+		`{"jsonrpc":"2.0","id":2,"method":"shutdown"}`,
+		`{"jsonrpc":"2.0","method":"exit"}`)
+	var server Server
+	var output bytes.Buffer
+	if err := server.Run(t.Context(), bytes.NewReader(input), &output); err != nil || !server.snippetSupport {
+		t.Fatalf("snippet negotiation = %t, %v", server.snippetSupport, err)
+	}
 }
 
 func TestCompletionOffersUniqueStylesOnlyInStyleField(t *testing.T) {
@@ -138,4 +151,27 @@ func TestCompletionSnippetRequiresClientSupport(t *testing.T) {
 	if snippet.InsertTextFormat != 2 || snippet.TextEdit.NewText != "pos(${1:arg1},${2:arg2})" {
 		t.Fatalf("snippet completion = %+v", snippet)
 	}
+}
+
+func TestCompletionOffersVerifiedIntegerArgumentHints(t *testing.T) {
+	const uri = "file:///values.ass"
+	text := "[Events]\nDialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{\\an}x\n"
+	var server Server
+	if err := server.documents.Open(uri, 1, text); err != nil {
+		t.Fatal(err)
+	}
+	position, err := server.documents.items[uri].index.Position(strings.Index(text, `\an`) + 3)
+	if err != nil {
+		t.Fatal(err)
+	}
+	items, err := server.completion(t.Context(), languageParams(t, uri, position))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, item := range items {
+		if item.Label == "1" && item.TextEdit.NewText == "1" && item.TextEdit.Range.Start == position {
+			return
+		}
+	}
+	t.Fatalf("no alignment value hint: %+v", items)
 }

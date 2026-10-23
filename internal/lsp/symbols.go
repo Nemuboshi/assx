@@ -80,9 +80,10 @@ func (server *Server) indexSymbols(doc document) symbolIndex {
 			childrenByLine[dialogue.Line] = append(childrenByLine[dialogue.Line], symbol)
 		}
 	}
+	symbolCount := 0
 	for _, line := range ass.ParseConcreteDocument(doc.text).Lines {
 		if line.Header != nil {
-			if len(index.symbols) >= 1000 {
+			if symbolCount >= 1000 {
 				break
 			}
 			if symbol, ok := makeSymbol(doc, line.Header.RawName, 3, line.Header.NameSpan); ok {
@@ -91,6 +92,7 @@ func (server *Server) indexSymbols(doc document) symbolIndex {
 					previous.Range.End, _ = doc.index.Position(line.Span.Start)
 				}
 				index.symbols = append(index.symbols, symbol)
+				symbolCount++
 			}
 		}
 		if line.Record != nil && strings.EqualFold(strings.TrimSpace(line.Record.Key), "Format") {
@@ -98,9 +100,15 @@ func (server *Server) indexSymbols(doc document) symbolIndex {
 				childrenByLine[line.Number] = append(childrenByLine[line.Number], symbol)
 			}
 		}
-		if len(index.symbols) > 0 && len(index.symbols[len(index.symbols)-1].Children) < 1000 {
+		if len(index.symbols) > 0 && symbolCount < 1000 {
 			section := &index.symbols[len(index.symbols)-1]
-			section.Children = append(section.Children, childrenByLine[line.Number]...)
+			for _, child := range childrenByLine[line.Number] {
+				if symbolCount >= 1000 {
+					break
+				}
+				section.Children = append(section.Children, child)
+				symbolCount++
+			}
 		}
 	}
 	if len(index.symbols) > 0 {

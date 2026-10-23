@@ -134,6 +134,21 @@ func (server *Server) tagCompletions(doc document, prefix string, start, end int
 		}
 		items = append(items, item)
 	}
+	if policy, known := spec.TagSpecs[prefix]; known && policy.Value == spec.IntegerValue && policy.Max >= policy.Min && policy.Max-policy.Min <= 12 {
+		valueRange, err := doc.index.Range(end, end)
+		if err == nil {
+			for value := policy.Min; value <= policy.Max; value++ {
+				candidate := fmt.Sprintf("{\\%s%d}", prefix, value)
+				tree := ass.ParseConcreteDialogue(candidate)
+				resolved := profile.Resolve(*tree.Nodes[0].Block.Items[0].Expression, candidate)
+				if resolved.Name != prefix || resolved.Status != renderer.Matched || resolved.Signature != renderer.SignatureVerified {
+					continue
+				}
+				label := fmt.Sprint(value)
+				items = append(items, completionItem{Label: label, Kind: 12, Detail: "Verified integer argument", TextEdit: lspTextEdit{Range: valueRange, NewText: label}})
+			}
+		}
+	}
 	return items
 }
 
