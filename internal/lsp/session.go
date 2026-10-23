@@ -154,6 +154,9 @@ func (server *Server) handleRequest(ctx context.Context, output io.Writer, messa
 			SignatureHelpProvider struct {
 				TriggerCharacters []string `json:"triggerCharacters"`
 			} `json:"signatureHelpProvider"`
+			DocumentSymbolProvider bool `json:"documentSymbolProvider"`
+			DefinitionProvider     bool `json:"definitionProvider"`
+			ReferencesProvider     bool `json:"referencesProvider"`
 		}{PositionEncoding: "utf-16"}
 		capabilities.TextDocumentSync.OpenClose = true
 		capabilities.TextDocumentSync.Change = 2
@@ -161,6 +164,9 @@ func (server *Server) handleRequest(ctx context.Context, output io.Writer, messa
 		capabilities.CodeActionProvider = server.editSupport
 		capabilities.HoverProvider = true
 		capabilities.SignatureHelpProvider.TriggerCharacters = []string{"(", ","}
+		capabilities.DocumentSymbolProvider = true
+		capabilities.DefinitionProvider = true
+		capabilities.ReferencesProvider = true
 		return server.reply(output, message.ID, struct {
 			Capabilities any `json:"capabilities"`
 		}{Capabilities: capabilities}, nil)
@@ -198,6 +204,26 @@ func (server *Server) handleRequest(ctx context.Context, output io.Writer, messa
 			return server.reply(output, message.ID, nil, &rpcError{-32602, "Invalid params"})
 		}
 		return server.reply(output, message.ID, help, nil)
+	}
+	if message.Method == "textDocument/documentSymbol" {
+		symbols, err := server.documentSymbols(ctx, message.Params)
+		if err != nil {
+			return server.reply(output, message.ID, nil, &rpcError{-32602, "Invalid params"})
+		}
+		return server.reply(output, message.ID, symbols, nil)
+	}
+	if message.Method == "textDocument/definition" || message.Method == "textDocument/references" {
+		var links []location
+		var err error
+		if message.Method == "textDocument/definition" {
+			links, err = server.definition(ctx, message.Params)
+		} else {
+			links, err = server.references(ctx, message.Params)
+		}
+		if err != nil {
+			return server.reply(output, message.ID, nil, &rpcError{-32602, "Invalid params"})
+		}
+		return server.reply(output, message.ID, links, nil)
 	}
 	return server.reply(output, message.ID, nil, &rpcError{-32601, "Method not found"})
 }
