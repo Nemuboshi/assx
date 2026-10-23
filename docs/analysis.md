@@ -94,3 +94,21 @@ parsed targets as explicit options. Reports, `--fix` file writes, the
 lossless round-trip refusal, summaries, and exit status are unchanged. The
 default CLI runs `Analyze` plus `Diagnostics`, which reproduces the eager
 diagnostic bytes.
+
+## LSP diagnostics
+
+`internal/lsp` analyzes the current in-memory document after open and change
+notifications. It uses the shared snapshot API and does not prove fixes while
+it publishes diagnostics. It maps source byte spans to UTF-16 ranges.
+
+The server clears diagnostics when a document closes or ASS recognition rejects
+its current text. Settings select the primary renderer, compatibility targets,
+VSFilterMod build gates, and rule policy. Invalid settings keep the last valid
+selection. The server does not add font findings to static diagnostics.
+
+The server gives each published diagnostic an identity bound to document text,
+version, and settings generation. A code action accepts only a current identity
+from a recognized ASS document. It proves the candidate on demand and checks
+the fixed text before it offers a versioned editor edit. The server does not
+change the document or a file. Clients without versioned document edits do not
+receive code actions.

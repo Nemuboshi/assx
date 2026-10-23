@@ -7,6 +7,8 @@ import (
 	"encoding/json/v2"
 	"fmt"
 	"io"
+	"maps"
+	"slices"
 
 	"assx/internal/sourcepos"
 )
@@ -31,11 +33,14 @@ type response struct {
 }
 
 type Server struct {
-	documents   Documents
-	initialized bool
-	shutdown    bool
-	warnings    int
-	Log         io.Writer
+	documents          Documents
+	initialized        bool
+	shutdown           bool
+	warnings           int
+	settings           settings
+	settingsGeneration int
+	editSupport        bool
+	Log                io.Writer
 }
 
 // Run owns one sequential JSON-RPC session. It does not read or write documents on disk.
@@ -93,10 +98,12 @@ func (server *Server) Run(ctx context.Context, input io.Reader, output io.Writer
 			return fmt.Errorf("LSP client exited before shutdown")
 		}
 		if len(message.ID) == 0 {
-			server.notify(message)
+			if err := server.notify(ctx, output, message); err != nil {
+				return err
+			}
 			continue
 		}
-		if err := server.handleRequest(output, message); err != nil {
+		if err := server.handleRequest(ctx, output, message); err != nil {
 			return err
 		}
 	}
@@ -109,11 +116,31 @@ func validID(id jsontext.Value) bool {
 	return id[0] == '"' || id[0] == '-' || (id[0] >= '0' && id[0] <= '9')
 }
 
-func (server *Server) handleRequest(output io.Writer, message request) error {
+func (server *Server) handleRequest(ctx context.Context, output io.Writer, message request) error {
 	if message.Method == "initialize" && !server.initialized && !server.shutdown {
 		if message.Params.Kind() != '{' {
 			return server.reply(output, message.ID, nil, &rpcError{-32602, "Invalid params"})
 		}
+		var params struct {
+			InitializationOptions jsontext.Value `json:"initializationOptions"`
+			Capabilities          struct {
+				Workspace struct {
+					WorkspaceEdit struct {
+						DocumentChanges bool `json:"documentChanges"`
+					} `json:"workspaceEdit"`
+				} `json:"workspace"`
+			} `json:"capabilities"`
+		}
+		if err := json.Unmarshal(message.Params, &params); err != nil {
+			return server.reply(output, message.ID, nil, &rpcError{-32602, "Invalid params"})
+		}
+		configured, err := parseSettings(params.InitializationOptions)
+		if err != nil {
+			server.warn(err)
+			configured, _ = parseSettings(nil)
+		}
+		server.settings = configured
+		server.editSupport = params.Capabilities.Workspace.WorkspaceEdit.DocumentChanges
 		server.initialized = true
 		capabilities := struct {
 			PositionEncoding string `json:"positionEncoding"`
@@ -122,10 +149,12 @@ func (server *Server) handleRequest(output io.Writer, message request) error {
 				Change    int  `json:"change"`
 				Save      bool `json:"save"`
 			} `json:"textDocumentSync"`
+			CodeActionProvider bool `json:"codeActionProvider,omitzero"`
 		}{PositionEncoding: "utf-16"}
 		capabilities.TextDocumentSync.OpenClose = true
 		capabilities.TextDocumentSync.Change = 2
 		capabilities.TextDocumentSync.Save = true
+		capabilities.CodeActionProvider = server.editSupport
 		return server.reply(output, message.ID, struct {
 			Capabilities any `json:"capabilities"`
 		}{Capabilities: capabilities}, nil)
@@ -139,6 +168,16 @@ func (server *Server) handleRequest(output io.Writer, message request) error {
 	if message.Method == "shutdown" {
 		server.shutdown = true
 		return server.reply(output, message.ID, jsontext.Value("null"), nil)
+	}
+	if message.Method == "textDocument/codeAction" && server.editSupport {
+		actions, err := server.codeActions(ctx, message.Params)
+		if err != nil {
+			if ctx.Err() != nil {
+				return ctx.Err()
+			}
+			return server.reply(output, message.ID, nil, &rpcError{-32602, "Invalid params"})
+		}
+		return server.reply(output, message.ID, actions, nil)
 	}
 	return server.reply(output, message.ID, nil, &rpcError{-32601, "Method not found"})
 }
@@ -160,13 +199,33 @@ func (server *Server) reply(output io.Writer, id jsontext.Value, result any, fai
 	return writeFrame(output, message)
 }
 
-func (server *Server) notify(message request) {
+func (server *Server) notify(ctx context.Context, output io.Writer, message request) error {
 	if !server.initialized || server.shutdown {
-		return
+		return nil
 	}
 	switch message.Method {
 	case "initialized", "$/cancelRequest":
-		return
+		return nil
+	case "workspace/didChangeConfiguration":
+		var params struct {
+			Settings jsontext.Value `json:"settings"`
+		}
+		if err := json.Unmarshal(message.Params, &params); err != nil || len(params.Settings) == 0 {
+			server.warn(fmt.Errorf("invalid configuration parameters"))
+			return nil
+		}
+		configured, err := parseSettings(params.Settings)
+		if err != nil {
+			server.warn(err)
+			return nil
+		}
+		server.settings = configured
+		server.settingsGeneration++
+		for _, uri := range slices.Sorted(maps.Keys(server.documents.items)) {
+			if err := server.publish(ctx, output, uri); err != nil {
+				return err
+			}
+		}
 	case "textDocument/didOpen":
 		var params struct {
 			TextDocument *struct {
@@ -177,9 +236,13 @@ func (server *Server) notify(message request) {
 		}
 		if err := json.Unmarshal(message.Params, &params); err != nil || params.TextDocument == nil || params.TextDocument.Text == nil {
 			server.warn(fmt.Errorf("invalid didOpen parameters"))
-			return
+			return nil
 		}
-		server.warn(server.documents.Open(params.TextDocument.URI, params.TextDocument.Version, *params.TextDocument.Text))
+		if err := server.documents.Open(params.TextDocument.URI, params.TextDocument.Version, *params.TextDocument.Text); err != nil {
+			server.warn(err)
+			return nil
+		}
+		return server.publish(ctx, output, params.TextDocument.URI)
 	case "textDocument/didChange":
 		var params struct {
 			TextDocument *struct {
@@ -197,13 +260,13 @@ func (server *Server) notify(message request) {
 		}
 		if err := json.Unmarshal(message.Params, &params); err != nil || params.TextDocument == nil {
 			server.warn(fmt.Errorf("invalid didChange parameters"))
-			return
+			return nil
 		}
 		changes := make([]Change, 0, len(params.ContentChanges))
 		for _, entry := range params.ContentChanges {
 			if entry.Text == nil || (entry.Range != nil && (entry.Range.Start == nil || entry.Range.End == nil)) {
 				server.warn(fmt.Errorf("invalid didChange entry"))
-				return
+				return nil
 			}
 			change := Change{Text: *entry.Text, RangeLength: entry.RangeLength}
 			if entry.Range != nil {
@@ -211,7 +274,11 @@ func (server *Server) notify(message request) {
 			}
 			changes = append(changes, change)
 		}
-		server.warn(server.documents.Change(params.TextDocument.URI, params.TextDocument.Version, changes))
+		if err := server.documents.Change(params.TextDocument.URI, params.TextDocument.Version, changes); err != nil {
+			server.warn(err)
+			return nil
+		}
+		return server.publish(ctx, output, params.TextDocument.URI)
 	case "textDocument/didClose":
 		var params struct {
 			TextDocument struct {
@@ -220,12 +287,17 @@ func (server *Server) notify(message request) {
 		}
 		if err := json.Unmarshal(message.Params, &params); err != nil || !validURI(params.TextDocument.URI) {
 			server.warn(fmt.Errorf("invalid didClose parameters"))
-			return
+			return nil
 		}
+		_, _, exists := server.documents.Snapshot(params.TextDocument.URI)
 		server.documents.Close(params.TextDocument.URI)
+		if exists {
+			return server.publish(ctx, output, params.TextDocument.URI)
+		}
 	case "textDocument/didSave":
 		// The open buffer stays authoritative; save does not read disk.
 	}
+	return nil
 }
 
 func (server *Server) warn(err error) {
