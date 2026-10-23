@@ -36,7 +36,7 @@ The font command returns 0 when checks complete, or 2 for usage and operational 
 Lint rejects the removed `--check-fonts` and `--font-dir` flags.
 See [font checking and migration](docs/font-checking.md) for catalog scope, JSON, cache behavior, and limits.
 
-`assx lsp` starts an LSP 3.17 server on stdio. This stage supports document synchronization only. It does not yet publish diagnostics or offer editor features. See [LSP status](docs/lsp.md).
+`assx lsp` starts an LSP 3.17 server on stdio. It provides diagnostics, hover, signature help, Style navigation, symbols, and completion for in-memory ASS text. SafeFix code actions require versioned edit support. The [VS Code adapter](editors/vscode) launches the binary; [Neovim](editors/neovim/init.lua) and [Helix](editors/helix/languages.toml) examples configure other clients. See [LSP usage and limits](docs/lsp.md).
 
 All analysis uses the lossless concrete syntax tree and pinned profile engine.
 SafeFix application recomputes authorized edits under the caller's primary and compatibility policy.

@@ -1,0 +1,10 @@
+# Add this to your Helix languages.toml. Put assx on PATH.
+[[language]]
+name = "ass"
+scope = "source.ass"
+file-types = ["ass", "ssa"]
+language-servers = ["assx"]
+
+[language-server.assx]
+command = "assx"
+args = ["lsp"]
