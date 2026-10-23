@@ -44,6 +44,26 @@ func TestFrameRejectsMalformedOrTruncatedInput(t *testing.T) {
 	}
 }
 
+func FuzzFrameReader(f *testing.F) {
+	for _, seed := range []string{
+		"Content-Length: 4\r\n\r\nnull",
+		"Content-Length: -1\r\n\r\n",
+		"Content-Length: 4\r\n\r\n{}",
+		"broken\r\n\r\n",
+	} {
+		f.Add([]byte(seed))
+	}
+	f.Fuzz(func(t *testing.T, input []byte) {
+		if len(input) > maxMessageBytes+8192 {
+			t.Skip()
+		}
+		payload, err := readFrame(bufio.NewReader(bytes.NewReader(input)))
+		if err == nil && (len(payload) == 0 || len(payload) > maxMessageBytes) {
+			t.Fatalf("accepted out-of-range payload length %d", len(payload))
+		}
+	})
+}
+
 type oneByteReader struct{ data []byte }
 
 func (r *oneByteReader) Read(p []byte) (int, error) {
