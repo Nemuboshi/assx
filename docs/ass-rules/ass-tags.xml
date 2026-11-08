@@ -11,7 +11,7 @@
             declares a cell nobody has verified at the pinned line — the honest
             alternative to silence.
 
-  Pins (same commits as docs/rules.md):
+  Pins (same commits as docs/ass-rules.md):
     libass      f61db56   ref/renderers/libass
     xy-VSFilter 135a3015  ref/renderers/xy-VSFilter
     VSFilterMod 7a00567   ref/renderers/VSFilterMod

@@ -2,7 +2,7 @@ package renderer
 
 //go:generate go run ./cmd/genmatrix
 
-// Signature metadata is generated from docs/rules/ass-tags.xml. Its verification
+// Signature metadata is generated from docs/ass-rules/ass-tags.xml. Its verification
 // scope is distinct from its declared applicability; an inferred signature
 // must never become a proof of validity or safe rewriting.
 type featureMask uint8

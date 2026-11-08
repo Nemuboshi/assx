@@ -75,7 +75,7 @@ var sigForms = map[string]bool{"bare": true, "paren": true, "both": true}
 
 func loadMatrix(t *testing.T) *xmlMatrix {
 	t.Helper()
-	path := filepath.Join("..", "..", "..", "docs", "rules", "ass-tags.xml")
+	path := filepath.Join("..", "..", "..", "docs", "ass-rules", "ass-tags.xml")
 	data, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatalf("matrix file %s: %v", path, err)
@@ -88,7 +88,7 @@ func loadMatrix(t *testing.T) *xmlMatrix {
 }
 
 func TestMatrixStylesheetWellFormed(t *testing.T) {
-	path := filepath.Join("..", "..", "..", "docs", "rules", "ass-tags.xsl")
+	path := filepath.Join("..", "..", "..", "docs", "ass-rules", "ass-tags.xsl")
 	data, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatalf("stylesheet %s: %v", path, err)
@@ -103,7 +103,7 @@ func TestMatrixTagNamesMatchSpec(t *testing.T) {
 	inMatrix := make(map[string]bool)
 	for _, tag := range m.Tags {
 		if inMatrix[tag.Name] {
-			t.Errorf("tag %q listed twice in docs/rules/ass-tags.xml", tag.Name)
+			t.Errorf("tag %q listed twice in docs/ass-rules/ass-tags.xml", tag.Name)
 		}
 		inMatrix[tag.Name] = true
 	}
@@ -117,12 +117,12 @@ func TestMatrixTagNamesMatchSpec(t *testing.T) {
 	}
 	for name := range TagSpecs {
 		if !inMatrix[name] {
-			t.Errorf("TagSpecs name %q is missing from docs/rules/ass-tags.xml", name)
+			t.Errorf("TagSpecs name %q is missing from docs/ass-rules/ass-tags.xml", name)
 		}
 	}
 	for name := range inMatrix {
 		if _, ok := TagSpecs[name]; !ok {
-			t.Errorf("docs/rules/ass-tags.xml lists unknown name %q (not in TagSpecs)", name)
+			t.Errorf("docs/ass-rules/ass-tags.xml lists unknown name %q (not in TagSpecs)", name)
 		}
 	}
 }

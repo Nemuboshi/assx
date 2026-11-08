@@ -93,7 +93,7 @@ unlisted renderer versions, builds, Lua scripts, or forks.
 ## Pinned source revisions and build scope
 
 The authoritative machine-readable source pins are
-`docs/rules/ass-tags.xml` `<meta><pin>` entries:
+`docs/ass-rules/ass-tags.xml` `<meta><pin>` entries:
 
 | Source | Commit |
 | --- | --- |

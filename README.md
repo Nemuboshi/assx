@@ -41,12 +41,12 @@ All analysis uses the lossless concrete syntax tree and pinned profile engine.
 SafeFix application recomputes authorized edits under the caller's primary and compatibility policy.
 See [the evidence contract](docs/architecture/contracts.md) for evidence scope and limits.
 
-For diagnostic IDs and explanations, see the [rule catalog](docs/rules/catalog.md). For pretty report behavior, see [diagnostic reports](docs/usage/diagnostic-reports.md).
+For diagnostic IDs and explanations, see the [rule catalog](docs/ass-rules/catalog.md). For pretty report behavior, see [diagnostic reports](docs/usage/diagnostic-reports.md).
 For reproducible performance benchmarks, profiling, and the pinned baseline, see [performance benchmarks](docs/development/performance.md).
 
 ## Development
 
-Use the [documentation index](docs/README.md) to find subject documents. Use [Research](docs/development/research.md) to record evidence.
+Use the [documentation index](docs/README.md) to find subject documents.
 Use ASD-STE100 for repository documentation. Keep technical names and evidence exact.
 
 Requires Go 1.27.0 or later. From the repository root:

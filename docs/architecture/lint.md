@@ -45,7 +45,7 @@ list to legalize VSFilterMod-only shapes.
   equal tracked state reports `equivalent` and emits no finding. Neither class
   asserts a proven incompatibility; **ASS003** reports those. Style field
   conversion evidence is recorded separately in
-  [the Style field matrix](../rules/ass-style-fields.xml). That matrix names each
+  [the Style field matrix](../ass-rules/ass-style-fields.xml). That matrix names each
   conversion; it does not by itself resolve the observation.
 - Style value checks are separate from conversion evidence. **ASS011** reports a
   fractional integer field, **ASS012** reports a float-precision difference, and
@@ -56,7 +56,7 @@ list to legalize VSFilterMod-only shapes.
 - **ASS033** reports verified BorderStyle 3 box-scaling differences.
   **ASS034** reports the BorderStyle 4 mode difference.
   They compare declared ASS v4+ Styles only when the relevant resolved fields agree.
-  Their conditions and limits are in [the rule catalog](../rules/catalog.md).
+  Their conditions and limits are in [the rule catalog](../ass-rules/catalog.md).
   Both use separate IDs, physical field spans, and selected renderer pairs.
   Neither warning supplies edits or claims final pixel differences.
 - VSFilterMod's verified three-argument `\\pos` is allowed only in a build

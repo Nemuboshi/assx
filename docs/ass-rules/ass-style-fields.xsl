@@ -1,16 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ass-style-fields.xsl — presentation layer for docs/rules/ass-style-fields.xml.
+  ass-style-fields.xsl — presentation layer for docs/ass-rules/ass-style-fields.xml.
 
   Data lives only in the XML; this file holds no behavior claims. Referenced by
   <?xml-stylesheet?> in ass-style-fields.xml. Browsers will not fetch this
   stylesheet over file:// (opaque origins block it), so read the matrix via the
   HTML export. Regenerate after editing the XML, from the repo root:
 
-    $x = New-Object System.Xml.Xsl.XslCompiledTransform
-    $x.Load('docs/rules/ass-style-fields.xsl'); $x.Transform('docs/rules/ass-style-fields.xml', 'docs/rules/ass-style-fields.html')
+    # Linux (xsltproc, from the libxslt package)
+    xsltproc -o docs/ass-rules/ass-style-fields.html docs/ass-rules/ass-style-fields.xsl docs/ass-rules/ass-style-fields.xml
 
-  docs/rules/ass-style-fields.html is gitignored: the XML is the source, the HTML is a view.
+    # Windows (PowerShell)
+    $x = New-Object System.Xml.Xsl.XslCompiledTransform
+    $x.Load('docs/ass-rules/ass-style-fields.xsl'); $x.Transform('docs/ass-rules/ass-style-fields.xml', 'docs/ass-rules/ass-style-fields.html')
+
+  docs/ass-rules/ass-style-fields.html is gitignored: the XML is the source, the HTML is a view.
 -->
 <xsl:stylesheet version="1.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"

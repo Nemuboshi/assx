@@ -97,7 +97,7 @@ func requirementMask(raw string) (uint8, error) {
 func run() error {
 	check := flag.Bool("check", false, "fail if generated output is stale")
 	flag.Parse()
-	input := filepath.Join("..", "..", "..", "docs", "rules", "ass-tags.xml")
+	input := filepath.Join("..", "..", "..", "docs", "ass-rules", "ass-tags.xml")
 	data, err := os.ReadFile(input)
 	if err != nil {
 		return err

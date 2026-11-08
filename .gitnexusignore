@@ -1,6 +1,0 @@
-ref/
-.pi/
-.codegraph/
-.gitnexus/
-tools/rendercheck/target/
-!**/*_test.go

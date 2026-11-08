@@ -6,6 +6,6 @@ ref/
 /assx.exe
 /.ci/
 /tools/rendercheck/target/
-/docs/rules/ass-tags.html
+/docs/ass-rules/ass-tags.html
 /docs/todo.md
-/docs/rules/ass-style-fields.html
+/docs/ass-rules/ass-style-fields.html

@@ -89,7 +89,7 @@ The profile resolver selects Mod assignment metadata.
 Document consumers select target-specific Styles before evaluation adds Mod defaults.
 The default CLI uses libass validity and xy-VSFilter compatibility, not Mod semantics.
 
-The [tag matrix](../rules/ass-tags.xml) owns signatures and pinned source citations.
+The [tag matrix](../ass-rules/ass-tags.xml) owns signatures and pinned source citations.
 `move` accepts exactly four or six non-empty arguments in all three targets.
 Eight arguments are rejected before the shared position latch can change.
 
