@@ -34,7 +34,7 @@ func TestRequirementMaskRejectsUnsupportedOrAmbiguousGates(t *testing.T) {
 	}{
 		{"", 0, true},
 		{"_VSMOD", 1, true},
-		{"_VSMOD _LUA", 3, true},
+		{"_VSMOD _LUA", 0, false}, // the Lua gate is not modeled
 		{"_LUA", 0, false},
 		{"_LUA _VSMOD", 0, false},
 		{"_VSMOD _VSMOD", 0, false},

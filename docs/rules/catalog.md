@@ -1,6 +1,6 @@
 # ASS rule catalog
 
-This page explains assx's stable diagnostic IDs. Runtime metadata—titles, descriptions, suggested fixes, severity, and source URLs—is centralized in [`internal/lint/registry.go`](../internal/lint/registry.go). All diagnostics use stable `ASSxxx` IDs whose numeric part identifies a rule without encoding severity or category. Severity is independent metadata, so it may change without changing the diagnostic ID. Keep an ID when wording, severity, fix safety, or presentation changes; introduce a new ID only when the detected condition is genuinely different.
+This page explains assx's stable diagnostic IDs. Runtime metadata—titles, descriptions, suggested fixes, severity, and source URLs—is centralized in [`internal/lint/registry.go`](../../internal/lint/registry.go). All diagnostics use stable `ASSxxx` IDs whose numeric part identifies a rule without encoding severity or category. Severity is independent metadata, so it may change without changing the diagnostic ID. Keep an ID when wording, severity, fix safety, or presentation changes; introduce a new ID only when the detected condition is genuinely different.
 
 Issue IDs are assx identifiers, not renderer error codes. Optional font checks use the same `ASSxxx` namespace as every other diagnostic.
 
@@ -42,7 +42,7 @@ VSFilterMod adds `\1img`, `\2img`, `\3img`, `\4img`; `\1vc`–`\4vc`; `\1va`–`
 ASS005 remains active when the requested target set excludes Mod.
 It checks verified Mod name dispatch, not invocation validity or signature acceptance.
 Primary profiles still report unknown names, invalid shorter-prefix values, or unresolved forms separately.
-`lua` depends on build capabilities. The warning has no edit.
+`\lua` resolves only in an enabled Mod build. assx does not model its effect. The warning has no edit.
 Unknown operations and prefix collisions remain SafeFix barriers.
 
 References: pinned VSFilterMod [tag handlers](https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2745-L3717), original VSFilter [tag map](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L1716-L1769), and libass [tag parser](https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L281-L888).
@@ -93,7 +93,7 @@ References: libass float parsing via [`ass_atof`](https://github.com/libass/liba
 This rule compares supported override slots with properties declared in the dialogue's Style. It supports Fontname, Fontsize, Bold, Italic, ScaleX, ScaleY, Spacing, Underline, StrikeOut, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Outline, Shadow, Angle, and Encoding. Colors are tracked as separate color and alpha slots; `\bord`/`\xbord`/`\ybord`, `\shad`/`\xshad`/`\yshad`, and `\fr`/`\frz` share their renderer state slots.
 
 The safe fix removes relevant override tags only when tracked state matches the Style at every visible text boundary. Intermediate changes overwritten before text can be removed, while a later assignment that restores a Style value after visible text is kept. Other formatting tags are preserved. Style-default fallbacks after a named reset are only modeled when the active and original Style values agree: libass uses the active Style, while VSFilter retains the original defaults. An unmodeled or build-conditional operation anywhere in the dialogue blocks automatic Style fixes.
-SafeFix must prove every requested primary and compatibility target; unknown Mod or Lua capabilities cannot authorize edits. Relative `\fs+`/`\fs-` forms, style resets, transforms, drawing mode, malformed values, ambiguous styles, and unsupported state are skipped. Properties without a corresponding Style field, including blur, be, frx, fry, fax, fay, clip, p, and pbo, are not compared.
+SafeFix must prove every requested primary and compatibility target; an unknown Mod capability cannot authorize edits. Relative `\fs+`/`\fs-` forms, style resets, transforms, drawing mode, malformed values, ambiguous styles, and unsupported state are skipped. Properties without a corresponding Style field, including blur, be, frx, fry, fax, fay, clip, p, and pbo, are not compared.
 
 ## ASS014 — Extra opening brace in override block
 
@@ -105,7 +105,7 @@ References: libass [event override parsing](https://github.com/libass/libass/blo
 
 These IDs are reserved. They are not active lint rules and must not be reused.
 Use `assx fonts check` for `FONT001` and `FONT002`.
-See [font checking](font-checking.md) for their scope and migration.
+See [font checking](../usage/font-checking.md) for their scope and limits.
 
 ## ASS017 — Undefined style reference
 
@@ -133,13 +133,13 @@ The drawing AST models `m`, `n`, `l`, `b`, `s`, `p`, and `c`, and preserves draw
 
 ## ASS031 — Renderer command interpretation is unresolved
 
-Explicit renderer-scoped validation uses this warning when a command is disabled or build-conditional, matched but semantically unmodeled, backed only by inferred signature evidence, or malformed in a way that prevents a verified interpretation. The finding does not assert a cross-renderer incompatibility and never authorizes an automatic edit. The default CLI also emits this warning for unresolved or ignored cross-renderer compatibility observations. Unverified tracked-state agreement remains one of these observations. See [renderer-scoped lint validation](renderer-lint.md) and [compatibility](renderer-compatibility.md).
+Explicit renderer-scoped validation uses this warning when a command is disabled or build-conditional, matched but semantically unmodeled, backed only by inferred signature evidence, or malformed in a way that prevents a verified interpretation. The finding does not assert a cross-renderer incompatibility and never authorizes an automatic edit. The default CLI also emits this warning for unresolved or ignored cross-renderer compatibility observations. Unverified tracked-state agreement remains one of these observations. See [renderer-scoped lint validation](../architecture/lint.md) and [compatibility](../architecture/compatibility.md).
 
 ## ASS032 — Style Alignment is outside 1 to 9
 
 The `Alignment` field of an ASS v4+ Style row is a numpad value. The pinned renderers place text for values 1 to 9 only. libass maps the value with `numpad2align` at parse; xy-VSFilter and VSFilterMod keep the raw integer and derive the position at use. This rule reports a whole-integer value outside 1 to 9. A fractional value stays an ASS011 finding, and a malformed value stays an ASS022 or ASS011 finding, so the rules do not overlap.
 
-Legacy SSA `Alignment` uses a bitfield mapping and is not checked by this rule. The rule has no automatic fix because the intended alignment is unknown. See [Style field conversion evidence](renderer-compatibility.md#style-field-conversion-evidence).
+Legacy SSA `Alignment` uses a bitfield mapping and is not checked by this rule. The rule has no automatic fix because the intended alignment is unknown. See [Style field conversion evidence](../architecture/compatibility.md#style-field-conversion-evidence).
 
 ## ASS033 — BorderStyle box scaling differs
 

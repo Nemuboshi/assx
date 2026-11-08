@@ -4,9 +4,8 @@ ref/
 /.gitnexus/
 /assx
 /assx.exe
-/AGENTS.md
 /.ci/
 /tools/rendercheck/target/
-/docs/ass-tags.html
+/docs/rules/ass-tags.html
 /docs/todo.md
-/docs/ass-style-fields.html
+/docs/rules/ass-style-fields.html

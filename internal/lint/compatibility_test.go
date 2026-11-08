@@ -9,7 +9,7 @@ import (
 )
 
 func TestCompatibilityDiagnosticsSeparateValidityAndFixSafety(t *testing.T) {
-	mod, err := renderer.New(renderer.VSFilterMod, renderer.Build{Mod: renderer.FeatureEnabled, Lua: renderer.FeatureDisabled})
+	mod, err := renderer.New(renderer.VSFilterMod, renderer.Build{Mod: renderer.FeatureEnabled})
 	if err != nil {
 		t.Fatal(err)
 	}

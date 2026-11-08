@@ -1931,7 +1931,7 @@
         "suggested_fix": "Remove the redundant override tags.",
         "fix_safety": "safe",
         "fix_proof": {
-          "id": "636b6be556a44a86aaa3a4fcd3f33fb35685f5d067b2655bd377c84e6e12855c",
+          "id": "145b89a5cc6cbf2826354f6b913918d20799cf749477db917ef5cc4a0dc917f3",
           "source_sha256": "7c5425d6cf69b7215c1b6e258ee742a0d9d2a04b735613d6feb14b3356607dfa",
           "edited_sha256": "0b9cfc6ed431341aba4ed5db0bedef5bda80ba12af1bc0bcc827e57845fd7805",
           "source_edits": [
@@ -1957,16 +1957,14 @@
               "renderer": "libass",
               "version": "f61db567e6593df3470e91594bcd4ad2d0473aff",
               "capabilities": {
-                "vsfiltermod": "not-applicable",
-                "lua": "not-applicable"
+                "vsfiltermod": "not-applicable"
               }
             },
             {
               "renderer": "xy-VSFilter",
               "version": "135a30153a38fa846cb5c39df0f258403e92096e",
               "capabilities": {
-                "vsfiltermod": "not-applicable",
-                "lua": "not-applicable"
+                "vsfiltermod": "not-applicable"
               }
             }
           ],
@@ -1976,8 +1974,7 @@
                 "renderer": "libass",
                 "version": "f61db567e6593df3470e91594bcd4ad2d0473aff",
                 "capabilities": {
-                  "vsfiltermod": "not-applicable",
-                  "lua": "not-applicable"
+                  "vsfiltermod": "not-applicable"
                 }
               },
               "dialogues": [
@@ -2287,8 +2284,7 @@
                 "renderer": "xy-VSFilter",
                 "version": "135a30153a38fa846cb5c39df0f258403e92096e",
                 "capabilities": {
-                  "vsfiltermod": "not-applicable",
-                  "lua": "not-applicable"
+                  "vsfiltermod": "not-applicable"
                 }
               },
               "dialogues": [
@@ -2694,7 +2690,7 @@
         "description": "An override is replaced, reset, or ignored before it affects dialogue text, or repeats the value already active in every affected state slot.",
         "suggested_fix": "Remove it or move it to the intended text boundary.",
         "fix_safety": "safe",
-        "fix_proof_ref": "636b6be556a44a86aaa3a4fcd3f33fb35685f5d067b2655bd377c84e6e12855c",
+        "fix_proof_ref": "145b89a5cc6cbf2826354f6b913918d20799cf749477db917ef5cc4a0dc917f3",
         "edits": [
           {
             "start": 682,
@@ -2775,7 +2771,7 @@
         "suggested_fix": "Remove the redundant override tags.",
         "fix_safety": "safe",
         "fix_proof": {
-          "id": "636b6be556a44a86aaa3a4fcd3f33fb35685f5d067b2655bd377c84e6e12855c",
+          "id": "145b89a5cc6cbf2826354f6b913918d20799cf749477db917ef5cc4a0dc917f3",
           "source_sha256": "7c5425d6cf69b7215c1b6e258ee742a0d9d2a04b735613d6feb14b3356607dfa",
           "edited_sha256": "0b9cfc6ed431341aba4ed5db0bedef5bda80ba12af1bc0bcc827e57845fd7805",
           "source_edits": [
@@ -2801,16 +2797,14 @@
               "renderer": "libass",
               "version": "f61db567e6593df3470e91594bcd4ad2d0473aff",
               "capabilities": {
-                "vsfiltermod": "not-applicable",
-                "lua": "not-applicable"
+                "vsfiltermod": "not-applicable"
               }
             },
             {
               "renderer": "xy-VSFilter",
               "version": "135a30153a38fa846cb5c39df0f258403e92096e",
               "capabilities": {
-                "vsfiltermod": "not-applicable",
-                "lua": "not-applicable"
+                "vsfiltermod": "not-applicable"
               }
             }
           ],
@@ -2820,8 +2814,7 @@
                 "renderer": "libass",
                 "version": "f61db567e6593df3470e91594bcd4ad2d0473aff",
                 "capabilities": {
-                  "vsfiltermod": "not-applicable",
-                  "lua": "not-applicable"
+                  "vsfiltermod": "not-applicable"
                 }
               },
               "dialogues": [
@@ -3131,8 +3124,7 @@
                 "renderer": "xy-VSFilter",
                 "version": "135a30153a38fa846cb5c39df0f258403e92096e",
                 "capabilities": {
-                  "vsfiltermod": "not-applicable",
-                  "lua": "not-applicable"
+                  "vsfiltermod": "not-applicable"
                 }
               },
               "dialogues": [
@@ -3551,7 +3543,7 @@
         "description": "An override is replaced, reset, or ignored before it affects dialogue text, or repeats the value already active in every affected state slot.",
         "suggested_fix": "Remove it or move it to the intended text boundary.",
         "fix_safety": "safe",
-        "fix_proof_ref": "636b6be556a44a86aaa3a4fcd3f33fb35685f5d067b2655bd377c84e6e12855c",
+        "fix_proof_ref": "145b89a5cc6cbf2826354f6b913918d20799cf749477db917ef5cc4a0dc917f3",
         "edits": [
           {
             "start": 682,

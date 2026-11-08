@@ -84,12 +84,6 @@ func (p Profile) selectName(head string) (name, fallback string, status MatchSta
 			if exactOnlyMod(candidate) && head != candidate {
 				return candidate, "", Ignored
 			}
-			if candidate == "lua" && p.build.Lua != FeatureEnabled {
-				if p.build.Lua == FeatureUnknown {
-					return candidate, "", Conditional
-				}
-				return candidate, "", Disabled
-			}
 			return candidate, "", Matched
 		}
 	}

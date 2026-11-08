@@ -239,30 +239,6 @@ func TestModUnverifiedPositionCannotPublishDepth(t *testing.T) {
 	}
 }
 
-func TestModLuaShadowsCoreAndUnknownNames(t *testing.T) {
-	for _, mod := range []renderer.Feature{renderer.FeatureEnabled, renderer.FeatureDisabled, renderer.FeatureUnknown} {
-		for _, lua := range []renderer.Feature{renderer.FeatureEnabled, renderer.FeatureUnknown} {
-			profile, err := renderer.New(renderer.VSFilterMod, renderer.Build{Mod: mod, Lua: lua})
-			if err != nil {
-				t.Fatal(err)
-			}
-			EvaluateResolved(ass.ParseConcreteDialogue(`{\fs20\pos(1,2)\mystery\z3}A`), profile, EvaluationOptions{
-				Styles: map[string]StyleState{"Default": {}}, DialogueStyle: "Default",
-				Observer: Observer{Tag: func(event TagEvent, state StateView) {
-					if !event.Barrier || event.Uncertainty != UncertaintyRendererDependent || event.Applied {
-						t.Errorf("Lua shadow lacks barrier: %#v", event)
-					}
-					for _, slot := range []string{"fontsize", "position", "z_depth"} {
-						if state.Value(slot).Known || state.Source(slot) >= 0 {
-							t.Errorf("Lua shadow retained state: %s", slot)
-						}
-					}
-				}},
-			})
-		}
-	}
-}
-
 func TestModFadRemainsReachableAndLatched(t *testing.T) {
 	for _, profile := range []renderer.Profile{mustProfile(t, renderer.Libass), mustProfile(t, renderer.XYVSFilter), mustMod(t, renderer.FeatureEnabled), mustMod(t, renderer.FeatureDisabled)} {
 		var events []TagEvent

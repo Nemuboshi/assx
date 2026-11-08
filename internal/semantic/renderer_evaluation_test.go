@@ -94,7 +94,7 @@ func mustProfile(t *testing.T, kind renderer.Kind) renderer.Profile {
 
 func mustMod(t *testing.T, state renderer.Feature) renderer.Profile {
 	t.Helper()
-	profile, err := renderer.New(renderer.VSFilterMod, renderer.Build{Mod: state, Lua: renderer.FeatureDisabled})
+	profile, err := renderer.New(renderer.VSFilterMod, renderer.Build{Mod: state})
 	if err != nil {
 		t.Fatal(err)
 	}

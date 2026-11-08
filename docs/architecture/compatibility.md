@@ -1,9 +1,5 @@
 # Differential renderer compatibility
 
-Implementation: [Issue #22](https://github.com/Nemuboshi/assx/issues/22) of
-[Epic #16](https://github.com/Nemuboshi/assx/issues/16). This builds on P04
-profiles, P05 independent evaluation, and P06 renderer-local validity.
-
 ## API boundary
 
 `semantic.CompareDialogue(concreteDialogue, profiles, options)` and
@@ -11,7 +7,7 @@ profiles, P05 independent evaluation, and P06 renderer-local validity.
 observations. `lint.AnalyzeCompatibility(dialogue, profiles)` and
 `lint.AnalyzeDocumentCompatibility(document, profiles)` turn findings into
 separate diagnostics. An empty target list selects libass + xy-VSFilter;
-VSFilterMod is explicit and retains its `_VSMOD`/`_LUA` build capabilities.
+VSFilterMod is explicit and retains its `_VSMOD` build capability.
 Duplicate profiles are removed without changing caller order.
 
 The default CLI selects libass primary and xy-VSFilter compatibility.
@@ -21,7 +17,7 @@ Target-configured analysis normalizes and sorts profiles by renderer, revision, 
 Compatibility diagnostics never become primary validity errors.
 Compatibility APIs provide no edits or safety classification.
 SafeFix requires proof for every caller-requested profile and build.
-See [contracts](renderer-contracts.md) for application authorization.
+See [the evidence contract](contracts.md) for application authorization.
 
 Syntax stays in `internal/ass`; source partitioning and renderer evidence stay
 in `internal/ass/renderer`; comparison of effective operations and scenario
@@ -70,7 +66,7 @@ pixel-identical rendering; no `equivalent` dimension does.
 
 ## Evidence and reference cases
 
-`docs/ass-tags.xml` explicitly scopes verified scenario cells. The generated
+`docs/rules/ass-tags.xml` explicitly scopes verified scenario cells. The generated
 matrix now retains those rows alongside signatures. Missing rows do not inherit
 editorial scenario defaults, `status="S"` and unverified renderer cells cannot
 prove equivalence, and unknown builds cannot borrow an enabled branch's proof.
@@ -102,8 +98,8 @@ comparison requires exact fractional input.
   valid position has the same source-aligned first owner. The shared resolver
   normalizes parameters while retaining every surviving raw argument's
   original source span.
-- `\blend(add)` reaches Mod's **blend** branch when enabled. Issue #22's
-  statement that `be` shadows it contradicts the pinned source: `blend`
+- `\blend(add)` reaches Mod's **blend** branch when enabled. The earlier claim
+  that `be` shadows it contradicts the pinned source: `blend`
   begins with `bl`, not `be`. Traditional profiles select `b`; parenthesized
   prefix/suffix consumption and unmodeled extension state stay unresolved.
   See Mod `RTS.cpp:2548-2557,3716-3730` at
@@ -139,13 +135,13 @@ Unsupported dialects, malformed framing, unresolved resets, drawing, karaoke,
 and time-dependent transforms remain explicitly unresolved where no sufficient
 model/evidence exists. Shared Style canonicalization is an input to the partial
 evaluator and cannot authorize Style or pixel equivalence. This boundary avoids
-duplicating a complete renderer document loader during P07.
+duplicating a complete renderer document loader.
 
 ## Style field conversion evidence
 
-[docs/ass-style-fields.xml](ass-style-fields.xml) records the raw-text-to-value
+[the Style field matrix](../rules/ass-style-fields.xml) records the raw-text-to-value
 conversion of each Style field for each pinned renderer. It is separate from
-[docs/ass-tags.xml](ass-tags.xml). Style fields have no arity, no prefix
+[the tag matrix](../rules/ass-tags.xml). Style fields have no arity, no prefix
 dispatch and no paren form, so they cannot use the tag schema. The tag matrix
 owns override-tag dispatch. This matrix owns Style value conversion.
 
@@ -162,7 +158,7 @@ This matrix records conversion and drawing evidence. Style validation checks
 colour syntax and the ASS v4+ `Alignment` range. Selected renderer comparisons
 also report two specific BorderStyle differences. ASS033 reports box scaling;
 ASS034 reports mode selection. These rules do not assert complete Style or frame
-equivalence. Their conditions are defined in [the rule catalog](rules.md).
+equivalence. Their conditions are defined in [the rule catalog](../rules/catalog.md).
 
 A Style row is not reported only because its value conversion is unresolved. The
 conversion alone does not justify a per-line warning.
@@ -218,18 +214,3 @@ fixes. All three pinned parsers' empty-component removal and the first-wins
 arity differences are source-pinned in the matrix. Profile-order, invocation
 domain, scalar-application, build-guard, and mechanism-label regressions
 prevent unsupported scenario conclusions.
-
-On Windows amd64, the one-iteration `long_10000` compatibility benchmark's
-cumulative allocation fell from 1,627,355,952 to 368,625,184 bytes (77.3%)
-when dimensions began sharing observations. The plain-dialogue fixture now
-allocates zero bytes in comparison. These are allocation measurements, not
-peak-memory measurements or statistically established timing improvements.
-Existing default benchmarks were compared against `main@5efedc6` with three
-100 ms runs on the same machine; most allocation counts were unchanged and
-timing was noisy. These measurements describe the P07 opt-in implementation, not the P10 default pipeline.
-
-## Implementation record: P07
-
-P07 introduced pairwise comparison beside the then-default adapter.
-P10 integrated this comparison with the default CLI and removed the adapter.
-Reviewed default snapshot corrections are recorded in [contracts](renderer-contracts.md).

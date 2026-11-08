@@ -231,7 +231,7 @@ func TestAnalyzeRendererSelections(t *testing.T) {
 		}
 		return analyzeTestResult(t, text, Options{Targets: lint.AnalysisTargets{Primary: profile}})
 	}
-	unknown := mod(renderer.Build{Mod: renderer.FeatureUnknown, Lua: renderer.FeatureUnknown})
+	unknown := mod(renderer.Build{Mod: renderer.FeatureUnknown})
 	if len(unknown.Findings()) == 0 {
 		t.Fatal("unknown VSFilterMod build lost findings")
 	}
@@ -240,7 +240,7 @@ func TestAnalyzeRendererSelections(t *testing.T) {
 			t.Fatalf("unknown VSFilterMod build authorized a fix: %#v", diagnostic)
 		}
 	}
-	disabled := mod(renderer.Build{Mod: renderer.FeatureDisabled, Lua: renderer.FeatureDisabled})
+	disabled := mod(renderer.Build{Mod: renderer.FeatureDisabled})
 	proved := 0
 	for _, diagnostic := range mustProve(t, disabled) {
 		if diagnostic.ID == lint.IssueNoEffect && diagnostic.FixSafety == lint.SafeFix {

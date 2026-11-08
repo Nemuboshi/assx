@@ -9,9 +9,9 @@ testdata/contracts/golden/*.json text eol=lf
 internal/fontreport/testdata/*.golden text eol=lf
 
 # Raw benchstat input is line-oriented and platform-neutral.
-docs/performance/baseline-6ba7453-windows-amd64.txt text eol=lf
+docs/development/baseline-6ba7453-windows-amd64.txt text eol=lf
 
 # Renderer evidence and its generated representation are shared across OSes.
 # Keep repository copies canonical even with core.autocrlf=true.
-docs/ass-tags.xml text eol=lf
+docs/rules/ass-tags.xml text eol=lf
 internal/ass/renderer/matrix_generated.go text eol=lf

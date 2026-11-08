@@ -82,15 +82,13 @@ func canonicalNewlines(data []byte) []byte {
 }
 
 // requirementMask accepts only canonical guard sets from the pinned source.
-// _LUA cannot be independently enabled without _VSMOD.
+// The Lua gate is not modeled, so no signature may require it.
 func requirementMask(raw string) (uint8, error) {
 	switch raw {
 	case "":
 		return 0, nil
 	case "_VSMOD":
 		return 1, nil
-	case "_VSMOD _LUA":
-		return 3, nil
 	default:
 		return 0, fmt.Errorf("unsupported signature requirements %q", raw)
 	}
@@ -99,7 +97,7 @@ func requirementMask(raw string) (uint8, error) {
 func run() error {
 	check := flag.Bool("check", false, "fail if generated output is stale")
 	flag.Parse()
-	input := filepath.Join("..", "..", "..", "docs", "ass-tags.xml")
+	input := filepath.Join("..", "..", "..", "docs", "rules", "ass-tags.xml")
 	data, err := os.ReadFile(input)
 	if err != nil {
 		return err

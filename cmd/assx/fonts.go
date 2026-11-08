@@ -22,7 +22,6 @@ func runFonts(args []string, stdout, stderr io.Writer) int {
 	forceASS := flags.Bool("force-ass", false, "analyze unrecognized ASS input explicitly")
 	primary := flags.String("renderer", "libass", "primary renderer: libass, xy-vsfilter, or vsfiltermod")
 	modName := flags.String("mod-build", "unknown", "VSFilterMod capability: unknown, enabled, or disabled")
-	luaName := flags.String("lua-build", "unknown", "Lua capability: unknown, enabled, or disabled")
 	if err := flags.Parse(args); err != nil {
 		if err == flag.ErrHelp {
 			return 0
@@ -41,7 +40,7 @@ func runFonts(args []string, stdout, stderr io.Writer) int {
 		if f.Name == "font-dir" {
 			explicitDirectory = true
 		}
-		if f.Name == "mod-build" || f.Name == "lua-build" {
+		if f.Name == "mod-build" {
 			explicitBuild = true
 		}
 	})
@@ -56,15 +55,11 @@ func runFonts(args []string, stdout, stderr io.Writer) int {
 	if err != nil {
 		return fail(err)
 	}
-	lua, err := parseFeature(*luaName)
-	if err != nil {
-		return fail(err)
-	}
 	build := renderer.Build{}
 	if kind == renderer.VSFilterMod {
-		build = renderer.Build{Mod: mod, Lua: lua}
+		build = renderer.Build{Mod: mod}
 	} else if explicitBuild {
-		return fail(fmt.Errorf("--mod-build and --lua-build require --renderer=vsfiltermod"))
+		return fail(fmt.Errorf("--mod-build requires --renderer=vsfiltermod"))
 	}
 	profile, err := renderer.New(kind, build)
 	if err != nil {

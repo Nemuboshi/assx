@@ -1,8 +1,5 @@
 # Renderer-scoped lint validation
 
-Implementation: [Issue #21](https://github.com/Nemuboshi/assx/issues/21) of
-[Epic #16](https://github.com/Nemuboshi/assx/issues/16).
-
 ## Current API boundary
 
 `lint.AnalyzeForRenderer(dialogue, profile)` and
@@ -48,7 +45,7 @@ list to legalize VSFilterMod-only shapes.
   equal tracked state reports `equivalent` and emits no finding. Neither class
   asserts a proven incompatibility; **ASS003** reports those. Style field
   conversion evidence is recorded separately in
-  [the Style field matrix](ass-style-fields.xml). That matrix names each
+  [the Style field matrix](../rules/ass-style-fields.xml). That matrix names each
   conversion; it does not by itself resolve the observation.
 - Style value checks are separate from conversion evidence. **ASS011** reports a
   fractional integer field, **ASS012** reports a float-precision difference, and
@@ -59,14 +56,14 @@ list to legalize VSFilterMod-only shapes.
 - **ASS033** reports verified BorderStyle 3 box-scaling differences.
   **ASS034** reports the BorderStyle 4 mode difference.
   They compare declared ASS v4+ Styles only when the relevant resolved fields agree.
-  Their conditions and limits are in [the rule catalog](rules.md).
+  Their conditions and limits are in [the rule catalog](../rules/catalog.md).
   Both use separate IDs, physical field spans, and selected renderer pairs.
   Neither warning supplies edits or claims final pixel differences.
 - VSFilterMod's verified three-argument `\\pos` is allowed only in a build
   whose extension is enabled. Unknown build capabilities remain unresolved.
-  First-wins effects and reset/style provenance are produced by the P05
+  First-wins effects and reset/style provenance are produced by the
   semantic evaluator, with no alternate lint state engine.
-- Renderer-scoped **ASS030** reads the P05 `karaoke_cursor` state from the
+- Renderer-scoped **ASS030** reads the `karaoke_cursor` state from the
   same semantic observer used for other dialogue findings. It also requires
   source-verified signatures for every contributing karaoke tag. Partially
   consumed arguments (such as `\\k200junk`) and inferred-only VSFilterMod
@@ -81,16 +78,10 @@ ASS005 remains a portability lint for Mod-only names when the requested scope ex
 SafeFix edits or an edit safety classification**, including on shared
 document checks and the existing ASS006/ASS013/font APIs. Target-configured analysis supplies fixes only after proving every requested profile.
 Application recomputes authorized edits with that same primary and compatibility policy. Differential compatibility is provided separately by the
-[P07 comparison APIs](renderer-compatibility.md). Those APIs use ASS003 for
+[comparison APIs](compatibility.md). Those APIs use ASS003 for
 proven tag and layout differences, ASS033/ASS034 for the specific Style
 differences, and ASS031 for unresolved compatibility observations;
 invocation validity remains the responsibility of the APIs described here.
-
-## Implementation record: P06
-
-P06 added observation-only APIs while preserving the temporary default adapter.
-P10 removed that adapter and added CLI selection and target-configured fix application.
-The reviewed corrections are recorded in [contracts](renderer-contracts.md).
 
 ## Regression and performance
 

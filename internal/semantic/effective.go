@@ -259,16 +259,6 @@ func (m *evaluator) consumeTag(tag ass.Tag) TagEvent {
 	event.Renderer = m.profile.Kind()
 	event.Match, event.Signature, event.Shadowed = op.match, op.signature, op.shadowed
 	event.Citation = op.citation
-	// Lua globals can shadow core names before built-in dispatch.
-	if m.profile.Kind() == renderer.VSFilterMod && m.profile.Build().Lua != renderer.FeatureDisabled {
-		m.markActiveLive()
-		m.invalidateAll()
-		for _, slot := range []string{"position", "origin", "fade", "alignment", "clip_vector"} {
-			m.store.markUncertain(slot)
-		}
-		m.blockProofs(&event, UncertaintyRendererDependent)
-		return event
-	}
 	// Handle unclosed syntax before the unknown-name fast path to revoke prior proofs.
 	if op.unclosed {
 		m.markActiveLive()

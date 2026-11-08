@@ -12,7 +12,7 @@ import (
 func TestSafeFixRequestedTargetScope(t *testing.T) {
 	libass, _ := renderer.Standard(renderer.Libass)
 	xy, _ := renderer.Standard(renderer.XYVSFilter)
-	mod, _ := renderer.New(renderer.VSFilterMod, renderer.Build{Mod: renderer.FeatureEnabled, Lua: renderer.FeatureDisabled})
+	mod, _ := renderer.New(renderer.VSFilterMod, renderer.Build{Mod: renderer.FeatureEnabled})
 	doc := parseFontOverrideText(`{\fs21\fs21}A`)
 	cases := []AnalysisTargets{
 		{Primary: libass}, {Primary: xy}, {Primary: mod},
@@ -53,7 +53,7 @@ func TestSafeFixRejectsRehashedScopeTampering(t *testing.T) {
 		change func(*FixProof)
 	}{
 		{"version", func(p *FixProof) { p.Targets[0].Version = "stale" }},
-		{"capability", func(p *FixProof) { p.Targets[0].Capabilities.Lua = "disabled" }},
+		{"capability", func(p *FixProof) { p.Targets[0].Capabilities.VSFilterMod = "disabled" }},
 		{"target subset", func(p *FixProof) { p.Targets = p.Targets[:1] }},
 		{"edited hash", func(p *FixProof) { p.EditedSHA256 = hashSource("other") }},
 		{"interpretations", func(p *FixProof) { p.Interpretations = nil }},
@@ -90,13 +90,11 @@ func TestSafeFixRejectsRehashedScopeTampering(t *testing.T) {
 }
 
 func TestSafeFixModCapabilityMismatchAndUncertainty(t *testing.T) {
-	known, _ := renderer.New(renderer.VSFilterMod, renderer.Build{Mod: renderer.FeatureEnabled, Lua: renderer.FeatureDisabled})
+	known, _ := renderer.New(renderer.VSFilterMod, renderer.Build{Mod: renderer.FeatureEnabled})
 	doc := parseFontOverrideText(`{\fs21\fs21}A`)
 	ds := AnalyzeDocumentForTargets(doc, AnalysisTargets{Primary: known})
 	for _, build := range []renderer.Build{
-		{}, {Mod: renderer.FeatureEnabled},
-		{Mod: renderer.FeatureEnabled, Lua: renderer.FeatureEnabled},
-		{Mod: renderer.FeatureDisabled, Lua: renderer.FeatureDisabled},
+		{}, {Mod: renderer.FeatureDisabled},
 	} {
 		mod, err := renderer.New(renderer.VSFilterMod, build)
 		if err != nil {
@@ -107,7 +105,7 @@ func TestSafeFixModCapabilityMismatchAndUncertainty(t *testing.T) {
 			t.Fatalf("proof accepted different capability %v", build)
 		}
 		current := AnalyzeDocumentForTargets(doc, targets)
-		if build.Mod == renderer.FeatureUnknown || build.Lua != renderer.FeatureDisabled {
+		if build.Mod == renderer.FeatureUnknown {
 			safe, _, _ := CountFixes(current)
 			if safe != 0 {
 				t.Fatalf("uncertain build granted %d fixes", safe)
@@ -123,7 +121,7 @@ func TestSafeFixModCapabilityMismatchAndUncertainty(t *testing.T) {
 func TestTargetNormalizationIsDeterministic(t *testing.T) {
 	base := DefaultAnalysisTargets()
 	modUnknown, _ := renderer.Standard(renderer.VSFilterMod)
-	modKnown, _ := renderer.New(renderer.VSFilterMod, renderer.Build{Mod: renderer.FeatureEnabled, Lua: renderer.FeatureDisabled})
+	modKnown, _ := renderer.New(renderer.VSFilterMod, renderer.Build{Mod: renderer.FeatureEnabled})
 	a := AnalysisTargets{Primary: base.Primary, Compatibility: []renderer.Profile{modKnown, base.Primary, modUnknown, base.Compatibility[0], modKnown}}
 	b := AnalysisTargets{Primary: base.Primary, Compatibility: []renderer.Profile{base.Compatibility[0], modUnknown, modKnown}}
 	if !slices.Equal(a.Profiles(), b.Profiles()) || len(a.Profiles()) != 4 {

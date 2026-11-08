@@ -28,7 +28,6 @@ func parseSettings(raw jsontext.Value) (settings, error) {
 			CompatibilityRenderers []string `json:"compatibilityRenderers"`
 			VSFilterMod            struct {
 				Mod string `json:"mod"`
-				Lua string `json:"lua"`
 			} `json:"vsfilterMod"`
 			Rules map[string]struct {
 				Disabled bool          `json:"disabled"`
@@ -48,11 +47,7 @@ func parseSettings(raw jsontext.Value) (settings, error) {
 	if err != nil {
 		return settings{}, err
 	}
-	lua, err := parseFeature(config.VSFilterMod.Lua)
-	if err != nil {
-		return settings{}, err
-	}
-	build := renderer.Build{Mod: mod, Lua: lua}
+	build := renderer.Build{Mod: mod}
 	if config.PrimaryRenderer != "" {
 		result.Options.Targets.Primary, err = configuredProfile(config.PrimaryRenderer, build)
 		if err != nil {

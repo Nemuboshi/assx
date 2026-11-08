@@ -37,7 +37,7 @@ func profiles(t *testing.T) [3]Profile {
 	if err != nil {
 		t.Fatal(err)
 	}
-	mod, err := New(VSFilterMod, Build{Mod: FeatureEnabled, Lua: FeatureEnabled})
+	mod, err := New(VSFilterMod, Build{Mod: FeatureEnabled})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -146,11 +146,11 @@ func TestCapabilitiesNeverDefaultToEnabled(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	enabled, err := New(VSFilterMod, Build{Mod: FeatureEnabled, Lua: FeatureEnabled})
+	enabled, err := New(VSFilterMod, Build{Mod: FeatureEnabled})
 	if err != nil {
 		t.Fatal(err)
 	}
-	disabled, err := New(VSFilterMod, Build{Mod: FeatureDisabled, Lua: FeatureDisabled})
+	disabled, err := New(VSFilterMod, Build{Mod: FeatureDisabled})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -166,25 +166,6 @@ func TestCapabilitiesNeverDefaultToEnabled(t *testing.T) {
 		off := disabled.Resolve(e, source)
 		if off.Name == got.Name {
 			t.Errorf("%s disabled mod branch still selected: %+v", raw, off)
-		}
-	}
-	// RTS.cpp:2466-2520 gates global dispatch only on _LUA.
-	luaOnly, err := New(VSFilterMod, Build{Mod: FeatureDisabled, Lua: FeatureEnabled})
-	if err != nil {
-		t.Fatalf("independent Lua global dispatch capability rejected: %v", err)
-	}
-	luaExpr, luaSource := first(t, "\\lua(test)")
-	if result := luaOnly.Resolve(luaExpr, luaSource); result.Name == "lua" && result.Status == Matched {
-		t.Fatal("explicit lua command escaped its _VSMOD guard")
-	}
-	e, source := first(t, "\\lua(test)")
-	for _, build := range []Build{{Mod: FeatureEnabled, Lua: FeatureUnknown}, {Mod: FeatureUnknown, Lua: FeatureUnknown}} {
-		profile, err := New(VSFilterMod, build)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if profile.Resolve(e, source).Status != Conditional {
-			t.Errorf("Lua build %+v must remain conditional", build)
 		}
 	}
 }
@@ -262,7 +243,7 @@ func TestSignatureMetadataCannotPromoteConditionalGates(t *testing.T) {
 						continue
 					}
 					found = true
-					if !sig.Requires.Mod || sig.Requires.Lua {
+					if !sig.Requires.Mod {
 						t.Errorf("build=%d unexpected guards: %+v", state.build, sig)
 					}
 					if sig.Availability != state.availability {
@@ -304,29 +285,6 @@ func TestSignatureMetadataCannotPromoteConditionalGates(t *testing.T) {
 			if !found {
 				t.Errorf("missing core %s arity %d", core.tag, core.arity)
 			}
-		}
-	}
-}
-
-func TestCombinedBuildRequirements(t *testing.T) {
-	for _, tc := range []struct {
-		mod, lua Feature
-		want     SignatureAvailability
-	}{
-		{FeatureEnabled, FeatureEnabled, SignatureAvailable},
-		{FeatureEnabled, FeatureUnknown, SignatureConditional},
-		{FeatureUnknown, FeatureEnabled, SignatureConditional},
-		{FeatureUnknown, FeatureUnknown, SignatureConditional},
-		{FeatureDisabled, FeatureUnknown, SignatureUnavailable},
-		{FeatureUnknown, FeatureDisabled, SignatureUnavailable},
-		{FeatureEnabled, FeatureDisabled, SignatureUnavailable},
-	} {
-		profile, err := New(VSFilterMod, Build{Mod: tc.mod, Lua: tc.lua})
-		if err != nil {
-			t.Fatal(err)
-		}
-		if got := profile.signatureAvailability(requiresMod | requiresLua); got != tc.want {
-			t.Errorf("_VSMOD=%v _LUA=%v availability=%v want %v", tc.mod, tc.lua, got, tc.want)
 		}
 	}
 }
@@ -459,7 +417,7 @@ func TestMalformedSyntaxNeverBecomesProven(t *testing.T) {
 }
 
 func BenchmarkProfileDispatch(b *testing.B) {
-	profile, _ := New(VSFilterMod, Build{Mod: FeatureEnabled, Lua: FeatureEnabled})
+	profile, _ := New(VSFilterMod, Build{Mod: FeatureEnabled})
 	source := "{\\fsvp6\\pos(1,2,3)\\blend(add)}"
 	tree := ass.ParseConcreteDialogue(source)
 	e := *tree.Nodes[0].Block.Items[0].Expression

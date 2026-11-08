@@ -17,7 +17,7 @@ import (
 )
 
 // These are observations from main@6ba745336615f102d5de39f76550f0a45da7bbb6.
-// Update only under the review procedure in docs/renderer-contracts.md.
+// Update only under the review procedure in docs/architecture/contracts.md.
 // The snapshots are not specifications for actual renderer behavior.
 const baselineCommit = "6ba745336615f102d5de39f76550f0a45da7bbb6"
 
@@ -295,7 +295,7 @@ func TestRendererBaselineContracts(t *testing.T) {
 }
 
 func TestBaselinePinnedCommitIsDocumented(t *testing.T) {
-	doc, err := os.ReadFile(filepath.Join("..", "..", "docs", "renderer-contracts.md"))
+	doc, err := os.ReadFile(filepath.Join("..", "..", "docs", "architecture", "contracts.md"))
 	if err != nil {
 		t.Fatal(err)
 	}

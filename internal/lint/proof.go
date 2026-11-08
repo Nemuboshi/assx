@@ -24,7 +24,6 @@ type FixEditProof struct {
 
 type ProofCapabilities struct {
 	VSFilterMod string `json:"vsfiltermod"`
-	Lua         string `json:"lua"`
 }
 
 type FixTarget struct {
@@ -91,9 +90,9 @@ func fixTargets(profiles []renderer.Profile) []FixTarget {
 
 func proofCapabilities(kind renderer.Kind, build renderer.Build) ProofCapabilities {
 	if kind != renderer.VSFilterMod {
-		return ProofCapabilities{VSFilterMod: "not-applicable", Lua: "not-applicable"}
+		return ProofCapabilities{VSFilterMod: "not-applicable"}
 	}
-	return ProofCapabilities{VSFilterMod: featureName(build.Mod), Lua: featureName(build.Lua)}
+	return ProofCapabilities{VSFilterMod: featureName(build.Mod)}
 }
 
 func featureName(feature renderer.Feature) string {
@@ -605,7 +604,7 @@ func profilesFromProof(targets []FixTarget) ([]renderer.Profile, error) {
 
 func parseProofCapabilities(kind renderer.Kind, capabilities ProofCapabilities) (renderer.Build, error) {
 	if kind != renderer.VSFilterMod {
-		if capabilities != (ProofCapabilities{VSFilterMod: "not-applicable", Lua: "not-applicable"}) {
+		if capabilities != (ProofCapabilities{VSFilterMod: "not-applicable"}) {
 			return renderer.Build{}, fmt.Errorf("features do not apply to this renderer")
 		}
 		return renderer.Build{}, nil
@@ -614,11 +613,7 @@ func parseProofCapabilities(kind renderer.Kind, capabilities ProofCapabilities) 
 	if err != nil {
 		return renderer.Build{}, err
 	}
-	lua, err := parseFeatureName(capabilities.Lua)
-	if err != nil {
-		return renderer.Build{}, err
-	}
-	return renderer.Build{Mod: mod, Lua: lua}, nil
+	return renderer.Build{Mod: mod}, nil
 }
 
 func parseFeatureName(name string) (renderer.Feature, error) {

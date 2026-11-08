@@ -85,7 +85,7 @@ func marshalJSON(t *testing.T, value any) string {
 // threeProfileTargets adds a VSFilterMod build beside the default targets.
 func threeProfileTargets(t *testing.T) AnalysisTargets {
 	t.Helper()
-	mod, err := renderer.New(renderer.VSFilterMod, renderer.Build{Mod: renderer.FeatureEnabled, Lua: renderer.FeatureDisabled})
+	mod, err := renderer.New(renderer.VSFilterMod, renderer.Build{Mod: renderer.FeatureEnabled})
 	if err != nil {
 		t.Fatal(err)
 	}

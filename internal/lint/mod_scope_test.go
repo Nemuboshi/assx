@@ -31,7 +31,7 @@ func TestP09PreservesDefaultModValueValidation(t *testing.T) {
 }
 
 func TestP09ModOrthoFallbackIsNotOutOfRange(t *testing.T) {
-	profile, err := renderer.New(renderer.VSFilterMod, renderer.Build{Mod: renderer.FeatureEnabled, Lua: renderer.FeatureDisabled})
+	profile, err := renderer.New(renderer.VSFilterMod, renderer.Build{Mod: renderer.FeatureEnabled})
 	if err != nil {
 		t.Fatal(err)
 	}

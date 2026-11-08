@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ass-tags.xsl — presentation layer for docs/ass-tags.xml.
+  ass-tags.xsl — presentation layer for docs/rules/ass-tags.xml.
 
   Data lives only in the XML; this file holds no behavior claims. Referenced by
   <?xml-stylesheet?> in ass-tags.xml. Browsers will not fetch this stylesheet
@@ -8,9 +8,9 @@
   export. Regenerate after editing the XML, from the repo root:
 
     $x = New-Object System.Xml.Xsl.XslCompiledTransform
-    $x.Load('docs/ass-tags.xsl'); $x.Transform('docs/ass-tags.xml', 'docs/ass-tags.html')
+    $x.Load('docs/rules/ass-tags.xsl'); $x.Transform('docs/rules/ass-tags.xml', 'docs/rules/ass-tags.html')
 
-  docs/ass-tags.html is gitignored: the XML is the source, the HTML is a view.
+  docs/rules/ass-tags.html is gitignored: the XML is the source, the HTML is a view.
 -->
 <xsl:stylesheet version="1.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"

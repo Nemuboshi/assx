@@ -59,7 +59,7 @@ var styleMatrixRenderers = []string{"libass", "xy", "vsm"}
 
 func loadStyleMatrix(t *testing.T) *styleMatrixXML {
 	t.Helper()
-	path := filepath.Join("..", "..", "..", "docs", "ass-style-fields.xml")
+	path := filepath.Join("..", "..", "..", "docs", "rules", "ass-style-fields.xml")
 	data, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatalf("matrix file %s: %v", path, err)

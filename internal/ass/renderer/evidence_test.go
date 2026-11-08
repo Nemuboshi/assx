@@ -20,7 +20,7 @@ func repoFile(parts ...string) string {
 }
 
 func TestGeneratedMatrixHasNoEvidenceDrift(t *testing.T) {
-	data, err := os.ReadFile(repoFile("docs", "ass-tags.xml"))
+	data, err := os.ReadFile(repoFile("docs", "rules", "ass-tags.xml"))
 	if err != nil {
 		t.Fatal(err)
 	}

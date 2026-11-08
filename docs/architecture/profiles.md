@@ -1,7 +1,5 @@
 # Pinned renderer profiles and source-backed dispatch
 
-Implementation: [Issue #19](https://github.com/Nemuboshi/assx/issues/19), under [Epic #16](https://github.com/Nemuboshi/assx/issues/16).
-
 ## Package and ownership
 
 The isolated package at internal/ass/renderer consumes the lossless
@@ -61,7 +59,7 @@ Without that declaration, unlisted forms remain SignatureUnknown, not
 SignatureRejected. The rejection algorithm additionally requires every
 build-applicable signature to be verified and no conditional signature to
 remain unresolved. A verified signature is *not* proof that its effect is
-understood or that an edit is SafeFix; those decisions belong to P05/P07/P08.
+understood or that an edit is SafeFix; those decisions belong to the semantic evaluator and the comparison APIs.
 
 ## Dispatch mechanics
 
@@ -78,14 +76,12 @@ The command fad is handled by an exact apply branch without a normalization
 arm. The fallback counter does not stop the exact apply chain.
 A bogus inline fad suffix must not be accepted as an alternate form.
 
-VSFilterMod extensions gated by _VSMOD require explicit compile-time capabilities.
-The explicit lua command requires both _VSMOD and _LUA.
-User-defined global dispatch requires only _LUA and can shadow core names.
-Thus _LUA can remain enabled when _VSMOD is disabled.
-Enabled or unknown _LUA blocks built-in semantic proofs without a verified global environment. The default
-Build represents unknown capabilities, even for a VSFilterMod profile.
+VSFilterMod extensions gated by _VSMOD require an explicit enabled capability.
+The explicit lua command is a Mod name with an unmodeled effect.
+The default Build is unknown, even for a VSFilterMod profile.
 An unknown optional branch records the candidate and its disabled-build
 fallback instead of pretending to know which parser was compiled.
+See [build capabilities](#vsfiltermod-build-capabilities).
 
 The normalized command is distinguished from the original raw lexeme:
 
@@ -98,7 +94,37 @@ The normalized command is distinguished from the original raw lexeme:
 
 The CLI selects profiles with `--renderer` and `--compat`.
 Mod capabilities remain unknown unless explicitly selected.
-See [usage](../README.md) and [contracts](renderer-contracts.md).
+See [usage](../../README.md) and [the evidence contract](contracts.md).
+
+## VSFilterMod build capabilities
+
+`_VSMOD` enables the Mod extensions. assx models only that gate:
+
+| `_VSMOD` | Dispatch |
+| --- | --- |
+| off | xy-VSFilter |
+| on | Mod extensions |
+| unknown | conditional signatures, blocked proofs |
+
+An unknown gate keeps its signatures conditional and records the disabled-build
+fallback. Known and unknown states never default to enabled.
+See [semantics](semantics.md) and [lint](lint.md).
+
+The pinned project defines `_LUA` in every configuration. A Lua build needs
+`_VSMOD`: `CSimpleTextSubtitle` inherits `CMyLua` only when both gates are
+defined (src/subtitles/STS.h:332-336), and `ParseSSATag` calls a `CMyLua`
+method under `_LUA` alone (src/subtitles/RTS.cpp:2466-2520). All eight pinned
+project configurations define both gates.
+
+The gate compiles Lua code, but the pinned source loads no script. The only
+`luaL_dofile` call is in `CMyLua::LoadLuaFile` (src/subtitles/STS.cpp:1404),
+and only a UUE text resource reaches it (STS.cpp:1746). No format entry or
+playback setting calls that loader. Without a script, no global exists and
+`\lua` has no effect.
+
+assx does not model Lua. A loaded script could define a global with any name
+and shadow any command, so those cases would not end. No flag and no editor
+setting selects the gate. This scope limit is deliberate.
 
 ## Evidence pipeline and verification
 
@@ -125,14 +151,7 @@ tables synchronized with those tests when pinned code changes. Run:
     go test -race ./internal/ass/renderer/...
     go vet ./...
 
-The exact current source contradicts a previous XML statement that VSFilterMod
-blend is shadowed by be. The string blend begins with bl, so the be check
-cannot match. blend is checked before the generic b branch and has a reachable
-apply branch (RTS.cpp:2551, 3716–3730). XML name-match evidence is corrected
-in this PR. Both traditional renderers recognize the shorter b prefix.
-## Implementation record: P04
-
-P04 corrected the blend/be evidence without changing the then-default adapter.
-P05 added resolved evaluation. P06 added scoped validity. P08 added edit proofs.
-P10 removed the adapter and integrated profile selection with the default CLI.
-Current reviewed snapshot changes are recorded in [contracts](renderer-contracts.md).
+The string `blend` begins with `bl`, so the `be` check cannot match it.
+`blend` is checked before the generic `b` branch and has a reachable apply
+branch (`RTS.cpp:2551, 3716–3730`). Both traditional renderers recognize the
+shorter `b` prefix.

@@ -82,7 +82,7 @@ func TestHoverUsesPinnedRendererEvidenceAndIgnoresPlainText(t *testing.T) {
 	if err != nil || hover == nil || !strings.Contains(hover.Contents.Value, "libass@") || !strings.Contains(hover.Contents.Value, "rejected") {
 		t.Fatalf("libass hover = %+v, %v", hover, err)
 	}
-	configured, err := parseSettings(jsontext.Value(`{"assx":{"primaryRenderer":"vsfiltermod","compatibilityRenderers":[],"vsfilterMod":{"mod":"enabled","lua":"disabled"}}}`))
+	configured, err := parseSettings(jsontext.Value(`{"assx":{"primaryRenderer":"vsfiltermod","compatibilityRenderers":[],"vsfilterMod":{"mod":"enabled"}}}`))
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -20,16 +20,14 @@ func TestRendererTargetCLI(t *testing.T) {
 		{"explicit primary", []string{"--renderer=libass"}, []string{"libass"}},
 		{"single dash primary", []string{"-renderer", "libass"}, []string{"libass"}},
 		{"single dash empty compat", []string{"-compat="}, []string{"libass"}},
-		{"single dash Mod", []string{"-renderer=vsfiltermod", "-mod-build", "enabled", "-lua-build=disabled"}, []string{"VSFilterMod"}},
+		{"single dash Mod", []string{"-renderer=vsfiltermod", "-mod-build", "enabled"}, []string{"VSFilterMod"}},
 		{"explicit empty compat", []string{"--compat="}, []string{"libass"}},
 		{"xy primary", []string{"--renderer", "xy-vsfilter"}, []string{"xy-VSFilter"}},
 		{"normalized union", []string{"--renderer=xy-vsfilter", "--compat=xy-vsfilter,libass,libass"}, []string{"libass", "xy-VSFilter"}},
 		{"Mod unknown", []string{"--renderer=vsfiltermod"}, nil},
-		{"Mod known", []string{"--renderer=vsfiltermod", "--mod-build=enabled", "--lua-build=disabled"}, []string{"VSFilterMod"}},
+		{"Mod known", []string{"--renderer=vsfiltermod", "--mod-build=enabled"}, []string{"VSFilterMod"}},
 		{"Mod compatibility unknown", []string{"--compat=vsfiltermod"}, nil},
-		{"Mod Lua scripted", []string{"--renderer=vsfiltermod", "--mod-build=enabled", "--lua-build=enabled"}, nil},
-		{"Lua without Mod extensions", []string{"--renderer=vsfiltermod", "--mod-build=disabled", "--lua-build=enabled"}, nil},
-		{"Mod compatibility known", []string{"--compat=vsfiltermod", "--mod-build=enabled", "--lua-build=disabled"}, []string{"libass", "VSFilterMod"}},
+		{"Mod compatibility known", []string{"--compat=vsfiltermod", "--mod-build=enabled"}, []string{"libass", "VSFilterMod"}},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			path := writeRendererFixture(t, `{\fs10\fs21}x`)
@@ -53,7 +51,7 @@ func TestRendererTargetCLI(t *testing.T) {
 			}
 			if tc.want == nil {
 				if proof != nil {
-					t.Fatal("uncertain Mod or Lua scope authorized a fix")
+					t.Fatal("uncertain Mod scope authorized a fix")
 				}
 				before, err := os.ReadFile(path)
 				if err != nil {
@@ -81,7 +79,7 @@ func TestRendererTargetCLI(t *testing.T) {
 					t.Fatalf("target %d = %s", i, proof.Targets[i].Renderer)
 				}
 			}
-			if tc.name == "Mod known" && (proof.Targets[0].Capabilities.VSFilterMod != "enabled" || proof.Targets[0].Capabilities.Lua != "disabled") {
+			if tc.name == "Mod known" && (proof.Targets[0].Capabilities.VSFilterMod != "enabled") {
 				t.Fatalf("capabilities = %v", proof.Targets[0].Capabilities)
 			}
 			out.Reset()
@@ -103,9 +101,11 @@ func TestRendererTargetCLI(t *testing.T) {
 func TestRendererCLIUsageErrors(t *testing.T) {
 	for _, args := range [][]string{
 		{"--renderer=other"}, {"--compat=libass,,xy-vsfilter"}, {"--compat=other"},
-		{"--mod-build=enabled"}, {"--lua-build=unknown"},
-		{"--renderer=vsfiltermod", "--mod-build=bad"}, {"--renderer=vsfiltermod", "--lua-build=bad"},
-		{"-renderer", "invalid"}, {"-compat=invalid"}, {"-mod-build=enabled"}, {"-lua-build=disabled"},
+		{"--mod-build=enabled"},
+		{"--renderer=vsfiltermod", "--mod-build=bad"},
+		{"--renderer=vsfiltermod", "--mod-build=disabled"},
+		{"-renderer", "invalid"}, {"-compat=invalid"}, {"-mod-build=enabled"},
+		{"--lua-build=disabled"}, {"-lua-build=disabled"}, {},
 	} {
 		t.Run(strings.Join(args, " "), func(t *testing.T) {
 			var out, errOut strings.Builder
@@ -118,7 +118,7 @@ func TestRendererCLIUsageErrors(t *testing.T) {
 	if code := run([]string{"--help"}, &out, &errOut); code != 0 {
 		t.Fatalf("help exit %d", code)
 	}
-	for _, flag := range []string{"--renderer", "--compat", "--mod-build", "--lua-build"} {
+	for _, flag := range []string{"--renderer", "--compat", "--mod-build"} {
 		if !strings.Contains(errOut.String(), flag) {
 			t.Errorf("help omits %s", flag)
 		}
@@ -132,7 +132,7 @@ func TestPrimaryValidityAndCompatibilityScopes(t *testing.T) {
 		wantError bool
 	}{
 		{nil, true}, {[]string{"--renderer=libass", "--compat=vsfiltermod"}, true},
-		{[]string{"--renderer=vsfiltermod", "--compat=libass", "--mod-build=enabled", "--lua-build=disabled"}, false},
+		{[]string{"--renderer=vsfiltermod", "--compat=libass", "--mod-build=enabled"}, false},
 	} {
 		var out, errOut strings.Builder
 		code := run(append(append([]string{"--format=json"}, tc.args...), path), &out, &errOut)

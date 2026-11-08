@@ -1,7 +1,5 @@
 # Snapshot analysis
 
-Issue: [#42](https://github.com/Nemuboshi/assx/issues/42)
-
 `internal/analysis` owns one analysis request. It keeps the snapshot, the
 selected targets and rule policy, and the `internal/lint` session. Font
 discovery, source decoding, encoding, reports, and flags stay with their
@@ -11,7 +9,7 @@ The package direction is fixed: `cmd/assx` calls `internal/analysis`,
 `internal/analysis` calls `internal/lint`, `internal/lint` calls
 `internal/semantic` and `internal/ass`. `internal/analysis` holds no ASS
 syntax, no rule policy, and no edit code. It does not implement input
-classification (issue #40) or an LSP transport.
+classification or an LSP transport.
 
 ## Types
 
@@ -76,7 +74,7 @@ and rule policy. Before it writes anything it checks that every SafeFix
 finding matches a stored session candidate, re-verifies each proof against
 the current source, and keeps the combined-group check for multi-group
 input. It rejects changed edits, foreign candidates, and incomplete proof
-groups. UnsafeFix findings apply only with `includeUnsafe`, as today.
+groups. UnsafeFix findings apply only with `includeUnsafe`.
 
 ## Cancellation
 
@@ -87,28 +85,16 @@ before each proof build; a canceled `ProveFixes` returns no diagnostics, so
 no partial proof output is visible. A canceled request never damages an
 existing `Result`: a later request on the same result still works.
 
-## CLI adapter
+## CLI use
 
 `cmd/assx` builds a snapshot from the decoded source text and passes its
 parsed targets as explicit options. Reports, `--fix` file writes, the
-lossless round-trip refusal, summaries, and exit status are unchanged. The
-default CLI runs `Analyze` plus `Diagnostics`, which reproduces the eager
-diagnostic bytes.
+lossless round-trip refusal, summaries, and exit status belong to the CLI.
+See [usage](../../README.md).
 
-## LSP diagnostics
+## LSP use
 
-`internal/lsp` analyzes the current in-memory document after open and change
-notifications. It uses the shared snapshot API and does not prove fixes while
-it publishes diagnostics. It maps source byte spans to UTF-16 ranges.
-
-The server clears diagnostics when a document closes or ASS recognition rejects
-its current text. Settings select the primary renderer, compatibility targets,
-VSFilterMod build gates, and rule policy. Invalid settings keep the last valid
-selection. The server does not add font findings to static diagnostics.
-
-The server gives each published diagnostic an identity bound to document text,
-version, and settings generation. A code action accepts only a current identity
-from a recognized ASS document. It proves the candidate on demand and checks
-the fixed text before it offers a versioned editor edit. The server does not
-change the document or a file. Clients without versioned document edits do not
-receive code actions.
+`internal/lsp` analyzes the current in-memory document through the same
+snapshot API and does not prove fixes while it publishes diagnostics.
+Transport, settings validation, and code-action delivery belong to
+[LSP usage](../usage/lsp.md).

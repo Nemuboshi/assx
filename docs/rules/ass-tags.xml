@@ -40,8 +40,8 @@
   set for those renderers. Verified signatures alone are not an exhaustive
   proof: scalar handlers may ignore surplus values or consume empty input.
   Missing or inferred completeness evidence must prevent SignatureRejected.
-  Optional requires="_VSMOD" (or "_VSMOD _LUA") binds validity of an
-  individual signature to compile-time guards rather than command dispatch.
+  Optional requires="_VSMOD" binds validity of an individual signature to the
+  compile-time Mod gate rather than command dispatch.
   For <scen>, requires guards only the VSFilterMod outcome, including
   optional behavior inside an otherwise core command. Disabled or unknown
   guards cannot inherit the enabled branch's verified outcome.
@@ -1326,7 +1326,7 @@
     Random effects, distortion, jitter, and complex movement remain unmodeled.
     xblur/yblur are ungated in Mod and overlap the blur axis fields.
     Their overlap is not yet modeled. blend remains a barrier because mixer paths differ.
-    Explicit lua requires _VSMOD and _LUA. User-defined global dispatch needs only _LUA.
-    Globals can shadow core names before normalization (RTS.cpp:2466-2520).
+    Explicit lua requires both _VSMOD and _LUA. Lua globals can shadow core names
+    before normalization (RTS.cpp:2466-2520). assx does not model Lua.
   </taggroup>
 </matrix>

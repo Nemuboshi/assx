@@ -137,8 +137,8 @@ type proofAfterKey struct {
 // identical failures and accepted proofs keep identical identity bytes.
 func (b *proofBatch) build(edits []FixEditProof, validEdits map[FixEditProof]struct{}) (*FixProof, error) {
 	for _, profile := range b.profiles {
-		if profile.Kind() == renderer.VSFilterMod && (profile.Build().Mod == renderer.FeatureUnknown || profile.Build().Lua != renderer.FeatureDisabled) {
-			return nil, fmt.Errorf("VSFilterMod proof requires a known Mod capability and disabled Lua")
+		if profile.Kind() == renderer.VSFilterMod && profile.Build().Mod == renderer.FeatureUnknown {
+			return nil, fmt.Errorf("VSFilterMod proof requires a known Mod capability")
 		}
 	}
 	if len(b.profiles) == 0 {

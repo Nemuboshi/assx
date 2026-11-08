@@ -58,7 +58,7 @@ func canonicalNewlines(data []byte) []byte {
 func run() error {
 	check := flag.Bool("check", false, "fail if generated output is stale")
 	flag.Parse()
-	input := filepath.Join("..", "..", "..", "docs", "ass-style-fields.xml")
+	input := filepath.Join("..", "..", "..", "docs", "rules", "ass-style-fields.xml")
 	data, err := os.ReadFile(input)
 	if err != nil {
 		return err

@@ -2,14 +2,13 @@ package renderer
 
 //go:generate go run ./cmd/genmatrix
 
-// Signature metadata is generated from docs/ass-tags.xml. Its verification
+// Signature metadata is generated from docs/rules/ass-tags.xml. Its verification
 // scope is distinct from its declared applicability; an inferred signature
 // must never become a proof of validity or safe rewriting.
 type featureMask uint8
 
 const (
 	requiresMod featureMask = 1 << iota // _VSMOD
-	requiresLua                         // _LUA, meaningful only with _VSMOD
 )
 
 type generatedSignature struct {

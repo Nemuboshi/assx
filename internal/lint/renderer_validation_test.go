@@ -20,11 +20,11 @@ func scopedProfiles(t *testing.T) (renderer.Profile, renderer.Profile, renderer.
 	if err != nil {
 		t.Fatal(err)
 	}
-	enabled, err := renderer.New(renderer.VSFilterMod, renderer.Build{Mod: renderer.FeatureEnabled, Lua: renderer.FeatureDisabled})
+	enabled, err := renderer.New(renderer.VSFilterMod, renderer.Build{Mod: renderer.FeatureEnabled})
 	if err != nil {
 		t.Fatal(err)
 	}
-	unknown, err := renderer.New(renderer.VSFilterMod, renderer.Build{Mod: renderer.FeatureUnknown, Lua: renderer.FeatureDisabled})
+	unknown, err := renderer.New(renderer.VSFilterMod, renderer.Build{Mod: renderer.FeatureUnknown})
 	if err != nil {
 		t.Fatal(err)
 	}

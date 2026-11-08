@@ -38,10 +38,9 @@ const (
 	FeatureEnabled
 )
 
-// Build models the independent optional VSFilterMod compile-time gates.
+// Build models the optional VSFilterMod compile-time gate.
 type Build struct {
 	Mod Feature // _VSMOD
-	Lua Feature // _LUA global dispatch; explicit lua also requires _VSMOD
 }
 
 // Profiles have value semantics. Shared tables are private and read-only.
@@ -54,7 +53,7 @@ func New(kind Kind, build Build) (Profile, error) {
 	if kind > VSFilterMod {
 		return Profile{}, fmt.Errorf("unknown renderer %d", kind)
 	}
-	if build.Mod > FeatureEnabled || build.Lua > FeatureEnabled {
+	if build.Mod > FeatureEnabled {
 		return Profile{}, fmt.Errorf("unknown build capability")
 	}
 	if kind != VSFilterMod && build != (Build{}) {
@@ -123,7 +122,6 @@ const (
 // FeatureRequirements describes the guards associated with one signature.
 type FeatureRequirements struct {
 	Mod bool // _VSMOD
-	Lua bool // _LUA; signatures can independently require _VSMOD
 }
 
 type Signature struct {
@@ -182,7 +180,7 @@ func (p Profile) Signatures(name string) []Signature {
 		out = append(out, Signature{
 			Count: s.count, Form: s.form, Evidence: evidence,
 			Availability: availability,
-			Requires:     FeatureRequirements{Mod: s.requires&requiresMod != 0, Lua: s.requires&requiresLua != 0},
+			Requires:     FeatureRequirements{Mod: s.requires&requiresMod != 0},
 			Citation:     s.citation,
 		})
 	}
@@ -195,22 +193,13 @@ func (p Profile) signatureAvailability(requires featureMask) SignatureAvailabili
 	if requires == 0 {
 		return SignatureAvailable
 	}
-	result := SignatureAvailable
-	for _, feature := range []struct {
-		mask  featureMask
-		state Feature
-	}{{requiresMod, p.build.Mod}, {requiresLua, p.build.Lua}} {
-		if requires&feature.mask == 0 {
-			continue
-		}
-		switch feature.state {
-		case FeatureDisabled:
-			return SignatureUnavailable
-		case FeatureUnknown:
-			result = SignatureConditional
-		}
+	switch p.build.Mod {
+	case FeatureDisabled:
+		return SignatureUnavailable
+	case FeatureUnknown:
+		return SignatureConditional
 	}
-	return result
+	return SignatureAvailable
 }
 
 func bit(k Kind) uint8 { return 1 << k }

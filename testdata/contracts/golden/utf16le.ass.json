@@ -543,7 +543,7 @@
         "suggested_fix": "Remove it or move it to the intended text boundary.",
         "fix_safety": "safe",
         "fix_proof": {
-          "id": "1db0b26d5ea56bc0553858676fb8e5d08139fa45626c2c607f47237bdff14078",
+          "id": "0d269c645792b8482c91d8e6b482de9ef11a1bfaafb5fb881b833d874b72b4f3",
           "source_sha256": "26de9d5eae6d7377c54b7e7a87db22da799e7f33bcbafb36625ebba26bb1f21c",
           "edited_sha256": "5aa011d0e8f2d40b9f79464d98999ca523e108b7c08af58a2221be84aed1cc8f",
           "source_edits": [
@@ -561,16 +561,14 @@
               "renderer": "libass",
               "version": "f61db567e6593df3470e91594bcd4ad2d0473aff",
               "capabilities": {
-                "vsfiltermod": "not-applicable",
-                "lua": "not-applicable"
+                "vsfiltermod": "not-applicable"
               }
             },
             {
               "renderer": "xy-VSFilter",
               "version": "135a30153a38fa846cb5c39df0f258403e92096e",
               "capabilities": {
-                "vsfiltermod": "not-applicable",
-                "lua": "not-applicable"
+                "vsfiltermod": "not-applicable"
               }
             }
           ],
@@ -580,8 +578,7 @@
                 "renderer": "libass",
                 "version": "f61db567e6593df3470e91594bcd4ad2d0473aff",
                 "capabilities": {
-                  "vsfiltermod": "not-applicable",
-                  "lua": "not-applicable"
+                  "vsfiltermod": "not-applicable"
                 }
               },
               "dialogues": [
@@ -760,8 +757,7 @@
                 "renderer": "xy-VSFilter",
                 "version": "135a30153a38fa846cb5c39df0f258403e92096e",
                 "capabilities": {
-                  "vsfiltermod": "not-applicable",
-                  "lua": "not-applicable"
+                  "vsfiltermod": "not-applicable"
                 }
               },
               "dialogues": [
@@ -1026,7 +1022,7 @@
         "suggested_fix": "Remove it or move it to the intended text boundary.",
         "fix_safety": "safe",
         "fix_proof": {
-          "id": "1db0b26d5ea56bc0553858676fb8e5d08139fa45626c2c607f47237bdff14078",
+          "id": "0d269c645792b8482c91d8e6b482de9ef11a1bfaafb5fb881b833d874b72b4f3",
           "source_sha256": "26de9d5eae6d7377c54b7e7a87db22da799e7f33bcbafb36625ebba26bb1f21c",
           "edited_sha256": "5aa011d0e8f2d40b9f79464d98999ca523e108b7c08af58a2221be84aed1cc8f",
           "source_edits": [
@@ -1044,16 +1040,14 @@
               "renderer": "libass",
               "version": "f61db567e6593df3470e91594bcd4ad2d0473aff",
               "capabilities": {
-                "vsfiltermod": "not-applicable",
-                "lua": "not-applicable"
+                "vsfiltermod": "not-applicable"
               }
             },
             {
               "renderer": "xy-VSFilter",
               "version": "135a30153a38fa846cb5c39df0f258403e92096e",
               "capabilities": {
-                "vsfiltermod": "not-applicable",
-                "lua": "not-applicable"
+                "vsfiltermod": "not-applicable"
               }
             }
           ],
@@ -1063,8 +1057,7 @@
                 "renderer": "libass",
                 "version": "f61db567e6593df3470e91594bcd4ad2d0473aff",
                 "capabilities": {
-                  "vsfiltermod": "not-applicable",
-                  "lua": "not-applicable"
+                  "vsfiltermod": "not-applicable"
                 }
               },
               "dialogues": [
@@ -1243,8 +1236,7 @@
                 "renderer": "xy-VSFilter",
                 "version": "135a30153a38fa846cb5c39df0f258403e92096e",
                 "capabilities": {
-                  "vsfiltermod": "not-applicable",
-                  "lua": "not-applicable"
+                  "vsfiltermod": "not-applicable"
                 }
               },
               "dialogues": [

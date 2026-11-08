@@ -1,11 +1,8 @@
 # Renderer-scoped effective semantics
 
-Implementation: [Issue #20](https://github.com/Nemuboshi/assx/issues/20) in
-[Epic #16](https://github.com/Nemuboshi/assx/issues/16). This builds on the
-independent syntax and source-backed dispatch delivered in P02–P04.
-
 ## Evaluation boundary
 
+It uses the independent syntax and source-backed dispatch.
 A single state engine in `internal/semantic` evaluates commands for one
 renderer at a time. `EvaluateResolved` consumes a renderer-neutral
 `ass.ConcreteDialogue` and a pinned `renderer.Profile`; it never assigns
@@ -27,6 +24,24 @@ has already been resolved. Semantic canonicalization, assignment handlers,
 and transform comparison receive this policy explicitly, without looking
 up a second, potentially different tag identity.
 
+## Evaluation API
+
+`TagSpec` owns the static `SemanticKind` dispatch policy. Declared value kinds,
+affected slots, and precedence rules cover generic assignments. A small set of
+special forms uses `internal/semantic/handlers.go`: transforms, clipping, Style
+resets, karaoke, drawing mode, and relative font sizes. `TransformComparable`
+declares the transform targets eligible for no-effect comparison without a
+separate tag-name whitelist.
+
+`Observer.Tag` receives a `TagEvent` after each tag transition: assignment
+policy, affected slots, values before and after, and whether the interpretation
+was known. `Observer.Text` receives effective state at each text boundary.
+`StateView.Value(slot)` and `StateView.Source(slot)` return the active value and
+the proven source-tag index. A negative index denotes a Style value, a default,
+or an unprovable source. Views and slices are borrowed for the callback.
+`SkipNoEffectProofs` reads the state stream without allocating no-effect
+provenance and liveness results.
+
 ## Known state and uncertainty
 
 Match status, verified argument shapes, and modeled state are separate:
@@ -45,15 +60,15 @@ Match status, verified argument shapes, and modeled state are separate:
   state transitions. Name-unknown or explicitly ignored commands remain
   distinguishable in TagEvent resolution metadata.
 - VSFilterMod `\z`, `\frs`, `\fsvp`, `\fshp`, and `\ortho` have modeled
-  state for verified signatures when `_VSMOD` is enabled and Lua is disabled.
+  state for verified signatures when `_VSMOD` is enabled.
   Bare forms restore the original Dialogue Style, not the active named reset Style.
   `\frs` truncates its value after multiplying by 10.
   The spacing tags multiply by 8. Depth `\z` multiplies by 80.
   These fields default to zero in each resolved Style. Caller maps stay unchanged.
   A missing Style does not supply known defaults.
   Surplus scalar arguments can reach the source handler, but their shapes remain unresolved here.
-- Lua globals run before built-in dispatch. Unknown or enabled `_LUA`
-  capabilities therefore block every tag, including core names.
+- Lua is not modeled. The pinned source compiles Lua code but loads no script
+  ([build capabilities](profiles.md#vsfiltermod-build-capabilities)).
 - Exact Mod `\fad` has no normalization branch, but its apply branch remains reachable.
   The unrecognized-tag counter does not stop dispatch (RTS.cpp:2668-2675,3055).
 - Malformed clip shapes invalidate both rectangle and vector clipping
@@ -69,12 +84,12 @@ capabilities cannot prove which command owns the position slot.
 
 ## Current VSFilterMod scope
 
-P09 Mod handlers use the P10 concrete/profile engine.
+VSFilterMod handlers use the same concrete/profile engine.
 The profile resolver selects Mod assignment metadata.
 Document consumers select target-specific Styles before evaluation adds Mod defaults.
 The default CLI uses libass validity and xy-VSFilter compatibility, not Mod semantics.
 
-The [matrix](ass-tags.xml) owns signatures and pinned source citations.
+The [tag matrix](../rules/ass-tags.xml) owns signatures and pinned source citations.
 `move` accepts exactly four or six non-empty arguments in all three targets.
 Eight arguments are rejected before the shared position latch can change.
 
@@ -90,12 +105,12 @@ Transforms remain conservative proof barriers in the new Mod scope.
 `frs` truncates after interpolation. Equal truncated destinations do not prove equal intermediate frames.
 Bare scalar resets and discrete ortho changes also remain conservative inside transforms.
 
-Complex movement, random effects, gradients, images, distortion, jitter, and Lua remain barriers.
+Complex movement, random effects, gradients, images, distortion, and jitter remain barriers.
 Complex movers can claim EF_MOVE, so later pos commands cannot invent latch ownership.
 `blend` remains unmodeled because its mixer paths differ. Traditional targets still match its `b` prefix.
 `xblur` and `yblur` remain barriers until their overlap with both `blur` axis fields is modeled.
 No Mod binary or pixel comparison was run. Recheck if pins, build flags,
-input signatures, Lua assumptions, or the modeled renderer fields change.
+input signatures, or the modeled renderer fields change.
 
 ## Current consumers
 
@@ -108,25 +123,23 @@ Consumers can request renderer-local observations:
 - `lint.AnalyzeRedundantStyleOverridesForRenderer` for ASS013;
 - `fontcheck.ExtractUsages` for font state, uncertainty, source spans, and drawing visibility.
 
-These observations carry no automatic edits. See [scoped lint](renderer-lint.md)
-for validity diagnostics, [compatibility](renderer-compatibility.md) for renderer
-comparison, and [contracts](renderer-contracts.md) for SafeFix proof scope.
+These observations carry no automatic edits. ASS006 owns tag-level no-effect
+diagnostics. ASS013 owns the grouping and edit policy for Style-equivalent
+runs. Both read this evaluator. Plain Dialogue lines bypass it.
+
+See [lint](lint.md)
+for validity diagnostics, [compatibility](compatibility.md) for renderer
+comparison, and [contracts](contracts.md) for SafeFix proof scope.
 An unmodeled extension remains a proof barrier.
 
 The CLI exposes `--renderer`, `--compat`, and explicit Mod build capabilities.
 JSON and both text presenters identify the pinned scope.
-See [usage](../README.md) and [reports](diagnostic-reports.md).
+See [usage](../../README.md) and [reports](../usage/diagnostic-reports.md).
 
-## Implementation record: P05
+## Representation and cost boundaries
 
-P05 preserved the then-default adapter while introducing resolved evaluation.
-P10 removed that adapter after targeted regressions and reviewed baseline corrections.
-
-## Implementation record: analysis and SafeFix performance
-
-The analysis and SafeFix performance work (#42, #57, #7) changed
-representation, not modeled semantics. Every consumer still calls
-`EvaluateResolved`, and validity, uncertainty, and proof barriers behave as
+Representation changed. Modeled semantics did not. Every consumer still
+calls `EvaluateResolved`. Validity, uncertainty, and proof barriers behave as
 the sections above describe.
 
 - Slot state is indexed by the modeled slot table, with maps as the fallback
@@ -144,17 +157,7 @@ Interpretation results, proof hashes, and `FixProof` bytes are unchanged.
 The after-trace digest cache keys on the edited text and the Dialogue Style,
 because a trace covers the interpreted Style: two dialogues that share a text
 under different Styles keep separate digests.
-Cost and benefit measurements are in [performance](performance.md).
-
-## Implementation record: unused helper removal
-
-At `85b236b`, `semantic.ParseHex`, `SameSlotValues`, and `SetSlotValues` had no callers, including tests.
-Go `deadcode` v0.52.0 with `-test ./...` and `gopls references` confirmed this on Windows/amd64 with Go 1.27.0.
-The cleanup removes these helpers without changing renderer behavior.
-Commit `ff992a7` replaced slot comparison with `evaluator.sameSlotValues`.
-Commit `5e58e05` replaced slot assignment with `slotStore.setAssigned`.
-This finding is source-verified for the default build at that revision.
-Check again if the source or build scope changes.
+Cost and benefit measurements are in [performance](../development/performance.md).
 
 ## Validation
 
@@ -175,3 +178,4 @@ go test ./internal/semantic -run '^$' -bench '^BenchmarkEvaluate(Resolved|Dialog
 The tests cover first-wins divergence, build capability uncertainty,
 prefix shadowing, nested transform resolution, clip provenance, style
 resets, font consumers, and the absence of single-profile SafeFix edits.
+

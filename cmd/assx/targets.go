@@ -9,7 +9,7 @@ import (
 	"assx/internal/lint"
 )
 
-func parseAnalysisTargets(flags *flag.FlagSet, primaryName, compatNames, modName, luaName string) (lint.AnalysisTargets, error) {
+func parseAnalysisTargets(flags *flag.FlagSet, primaryName, compatNames, modName string) (lint.AnalysisTargets, error) {
 	kind, err := parseRenderer(primaryName)
 	if err != nil {
 		return lint.AnalysisTargets{}, err
@@ -17,10 +17,6 @@ func parseAnalysisTargets(flags *flag.FlagSet, primaryName, compatNames, modName
 	mod, err := parseFeature(modName)
 	if err != nil {
 		return lint.AnalysisTargets{}, fmt.Errorf("invalid --mod-build %q: use unknown, enabled, or disabled", modName)
-	}
-	lua, err := parseFeature(luaName)
-	if err != nil {
-		return lint.AnalysisTargets{}, fmt.Errorf("invalid --lua-build %q: use unknown, enabled, or disabled", luaName)
 	}
 
 	explicitRenderer, explicitCompat, explicitBuild := false, false, false
@@ -30,7 +26,7 @@ func parseAnalysisTargets(flags *flag.FlagSet, primaryName, compatNames, modName
 			explicitRenderer = true
 		case "compat":
 			explicitCompat = true
-		case "mod-build", "lua-build":
+		case "mod-build":
 			explicitBuild = true
 		}
 	})
@@ -56,12 +52,12 @@ func parseAnalysisTargets(flags *flag.FlagSet, primaryName, compatNames, modName
 		includesMod = includesMod || target == renderer.VSFilterMod
 	}
 	if !includesMod && explicitBuild {
-		return lint.AnalysisTargets{}, fmt.Errorf("--mod-build and --lua-build require --renderer=vsfiltermod or --compat including vsfiltermod")
+		return lint.AnalysisTargets{}, fmt.Errorf("--mod-build requires --renderer=vsfiltermod or --compat including vsfiltermod")
 	}
 
 	build := renderer.Build{}
 	if kind == renderer.VSFilterMod {
-		build = renderer.Build{Mod: mod, Lua: lua}
+		build = renderer.Build{Mod: mod}
 	}
 	primary, err := renderer.New(kind, build)
 	if err != nil {
@@ -70,7 +66,7 @@ func parseAnalysisTargets(flags *flag.FlagSet, primaryName, compatNames, modName
 	targets := lint.AnalysisTargets{Primary: primary}
 	for _, target := range compatKinds {
 		if target == renderer.VSFilterMod {
-			profile, err := renderer.New(target, renderer.Build{Mod: mod, Lua: lua})
+			profile, err := renderer.New(target, renderer.Build{Mod: mod})
 			if err != nil {
 				return lint.AnalysisTargets{}, err
 			}

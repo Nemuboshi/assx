@@ -18,7 +18,7 @@ type AnalysisTargets struct {
 func (targets AnalysisTargets) Profiles() []renderer.Profile {
 	profiles := append([]renderer.Profile{targets.Primary}, targets.Compatibility...)
 	slices.SortFunc(profiles, func(a, b renderer.Profile) int {
-		return cmp.Or(cmp.Compare(a.Kind(), b.Kind()), cmp.Compare(a.Version(), b.Version()), cmp.Compare(a.Build().Mod, b.Build().Mod), cmp.Compare(a.Build().Lua, b.Build().Lua))
+		return cmp.Or(cmp.Compare(a.Kind(), b.Kind()), cmp.Compare(a.Version(), b.Version()), cmp.Compare(a.Build().Mod, b.Build().Mod))
 	})
 	return slices.CompactFunc(profiles, func(a, b renderer.Profile) bool {
 		return a == b
@@ -37,5 +37,5 @@ func ProfileScope(profile renderer.Profile) string {
 	if profile.Kind() != renderer.VSFilterMod {
 		return profile.Kind().String() + "@" + profile.Version()
 	}
-	return profile.Kind().String() + "@" + profile.Version() + " (_VSMOD=" + featureName(profile.Build().Mod) + ", _LUA=" + featureName(profile.Build().Lua) + ")"
+	return profile.Kind().String() + "@" + profile.Version() + " (_VSMOD=" + featureName(profile.Build().Mod) + ")"
 }

@@ -3,7 +3,7 @@
 `internal/lintreport` converts final lint diagnostics into the `internal/report` presentation model. It derives fix badges only from concrete edits plus validated `FixSafety` metadata. The `plain` and `pretty` presenters display pinned renderer scope and build capabilities.
 `pretty` renders source frames and optional evidence. JSON encodes `lint.Diagnostic` directly, including its `renderer` scope.
 
-Pretty output uses Lip Gloss v2 **v2.0.6** for severity styling and `github.com/charmbracelet/x/ansi` **v0.11.9** for terminal cell width and grapheme-safe cropping. `github.com/rivo/uniseg` **v0.4.7** expands tabs at grapheme boundaries. Versions are pinned in `go.mod`.
+Pretty output uses Lip Gloss v2 and `github.com/charmbracelet/x/ansi` for terminal cell width and grapheme-safe cropping. `github.com/rivo/uniseg` expands tabs at grapheme boundaries. Versions are pinned in `go.mod`.
 
 Tag and dialogue-text columns are relative to the dialogue text; event and Style field positions use parser byte spans. `lintreport.Build` normalizes these to the physical source line using `ass.Dialogue.TextStart` and `LineStart`. Tag diagnostics, including repeated-slash findings, underline the concrete expression.
 Compatibility diagnostics use physical-line columns and are not offset again by the Dialogue Text start.
@@ -18,12 +18,8 @@ The pretty presenter escapes terminal control characters from file paths, source
 
 Use `--explain` to include full rule descriptions and evidence URLs. The default report shows the short diagnostic detail when available.
 
-Build and CI use the Go version declared by `go.mod` (Go 1.27.0). CI uses `actions/setup-go` with `go-version-file: go.mod` so it does not silently select a newer toolchain.
-
-`BenchmarkRenderReport` renders 50 findings against a 200-line source. On Windows/amd64 with Go 1.27.0, a 10-iteration sample measured about 2.72 ms/op, 238,274 B/op, and 2,649 allocs/op. Run it with `go test ./internal/report/pretty -run '^$' -bench BenchmarkRenderReport -benchmem` to compare later changes.
-
 ## Font reports
 
 `internal/report` and its presenters do not import lint or font analysis.
 `internal/fontreport` maps font findings to shared source-frame views and a separate JSON model.
-Font reports contain no edit metadata or fix counts. See [font checking](font-checking.md) for the schema and migration.
+Font reports contain no edit metadata or fix counts. See [font checking](font-checking.md) for the schema and limits.

@@ -6,7 +6,7 @@ func TestModSimpleSignaturesAndBuildScope(t *testing.T) {
 	for _, tag := range []string{"z", "frs", "fsvp", "fshp", "ortho"} {
 		for _, raw := range []string{"\\" + tag, "\\" + tag + "1", "\\" + tag + "(1)"} {
 			for _, feature := range []Feature{FeatureEnabled, FeatureDisabled, FeatureUnknown} {
-				profile, err := New(VSFilterMod, Build{Mod: feature, Lua: FeatureDisabled})
+				profile, err := New(VSFilterMod, Build{Mod: feature})
 				if err != nil {
 					t.Fatal(err)
 				}
