@@ -87,10 +87,10 @@ func (p Profile) ResolveDocumentLayouts(tree ass.ConcreteDocument) []RecordLayou
 func (p Profile) documentCitation() string {
 	switch p.kind {
 	case Libass:
-		return "libass@" + p.Version() + ":libass/ass.c:478-529,640-762,827-857"
+		return "libass:libass/ass.c:478-529,640-762,827-857"
 	case XYVSFilter:
-		return "xy-VSFilter@" + p.Version() + ":src/subtitles/STS.cpp:1425-1558"
+		return "xy-VSFilter:src/subtitles/STS.cpp:1425-1558"
 	default:
-		return "VSFilterMod@" + p.Version() + ":src/subtitles/STS.cpp:1675-1940,1980-2029"
+		return "VSFilterMod:src/subtitles/STS.cpp:1675-1940,1980-2029"
 	}
 }

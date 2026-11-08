@@ -39,7 +39,7 @@ func scalingCase(t *testing.T, name string) string {
 func countSafeProved(diagnostics []Diagnostic) int {
 	var safe int
 	for _, diagnostic := range diagnostics {
-		if diagnostic.FixSafety == SafeFix && diagnostic.FixProof != nil {
+		if diagnostic.FixSafety == SafeFix && (diagnostic.FixProof != nil || diagnostic.FixProofRef != 0) {
 			safe++
 		}
 	}
@@ -49,24 +49,19 @@ func countSafeProved(diagnostics []Diagnostic) int {
 // proofGroups returns each proof ID's inline proof and every edit set that
 // references it, in finding order. Findings share one aggregate proof through
 // the reference, so a group collects both forms.
-func proofGroups(findings []Diagnostic) (map[string]*FixProof, map[string][]FixEditProof) {
-	proofs := map[string]*FixProof{}
-	indexes := map[string][]int{}
+func proofGroups(findings []Diagnostic) (map[int]*FixProof, map[int][]FixEditProof) {
+	proofs := map[int]*FixProof{}
+	indexes := map[int][]int{}
 	for i, diagnostic := range findings {
 		if diagnostic.FixSafety != SafeFix || len(diagnostic.Edits) == 0 {
 			continue
 		}
-		id := diagnostic.FixProofRef
 		if diagnostic.FixProof != nil {
-			id = diagnostic.FixProof.ID
-			proofs[id] = diagnostic.FixProof
+			proofs[diagnostic.FixProofRef] = diagnostic.FixProof
 		}
-		if id == "" {
-			continue
-		}
-		indexes[id] = append(indexes[id], i)
+		indexes[diagnostic.FixProofRef] = append(indexes[diagnostic.FixProofRef], i)
 	}
-	edits := make(map[string][]FixEditProof, len(indexes))
+	edits := make(map[int][]FixEditProof, len(indexes))
 	for id, group := range indexes {
 		edits[id] = fixEditsForDiagnostics(findings, group)
 	}
@@ -139,17 +134,17 @@ func TestProofBatchStyleEditSharesOneAggregateProof(t *testing.T) {
 	}
 	for id, proof := range proofs {
 		if len(proof.Interpretations) != len(targets.Profiles()) {
-			t.Fatalf("proof %s interpretations = %d, want %d", id, len(proof.Interpretations), len(targets.Profiles()))
+			t.Fatalf("proof %d interpretations = %d, want %d", id, len(proof.Interpretations), len(targets.Profiles()))
 		}
 		for _, interpretation := range proof.Interpretations {
 			if len(interpretation.Dialogues) != perftest.StyleEditDialogueCount {
-				t.Fatalf("proof %s interpretation %s covers %d dialogues, want %d",
+				t.Fatalf("proof %d interpretation %s covers %d dialogues, want %d",
 					id, interpretation.Target.Renderer, len(interpretation.Dialogues), perftest.StyleEditDialogueCount)
 			}
 		}
 		rebuilt := rebuildOneOff(t, doc, targets.Profiles(), edits[id], fixEditIndex(findings))
 		if got, want := marshalJSON(t, rebuilt), marshalJSON(t, proof); got != want {
-			t.Fatalf("one-off rebuild of %s differs from the batch proof:\n%s\n%s", id, got, want)
+			t.Fatalf("one-off rebuild of %d differs from the batch proof:\n%s\n%s", id, got, want)
 		}
 	}
 
@@ -189,7 +184,7 @@ func TestProofBatchFallbackReusesBeforeWork(t *testing.T) {
 		t.Fatalf("fallback groups = %d, want independent groups from halving", len(proofs))
 	}
 	for _, diagnostic := range first {
-		if diagnostic.FixSafety == SafeFix && (len(diagnostic.Edits) == 0 || (diagnostic.FixProof == nil && diagnostic.FixProofRef == "")) {
+		if diagnostic.FixSafety == SafeFix && (len(diagnostic.Edits) == 0 || (diagnostic.FixProof == nil && diagnostic.FixProofRef == 0)) {
 			t.Fatalf("proved finding without evidence: %#v", diagnostic)
 		}
 	}
@@ -212,7 +207,7 @@ func TestProofBatchFallbackReusesBeforeWork(t *testing.T) {
 	for id, proof := range proofs {
 		rebuilt := rebuildOneOff(t, doc, targets.Profiles(), edits[id], validEdits)
 		if got, want := marshalJSON(t, rebuilt), marshalJSON(t, proof); got != want {
-			t.Fatalf("one-off rebuild of %s differs from the batch proof:\n%s\n%s", id, got, want)
+			t.Fatalf("one-off rebuild of %d differs from the batch proof:\n%s\n%s", id, got, want)
 		}
 	}
 
@@ -269,7 +264,7 @@ func TestProofBatchFallbackGroupsApplyAndReject(t *testing.T) {
 	changed := false
 	for i := range tampered {
 		if tampered[i].FixProof != nil {
-			tampered[i].FixProof.SourceSHA256 = strings.Repeat("0", 64)
+			tampered[i].FixProof.VerificationBasis = nil
 			changed = true
 		}
 	}
@@ -343,21 +338,21 @@ func TestProofBatchKeepsPerProfileWorkSeparate(t *testing.T) {
 	for id, proof := range proofs {
 		seen := map[string]bool{}
 		if len(proof.Interpretations) != 3 {
-			t.Fatalf("proof %s interpretations = %d, want 3", id, len(proof.Interpretations))
+			t.Fatalf("proof %d interpretations = %d, want 3", id, len(proof.Interpretations))
 		}
 		for _, interpretation := range proof.Interpretations {
 			if seen[interpretation.Target.Renderer] {
-				t.Fatalf("proof %s repeats renderer %s", id, interpretation.Target.Renderer)
+				t.Fatalf("proof %d repeats renderer %s", id, interpretation.Target.Renderer)
 			}
 			seen[interpretation.Target.Renderer] = true
 			if len(interpretation.Dialogues) != 2 {
-				t.Fatalf("proof %s renderer %s covers %d dialogues, want 2",
+				t.Fatalf("proof %d renderer %s covers %d dialogues, want 2",
 					id, interpretation.Target.Renderer, len(interpretation.Dialogues))
 			}
 		}
 		rebuilt := rebuildOneOff(t, doc, profiles, edits[id], fixEditIndex(findings))
 		if got, want := marshalJSON(t, rebuilt), marshalJSON(t, proof); got != want {
-			t.Fatalf("one-off rebuild of %s differs from the batch proof", id)
+			t.Fatalf("one-off rebuild of %d differs from the batch proof", id)
 		}
 	}
 	fixed, count, err := ApplyFixesForTargets(doc.Text, findings, false, targets)
@@ -443,63 +438,6 @@ func TestProofBatchReplacesForeignSourceBatch(t *testing.T) {
 	}
 	if got := proofBatchViews.Load(); got != before {
 		t.Errorf("session prove prepared %d extra views; it must reuse its own discovery views", got-before)
-	}
-}
-
-// styleVariantDoc carries two dialogues with identical text under two Styles,
-// plus one fractional Style integer. The Style edit selects every dialogue, so
-// one proof covers two dialogues whose before and after texts are equal while
-// the Styles they are interpreted under are not.
-func styleVariantDoc() ass.Document {
-	text := "[Script Info]\nPlayResX: 1920\nPlayResY: 1080\nYCbCr Matrix: None\n" +
-		"[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\n" +
-		"Style: Default,Arial,20,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,2,2,0.0,0,0,1\n" +
-		"Style: Alt,Arial,30,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,2,2,0,0,0,1\n" +
-		"[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n" +
-		"Dialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,Benchmark subtitle\n" +
-		"Dialogue: 0,0:00:01.00,0:00:02.00,Alt,,0,0,0,,Benchmark subtitle\n"
-	return ass.Parse(text)
-}
-
-// TestProofBatchKeysAfterTraceDigestByDialogue proves one Style edit that
-// selects two dialogues whose texts are identical under two different Styles.
-// Both dialogues share one after text, so a digest keyed by text alone reports
-// one dialogue's trace under the other dialogue's line. Every published digest
-// must describe its own dialogue: a Style field edit changes no dialogue text
-// and no interpreted Style state, so each dialogue's before and after traces
-// are identical bytes and must hash equal, while the two dialogues, whose
-// active Styles differ, must not share a digest.
-func TestProofBatchKeysAfterTraceDigestByDialogue(t *testing.T) {
-	doc := styleVariantDoc()
-	findings := AnalyzeDocument(doc)
-	proofs, _ := proofGroups(findings)
-	if len(proofs) != 1 {
-		t.Fatalf("aggregate groups = %d, want the single Style-edit proof", len(proofs))
-	}
-	for id, proof := range proofs {
-		if len(proof.Interpretations) == 0 {
-			t.Fatalf("proof %s carries no interpretation", id)
-		}
-		for _, interpretation := range proof.Interpretations {
-			target := interpretation.Target.Renderer
-			dialogues := interpretation.Dialogues
-			if len(dialogues) != 2 {
-				t.Fatalf("proof %s %s covers %d dialogues, want the two Style-edit dialogues", id, target, len(dialogues))
-			}
-			if dialogues[0].BeforeTraceSHA256 == dialogues[1].BeforeTraceSHA256 {
-				t.Fatalf("proof %s %s: both dialogues share one before digest; the fixture must interpret them under different Styles", id, target)
-			}
-			if dialogues[0].AfterTraceSHA256 == dialogues[1].AfterTraceSHA256 {
-				t.Errorf("proof %s %s: the two dialogues share after digest %s although their Styles differ",
-					id, target, dialogues[0].AfterTraceSHA256)
-			}
-			for _, dialogue := range dialogues {
-				if dialogue.AfterTraceSHA256 != dialogue.BeforeTraceSHA256 {
-					t.Errorf("proof %s %s line %d: after digest %s, want this dialogue's own before digest %s; the Style edit changed no dialogue text",
-						id, target, dialogue.Line, dialogue.AfterTraceSHA256, dialogue.BeforeTraceSHA256)
-				}
-			}
-		}
 	}
 }
 

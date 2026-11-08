@@ -170,7 +170,7 @@ func TestMissingMatrixUnsafeFixAddsExplicitNone(t *testing.T) {
 
 func TestApplyFixesRejectsOverlappingEdits(t *testing.T) {
 	diagnostics := []Diagnostic{{
-		FixSafety: SafeFix, FixProof: &FixProof{SourceSHA256: hashSource("abcdef"), Targets: fixTargets(defaultFixTargets())},
+		FixSafety: SafeFix, FixProof: &FixProof{Targets: fixTargets(defaultFixTargets())},
 		Edits: []TextEdit{{Start: 1, End: 3}, {Start: 2, End: 4}},
 	}}
 	if _, _, err := ApplyFixes("abcdef", diagnostics, false); err == nil {

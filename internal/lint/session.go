@@ -170,7 +170,7 @@ func Discover(ctx context.Context, doc ass.Document, targets AnalysisTargets, po
 func clearPendingFix(diagnostic *Diagnostic) {
 	diagnostic.FixSafety = ""
 	diagnostic.FixProof = nil
-	diagnostic.FixProofRef = ""
+	diagnostic.FixProofRef = 0
 	diagnostic.Edits = nil
 }
 

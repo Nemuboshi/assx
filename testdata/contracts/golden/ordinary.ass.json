@@ -661,8 +661,8 @@
           "End": 247
         },
         "sources": [
-          "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
-          "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
+          "libass:libass/ass.c:478-529,640-762,827-857",
+          "xy-VSFilter:src/subtitles/STS.cpp:1425-1558"
         ]
       },
       {
@@ -682,8 +682,8 @@
           "End": 283
         },
         "sources": [
-          "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
-          "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
+          "libass:libass/ass.c:478-529,640-762,827-857",
+          "xy-VSFilter:src/subtitles/STS.cpp:1425-1558"
         ]
       }
     ],
@@ -761,8 +761,8 @@
           "End": 247
         },
         "sources": [
-          "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
-          "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
+          "libass:libass/ass.c:478-529,640-762,827-857",
+          "xy-VSFilter:src/subtitles/STS.cpp:1425-1558"
         ]
       },
       {
@@ -782,8 +782,8 @@
           "End": 283
         },
         "sources": [
-          "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
-          "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
+          "libass:libass/ass.c:478-529,640-762,827-857",
+          "xy-VSFilter:src/subtitles/STS.cpp:1425-1558"
         ]
       }
     ],
@@ -811,8 +811,8 @@
           "End": 247
         },
         "sources": [
-          "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
-          "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
+          "libass:libass/ass.c:478-529,640-762,827-857",
+          "xy-VSFilter:src/subtitles/STS.cpp:1425-1558"
         ]
       },
       {
@@ -832,8 +832,8 @@
           "End": 283
         },
         "sources": [
-          "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
-          "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
+          "libass:libass/ass.c:478-529,640-762,827-857",
+          "xy-VSFilter:src/subtitles/STS.cpp:1425-1558"
         ]
       }
     ],

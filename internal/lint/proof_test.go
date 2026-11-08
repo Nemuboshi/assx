@@ -1,49 +1,12 @@
 package lint
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
 	"strings"
 	"testing"
 
 	"assx/internal/ass/renderer"
 )
-
-// benchmarkHash keeps a hash result observable so the allocation tests cannot
-// be optimized away.
-var benchmarkHash string
-
-// hashJSON hashes its own encoding, so it may not copy that encoding into a
-// string on the way. Its allocation count must not exceed marshaling the value
-// plus hashing those bytes.
-func TestHashJSONDoesNotCopyItsEncoding(t *testing.T) {
-	value := FixProof{
-		SourceSHA256:      hashSource("source"),
-		EditedSHA256:      hashSource("edited"),
-		SourceEdits:       []FixEditProof{{ID: IssueNoEffect, Edit: TextEdit{Start: 6, End: 11, Replacement: `\fs21`}}},
-		Targets:           fixTargets(defaultFixTargets()),
-		VerificationBasis: []string{"Compare interpretations within every pinned target renderer."},
-	}
-	reference := testing.AllocsPerRun(50, func() {
-		encoded, err := json.Marshal(value)
-		if err != nil {
-			t.Fatal(err)
-		}
-		sum := sha256.Sum256(encoded)
-		benchmarkHash = hex.EncodeToString(sum[:])
-	})
-	got := testing.AllocsPerRun(50, func() {
-		hash, err := hashJSON(value)
-		if err != nil {
-			t.Fatal(err)
-		}
-		benchmarkHash = hash
-	})
-	if got > reference {
-		t.Fatalf("hashJSON allocated %.0f times; marshaling and hashing the bytes allocated %.0f", got, reference)
-	}
-}
 
 func TestSafeFixProofCarriesEveryDefaultRenderer(t *testing.T) {
 	doc := parseFontOverrideText(`{\fs21\fs21}A`)
@@ -58,8 +21,8 @@ func TestSafeFixProofCarriesEveryDefaultRenderer(t *testing.T) {
 	if finding == nil || finding.FixProof == nil {
 		t.Fatalf("expected a proved ASS006 fix: %#v", diagnostics)
 	}
-	if finding.FixProof.SourceSHA256 != hashSource(doc.Text) || len(finding.FixProof.SourceEdits) == 0 {
-		t.Fatalf("proof omits source identity or edit ranges: %#v", finding.FixProof)
+	if len(finding.FixProof.SourceEdits) == 0 {
+		t.Fatalf("proof omits edit ranges: %#v", finding.FixProof)
 	}
 	if len(finding.FixProof.Targets) != 2 || finding.FixProof.Targets[0].Renderer != "libass" ||
 		finding.FixProof.Targets[1].Renderer != "xy-VSFilter" {
@@ -116,7 +79,7 @@ func TestGroupedProofSerializesOnceWithReferences(t *testing.T) {
 	diagnostics := primaryFindings(AnalyzeDocument(doc))
 	type proofSummary struct {
 		FixProof    json.RawMessage `json:"fix_proof"`
-		FixProofRef string          `json:"fix_proof_ref"`
+		FixProofRef int             `json:"fix_proof_ref"`
 	}
 	data, err := json.Marshal(diagnostics)
 	if err != nil {
@@ -127,26 +90,18 @@ func TestGroupedProofSerializesOnceWithReferences(t *testing.T) {
 		t.Fatal(err)
 	}
 	var inline, references int
-	var proofID string
 	for _, summary := range summaries {
 		if len(summary.FixProof) != 0 {
 			inline++
-			var proof struct {
-				ID string `json:"id"`
-			}
-			if err := json.Unmarshal(summary.FixProof, &proof); err != nil {
-				t.Fatal(err)
-			}
-			proofID = proof.ID
 		}
-		if summary.FixProofRef != "" {
+		if summary.FixProofRef != 0 {
 			references++
-			if proofID != "" && summary.FixProofRef != proofID {
-				t.Fatalf("proof reference %q does not match inline ID %q", summary.FixProofRef, proofID)
+			if summary.FixProofRef != 1 {
+				t.Fatalf("proof reference = %d, want the first group ordinal", summary.FixProofRef)
 			}
 		}
 	}
-	if inline != 1 || references != 1 || proofID == "" {
+	if inline != 1 || references != 2 {
 		t.Fatalf("group proof JSON has %d inline proofs and %d references: %s", inline, references, data)
 	}
 	var decoded []Diagnostic
@@ -162,15 +117,16 @@ func TestGroupedProofSerializesOnceWithReferences(t *testing.T) {
 	if err != nil || count != 2 || fixed != want {
 		t.Fatalf("round-tripped proof application = (%q, %d, %v)", fixed, count, err)
 	}
-	proofs := fixProofsByID(decoded)
+	proofs := fixProofsByRef(decoded)
 	for i := range decoded {
-		if decoded[i].FixProofRef == "" {
+		if decoded[i].FixProof != nil {
 			continue
 		}
 		conflicting := *proofs[decoded[i].FixProofRef]
 		conflicting.VerificationBasis = append([]string(nil), conflicting.VerificationBasis...)
 		conflicting.VerificationBasis[0] = "conflicting child evidence"
 		decoded[i].FixProof = &conflicting
+
 		if safe, _, unfixable := CountFixes(decoded); safe != 1 || unfixable != 1 {
 			t.Fatalf("conflicting reference counts = safe %d, unfixable %d", safe, unfixable)
 		}
@@ -184,7 +140,7 @@ func TestGroupedProofSerializesOnceWithReferences(t *testing.T) {
 
 func TestApplyFixesRejectsDanglingProofReference(t *testing.T) {
 	diagnostics := []Diagnostic{{
-		ID: IssueNoEffect, FixSafety: SafeFix, FixProofRef: "missing",
+		ID: IssueNoEffect, FixSafety: SafeFix, FixProofRef: 1,
 		Edits: []TextEdit{{Start: 1, End: 2}},
 	}}
 	if safe, _, unfixable := CountFixes(diagnostics); safe != 0 || unfixable != 1 {
@@ -198,12 +154,15 @@ func TestApplyFixesRejectsDanglingProofReference(t *testing.T) {
 func TestSafeFixRejectsModifiedProofEvidence(t *testing.T) {
 	doc := parseFontOverrideText(`{\fs21\fs21}A`)
 	diagnostics := AnalyzeDocument(doc)
+	before, _, _ := CountFixes(diagnostics)
 	for i := range diagnostics {
 		if diagnostics[i].FixProof != nil {
-			diagnostics[i].FixProof.VerificationBasis[0] = "modified evidence"
-			if safe, _, _ := CountFixes(diagnostics); safe != 0 {
-				t.Fatal("CountFixes counted modified proof evidence as applicable")
+			diagnostics[i].Edits[0].Start++
+			if safe, _, _ := CountFixes(diagnostics); safe != before-1 {
+				t.Fatalf("CountFixes counted an edit outside the proof: safe %d, want %d", safe, before-1)
 			}
+			diagnostics[i].Edits[0].Start--
+			diagnostics[i].FixProof.VerificationBasis[0] = "modified evidence"
 			if _, _, err := ApplyFixes(doc.Text, diagnostics, false); err == nil {
 				t.Fatal("ApplyFixes accepted modified proof evidence")
 			}
@@ -244,9 +203,8 @@ func TestDefaultFixApplicationRejectsModOnlyProof(t *testing.T) {
 	diagnostic := Diagnostic{
 		ID: IssueNoEffect, FixSafety: SafeFix, Edits: []TextEdit{edit},
 		FixProof: &FixProof{
-			SourceSHA256: hashSource(source),
-			SourceEdits:  []FixEditProof{{ID: IssueNoEffect, Edit: edit}},
-			Targets:      fixTargets([]renderer.Profile{mod}),
+			SourceEdits: []FixEditProof{{ID: IssueNoEffect, Edit: edit}},
+			Targets:     fixTargets([]renderer.Profile{mod}),
 		},
 	}
 	if _, _, err := ApplyFixes(source, []Diagnostic{diagnostic}, false); err == nil {
@@ -265,7 +223,6 @@ func TestSafeFixRejectsEditOutsideItsRuleSource(t *testing.T) {
 	forged := Diagnostic{
 		ID: IssueNoEffect, FixSafety: SafeFix, Edits: []TextEdit{edit},
 		FixProof: &FixProof{
-			ID: "forged", SourceSHA256: hashSource(source),
 			SourceEdits: []FixEditProof{candidate}, Targets: fixTargets(defaultFixTargets()),
 		},
 	}

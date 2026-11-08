@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"reflect"
 	"slices"
@@ -28,11 +27,9 @@ type FixTarget struct {
 }
 
 type ProofDialogue struct {
-	Line              int                  `json:"line"`
-	BeforeTraceSHA256 string               `json:"before_trace_sha256,omitempty"`
-	AfterTraceSHA256  string               `json:"after_trace_sha256,omitempty"`
-	Before            []semantic.ProofStep `json:"before_interpretations"`
-	After             []semantic.ProofStep `json:"after_interpretations"`
+	Line   int                  `json:"line"`
+	Before []semantic.ProofStep `json:"before_interpretations"`
+	After  []semantic.ProofStep `json:"after_interpretations"`
 }
 
 type ProofStyleField struct {
@@ -51,9 +48,7 @@ type FixTargetProof struct {
 }
 
 type FixProof struct {
-	ID                string           `json:"id,omitempty"`
 	SourceSHA256      string           `json:"source_sha256"`
-	EditedSHA256      string           `json:"edited_sha256"`
 	SourceEdits       []FixEditProof   `json:"source_edits"`
 	Targets           []FixTarget      `json:"targets"`
 	Interpretations   []FixTargetProof `json:"interpretations"`
@@ -130,12 +125,13 @@ func proveSafeFixesBatchContext(ctx context.Context, doc ass.Document, diagnosti
 		if err := ctx.Err(); err != nil {
 			return nil, err
 		}
-		attachProofReferences(diagnostics, candidates, proof)
+		attachProofReferences(diagnostics, candidates, proof, 1)
 		return diagnostics, nil
 	}
 
 	// shortcut: stop after 64 proof builds; raise the cap if measured workloads leave valid SafeFix edits unproved.
 	const maxProofAttempts = 64
+	ordinal := 0
 	queue := make([][]int, 0, 2)
 	if len(candidates) > 1 {
 		queue = append(queue, candidates[:len(candidates)/2], candidates[len(candidates)/2:])
@@ -155,7 +151,8 @@ func proveSafeFixesBatchContext(ctx context.Context, doc ass.Document, diagnosti
 			if err := ctx.Err(); err != nil {
 				return nil, err
 			}
-			attachProofReferences(diagnostics, indexes, proof)
+			ordinal++
+			attachProofReferences(diagnostics, indexes, proof, ordinal)
 			continue
 		}
 		if len(indexes) > 1 {
@@ -164,11 +161,11 @@ func proveSafeFixesBatchContext(ctx context.Context, doc ass.Document, diagnosti
 		}
 	}
 	for _, index := range candidates {
-		if diagnostics[index].FixProof == nil {
+		if diagnostics[index].FixProof == nil && diagnostics[index].FixProofRef == 0 {
 			diagnostics[index].FixSafety = ""
 			diagnostics[index].Edits = nil
 			diagnostics[index].FixProof = nil
-			diagnostics[index].FixProofRef = ""
+			diagnostics[index].FixProofRef = 0
 		}
 	}
 	return diagnostics, nil
@@ -197,12 +194,12 @@ func fixEditIndex(diagnostics []Diagnostic) map[FixEditProof]struct{} {
 	return valid
 }
 
-func attachProofReferences(diagnostics []Diagnostic, indexes []int, proof *FixProof) {
+func attachProofReferences(diagnostics []Diagnostic, indexes []int, proof *FixProof, ordinal int) {
 	for i, index := range indexes {
-		diagnostics[index].FixProof = proof
-		diagnostics[index].FixProofRef = ""
-		if i != 0 {
-			diagnostics[index].FixProofRef = proof.ID
+		diagnostics[index].FixProofRef = ordinal
+		diagnostics[index].FixProof = nil
+		if i == 0 {
+			diagnostics[index].FixProof = proof
 		}
 	}
 }
@@ -528,26 +525,6 @@ func proofTextEdits(proofs []FixEditProof) []edit.TextEdit {
 	return out
 }
 
-func hashSource(source string) string {
-	sum := sha256.Sum256([]byte(source))
-	return hex.EncodeToString(sum[:])
-}
-
-// hashBytes digests bytes that are already in memory, so a caller holding an
-// encoding does not copy it into a string and back.
-func hashBytes(data []byte) string {
-	sum := sha256.Sum256(data)
-	return hex.EncodeToString(sum[:])
-}
-
-func hashJSON(value any) (string, error) {
-	encoded, err := json.Marshal(value)
-	if err != nil {
-		return "", fmt.Errorf("encode proof trace: %w", err)
-	}
-	return hashBytes(encoded), nil
-}
-
 func profilesFromProof(targets []FixTarget) ([]renderer.Profile, error) {
 	profiles := make([]renderer.Profile, 0, len(targets))
 	for _, target := range targets {
@@ -574,6 +551,11 @@ func profilesFromProof(targets []FixTarget) ([]renderer.Profile, error) {
 	return profiles, nil
 }
 
+func hashSource(source string) string {
+	sum := sha256.Sum256([]byte(source))
+	return hex.EncodeToString(sum[:])
+}
+
 func sameFixEditSet(a, b []FixEditProof) bool {
 	if len(a) != len(b) {
 		return false
@@ -591,18 +573,8 @@ func sameFixEditSet(a, b []FixEditProof) bool {
 	return true
 }
 
-func proofIdentityMatches(proof *FixProof) bool {
-	if proof == nil || proof.ID == "" {
-		return false
-	}
-	identity := *proof
-	identity.ID = ""
-	id, err := hashJSON(identity)
-	return err == nil && id == proof.ID
-}
-
 func verifyFixProofs(source string, beforeDoc ass.Document, selected []FixEditProof, proof *FixProof, requested []renderer.Profile, validEdits map[FixEditProof]struct{}) error {
-	if proof == nil || proof.ID == "" || proof.SourceSHA256 != hashSource(source) {
+	if proof == nil || proof.SourceSHA256 != hashSource(source) {
 		return fmt.Errorf("SafeFix proof does not match the current source")
 	}
 	if !sameFixEditSet(selected, proof.SourceEdits) {
@@ -610,9 +582,6 @@ func verifyFixProofs(source string, beforeDoc ass.Document, selected []FixEditPr
 	}
 	if len(requested) == 0 || !reflect.DeepEqual(proof.Targets, fixTargets(requested)) {
 		return fmt.Errorf("SafeFix proof does not match the requested renderer targets")
-	}
-	if !proofIdentityMatches(proof) {
-		return fmt.Errorf("SafeFix proof identity does not match its evidence")
 	}
 	profiles, err := profilesFromProof(proof.Targets)
 	if err != nil {
@@ -622,9 +591,8 @@ func verifyFixProofs(source string, beforeDoc ass.Document, selected []FixEditPr
 	if err != nil {
 		return err
 	}
-	if verified.ID != proof.ID || verified.EditedSHA256 != proof.EditedSHA256 ||
-		!reflect.DeepEqual(verified.SourceEdits, proof.SourceEdits) || !reflect.DeepEqual(verified.Targets, proof.Targets) {
-		return fmt.Errorf("SafeFix proof identity does not match the recomputed evidence")
+	if !reflect.DeepEqual(*verified, *proof) {
+		return fmt.Errorf("SafeFix proof does not match the recomputed evidence")
 	}
 	return nil
 }

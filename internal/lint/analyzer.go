@@ -23,7 +23,7 @@ type Diagnostic struct {
 	Fix         string            `json:"suggested_fix"`
 	FixSafety   FixSafety         `json:"fix_safety,omitempty"`
 	FixProof    *FixProof         `json:"fix_proof,omitempty"`
-	FixProofRef string            `json:"fix_proof_ref,omitempty"`
+	FixProofRef int               `json:"fix_proof_ref,omitempty"`
 	Edits       []TextEdit        `json:"edits,omitempty"`
 	Line        int               `json:"line"`
 	Column      int               `json:"column"`
@@ -72,9 +72,6 @@ func (d Diagnostic) MarshalJSON() ([]byte, error) {
 	if !d.spanJSON {
 		value.SourceSpan = nil
 	}
-	if d.FixProofRef != "" {
-		value.FixProof = nil
-	}
 	return json.Marshal(value)
 }
 
@@ -117,7 +114,7 @@ func withoutSafeFixes(diagnostics []Diagnostic) []Diagnostic {
 			diagnostics[i].FixSafety = ""
 			diagnostics[i].Edits = nil
 			diagnostics[i].FixProof = nil
-			diagnostics[i].FixProofRef = ""
+			diagnostics[i].FixProofRef = 0
 		}
 	}
 	return diagnostics

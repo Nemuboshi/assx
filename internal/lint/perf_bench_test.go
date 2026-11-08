@@ -55,7 +55,7 @@ func benchmarkLateProofFailureStage(b *testing.B, dialogues int) {
 		}
 		if diagnostic.Line == lastLine {
 			lateCandidate = true
-			lateProof = lateProof || diagnostic.FixSafety != "" || diagnostic.FixProof != nil || diagnostic.FixProofRef != "" || len(diagnostic.Edits) != 0
+			lateProof = lateProof || diagnostic.FixSafety != "" || diagnostic.FixProof != nil || diagnostic.FixProofRef != 0 || len(diagnostic.Edits) != 0
 		}
 	}
 	if !firstProof || !lateCandidate || lateProof {
@@ -81,7 +81,7 @@ func benchmarkStyleEditStage(b *testing.B) {
 	findings := AnalyzeDocument(doc)
 	var styleProofs, dialogueProofs int
 	for _, diagnostic := range primaryFindings(findings) {
-		if diagnostic.FixSafety != SafeFix || (diagnostic.FixProof == nil && diagnostic.FixProofRef == "") {
+		if diagnostic.FixSafety != SafeFix || (diagnostic.FixProof == nil && diagnostic.FixProofRef == 0) {
 			continue
 		}
 		switch diagnostic.ID {
@@ -140,7 +140,7 @@ func TestBenchmarkLateProofFailure(t *testing.T) {
 			if diagnostic.Line != dialogue.Line {
 				continue
 			}
-			if unknown && (diagnostic.FixSafety != "" || diagnostic.FixProof != nil || diagnostic.FixProofRef != "" || len(diagnostic.Edits) != 0) {
+			if unknown && (diagnostic.FixSafety != "" || diagnostic.FixProof != nil || diagnostic.FixProofRef != 0 || len(diagnostic.Edits) != 0) {
 				t.Fatalf("unresolved final dialogue offers a fix: %#v", diagnostic)
 			}
 			if diagnostic.ID != IssueNoEffect {
@@ -152,7 +152,7 @@ func TestBenchmarkLateProofFailure(t *testing.T) {
 			} else if diagnostic.Tag != "fs" || (diagnostic.Column != 9 && diagnostic.Column != 14) {
 				t.Fatalf("unexpected no-effect candidate: %#v", diagnostic)
 			}
-			if !unknown && (diagnostic.FixSafety != SafeFix || diagnostic.FixProof == nil || len(diagnostic.Edits) != 1) {
+			if !unknown && (diagnostic.FixSafety != SafeFix || (diagnostic.FixProof == nil && diagnostic.FixProofRef == 0) || len(diagnostic.Edits) != 1) {
 				t.Fatalf("resolved prefix edit lacks proof: %#v", diagnostic)
 			}
 		}
@@ -165,41 +165,6 @@ func TestBenchmarkLateProofFailure(t *testing.T) {
 	if err != nil || count != 3*(dialogues-1) || fixed != want {
 		t.Fatalf("safe prefix application: count=%d err=%v, source matches=%v", count, err, fixed == want)
 	}
-}
-
-// Measures the two digest paths a proof build uses. source_digest covers the
-// whole original source and runs once per batch; proof_digest covers a
-// marshaled proof trace and runs once per distinct trace.
-func BenchmarkProofHashing(b *testing.B) {
-	text := benchmarkLateProofFailure(1000)
-	proof := FixProof{
-		SourceSHA256: hashSource(text), EditedSHA256: hashSource(text),
-		SourceEdits: []FixEditProof{{ID: IssueNoEffect, Edit: TextEdit{Start: 6, End: 11, Replacement: `\b1`}}},
-		Targets:     fixTargets(defaultFixTargets()),
-		VerificationBasis: []string{
-			"Compare interpretations within every pinned target renderer.",
-			"Require verified signatures and citations for every command affected by a semantic edit.",
-		},
-	}
-	b.Run("source_digest", func(b *testing.B) {
-		b.SetBytes(int64(len(text)))
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			benchmarkHash = hashSource(text)
-		}
-	})
-	b.Run("proof_digest", func(b *testing.B) {
-		b.ReportAllocs()
-		b.ResetTimer()
-		for i := 0; i < b.N; i++ {
-			hash, err := hashJSON(proof)
-			if err != nil {
-				b.Fatal(err)
-			}
-			benchmarkHash = hash
-		}
-	})
 }
 
 // Measures fix authorization over the proved edits of one scale. membership/op
@@ -312,7 +277,7 @@ func proveFixesStage(b *testing.B, name, text string) {
 	}
 	var proved int
 	for _, diagnostic := range authorized {
-		if diagnostic.FixSafety == SafeFix && (diagnostic.FixProof != nil || diagnostic.FixProofRef != "") {
+		if diagnostic.FixSafety == SafeFix && (diagnostic.FixProof != nil || diagnostic.FixProofRef != 0) {
 			proved++
 		}
 	}

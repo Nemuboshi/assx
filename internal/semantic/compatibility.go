@@ -424,10 +424,10 @@ func stateDescription(e TagEvent) string {
 func dispatchCitation(p renderer.Profile) string {
 	switch p.Kind() {
 	case renderer.Libass:
-		return "libass@" + p.Version() + ":libass/ass_parse.c:68-78,355-916"
+		return "libass:libass/ass_parse.c:68-78,355-916"
 	case renderer.XYVSFilter:
-		return "xy-VSFilter@" + p.Version() + ":src/subtitles/RTS.cpp:1716-1769,2155-2163"
+		return "xy-VSFilter:src/subtitles/RTS.cpp:1716-1769,2155-2163"
 	default:
-		return "VSFilterMod@" + p.Version() + ":src/subtitles/RTS.cpp:2524-2669"
+		return "VSFilterMod:src/subtitles/RTS.cpp:2524-2669"
 	}
 }

@@ -28,14 +28,14 @@ func TestReportFixOutcomesUseValidatedGroupedProofs(t *testing.T) {
 	}
 	for i := range decoded {
 		if decoded[i].FixProof != nil {
-			decoded[i].FixProof.EditedSHA256 = "tampered"
+			decoded[i].FixProof.SourceEdits = nil
 		}
 	}
 	view := Build("proof.ass", decoded, doc)
 	if view.Remaining.Safe != 0 {
 		t.Fatal("tampered proof retained a safe badge")
 	}
-	view = Build("proof.ass", []lint.Diagnostic{{FixSafety: lint.SafeFix, Edits: []lint.TextEdit{{Start: 1, End: 2}}, FixProofRef: "dangling"}}, doc)
+	view = Build("proof.ass", []lint.Diagnostic{{FixSafety: lint.SafeFix, Edits: []lint.TextEdit{{Start: 1, End: 2}}, FixProofRef: 1}}, doc)
 	if view.Remaining.Safe != 0 {
 		t.Fatal("dangling proof reference retained a safe badge")
 	}

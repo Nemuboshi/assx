@@ -153,10 +153,8 @@ the sections above describe.
 - One prepared view per dialogue serves both lint validity and the document
   compatibility pass, so one request resolves each dialogue once.
 
-Interpretation results, proof hashes, and `FixProof` bytes are unchanged.
-The after-trace digest cache keys on the edited text and the Dialogue Style,
-because a trace covers the interpreted Style: two dialogues that share a text
-under different Styles keep separate digests.
+Interpretation results and `FixProof` bytes are unchanged. A proof carries the
+before and after traces as content, so a later read compares them directly.
 Cost and benefit measurements are in [performance](../development/performance.md).
 
 ## Validation

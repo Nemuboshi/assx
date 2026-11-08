@@ -73,7 +73,7 @@ share one projected view and one resolved expression per profile.
 | `Options` (targets, rule policy) | caller, copied into the result | one run | different target or policy |
 | `Session` (id, document, targets, policy, findings, candidates, proof batch) | `lint`, held by `analysis.Result` | the source that `Discover` parsed | another source |
 | `CandidateID` (session id, ordinal) | `Session` | that session | another session, stale or foreign handle |
-| `FixProof` (proof id, source and edited hashes, per-target interpretation) | diagnostic | the current source and the complete edit group | any edit, target change, or foreign source |
+| `FixProof` (source digest, edit ranges, per-target interpretation) | diagnostic, shared by a numbered group | the current source and the complete edit group | any edit, target change, or foreign source |
 | `FindingID` (result id, ordinal) | `analysis.Result` | that result | a newer analysis |
 
 A `SafeFix` label without a proof carries no edits and never authorizes a
@@ -104,10 +104,10 @@ sequenceDiagram
     Server-->>Editor: textDocumentEdit
 ```
 
-The diagnostic `Data` field holds `identity:ordinal`. The identity is the text
-hash, the document version, and the settings generation. The server accepts a
-code action only when the client returns that identity, the rule ID, and the
-range. A stale or foreign identity yields no action.
+The diagnostic `Data` field holds `identity:ordinal`. The identity is the
+document version and the settings generation. The server accepts a code action
+only when the client returns that identity, the rule ID, and the range. A stale
+or foreign identity yields no action.
 
 ## Invariants
 

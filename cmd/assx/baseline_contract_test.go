@@ -227,34 +227,9 @@ type baselineRecord struct {
 	Newline      string             `json:"newline"`
 	Dialogues    []baselineDialogue `json:"dialogues"`
 	CLI          baselineCLI        `json:"cli"`
-	CLIFonts     baselineCLI        `json:"cli_fonts"`
+	CLIFonts     json.RawMessage    `json:"cli_fonts"`
 	CLISafeFix   baselineCLI        `json:"cli_safe_fix"`
 	CLIUnsafeFix baselineCLI        `json:"cli_unsafe_fix"`
-}
-
-// stripDerivedDigests removes digests that only repeat content recorded beside
-// them. The proof ID hashes the proof body, the trace digests hash the
-// interpretation lists, and fix_proof_ref repeats the ID. A recorded body change
-// still fails the comparison; a proof-shape change no longer rewrites every
-// snapshot.
-func stripDerivedDigests(record *baselineRecord) {
-	for _, cli := range []*baselineCLI{&record.CLI, &record.CLIFonts, &record.CLISafeFix, &record.CLIUnsafeFix} {
-		for i := range cli.Diagnostics {
-			diagnostic := &cli.Diagnostics[i]
-			diagnostic.FixProofRef = ""
-			if diagnostic.FixProof == nil {
-				continue
-			}
-			diagnostic.FixProof.ID = ""
-			for j := range diagnostic.FixProof.Interpretations {
-				for k := range diagnostic.FixProof.Interpretations[j].Dialogues {
-					dialogue := &diagnostic.FixProof.Interpretations[j].Dialogues[k]
-					dialogue.BeforeTraceSHA256 = ""
-					dialogue.AfterTraceSHA256 = ""
-				}
-			}
-		}
-	}
 }
 
 func TestRendererBaselineContracts(t *testing.T) {
@@ -301,13 +276,14 @@ func TestRendererBaselineContracts(t *testing.T) {
 			record.CLI = snapshotCLI(t, filename, raw, "")
 			record.CLISafeFix = snapshotCLI(t, filename, raw, "--fix")
 			record.CLIUnsafeFix = snapshotCLI(t, filename, raw, "--unsafe-fix")
-			stripDerivedDigests(&record)
 			golden := filepath.Join("..", "..", "testdata", "contracts", "golden", filename+".json")
 			// cli_fonts records the removed pre-cutover --check-fonts command.
 			// Keep those historical bytes across a regeneration.
 			if *updateContracts {
 				if want, err := os.ReadFile(golden); err == nil {
-					var historical baselineRecord
+					var historical struct {
+						CLIFonts json.RawMessage `json:"cli_fonts"`
+					}
 					if err := json.Unmarshal(want, &historical); err != nil {
 						t.Fatal(err)
 					}
@@ -345,8 +321,7 @@ func TestRendererBaselineContracts(t *testing.T) {
 			if err := json.Unmarshal(want, &historical); err != nil {
 				t.Fatal(err)
 			}
-			historical.CLIFonts = baselineCLI{}
-			stripDerivedDigests(&historical)
+			historical.CLIFonts = nil
 			want, err = json.MarshalIndent(historical, "", "  ")
 			if err != nil {
 				t.Fatal(err)

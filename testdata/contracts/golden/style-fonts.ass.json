@@ -1897,8 +1897,8 @@
           "End": 247
         },
         "sources": [
-          "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
-          "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
+          "libass:libass/ass.c:478-529,640-762,827-857",
+          "xy-VSFilter:src/subtitles/STS.cpp:1425-1558"
         ]
       },
       {
@@ -1918,8 +1918,8 @@
           "End": 283
         },
         "sources": [
-          "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
-          "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
+          "libass:libass/ass.c:478-529,640-762,827-857",
+          "xy-VSFilter:src/subtitles/STS.cpp:1425-1558"
         ]
       },
       {
@@ -1932,7 +1932,6 @@
         "fix_safety": "safe",
         "fix_proof": {
           "source_sha256": "7c5425d6cf69b7215c1b6e258ee742a0d9d2a04b735613d6feb14b3356607dfa",
-          "edited_sha256": "0b9cfc6ed431341aba4ed5db0bedef5bda80ba12af1bc0bcc827e57845fd7805",
           "source_edits": [
             {
               "id": "ASS013",
@@ -2579,6 +2578,7 @@
             "Use libass rendercheck for pixel regression fixtures; use pinned-source and trace evidence for xy-VSFilter."
           ]
         },
+        "fix_proof_ref": 1,
         "edits": [
           {
             "start": 423,
@@ -2669,6 +2669,7 @@
         "description": "An override is replaced, reset, or ignored before it affects dialogue text, or repeats the value already active in every affected state slot.",
         "suggested_fix": "Remove it or move it to the intended text boundary.",
         "fix_safety": "safe",
+        "fix_proof_ref": 1,
         "edits": [
           {
             "start": 682,
@@ -3556,8 +3557,8 @@
           "End": 247
         },
         "sources": [
-          "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
-          "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
+          "libass:libass/ass.c:478-529,640-762,827-857",
+          "xy-VSFilter:src/subtitles/STS.cpp:1425-1558"
         ]
       },
       {
@@ -3577,8 +3578,8 @@
           "End": 283
         },
         "sources": [
-          "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
-          "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
+          "libass:libass/ass.c:478-529,640-762,827-857",
+          "xy-VSFilter:src/subtitles/STS.cpp:1425-1558"
         ]
       },
       {
@@ -3674,8 +3675,8 @@
           "End": 247
         },
         "sources": [
-          "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
-          "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
+          "libass:libass/ass.c:478-529,640-762,827-857",
+          "xy-VSFilter:src/subtitles/STS.cpp:1425-1558"
         ]
       },
       {
@@ -3695,8 +3696,8 @@
           "End": 283
         },
         "sources": [
-          "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
-          "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
+          "libass:libass/ass.c:478-529,640-762,827-857",
+          "xy-VSFilter:src/subtitles/STS.cpp:1425-1558"
         ]
       },
       {

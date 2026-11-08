@@ -93,5 +93,5 @@ func styleBorderCitation(profile renderer.Profile) string {
 	case renderer.VSFilterMod:
 		path = "src/subtitles/STS.cpp:1873,1903;src/subtitles/RTS.cpp:286-287,662-685,1427"
 	}
-	return profile.Kind().String() + "@" + profile.Version() + ":" + path
+	return profile.Kind().String() + ":" + path
 }

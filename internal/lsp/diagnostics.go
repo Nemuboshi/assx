@@ -2,7 +2,6 @@ package lsp
 
 import (
 	"context"
-	"crypto/sha256"
 	"encoding/json/v2"
 	"fmt"
 	"io"
@@ -23,7 +22,7 @@ type protocolDiagnostic struct {
 }
 
 func (server *Server) identityPrefix(doc document) string {
-	return fmt.Sprintf("%x:%d:%d", sha256.Sum256([]byte(doc.text)), doc.version, server.settingsGeneration)
+	return fmt.Sprintf("%d:%d", doc.version, server.settingsGeneration)
 }
 
 func (server *Server) publish(ctx context.Context, output io.Writer, uri string) error {

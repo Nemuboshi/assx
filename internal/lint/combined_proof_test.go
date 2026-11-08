@@ -25,7 +25,7 @@ func TestApplyRechecksCombinedIndependentProofGroups(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		d.FixProof, d.FixProofRef = proof, ""
+		d.FixProof, d.FixProofRef = proof, 0
 		separate = append(separate, d)
 	}
 	if len(separate) != 2 {

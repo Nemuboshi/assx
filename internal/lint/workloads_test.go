@@ -29,12 +29,12 @@ func TestStyleEditWorkloadProvesDocumentWide(t *testing.T) {
 		switch diagnostic.ID {
 		case IssueStyleInteger:
 			styleCandidates++
-			if diagnostic.FixSafety == SafeFix && (diagnostic.FixProof != nil || diagnostic.FixProofRef != "") {
+			if diagnostic.FixSafety == SafeFix && (diagnostic.FixProof != nil || diagnostic.FixProofRef != 0) {
 				styleProofs++
 			}
 		case IssueNoEffect:
 			dialogueCandidates++
-			if diagnostic.FixSafety == SafeFix && (diagnostic.FixProof != nil || diagnostic.FixProofRef != "") {
+			if diagnostic.FixSafety == SafeFix && (diagnostic.FixProof != nil || diagnostic.FixProofRef != 0) {
 				dialogueProofs++
 			}
 		}
@@ -87,7 +87,7 @@ func TestLateProofFailureScalesCandidates(t *testing.T) {
 			if diagnostic.ID != IssueNoEffect {
 				continue
 			}
-			if diagnostic.FixSafety == SafeFix && (diagnostic.FixProof != nil || diagnostic.FixProofRef != "") {
+			if diagnostic.FixSafety == SafeFix && (diagnostic.FixProof != nil || diagnostic.FixProofRef != 0) {
 				proved++
 				continue
 			}

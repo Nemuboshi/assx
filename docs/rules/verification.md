@@ -15,10 +15,8 @@ Snapshots are compared byte-for-byte, so diagnostic order and the public JSON
 shape are covered as well as their values. No golden contains elapsed wall-clock
 time or a machine-local temporary path.
 
-A snapshot does not record a digest that only repeats content recorded beside
-it: the proof ID, the per-dialogue trace digests, and the proof reference. Those
-values are checked at run time, so the snapshot records the content they digest,
-not the digest.
+A snapshot records no digest that only repeats content recorded beside it. It
+keeps the source digest, because the source text is not in the snapshot.
 
 Do not regenerate a snapshot as a response to a failing test. A mismatch is
 evidence that needs review. Regeneration has two keys and one rule:
@@ -38,15 +36,14 @@ across a regeneration.
 ## SafeFix proof scope
 
 For each fix marked `safe`, assx records every target renderer ID, pinned
-version, source edit range, source hash, edited hash, and
-interpretation trace hash. It stores one full proof for an edit group and links
-each remaining diagnostic with `fix_proof_ref`. The interpretations stay next to
-the edits, including dispatch, signature citation, state, and source provenance.
-The proof ID hashes every proof field, including that audit metadata.
+version, source edit range, and the source digest. It stores one full proof for
+an edit group and numbers the group; the remaining diagnostics carry that
+ordinal in `fix_proof_ref`. The interpretations stay next to the edits,
+including dispatch, signature citation, state, and source provenance.
 
-`--fix` checks the submitted ID and edited-source hash, then rebuilds the
-evidence from the current source and the complete edit group. It does not trust
-diagnostic scope labels. A subset, revision, source, edited-hash, or
+`--fix` checks the source digest, then rebuilds the evidence from the current
+source and the complete edit group, and compares the rebuild with the submitted
+proof. It does not trust diagnostic scope labels. A subset, revision, source, or
 interpretation mismatch rejects the request. Separate proof groups also require
 combined edit verification before application.
 

@@ -64,7 +64,7 @@ func pendingFromEager(diagnostics []lint.Diagnostic) []lint.Diagnostic {
 		if diagnostic.FixSafety == lint.SafeFix {
 			out[i].FixSafety = ""
 			out[i].FixProof = nil
-			out[i].FixProofRef = ""
+			out[i].FixProofRef = 0
 			out[i].Edits = nil
 		}
 	}

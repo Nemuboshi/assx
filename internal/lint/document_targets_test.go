@@ -125,11 +125,6 @@ func TestSafeFixReauthorizesSameSetWithDifferentPrimary(t *testing.T) {
 		for j := range proof.SourceEdits {
 			proof.SourceEdits[j].ID = IssueNoEffect
 		}
-		proof.ID = ""
-		proof.ID, err = hashJSON(proof)
-		if err != nil {
-			t.Fatal(err)
-		}
 		if _, _, err := ApplyFixesForTargets(doc.Text, findings, false, second); err == nil {
 			t.Fatal("same target set bypassed caller-primary edit authorization")
 		}

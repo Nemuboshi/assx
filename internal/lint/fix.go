@@ -16,26 +16,29 @@ func CountFixes(diagnostics []Diagnostic) (safe, unsafe, unfixable int) {
 // set. CountFixes rebuilds it per call; presenters and callers that inspect
 // many diagnostics build it once.
 type FixProofIndex struct {
-	proofs map[string]*FixProof
-	valid  map[string]bool
+	proofs      map[int]*FixProof
+	memberships map[*FixProof]proofEditMembership
 }
 
-// NewFixProofIndex indexes the proofs and validates each identity once.
+// NewFixProofIndex indexes the shared proofs by their reference ordinal and
+// records which edits each proof authorizes.
 func NewFixProofIndex(diagnostics []Diagnostic) FixProofIndex {
-	proofs := fixProofsByID(diagnostics)
-	valid := make(map[string]bool, len(proofs))
-	for id, proof := range proofs {
-		valid[id] = proofIdentityMatches(proof)
+	proofs := fixProofsByRef(diagnostics)
+	memberships := make(map[*FixProof]proofEditMembership, len(proofs))
+	for _, proof := range proofs {
+		if _, exists := memberships[proof]; !exists {
+			memberships[proof] = proofEditsOf(proof)
+		}
 	}
-	return FixProofIndex{proofs: proofs, valid: valid}
+	return FixProofIndex{proofs: proofs, memberships: memberships}
 }
 
 // Count reports the fix counts for one diagnostic set under this index.
 func (index FixProofIndex) Count(diagnostics []Diagnostic) (safe, unsafe, unfixable int) {
-	return countFixes(diagnostics, index.proofs, index.valid)
+	return countFixes(diagnostics, index.proofs, index.memberships)
 }
 
-func countFixes(diagnostics []Diagnostic, proofs map[string]*FixProof, validProofs map[string]bool) (safe, unsafe, unfixable int) {
+func countFixes(diagnostics []Diagnostic, proofs map[int]*FixProof, memberships map[*FixProof]proofEditMembership) (safe, unsafe, unfixable int) {
 	for _, diagnostic := range diagnostics {
 		if len(diagnostic.Edits) == 0 {
 			unfixable++
@@ -44,14 +47,26 @@ func countFixes(diagnostics []Diagnostic, proofs map[string]*FixProof, validProo
 		switch diagnostic.FixSafety {
 		case SafeFix:
 			proof := diagnostic.FixProof
-			if diagnostic.FixProofRef != "" {
+			if diagnostic.FixProofRef != 0 {
 				proof = proofs[diagnostic.FixProofRef]
 				if diagnostic.FixProof != nil && !reflect.DeepEqual(diagnostic.FixProof, proof) {
 					proof = nil
 				}
 			}
-			if proof != nil && validProofs[proof.ID] {
-				safe++
+			if proof != nil {
+				membership := memberships[proof]
+				authorized := true
+				for _, sourceEdit := range diagnostic.Edits {
+					if !membership.contains(FixEditProof{ID: diagnostic.ID, Edit: sourceEdit}) {
+						authorized = false
+						break
+					}
+				}
+				if authorized {
+					safe++
+				} else {
+					unfixable++
+				}
 			} else {
 				unfixable++
 			}
@@ -64,14 +79,15 @@ func countFixes(diagnostics []Diagnostic, proofs map[string]*FixProof, validProo
 	return safe, unsafe, unfixable
 }
 
-func fixProofsByID(diagnostics []Diagnostic) map[string]*FixProof {
-	proofs := make(map[string]*FixProof)
+func fixProofsByRef(diagnostics []Diagnostic) map[int]*FixProof {
+	proofs := make(map[int]*FixProof)
 	for i := range diagnostics {
-		proof := diagnostics[i].FixProof
-		if proof != nil && proof.ID != "" {
-			if _, exists := proofs[proof.ID]; !exists {
-				proofs[proof.ID] = proof
-			}
+		diagnostic := diagnostics[i]
+		if diagnostic.FixProof == nil {
+			continue
+		}
+		if _, exists := proofs[diagnostic.FixProofRef]; !exists {
+			proofs[diagnostic.FixProofRef] = diagnostic.FixProof
 		}
 	}
 	return proofs
@@ -125,41 +141,40 @@ func ApplyFixesForTargets(text string, diagnostics []Diagnostic, includeUnsafe b
 // applyFixes re-authorizes every SafeFix under the given rule policy before
 // it writes anything. A nil policy means the default rule catalog.
 func applyFixes(text string, diagnostics []Diagnostic, includeUnsafe bool, targets AnalysisTargets, policy RulePolicy) (string, int, error) {
-	proofs := fixProofsByID(diagnostics)
+	proofs := fixProofsByRef(diagnostics)
 	for _, diagnostic := range diagnostics {
-		if diagnostic.FixProofRef == "" {
+		if diagnostic.FixProofRef == 0 {
 			continue
 		}
 		proof := proofs[diagnostic.FixProofRef]
 		if proof == nil || diagnostic.FixProof != nil && !reflect.DeepEqual(diagnostic.FixProof, proof) {
-			return "", 0, fmt.Errorf("dangling SafeFix proof reference %q", diagnostic.FixProofRef)
+			return "", 0, fmt.Errorf("dangling SafeFix proof reference %d", diagnostic.FixProofRef)
 		}
 	}
 
 	var edits []edit.TextEdit
 	var safeEdits []FixEditProof
 	var groups []safeProofEdits
-	groupIndexes := make(map[string]int)
 	fixes := 0
 	for _, diagnostic := range diagnostics {
 		if diagnostic.FixSafety == SafeFix {
 			proof := diagnostic.FixProof
-			if diagnostic.FixProofRef != "" {
+			if diagnostic.FixProofRef != 0 {
 				proof = proofs[diagnostic.FixProofRef]
 			}
 			if len(diagnostic.Edits) == 0 || proof == nil {
 				continue
 			}
-			if proof.ID == "" {
-				return "", 0, fmt.Errorf("SafeFix proof has no identity")
+			groupIndex := -1
+			for i := range groups {
+				if groups[i].proof == proof || reflect.DeepEqual(groups[i].proof, proof) {
+					groupIndex = i
+					break
+				}
 			}
-			groupIndex, exists := groupIndexes[proof.ID]
-			if !exists {
+			if groupIndex < 0 {
 				groupIndex = len(groups)
-				groupIndexes[proof.ID] = groupIndex
 				groups = append(groups, safeProofEdits{proof: proof, known: proofEditsOf(proof)})
-			} else if !reflect.DeepEqual(groups[groupIndex].proof, proof) {
-				return "", 0, fmt.Errorf("SafeFix proof ID %q has conflicting evidence", proof.ID)
 			}
 			for _, sourceEdit := range diagnostic.Edits {
 				item := FixEditProof{ID: diagnostic.ID, Edit: sourceEdit}

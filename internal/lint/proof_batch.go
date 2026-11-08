@@ -108,25 +108,13 @@ type proofProfilePrep struct {
 	byLine map[int]ass.Dialogue
 	before map[int]*proofBeforeDialogue
 	trees  map[string]ass.ConcreteDialogue
-	hashes map[proofAfterKey]string
 }
 
-// proofBeforeDialogue is one verified before dialogue: its view row, parsed
-// tree, and accepted before-trace digest. The digest depends only on the
-// pinned profile, Style state, and original text, so it is edit-independent.
+// proofBeforeDialogue is one verified before dialogue: its view row and its
+// parsed tree.
 type proofBeforeDialogue struct {
 	dialogue ass.Dialogue
 	tree     ass.ConcreteDialogue
-	hash     string
-}
-
-// proofAfterKey identifies one accepted after trace: the edited dialogue text
-// and the Dialogue Style the comparison interpreted it under. A trace covers
-// the interpreted Style, so two dialogues that share a text under different
-// Styles own different digests and never share one.
-type proofAfterKey struct {
-	text  string
-	style string
 }
 
 // build runs the full gate and evidence pipeline for one exact edit set,
@@ -135,6 +123,17 @@ type proofAfterKey struct {
 // differ between calls that share a session batch. Gate order and error text
 // match the original single-call pipeline, so rejected attempts report
 // identical failures and accepted proofs keep identical identity bytes.
+// sourceDigest returns the digest of the batch's source, computed once per
+// batch. Every attempt's proof carries this same value, so only the first
+// attempt hashes the whole source.
+func (b *proofBatch) sourceDigest() string {
+	if b.sourceHash == "" {
+		proofBatchSourceHashes.Add(1)
+		b.sourceHash = hashSource(b.source)
+	}
+	return b.sourceHash
+}
+
 func (b *proofBatch) build(edits []FixEditProof, validEdits map[FixEditProof]struct{}) (*FixProof, error) {
 	if len(b.profiles) == 0 {
 		return nil, fmt.Errorf("SafeFix proof has no renderer targets")
@@ -202,8 +201,8 @@ func (b *proofBatch) build(edits []FixEditProof, validEdits map[FixEditProof]str
 	}
 
 	proof := &FixProof{
-		SourceSHA256: b.sourceDigest(), EditedSHA256: hashSource(changed),
-		SourceEdits: slices.Clone(edits), Targets: slices.Clone(targets),
+		SourceSHA256: b.sourceDigest(),
+		SourceEdits:  slices.Clone(edits), Targets: slices.Clone(targets),
 		VerificationBasis: []string{
 			"Compare interpretations within every pinned target renderer.",
 			"Require verified signatures and citations for every command affected by a semantic edit.",
@@ -261,18 +260,9 @@ func (b *proofBatch) build(edits []FixEditProof, validEdits map[FixEditProof]str
 			if !comparison.Equivalent {
 				return nil, fmt.Errorf("%s dialogue line %d: %s", profile.Kind(), beforeEntry.dialogue.Line, comparison.Reason)
 			}
-			beforeHash, err := prep.beforeHash(beforeEntry, comparison.Before)
-			if err != nil {
-				return nil, err
-			}
-			afterHash, err := prep.afterHash(afterDialogue.Text, beforeEntry.dialogue.Style, comparison.After)
-			if err != nil {
-				return nil, err
-			}
 			ranges := dialogueRanges(beforeEntry.dialogue, dialogueEdits)
 			target.Dialogues = append(target.Dialogues, ProofDialogue{
-				Line:              beforeEntry.dialogue.Line,
-				BeforeTraceSHA256: beforeHash, AfterTraceSHA256: afterHash,
+				Line:   beforeEntry.dialogue.Line,
 				Before: relevantSteps(comparison.Before.Steps, ranges),
 				After:  relevantSteps(comparison.After.Steps, ranges),
 			})
@@ -280,24 +270,7 @@ func (b *proofBatch) build(edits []FixEditProof, validEdits map[FixEditProof]str
 		target.StyleFields = slices.Clone(profileStyleEvidence)
 		proof.Interpretations = append(proof.Interpretations, target)
 	}
-	identity := *proof
-	identity.ID = ""
-	proof.ID, err = hashJSON(identity)
-	if err != nil {
-		return nil, err
-	}
 	return proof, nil
-}
-
-// sourceDigest returns the digest of the batch's source, computed once per
-// batch. Every attempt's proof carries this same value, so only the first
-// attempt hashes the whole source.
-func (b *proofBatch) sourceDigest() string {
-	if b.sourceHash == "" {
-		proofBatchSourceHashes.Add(1)
-		b.sourceHash = hashSource(b.source)
-	}
-	return b.sourceHash
 }
 
 // fixTargetsChecked builds the target list once per batch and re-applies the
@@ -346,7 +319,6 @@ func (b *proofBatch) prep(profile renderer.Profile) *proofProfilePrep {
 		byLine: make(map[int]ass.Dialogue, len(view.Dialogues)),
 		before: make(map[int]*proofBeforeDialogue),
 		trees:  make(map[string]ass.ConcreteDialogue),
-		hashes: make(map[proofAfterKey]string),
 	}
 	for _, dialogue := range view.Dialogues {
 		prep.byLine[dialogue.Line] = dialogue
@@ -388,41 +360,4 @@ func (p *proofProfilePrep) afterDialogue(text string, before *proofBeforeDialogu
 	tree := ass.ParseConcreteDialogue(text)
 	p.trees[text] = tree
 	return tree
-}
-
-// beforeHash returns the accepted comparison's before-trace digest, computed
-// once per dialogue per batch: the trace depends only on the pinned profile,
-// the interpreted Style state, and the original dialogue text, never on the
-// edit set.
-func (p *proofProfilePrep) beforeHash(before *proofBeforeDialogue, trace semantic.ProofTrace) (string, error) {
-	if before.hash != "" {
-		proofBatchReuse.Add(1)
-		return before.hash, nil
-	}
-	proofBatchHashes.Add(1)
-	hash, err := hashJSON(trace)
-	if err != nil {
-		return "", err
-	}
-	before.hash = hash
-	return hash, nil
-}
-
-// afterHash returns one after trace's digest, computed once per distinct after
-// text and Dialogue Style per batch for the same reason. The trace covers the
-// interpreted Style, so the Style is part of the key: two dialogues that share
-// a text under different Styles must never share a digest.
-func (p *proofProfilePrep) afterHash(text, style string, trace semantic.ProofTrace) (string, error) {
-	key := proofAfterKey{text: text, style: style}
-	if hash, ok := p.hashes[key]; ok {
-		proofBatchReuse.Add(1)
-		return hash, nil
-	}
-	proofBatchHashes.Add(1)
-	hash, err := hashJSON(trace)
-	if err != nil {
-		return "", err
-	}
-	p.hashes[key] = hash
-	return hash, nil
 }

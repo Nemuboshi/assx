@@ -93,7 +93,7 @@ func scopeDiagnostics(diagnostics []Diagnostic, profile renderer.Profile) []Diag
 		diagnostics[i].Renderer = ProfileScope(profile)
 		diagnostics[i].FixSafety = ""
 		diagnostics[i].FixProof = nil
-		diagnostics[i].FixProofRef = ""
+		diagnostics[i].FixProofRef = 0
 		diagnostics[i].Edits = nil
 	}
 	sort.SliceStable(diagnostics, func(i, j int) bool {

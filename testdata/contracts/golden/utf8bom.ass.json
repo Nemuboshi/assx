@@ -509,8 +509,8 @@
           "End": 257
         },
         "sources": [
-          "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
-          "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
+          "libass:libass/ass.c:478-529,640-762,827-857",
+          "xy-VSFilter:src/subtitles/STS.cpp:1425-1558"
         ]
       },
       {
@@ -530,8 +530,8 @@
           "End": 294
         },
         "sources": [
-          "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
-          "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
+          "libass:libass/ass.c:478-529,640-762,827-857",
+          "xy-VSFilter:src/subtitles/STS.cpp:1425-1558"
         ]
       },
       {
@@ -544,7 +544,6 @@
         "fix_safety": "safe",
         "fix_proof": {
           "source_sha256": "f35243ebda94f944297a63274bd2e46cf05cf1bd1369a7b69fe82dce713fcfa2",
-          "edited_sha256": "06baed46a8bf0932cf2d8af1a352d139d72bcb24b21f558ba4c120486cd4850a",
           "source_edits": [
             {
               "id": "ASS006",
@@ -925,6 +924,7 @@
             "Use libass rendercheck for pixel regression fixtures; use pinned-source and trace evidence for xy-VSFilter."
           ]
         },
+        "fix_proof_ref": 1,
         "edits": [
           {
             "start": 438,
@@ -1451,8 +1451,8 @@
           "End": 257
         },
         "sources": [
-          "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
-          "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
+          "libass:libass/ass.c:478-529,640-762,827-857",
+          "xy-VSFilter:src/subtitles/STS.cpp:1425-1558"
         ]
       },
       {
@@ -1472,8 +1472,8 @@
           "End": 294
         },
         "sources": [
-          "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
-          "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
+          "libass:libass/ass.c:478-529,640-762,827-857",
+          "xy-VSFilter:src/subtitles/STS.cpp:1425-1558"
         ]
       }
     ],
@@ -1501,8 +1501,8 @@
           "End": 257
         },
         "sources": [
-          "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
-          "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
+          "libass:libass/ass.c:478-529,640-762,827-857",
+          "xy-VSFilter:src/subtitles/STS.cpp:1425-1558"
         ]
       },
       {
@@ -1522,8 +1522,8 @@
           "End": 294
         },
         "sources": [
-          "libass@f61db567e6593df3470e91594bcd4ad2d0473aff:libass/ass.c:478-529,640-762,827-857",
-          "xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e:src/subtitles/STS.cpp:1425-1558"
+          "libass:libass/ass.c:478-529,640-762,827-857",
+          "xy-VSFilter:src/subtitles/STS.cpp:1425-1558"
         ]
       }
     ],

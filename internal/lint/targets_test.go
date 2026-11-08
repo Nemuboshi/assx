@@ -45,7 +45,7 @@ func TestSafeFixRequestedTargetScope(t *testing.T) {
 	}
 }
 
-func TestSafeFixRejectsRehashedScopeTampering(t *testing.T) {
+func TestSafeFixRejectsProofTampering(t *testing.T) {
 	doc := parseFontOverrideText(`{\fs21\fs21}A`)
 	targets := DefaultAnalysisTargets()
 	for _, mutation := range []struct {
@@ -54,7 +54,7 @@ func TestSafeFixRejectsRehashedScopeTampering(t *testing.T) {
 	}{
 		{"version", func(p *FixProof) { p.Targets[0].Version = "stale" }},
 		{"target subset", func(p *FixProof) { p.Targets = p.Targets[:1] }},
-		{"edited hash", func(p *FixProof) { p.EditedSHA256 = hashSource("other") }},
+		{"source edits", func(p *FixProof) { p.SourceEdits = nil }},
 		{"interpretations", func(p *FixProof) { p.Interpretations = nil }},
 	} {
 		t.Run(mutation.name, func(t *testing.T) {
@@ -70,19 +70,8 @@ func TestSafeFixRejectsRehashedScopeTampering(t *testing.T) {
 				t.Fatal("no proof")
 			}
 			mutation.change(proof)
-			proof.ID = ""
-			id, err := hashJSON(proof)
-			if err != nil {
-				t.Fatal(err)
-			}
-			proof.ID = id
-			for i := range ds {
-				if ds[i].FixProofRef != "" {
-					ds[i].FixProofRef = id
-				}
-			}
 			if _, _, err := ApplyFixesForTargets(doc.Text, ds, false, targets); err == nil {
-				t.Fatal("rehashed forgery authorized a fix")
+				t.Fatal("tampered proof authorized a fix")
 			}
 		})
 	}

@@ -21,7 +21,7 @@ func AnalyzeNoEffectsForRenderer(dialogue ass.Dialogue, profile renderer.Profile
 		finding.Edits = nil
 		finding.FixSafety = ""
 		finding.FixProof = nil
-		finding.FixProofRef = ""
+		finding.FixProofRef = 0
 		out = append(out, finding)
 	}
 	return scopeDiagnostics(out, profile)

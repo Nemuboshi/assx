@@ -91,7 +91,7 @@ func TestSessionDiscoveryStripsSafeFixAndNeverBuildsProof(t *testing.T) {
 			continue
 		}
 		if finding.Diagnostic.FixSafety != "" || finding.Diagnostic.Edits != nil ||
-			finding.Diagnostic.FixProof != nil || finding.Diagnostic.FixProofRef != "" {
+			finding.Diagnostic.FixProof != nil || finding.Diagnostic.FixProofRef != 0 {
 			t.Fatalf("pending candidate keeps unproved fix state: %#v", finding.Diagnostic)
 		}
 	}
@@ -119,7 +119,7 @@ func TestSessionDiscoveryStripsSafeFixAndNeverBuildsProof(t *testing.T) {
 			continue
 		}
 		candidates++
-		if diagnostic.FixProof == nil && diagnostic.FixProofRef == "" {
+		if diagnostic.FixProof == nil && diagnostic.FixProofRef == 0 {
 			t.Fatalf("authorized candidate lacks proof: %#v", diagnostic)
 		}
 	}
@@ -289,7 +289,7 @@ func TestSessionLateBarrierRevokesLastDialogue(t *testing.T) {
 		}
 		if finding.Diagnostic.Line == lastLine {
 			revoked++
-			if finding.Diagnostic.FixSafety != "" || finding.Diagnostic.Edits != nil || finding.Diagnostic.FixProof != nil || finding.Diagnostic.FixProofRef != "" {
+			if finding.Diagnostic.FixSafety != "" || finding.Diagnostic.Edits != nil || finding.Diagnostic.FixProof != nil || finding.Diagnostic.FixProofRef != 0 {
 				t.Fatalf("barriered candidate offers a fix: %#v", finding.Diagnostic)
 			}
 		}
@@ -335,10 +335,10 @@ func TestSessionProveSubsetIsSelfContained(t *testing.T) {
 	if authorized[0].FixSafety != SafeFix || authorized[1].FixSafety != SafeFix {
 		t.Fatalf("subset not authorized: %#v %#v", authorized[0], authorized[1])
 	}
-	if authorized[0].FixProof == nil && authorized[0].FixProofRef == "" {
+	if authorized[0].FixProof == nil && authorized[0].FixProofRef == 0 {
 		t.Fatalf("subset first finding lacks proof: %#v", authorized[0])
 	}
-	if authorized[1].FixProof == nil && authorized[1].FixProofRef == "" {
+	if authorized[1].FixProof == nil && authorized[1].FixProofRef == 0 {
 		t.Fatalf("subset second finding lacks proof: %#v", authorized[1])
 	}
 	fixed, count, err := session.ApplyFixes(context.Background(), authorized, false)
@@ -436,7 +436,7 @@ func TestSessionRejectsStaleAndForeignApplication(t *testing.T) {
 	proofChanged := false
 	for i := range tampered {
 		if tampered[i].FixProof != nil {
-			tampered[i].FixProof.SourceSHA256 = strings.Repeat("0", 64)
+			tampered[i].FixProof.VerificationBasis = nil
 			proofChanged = true
 		}
 	}
