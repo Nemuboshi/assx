@@ -98,7 +98,7 @@ baseline.
 - Raw benchstat input: [baseline-6ba7453-windows-amd64.txt](baseline-6ba7453-windows-amd64.txt)
 - Environment: Windows/amd64, Go 1.27.0
 - Sample settings: `-benchmem -benchtime=250ms -count=5`
-- Evidence contract: [the evidence contract](../architecture/contracts.md)
+- Evidence contract: [the evidence contract](../verification/contract.md)
 
 Compare against it with equivalent software and hardware. Use `benchstat`.
 A single-sample difference is not a regression.

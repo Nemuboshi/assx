@@ -113,7 +113,7 @@ At the pinned VSFilterMod revision, `src/subtitles/RTS.cpp` contains
 define both gates in every configuration. That is evidence for a *build
 configuration*, not a guarantee for every binary distribution or fork. assx
 models only `_VSMOD`: the gate compiles Lua code, but the pinned source loads
-no script. See [build capabilities](profiles.md#vsfiltermod-build-capabilities).
+no script. See [build capabilities](../packages/profiles.md#vsfiltermod-build-capabilities).
 The Mod capability stays unknown until selected. The tests inspect the local source
 when available and otherwise test metadata without requiring a repository
 checkout under `ref/`.
@@ -194,11 +194,3 @@ Do not run `-update-contracts` as an automatic response to failing tests.
 In particular, a golden mismatch is evidence that needs review, not a
 request to regenerate the expectation. Golden updates are committed with
 the behavior change and narrowly justified by a pinned-source citation.
-
-## Performance baseline
-
-The raw, benchstat-compatible input is
-`docs/development/baseline-6ba7453-windows-amd64.txt`. See
-[performance](../development/performance.md) for the environment, sample settings, timing
-boundaries, and benchstat usage. The recorded samples are a **comparison
-input**, not a cross-machine absolute performance budget.

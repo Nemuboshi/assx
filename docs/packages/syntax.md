@@ -52,4 +52,4 @@ SafeFix requires byte-exact round-trip equality before replacing the file.
 The CLI returns exit 2 for rejected input before lint or font checks. It permits lint of tentative input but does not write fixes. `--force-ass` bypasses recognition, including its write restriction. It does not bypass source decoding, byte-exact round-trip protection, or fix proof. Input notices go to stderr; JSON diagnostics stay on stdout. Recognition is an input policy, not a semantic validity rule.
 
 See [reports](../usage/diagnostic-reports.md) for display coordinates and
-[contracts](contracts.md) for reviewed snapshots and fix evidence.
+[contracts](../verification/contract.md) for reviewed snapshots and fix evidence.

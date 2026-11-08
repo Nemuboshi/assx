@@ -12,7 +12,7 @@ assx [lint] [--renderer=libass|xy-vsfilter|vsfiltermod] [--compat=RENDERERS] [--
 - Without either flag, assx selects libass as primary and xy-VSFilter for compatibility.
 - An explicit `--renderer` without `--compat` selects only that primary. Compatibility warnings never become primary validity errors.
 - `--mod-build`: declare the VSFilterMod `_VSMOD` capability. It defaults to `unknown`; assx never infers it. The flag requires VSFilterMod as primary or in `--compat`. A known Mod capability is required for Mod SafeFix proofs.
-- assx does not model the VSFilterMod `_LUA` gate. The pinned source compiles Lua code but loads no script. See [build capabilities](docs/architecture/profiles.md#vsfiltermod-build-capabilities).
+- assx does not model the VSFilterMod `_LUA` gate. The pinned source compiles Lua code but loads no script. See [build capabilities](docs/packages/profiles.md#vsfiltermod-build-capabilities).
 - Both `--flag` and `-flag` forms work, with separate values or `=value`.
 - Exit status: 0 for no primary errors, 1 for primary errors, 2 for usage, input/output, or fix-application failures.
 - `--format pretty|plain|json`: choose output format; defaults to `pretty`. Pretty output shows a compact diagnostic report with source frames; color is used only on an interactive terminal. A scan spinner appears only when stderr is interactive. `plain` preserves the text-oriented output; `json` emits machine-readable diagnostics.
@@ -21,7 +21,7 @@ assx [lint] [--renderer=libass|xy-vsfilter|vsfiltermod] [--compat=RENDERERS] [--
 - `--unsafe-fix`: apply safe and unsafe fixes.
 - `--force-ass`: bypass content recognition for intentionally partial input. This can permit writes with `--fix` or `--unsafe-fix`. It does not bypass encoding or SafeFix checks.
 
-assx checks content before ASS analysis. A `.ass` or `.ssa` suffix does not prove the file type. A file with another suffix can still contain ASS/SSA. Credible ASS/SSA records in their sections permit normal analysis and fixes. Sparse structure, such as an empty `[Events]` section, permits analysis but not writes. The CLI prints a notice on stderr. Foreign or unrecognized input causes an input error (exit 2), with no ASS lint report or fixes. `--force-ass` overrides only this recognition decision. Lint errors in recognized input return exit 1. See [input recognition](docs/architecture/syntax.md#input-recognition).
+assx checks content before ASS analysis. A `.ass` or `.ssa` suffix does not prove the file type. A file with another suffix can still contain ASS/SSA. Credible ASS/SSA records in their sections permit normal analysis and fixes. Sparse structure, such as an empty `[Events]` section, permits analysis but not writes. The CLI prints a notice on stderr. Foreign or unrecognized input causes an input error (exit 2), with no ASS lint report or fixes. `--force-ass` overrides only this recognition decision. Lint errors in recognized input return exit 1. See [input recognition](docs/packages/syntax.md#input-recognition).
 
 
 Font checks are separate from lint:
@@ -39,7 +39,7 @@ See [font checking](docs/usage/font-checking.md) for catalog scope, JSON, cache 
 
 All analysis uses the lossless concrete syntax tree and pinned profile engine.
 SafeFix application recomputes authorized edits under the caller's primary and compatibility policy.
-See [the evidence contract](docs/architecture/contracts.md) for evidence scope and limits.
+See [the evidence contract](docs/verification/contract.md) for evidence scope and limits.
 
 For diagnostic IDs and explanations, see the [rule catalog](docs/ass-rules/catalog.md). For pretty report behavior, see [diagnostic reports](docs/usage/diagnostic-reports.md).
 For reproducible performance benchmarks, profiling, and the pinned baseline, see [performance benchmarks](docs/development/performance.md).

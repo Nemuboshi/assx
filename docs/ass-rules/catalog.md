@@ -133,13 +133,13 @@ The drawing AST models `m`, `n`, `l`, `b`, `s`, `p`, and `c`, and preserves draw
 
 ## ASS031 — Renderer command interpretation is unresolved
 
-Explicit renderer-scoped validation uses this warning when a command is disabled or build-conditional, matched but semantically unmodeled, backed only by inferred signature evidence, or malformed in a way that prevents a verified interpretation. The finding does not assert a cross-renderer incompatibility and never authorizes an automatic edit. The default CLI also emits this warning for unresolved or ignored cross-renderer compatibility observations. Unverified tracked-state agreement remains one of these observations. See [renderer-scoped lint validation](../architecture/lint.md) and [compatibility](../architecture/compatibility.md).
+Explicit renderer-scoped validation uses this warning when a command is disabled or build-conditional, matched but semantically unmodeled, backed only by inferred signature evidence, or malformed in a way that prevents a verified interpretation. The finding does not assert a cross-renderer incompatibility and never authorizes an automatic edit. The default CLI also emits this warning for unresolved or ignored cross-renderer compatibility observations. Unverified tracked-state agreement remains one of these observations. See [renderer-scoped lint validation](../packages/lint.md) and [compatibility](../packages/compatibility.md).
 
 ## ASS032 — Style Alignment is outside 1 to 9
 
 The `Alignment` field of an ASS v4+ Style row is a numpad value. The pinned renderers place text for values 1 to 9 only. libass maps the value with `numpad2align` at parse; xy-VSFilter and VSFilterMod keep the raw integer and derive the position at use. This rule reports a whole-integer value outside 1 to 9. A fractional value stays an ASS011 finding, and a malformed value stays an ASS022 or ASS011 finding, so the rules do not overlap.
 
-Legacy SSA `Alignment` uses a bitfield mapping and is not checked by this rule. The rule has no automatic fix because the intended alignment is unknown. See [Style field conversion evidence](../architecture/compatibility.md#style-field-conversion-evidence).
+Legacy SSA `Alignment` uses a bitfield mapping and is not checked by this rule. The rule has no automatic fix because the intended alignment is unknown. See [Style field conversion evidence](../packages/compatibility.md#style-field-conversion-evidence).
 
 ## ASS033 — BorderStyle box scaling differs
 
