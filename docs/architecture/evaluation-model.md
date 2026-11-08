@@ -329,8 +329,10 @@ Implemented.
 `DialoguePreparations` caches one neutral program per dialogue text. Every
 profile resolves its own operation map over that program.
 `EvaluatePreparedSet` folds the program once with one state per prepared
-dialogue. The lint compared pass uses it for karaoke and drawing on dialogues
-that use `\k`, `\K`, `\kf`, `\ko`, `\kt`, or `\p`.
+dialogue. Every entry shares the program built from the same dialogue text; a
+projection lays out fields and never rewrites that text. The lint compared pass
+uses the set for karaoke and drawing on dialogues that use `\k`, `\K`, `\kf`,
+`\ko`, `\kt`, or `\p`.
 
 The primary renderer keeps its own pass because it also runs the lint rules and
 authorizes fixes. The set covers all compared renderers together.

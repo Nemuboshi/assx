@@ -293,8 +293,8 @@ type evaluationRequest struct {
 }
 
 // comparedEvaluationSet folds one neutral program once for every compared
-// renderer that shares it, then converts each state into observations. The
-// fallback keeps per-profile evaluation when a projection rewrote the text.
+// renderer, then converts each state into observations. A projection lays out
+// fields and never rewrites dialogue text, so every request shares one program.
 func comparedEvaluationSet(requests []evaluationRequest) []Diagnostic {
 	prepared := make([]*semantic.PreparedDialogue, len(requests))
 	options := make([]semantic.EvaluationOptions, len(requests))
@@ -316,12 +316,9 @@ func comparedEvaluationSet(requests []evaluationRequest) []Diagnostic {
 			},
 		}
 	}
-	_, shared := semantic.EvaluatePreparedSet(prepared, options)
+	semantic.EvaluatePreparedSet(prepared, options)
 	var findings []Diagnostic
 	for i := range requests {
-		if !shared {
-			requests[i].prepared.Evaluate(options[i])
-		}
 		current := drawings[i].diagnostics()
 		if !requests[i].dialogue.MissingFields {
 			current = append(current, analyzeKaraokeWithCursor(requests[i].dialogue, karaokes[i].duration)...)

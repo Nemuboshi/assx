@@ -154,24 +154,16 @@ func (d *DialoguePreparations) store(profile renderer.Profile, text string, prep
 }
 
 // EvaluatePreparedSet folds one neutral program once with one state per
-// prepared dialogue. The result reports false when the entries do not share a
-// program, for example after a projected text rewrite; the caller then keeps
-// separate evaluations.
-func EvaluatePreparedSet(prepared []*PreparedDialogue, options []EvaluationOptions) ([]Evaluation, bool) {
-	if len(prepared) == 0 || len(options) != len(prepared) {
-		return nil, false
-	}
-	for _, entry := range prepared[1:] {
-		if entry.program != prepared[0].program {
-			return nil, false
-		}
-	}
+// prepared dialogue. Every entry must be prepared from the same dialogue text:
+// the program cache then returns one shared program, and projection never
+// rewrites that text.
+func EvaluatePreparedSet(prepared []*PreparedDialogue, options []EvaluationOptions) []Evaluation {
 	if options[0].Observer.Text == nil && !prepared[0].tree.HasCandidates() {
-		return make([]Evaluation, len(prepared)), true
+		return make([]Evaluation, len(prepared))
 	}
 	states := make([]evaluationState, len(prepared))
 	for i := range prepared {
 		states[i] = evaluationState{profile: prepared[i].profile, operations: prepared[i].operations, options: options[i]}
 	}
-	return evaluateProgramSet(prepared[0].program, states), true
+	return evaluateProgramSet(prepared[0].program, states)
 }
