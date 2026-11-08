@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"maps"
 	"slices"
+	"strings"
 
 	"assx/internal/analysis"
 	"assx/internal/ass/renderer"
@@ -24,9 +25,8 @@ func parseSettings(raw jsontext.Value) (settings, error) {
 	}
 	var envelope struct {
 		Assx *struct {
-			PrimaryRenderer        string   `json:"primaryRenderer"`
-			CompatibilityRenderers []string `json:"compatibilityRenderers"`
-			Rules                  map[string]struct {
+			Renderers []string `json:"renderers"`
+			Rules     map[string]struct {
 				Disabled bool          `json:"disabled"`
 				Severity lint.Severity `json:"severity"`
 			} `json:"rules"`
@@ -40,26 +40,12 @@ func parseSettings(raw jsontext.Value) (settings, error) {
 		return result, nil
 	}
 	config := envelope.Assx
-	if config.PrimaryRenderer != "" {
-		profile, err := configuredProfile(config.PrimaryRenderer)
-		result.Options.Targets.Primary = profile
+	if config.Renderers != nil {
+		targets, err := rendererTargets(config.Renderers)
 		if err != nil {
 			return settings{}, err
 		}
-		result.Options.Targets.Compatibility = []renderer.Profile{}
-	}
-	if config.CompatibilityRenderers != nil {
-		result.Options.Targets.Compatibility = make([]renderer.Profile, 0, len(config.CompatibilityRenderers))
-		for _, name := range config.CompatibilityRenderers {
-			profile, err := configuredProfile(name)
-			if err != nil {
-				return settings{}, err
-			}
-			if profile == result.Options.Targets.Primary || slices.Contains(result.Options.Targets.Compatibility, profile) {
-				return settings{}, fmt.Errorf("duplicate renderer %q", name)
-			}
-			result.Options.Targets.Compatibility = append(result.Options.Targets.Compatibility, profile)
-		}
+		result.Options.Targets = targets
 	}
 	for _, id := range slices.Sorted(maps.Keys(config.Rules)) {
 		rule := config.Rules[id]
@@ -72,8 +58,35 @@ func parseSettings(raw jsontext.Value) (settings, error) {
 	return result, nil
 }
 
+// rendererTargets reads one ordered list. The first name is primary.
+func rendererTargets(names []string) (lint.AnalysisTargets, error) {
+	if len(names) == 0 {
+		return lint.AnalysisTargets{}, fmt.Errorf("renderers must name at least one renderer")
+	}
+	profiles := make([]renderer.Profile, 0, len(names))
+	for _, name := range names {
+		profile, err := configuredProfile(name)
+		if err != nil {
+			return lint.AnalysisTargets{}, err
+		}
+		if slices.Contains(profiles, profile) {
+			continue
+		}
+		profiles = append(profiles, profile)
+	}
+	targets := lint.AnalysisTargets{Primary: profiles[0], Compatibility: slices.Clone(profiles[1:])}
+	sorted := targets.Profiles()
+	targets.Compatibility = nil
+	for _, profile := range sorted {
+		if profile != targets.Primary {
+			targets.Compatibility = append(targets.Compatibility, profile)
+		}
+	}
+	return targets, nil
+}
+
 func configuredProfile(name string) (renderer.Profile, error) {
-	switch name {
+	switch strings.ToLower(strings.TrimSpace(name)) {
 	case "libass":
 		return renderer.Standard(renderer.Libass)
 	case "xy-vsfilter":

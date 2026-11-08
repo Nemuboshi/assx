@@ -53,7 +53,7 @@ async function smokeTest(): Promise<void> {
   if (!safe?.edit || !(await vscode.workspace.applyEdit(safe.edit))) throw new Error('proven Quick Fix was not applied');
   if (document.getText().includes('\\fs10')) throw new Error('Quick Fix did not remove the redundant tag');
 
-  await vscode.workspace.getConfiguration('assx').update('primaryRenderer', 'vsfiltermod', vscode.ConfigurationTarget.Global);
+  await vscode.workspace.getConfiguration('assx').update('renderers', ['vsfiltermod'], vscode.ConfigurationTarget.Global);
   await until(() => {
     const found = vscode.languages.getDiagnostics(document.uri);
     return found.some(item => String(item.message).includes('VSFilterMod')) ? found : undefined;

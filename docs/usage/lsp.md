@@ -4,7 +4,7 @@ Run `assx lsp` from an LSP client. The server uses stdio for JSON-RPC messages. 
 
 ## Editors and release
 
-The [VS Code adapter](../../editors/vscode) starts the configured `assx lsp` executable. Install its Node dependencies only to build the adapter. Set `assx.serverPath` to an executable path if `assx` is not on `PATH`. Set `assx.primaryRenderer` and `assx.compatibilityRenderers` in VS Code settings. Renderer changes refresh open documents. Reload VS Code after a server path change. The adapter does not download a server or parse ASS.
+The [VS Code adapter](../../editors/vscode) starts the configured `assx lsp` executable. Install its Node dependencies only to build the adapter. Set `assx.serverPath` to an executable path if `assx` is not on `PATH`. Set `assx.renderers` in VS Code settings. Renderer changes refresh open documents. Reload VS Code after a server path change. The adapter does not download a server or parse ASS.
 
 Copy the [Neovim example](../../editors/neovim/init.lua) into Neovim 0.11+ configuration or the [Helix example](../../editors/helix/languages.toml) into Helix language configuration. Both require `assx` on `PATH`. The examples configure diagnostics and basic language features. They do not certify Quick Fix versioned-edit support in those clients. Refer to the [Neovim LSP configuration](https://neovim.io/doc/user/lsp/) and [Helix language configuration](https://docs.helix-editor.com/languages.html) for client settings.
 
@@ -26,4 +26,4 @@ The server reparses and reindexes the complete modified text. It has no incremen
 
 ## Settings
 
-Pass settings under `assx` in `initializationOptions` or `workspace/didChangeConfiguration`. `primaryRenderer` accepts `libass`, `xy-vsfilter`, or `vsfiltermod`. `compatibilityRenderers` is an optional list of the same names. Lua is out of scope; see [build capabilities](../packages/profiles.md#vsfiltermod-build-capabilities). `rules` maps rule IDs to `disabled` and optional `severity`. `forceASS` allows an empty buffer without overriding foreign-content rejection. The default is libass validity plus xy-VSFilter compatibility. Invalid settings keep the last valid selection and produce a bounded warning on stderr.
+Pass settings under `assx` in `initializationOptions` or `workspace/didChangeConfiguration`. `renderers` is an ordered list of `libass`, `xy-vsfilter`, and `vsfiltermod`. The first name is primary; the rest extend comparison and proof scope. Lua is out of scope; see [build capabilities](../packages/profiles.md#vsfiltermod-build-capabilities). `rules` maps rule IDs to `disabled` and optional `severity`. `forceASS` allows an empty buffer without overriding foreign-content rejection. The default is libass validity plus xy-VSFilter compatibility. Invalid settings keep the last valid selection and produce a bounded warning on stderr.

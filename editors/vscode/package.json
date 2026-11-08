@@ -18,8 +18,7 @@
       "title": "assx",
       "properties": {
         "assx.serverPath": { "type": "string", "default": "assx", "description": "Path to the assx executable on PATH or an absolute path." },
-        "assx.primaryRenderer": { "type": "string", "enum": ["libass", "xy-vsfilter", "vsfiltermod"], "default": "libass" },
-        "assx.compatibilityRenderers": { "type": "array", "items": { "type": "string", "enum": ["libass", "xy-vsfilter", "vsfiltermod"] }, "default": ["xy-vsfilter"] }
+        "assx.renderers": { "type": "array", "items": { "type": "string", "enum": ["libass", "xy-vsfilter", "vsfiltermod"] }, "default": ["libass", "xy-vsfilter"], "description": "Renderers in priority order. The first is primary." }
       }
     }
   },

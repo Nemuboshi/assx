@@ -82,7 +82,7 @@ func TestHoverUsesPinnedRendererEvidenceAndIgnoresPlainText(t *testing.T) {
 	if err != nil || hover == nil || !strings.Contains(hover.Contents.Value, "libass:") || !strings.Contains(hover.Contents.Value, "rejected") {
 		t.Fatalf("libass hover = %+v, %v", hover, err)
 	}
-	configured, err := parseSettings(jsontext.Value(`{"assx":{"primaryRenderer":"vsfiltermod","compatibilityRenderers":[]}}`))
+	configured, err := parseSettings(jsontext.Value(`{"assx":{"renderers":["vsfiltermod"]}}`))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -144,7 +144,7 @@ func TestHoverReportsShadowedAndRendererScopedDispatch(t *testing.T) {
 	if err != nil || hover == nil || !strings.Contains(hover.Contents.Value, `shadows \fsvp`) {
 		t.Fatalf("shadowed hover = %+v, %v", hover, err)
 	}
-	configured, err := parseSettings(jsontext.Value(`{"assx":{"primaryRenderer":"vsfiltermod","compatibilityRenderers":[]}}`))
+	configured, err := parseSettings(jsontext.Value(`{"assx":{"renderers":["vsfiltermod"]}}`))
 	if err != nil {
 		t.Fatal(err)
 	}

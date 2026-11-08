@@ -6,8 +6,7 @@ vim.lsp.config('assx', {
   workspace_required = false,
   init_options = {
     assx = {
-      primaryRenderer = 'libass',
-      compatibilityRenderers = { 'xy-vsfilter' },
+      renderers = { 'libass', 'xy-vsfilter' },
     },
   },
 })

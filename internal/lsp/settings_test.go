@@ -17,19 +17,23 @@ func TestSettingsUseDefaultTargetsAndValidateBuildGates(t *testing.T) {
 	if err != nil || defaults.Options.Targets.Primary.Kind() != renderer.Libass || len(defaults.Options.Targets.Compatibility) != 1 || defaults.Options.Targets.Compatibility[0].Kind() != renderer.XYVSFilter {
 		t.Fatalf("defaults = %+v, %v", defaults, err)
 	}
-	explicit, err := parseSettings(jsontext.Value(`{"assx":{"primaryRenderer":"xy-vsfilter"}}`))
+	explicit, err := parseSettings(jsontext.Value(`{"assx":{"renderers":["xy-vsfilter"]}}`))
 	if err != nil || len(explicit.Options.Targets.Compatibility) != 0 {
 		t.Fatalf("explicit primary must not retain default compatibility: %+v, %v", explicit, err)
 	}
-	settings, err := parseSettings(jsontext.Value(`{"assx":{"primaryRenderer":"vsfiltermod","compatibilityRenderers":["libass"],"rules":{"ASS007":{"disabled":true}}}}`))
+	settings, err := parseSettings(jsontext.Value(`{"assx":{"renderers":["vsfiltermod","libass"],"rules":{"ASS007":{"disabled":true}}}}`))
 	if err != nil {
 		t.Fatal(err)
 	}
 	if settings.Options.Targets.Primary.Kind() != renderer.VSFilterMod || len(settings.Options.Targets.Compatibility) != 1 || settings.Options.Targets.Compatibility[0].Kind() != renderer.Libass || len(settings.Options.Rules) != 1 || settings.Options.Rules[0].ID != lint.IssueUnknownTag {
 		t.Fatalf("settings = %+v", settings)
 	}
+	deduped, err := parseSettings(jsontext.Value(`{"assx":{"renderers":["libass","libass","xy-vsfilter"]}}`))
+	if err != nil || deduped.Options.Targets.Primary.Kind() != renderer.Libass || len(deduped.Options.Targets.Compatibility) != 1 || deduped.Options.Targets.Compatibility[0].Kind() != renderer.XYVSFilter {
+		t.Fatalf("deduped renderers = %+v, %v", deduped, err)
+	}
 	for _, invalid := range []string{
-		`{"assx":{"primaryRenderer":"bogus"}}`,
+		`{"assx":{"renderers":["bogus"]}}`,
 		`{"assx":{"vsfilterMod":{"mod":"yes"}}}`,
 		`{"assx":{"rules":{"UNKNOWN":{"disabled":true}}}}`,
 		`{"assx":{"compatibilityRenderers":["libass","libass"]}}`,
@@ -42,11 +46,11 @@ func TestSettingsUseDefaultTargetsAndValidateBuildGates(t *testing.T) {
 
 func TestSessionConfigurationRefreshesAllOpenDocuments(t *testing.T) {
 	input := framedMessages(t,
-		`{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"initializationOptions":{"assx":{"primaryRenderer":"xy-vsfilter","compatibilityRenderers":[]}}}}`,
+		`{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"initializationOptions":{"assx":{"renderers":["xy-vsfilter"]}}}}`,
 		`{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"file:///b.ass","version":1,"text":"[Events]\nDialogue: broken\n"}}}`,
 		`{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"file:///a.ass","version":1,"text":"[Events]\nDialogue: broken\n"}}}`,
-		`{"jsonrpc":"2.0","method":"workspace/didChangeConfiguration","params":{"settings":{"assx":{"primaryRenderer":"libass","compatibilityRenderers":[]}}}}`,
-		`{"jsonrpc":"2.0","method":"workspace/didChangeConfiguration","params":{"settings":{"assx":{"primaryRenderer":"bogus"}}}}`,
+		`{"jsonrpc":"2.0","method":"workspace/didChangeConfiguration","params":{"settings":{"assx":{"renderers":["libass"]}}}}`,
+		`{"jsonrpc":"2.0","method":"workspace/didChangeConfiguration","params":{"settings":{"assx":{"renderers":["bogus"]}}}}`,
 		`{"jsonrpc":"2.0","id":2,"method":"shutdown"}`,
 		`{"jsonrpc":"2.0","method":"exit"}`)
 	var server Server

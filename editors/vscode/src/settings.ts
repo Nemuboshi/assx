@@ -1,11 +1,7 @@
 export interface ServerSettings {
-  primaryRenderer: string;
-  compatibilityRenderers: string[];
+  renderers: string[];
 }
 
 export function serverSettings(read: (key: string) => unknown): ServerSettings {
-  return {
-    primaryRenderer: read('primaryRenderer') as string,
-    compatibilityRenderers: read('compatibilityRenderers') as string[]
-  };
+  return { renderers: read('renderers') as string[] };
 }
