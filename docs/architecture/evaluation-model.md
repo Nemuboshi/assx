@@ -1,9 +1,8 @@
 # Evaluation model
 
-Status: Phase 0 to Phase 3 are implemented. Phase 4 implements compared state
-observations. The multi-state fold is not implemented; the flat program runs
-once per profile. Current behavior is in [the lint pipeline](lint-pipeline.md)
-and [compatibility](../packages/compatibility.md).
+Status: Phase 0 to Phase 4 are implemented. Current behavior is in
+[the lint pipeline](lint-pipeline.md) and
+[compatibility](../packages/compatibility.md).
 
 ## Purpose
 
@@ -291,10 +290,10 @@ Exit criteria:
 
 Implemented in `internal/semantic/operation.go`.
 
-`operationsFromTokens` returns one `program`: the token stream, the operation
-map, and a child-index map. Evaluation reads `children[tag.Start]` instead of
-recursing through `tag.Children`. The borrowed child views stay on the tag for
-observers, so the compact trace and the contract goldens do not change.
+`buildProgram` returns one neutral `program`: the token stream and a
+child-index map. Evaluation reads `children[tag.Start]` instead of recursing
+through `tag.Children`. Evaluator tags no longer publish a borrowed child
+tree; the contract records the flat output. The compact trace is unchanged.
 
 Exit criteria:
 
@@ -323,29 +322,30 @@ Exit criteria:
 - One regression test per removed branch.
 - Performance stays within 2%.
 
-### Phase 4: compared state observations
+### Phase 4: multi-state fold
 
-Implemented for karaoke and drawing.
+Implemented.
 
-A compared renderer evaluates a dialogue only when it uses `\k`, `\K`, `\kf`,
-`\ko`, `\kt`, or `\p`. The existing cursor and drawing collectors convert the
-result, and assembly merges the observation with the primary finding.
+`DialoguePreparations` caches one neutral program per dialogue text. Every
+profile resolves its own operation map over that program.
+`EvaluatePreparedSet` folds the program once with one state per prepared
+dialogue. The lint compared pass uses it for karaoke and drawing on dialogues
+that use `\k`, `\K`, `\kf`, `\ko`, `\kt`, or `\p`.
 
-Not implemented:
+The primary renderer keeps its own pass because it also runs the lint rules and
+authorizes fixes. The set covers all compared renderers together.
 
-- The multi-state fold. The flat program runs once per profile. The state
-  object is large, and the measured compared-evaluation share is about 2% of
-  SessionDiscovery, within the Phase 4 gate.
-- Replacement of the per-finding value check. No verified per-renderer range
-  difference exists, so the check keeps its current shape.
+Compared value checks follow the same rule: an expression whose decode equals
+the primary's copies the primary verdict. A different decode runs the tag
+cascade once and can create a finding. The per-finding value check is gone.
 
 Exit criteria:
 
 - A compared karaoke or drawing difference appears as an observation on the
   same condition.
 - The compared value check from Phase 1 replaces the lint-level deep check.
-- `BenchmarkSessionDiscovery` stays within 3% of the current value
-  (`scaling_250` about 27.6ms, `long_10000` about 443ms).
+- `BenchmarkSessionDiscovery` stays within 3% of the 28.7ms and 456ms values
+  from Phase 3.
 - CLI end-to-end on 2000 dialogues stays within 3% of 552ms.
 
 ## Tests
@@ -356,6 +356,8 @@ Exit criteria:
 - `TestValueRangeDiffersByRenderer`: the 61 case.
 - `TestCompactCompareMatchesFullReference`: trace equivalence.
 - `TestRendererBaselineContracts`: contract drift through the review path.
+- `TestEvaluatePreparedSetSharesProgram`: one program, two states.
+- `TestSameResolution`: structural equality gates the compared rule cascade.
 - `BenchmarkSessionDiscovery`: scaling gate.
 
 ## Open questions
