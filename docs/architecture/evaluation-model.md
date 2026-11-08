@@ -1,7 +1,8 @@
 # Evaluation model
 
-Status: design. This document describes planned behavior. Current behavior is
-in [the lint pipeline](lint-pipeline.md) and [compatibility](../packages/compatibility.md).
+Status: Phase 0 and Phase 1 are implemented. Later phases are design. Current
+behavior is in [the lint pipeline](lint-pipeline.md) and
+[compatibility](../packages/compatibility.md).
 
 ## Purpose
 
@@ -252,7 +253,14 @@ These rules must not change.
 
 ### Phase 0: schema and selector
 
-Add the schema, the generator output, and `CommandSpec`. No behavior change.
+Implemented.
+
+- `docs/reference/ass-tags.xml` argument rows accept `value`, `min`, `max`,
+  and a `renderer` scope.
+- `cmd/genmatrix` validates the fields and emits `params` per signature.
+- `Profile.CommandSpec` selects the row. `Resolve` publishes it as
+  `Result.Policy`.
+- A prebuilt override table keeps resolution free of matrix walks.
 
 Exit criteria:
 
@@ -264,9 +272,14 @@ Exit criteria:
 
 ### Phase 1: per-renderer value fields
 
-Move `kind`, `min`, and `max` for tags with verified evidence. Add one test
-that a value rejected by one renderer and accepted by another reports one
-`value` finding. The finding is a warning when the primary accepts.
+Implemented for the tags that carry a concrete value kind. The matrix now
+holds `value` for 44 tags, with `min`/`max` for `i`, `u`, `s`, `q`, `an`, and
+`a`. Prose `range` stays documentation.
+
+No verified per-renderer range difference exists in the matrix today. The
+mechanism is proven with a synthetic matrix row: one profile accepts 0..100
+and another accepts 0..60. A value of 61 selects a different policy per
+profile, and `validateIR` reads that policy.
 
 Exit criteria:
 
