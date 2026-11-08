@@ -138,7 +138,7 @@ func analyzeResolvedDialogue(dialogue ass.Dialogue, profile renderer.Profile, st
 			continue
 		}
 		if strings.TrimSpace(node.Block.Content) == "" {
-			rule := Rules[IssueEmptyOverrideBlock]
+			rule := RuleFor(IssueEmptyOverrideBlock)
 			analyzer.diagnostics = append(analyzer.diagnostics, Diagnostic{
 				Condition: rule.Condition, Severity: rule.Severity, Title: rule.Title,
 				Description: rule.Description, Fix: rule.Fix,
@@ -342,7 +342,7 @@ func (d *resolvedDrawingCollector) flush() {
 	if len(d.fragments) == 0 {
 		return
 	}
-	rule := Rules[IssueMalformedDrawing]
+	rule := RuleFor(IssueMalformedDrawing)
 	for _, problem := range ass.ParseDrawing(d.fragments).Issues {
 		d.findings = append(d.findings, Diagnostic{
 			Condition: rule.Condition, Severity: rule.Severity, Title: rule.Title,

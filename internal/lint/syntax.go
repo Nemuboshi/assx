@@ -9,7 +9,7 @@ import (
 )
 
 func overrideJunkDiagnostic(dialogue ass.Dialogue, column int, junk string, span ass.ConcreteSpan) Diagnostic {
-	rule := Rules[IssueOverrideJunk]
+	rule := RuleFor(IssueOverrideJunk)
 	return Diagnostic{
 		Condition: rule.Condition, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
 		Fix: rule.Fix, Line: dialogue.Line, Column: column,

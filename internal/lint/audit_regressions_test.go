@@ -130,7 +130,7 @@ func TestRedundantStyleMetadataAndStateIsolation(t *testing.T) {
 		t.Fatalf("shared style state leaked between dialogues: %#v", diagnostics)
 	}
 	for _, diagnostic := range diagnostics {
-		rule := Rules[IssueRedundantStyleOverrides]
+		rule := RuleFor(IssueRedundantStyleOverrides)
 		if diagnostic.Title != rule.Title || diagnostic.Description != rule.Description || diagnostic.Fix != rule.Fix {
 			t.Fatalf("missing rule metadata: %#v", diagnostic)
 		}

@@ -140,7 +140,7 @@ func styleColourMalformed(value string) bool {
 }
 
 func styleDiagnostic(id string, field ass.StyleField, name, replacement string) Diagnostic {
-	rule := Rules[id]
+	rule := RuleFor(id)
 	diagnostic := Diagnostic{
 		Condition: rule.Condition, Severity: rule.Severity, FixSafety: rule.FixSafety,
 		Title: rule.Title, Description: rule.Description, Fix: rule.Fix,

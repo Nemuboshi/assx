@@ -323,8 +323,8 @@ func TestRuleRegistryHasStableMetadata(t *testing.T) {
 		if id != test.want {
 			t.Errorf("rule ID = %q, want %q", id, test.want)
 		}
-		rule, ok := Rules[id]
-		if !ok || rule.Condition != id || rule.Title == "" || rule.Description == "" {
+		rule := RuleFor(id)
+		if !HasCondition(id) || rule.Condition != id || rule.Title == "" || rule.Description == "" {
 			t.Errorf("rule %q is missing required metadata: %#v", id, rule)
 		}
 	}

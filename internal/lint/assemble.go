@@ -111,7 +111,7 @@ func hasPrimaryObservation(observations []Observation) bool {
 // an error only when the primary renderer rejects it; everything else is a
 // warning. Decorative conditions stay suggestions.
 func deriveSeverity(condition string, observations []Observation) Severity {
-	spec, ok := Rules[condition]
+	spec, ok := rules[condition]
 	if !ok {
 		return Warning
 	}

@@ -152,7 +152,7 @@ func applyResolutions(ctx context.Context, doc ass.Document, targets AnalysisTar
 					added[at].Renderers = append(added[at].Renderers, observation)
 					return true
 				}
-				rule := Rules[condition]
+				rule := RuleFor(condition)
 				slashes := len(result.Raw) - len(strings.TrimLeft(result.Raw, "\\"))
 				created[createdKey] = len(added)
 				added = append(added, Diagnostic{

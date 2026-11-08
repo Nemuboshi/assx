@@ -161,7 +161,7 @@ func TestKeywordCaseWarnings(t *testing.T) {
 
 func TestRegistryCoversAllShippedRules(t *testing.T) {
 	for _, id := range []string{IssueUnterminatedBlock, IssueMalformedStyleColour, IssueKeywordCase} {
-		rule := Rules[id]
+		rule := RuleFor(id)
 		if rule.Condition != id || rule.Title == "" || rule.Description == "" || rule.Fix == "" {
 			t.Fatalf("rule %s metadata = %#v", id, rule)
 		}

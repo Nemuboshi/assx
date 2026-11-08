@@ -330,8 +330,8 @@ func TestEventRulesRunThroughAnalyzeDocument(t *testing.T) {
 
 func TestNewEventRulesAreReportedWithoutFixes(t *testing.T) {
 	for _, id := range []string{IssueEventFormat, IssueShortEvent, IssueTimecode, IssueEventDuration, IssueEventLayer, IssueEffectField, IssueKaraoke} {
-		rule, ok := Rules[id]
-		if !ok {
+		rule := RuleFor(id)
+		if !HasCondition(id) {
 			t.Fatalf("rule %s is not registered", id)
 		}
 		if rule.FixSafety != "" {

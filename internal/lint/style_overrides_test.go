@@ -110,7 +110,7 @@ func TestRedundantStyleOverrideProperties(t *testing.T) {
 				// Abbreviated custom Style layouts are not equivalent in xy-VSFilter.
 				t.Fatalf("finding metadata = %#v", diagnostics[0])
 			}
-			if rule := Rules[IssueRedundantStyleOverrides]; rule.Title != "Overrides match style" || rule.Severity != Suggestion || rule.FixSafety != SafeFix {
+			if rule := RuleFor(IssueRedundantStyleOverrides); rule.Title != "Overrides match style" || rule.Severity != Suggestion || rule.FixSafety != SafeFix {
 				t.Fatalf("redundant-style rule metadata = %#v", rule)
 			}
 		})

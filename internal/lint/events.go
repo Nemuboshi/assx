@@ -47,7 +47,7 @@ func analyzeEventFields(doc ass.Document, profile renderer.Profile, includeKarao
 	diagnostics := eventFormatFindings(doc)
 	for _, dialogue := range doc.Dialogues {
 		if dialogue.MissingFields {
-			rule := Rules[IssueShortEvent]
+			rule := RuleFor(IssueShortEvent)
 			column := len("Dialogue:") + 1
 			if field, ok := dialogue.Field("layer"); ok {
 				column = field.Start - dialogue.LineStart + 1
@@ -76,7 +76,7 @@ func analyzeEventFields(doc ass.Document, profile renderer.Profile, includeKarao
 
 func eventFormatFindings(doc ass.Document) []Diagnostic {
 	var diagnostics []Diagnostic
-	rule := Rules[IssueEventFormat]
+	rule := RuleFor(IssueEventFormat)
 	for _, raw := range doc.Lines {
 		if raw.Section != "events" {
 			continue
@@ -129,7 +129,7 @@ func analyzeTimecodes(dialogue ass.Dialogue) []Diagnostic {
 		if eventTimeShape.MatchString(value) {
 			continue
 		}
-		rule := Rules[IssueTimecode]
+		rule := RuleFor(IssueTimecode)
 		diagnostics = append(diagnostics, Diagnostic{
 			Condition: rule.Condition, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
 			Fix: rule.Fix, Line: dialogue.Line, Column: field.Start - dialogue.LineStart + 1, Field: name,
@@ -147,7 +147,7 @@ func analyzeEventDuration(dialogue ass.Dialogue) []Diagnostic {
 		return nil
 	}
 	field, _ := dialogue.Field("end")
-	rule := Rules[IssueEventDuration]
+	rule := RuleFor(IssueEventDuration)
 	detail := "Start and End are equal, so the event has zero duration and never renders."
 	if start > end {
 		detail = "End is earlier than Start; libass keeps an event that never matches any frame and VSFilter drops the entry while parsing."
@@ -168,7 +168,7 @@ func analyzeLayer(dialogue ass.Dialogue) []Diagnostic {
 	if eventInteger(value) {
 		return nil
 	}
-	rule := Rules[IssueEventLayer]
+	rule := RuleFor(IssueEventLayer)
 	detail := fmt.Sprintf("The Layer value %q has no leading integer; libass silently uses layer 0 while VSFilter rejects the line.", value)
 	if value == "" {
 		detail = "The Layer field is empty; libass silently uses layer 0 while VSFilter rejects the line."
@@ -211,7 +211,7 @@ func analyzeKaraokeWithCursor(dialogue ass.Dialogue, findCursor func() (int64, b
 	if cursor <= duration {
 		return nil
 	}
-	rule := Rules[IssueKaraoke]
+	rule := RuleFor(IssueKaraoke)
 	field, _ := dialogue.Field("end")
 	return []Diagnostic{{
 		Condition: rule.Condition, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
@@ -255,7 +255,7 @@ func analyzeEffect(dialogue ass.Dialogue) []Diagnostic {
 	effect, params := splitEffect(value)
 	canonical, recognized := knownEffect(effect)
 	if !recognized {
-		rule := Rules[IssueEffectField]
+		rule := RuleFor(IssueEffectField)
 		return []Diagnostic{{
 			Condition: rule.Condition, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
 			Fix: rule.Fix, Line: dialogue.Line, Column: field.Start - dialogue.LineStart + 1, Field: "Effect",
@@ -263,7 +263,7 @@ func analyzeEffect(dialogue ass.Dialogue) []Diagnostic {
 			Sources: rule.Sources, SourceSpan: &ass.ConcreteSpan{Start: field.Start, End: field.End},
 		}}
 	}
-	rule := Rules[IssueEffectField]
+	rule := RuleFor(IssueEffectField)
 	if effect != canonical {
 		return []Diagnostic{{
 			Condition: rule.Condition, Severity: Warning, Title: rule.Title, Description: rule.Description,

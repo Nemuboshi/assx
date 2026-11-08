@@ -77,7 +77,7 @@ func TestStyleBorderCompatibilityRules(t *testing.T) {
 				t.Fatalf("got %d findings, want %d: %#v", len(findings), tc.count, findings)
 			}
 			for _, finding := range findings {
-				if finding.Condition != tc.id || finding.Severity != Warning || finding.Description != Rules[tc.id].Description || finding.Fix != Rules[tc.id].Fix {
+				if finding.Condition != tc.id || finding.Severity != Warning || finding.Description != RuleFor(tc.id).Description || finding.Fix != RuleFor(tc.id).Fix {
 					t.Fatalf("wrong rule metadata: %#v", finding)
 				}
 				if finding.FixSafety != "" || len(finding.Edits) != 0 || finding.FixProof != nil {

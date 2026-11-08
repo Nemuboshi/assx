@@ -73,7 +73,7 @@ func compatibilityDiagnostics(findings []semantic.CompatibilityFinding, location
 			continue
 		}
 		seen[k] = true
-		rule := Rules[condition]
+		rule := RuleFor(condition)
 		line, column := location(finding.Source)
 		out = append(out, Diagnostic{
 			Condition: condition, Scenario: finding.Dimension,

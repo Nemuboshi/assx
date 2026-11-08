@@ -75,7 +75,7 @@ func analyzeUnterminatedBlocks(dialogue ass.Dialogue) []Diagnostic {
 		}
 		close := strings.IndexByte(text[open+1:], '}')
 		if close < 0 {
-			rule := Rules[IssueUnterminatedBlock]
+			rule := RuleFor(IssueUnterminatedBlock)
 			diagnostics = append(diagnostics, Diagnostic{
 				Condition: rule.Condition, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
 				Fix: rule.Fix, Line: dialogue.Line, Column: open + 1,
@@ -188,7 +188,7 @@ func noEffectDetail(effect semantic.NoEffect) string {
 }
 
 func (a *dialogueAnalyzer) add(id string, tag ass.Tag, detail string) {
-	rule := Rules[id]
+	rule := RuleFor(id)
 	span := ass.ConcreteSpan{Start: a.textStart + tag.Start, End: a.textStart + tag.End}
 	a.diagnostics = append(a.diagnostics, Diagnostic{
 		Condition: rule.Condition, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
@@ -284,7 +284,7 @@ func analyzeRepeatedOpenBraces(dialogue ass.Dialogue) []Diagnostic {
 			runEnd++
 		}
 		if runEnd > open+1 {
-			rule := Rules[IssueRepeatedOpenBrace]
+			rule := RuleFor(IssueRepeatedOpenBrace)
 			diagnostics = append(diagnostics, Diagnostic{
 				Condition: rule.Condition, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
 				Fix: rule.Fix, FixSafety: rule.FixSafety, Line: dialogue.Line, Column: open + 2,

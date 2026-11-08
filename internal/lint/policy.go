@@ -30,7 +30,7 @@ func (policy RulePolicy) validate() error {
 			return fmt.Errorf("rule policy repeats condition %s", override.Condition)
 		}
 		seen[override.Condition] = true
-		if _, known := Rules[override.Condition]; !known {
+		if _, known := rules[override.Condition]; !known {
 			return fmt.Errorf("rule policy names unknown condition %s", override.Condition)
 		}
 		switch override.Severity {

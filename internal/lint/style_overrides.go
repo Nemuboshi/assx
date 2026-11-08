@@ -176,10 +176,10 @@ func (c *styleRunCollector) diagnostic() (Diagnostic, bool) {
 		if len(edits) == 0 {
 			return Diagnostic{}, false
 		}
-		safety = Rules[IssueRedundantStyleOverrides].FixSafety
+		safety = RuleFor(IssueRedundantStyleOverrides).FixSafety
 	}
 	first := c.candidates[0]
-	rule := Rules[IssueRedundantStyleOverrides]
+	rule := RuleFor(IssueRedundantStyleOverrides)
 	return Diagnostic{
 		Condition: rule.Condition, Severity: rule.Severity, FixSafety: safety,
 		Title: rule.Title, Description: rule.Description, Fix: rule.Fix, Sources: rule.Sources,

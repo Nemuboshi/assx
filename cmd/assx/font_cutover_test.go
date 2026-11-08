@@ -29,7 +29,7 @@ func TestFontCutoverRejectsLegacyFlags(t *testing.T) {
 
 func TestFontCutoverLintDoesNotAccessCatalog(t *testing.T) {
 	for _, id := range []string{"ASS015", "ASS016", "FONT001", "FONT002"} {
-		if _, exists := lint.Rules[id]; exists {
+		if lint.HasCondition(id) {
 			t.Fatalf("environmental rule remains active: %s", id)
 		}
 	}

@@ -66,7 +66,7 @@ func AnalyzeHeaders(doc ass.Document) []Diagnostic {
 }
 
 func headerDiagnostic(doc ass.Document, id string, field ass.HeaderField, exists bool, detail string, edits []TextEdit) Diagnostic {
-	rule := Rules[id]
+	rule := RuleFor(id)
 	line := doc.ScriptInfoLine
 	if line == 0 {
 		line = 1

@@ -45,7 +45,7 @@ func AnalyzeKeywords(doc ass.Document) []Diagnostic {
 		for _, keyword := range keywords {
 			canonical := strings.TrimSuffix(keyword, ":")
 			if strings.EqualFold(canonical, prefix) && canonical != prefix {
-				rule := Rules[IssueKeywordCase]
+				rule := RuleFor(IssueKeywordCase)
 				diagnostics = append(diagnostics, Diagnostic{
 					Condition: rule.Condition, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
 					Fix: rule.Fix, Line: raw.Line, Column: len(raw.Content) - len(trimmed) + 1,
