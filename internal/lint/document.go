@@ -7,7 +7,6 @@ import (
 
 	"assx/internal/ass"
 	editpkg "assx/internal/edit"
-	"assx/internal/semantic"
 )
 
 // overlapComparisons counts the interval decisions the redundant-Style
@@ -78,39 +77,7 @@ func analyzeDocumentForTargetsUnprovedContext(ctx context.Context, doc ass.Docum
 		return nil, err
 	}
 	stampPass(findings, targets.Primary, RolePrimary)
-	for _, profile := range targets.Profiles() {
-		if profile == targets.Primary {
-			continue
-		}
-		view := profile.DocumentView(doc)
-		if shared != nil {
-			if prepared, ok := shared.viewFor(doc, profile); ok {
-				view = prepared
-			}
-		}
-		styles := semantic.StyleStatesByName(view.StyleFields)
-		for _, dialogue := range view.Dialogues {
-			if err := ctx.Err(); err != nil {
-				return nil, err
-			}
-			var prepared *semantic.PreparedDialogue
-			if shared != nil {
-				prepared = shared.preparations.PrepareText(profile, dialogue.Text)
-			}
-			pass, _ := analyzeResolvedDialogue(dialogue, profile, styles, nil, prepared)
-			kept := pass[:0]
-			for _, finding := range pass {
-				// Decorative conditions come from the primary pass, which owns
-				// the overlap suppression they participate in.
-				if finding.Condition == IssueNoEffect {
-					continue
-				}
-				kept = append(kept, finding)
-			}
-			stampPass(kept, profile, RoleCompared)
-			findings = append(findings, kept...)
-		}
-	}
+	findings = applyResolutions(ctx, doc, targets, shared, findings)
 	for _, dialogue := range doc.Dialogues {
 		if err := ctx.Err(); err != nil {
 			return nil, err

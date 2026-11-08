@@ -75,16 +75,20 @@ func mergeObservations(dst, add []Observation, primary renderer.Profile) []Obser
 	seen := make(map[string]bool, len(dst)+len(add))
 	out := make([]Observation, 0, len(dst)+len(add))
 	primaryName := primary.Kind().String()
-	for _, observation := range append(append([]Observation(nil), dst...), add...) {
-		if observation.Renderer == primaryName {
-			observation.Role = RolePrimary
+	merge := func(observations []Observation) {
+		for _, observation := range observations {
+			if observation.Renderer == primaryName {
+				observation.Role = RolePrimary
+			}
+			if seen[observation.Renderer] {
+				continue
+			}
+			seen[observation.Renderer] = true
+			out = append(out, observation)
 		}
-		if seen[observation.Renderer] {
-			continue
-		}
-		seen[observation.Renderer] = true
-		out = append(out, observation)
 	}
+	merge(dst)
+	merge(add)
 	sort.SliceStable(out, func(i, j int) bool {
 		if (out[i].Role == RolePrimary) != (out[j].Role == RolePrimary) {
 			return out[i].Role == RolePrimary
@@ -142,15 +146,22 @@ func keyOf(diagnostic Diagnostic) findingKey {
 }
 
 func mergeSources(dst, add []string) []string {
+	if len(add) == 0 {
+		return dst
+	}
 	seen := make(map[string]bool, len(dst)+len(add))
 	out := make([]string, 0, len(dst)+len(add))
-	for _, source := range append(append([]string(nil), dst...), add...) {
-		if source == "" || seen[source] {
-			continue
+	merge := func(sources []string) {
+		for _, source := range sources {
+			if source == "" || seen[source] {
+				continue
+			}
+			seen[source] = true
+			out = append(out, source)
 		}
-		seen[source] = true
-		out = append(out, source)
 	}
+	merge(dst)
+	merge(add)
 	return out
 }
 
