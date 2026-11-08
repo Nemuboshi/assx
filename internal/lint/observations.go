@@ -43,6 +43,35 @@ func resolutionObservable(condition string) bool {
 	return false
 }
 
+// deepCheckable reports whether a condition depends on lint-side value
+// decoding rather than on the renderer's resolution. Those checks run per
+// finding, not per tag, so the compared observation stays available without
+// a second rule pass.
+func deepCheckable(condition string) bool {
+	switch condition {
+	case IssueInvalidValue, IssueFontComma:
+		return true
+	}
+	return false
+}
+
+// comparedConditionStatus runs the lint-side tag checks for one compared
+// renderer and reports that renderer's status for one condition. A check that
+// stops on a different condition leaves this one unknown.
+func comparedConditionStatus(tag ass.Tag, result renderer.Result, profile renderer.Profile, textStart int, condition string) Status {
+	analyzer := dialogueAnalyzer{textStart: textStart}
+	analyzer.consumeResolved(tag, result, profile)
+	if len(analyzer.diagnostics) == 0 {
+		return StatusAccepted
+	}
+	for _, diagnostic := range analyzer.diagnostics {
+		if diagnostic.Condition == condition {
+			return statusForCondition(condition)
+		}
+	}
+	return StatusUnknown
+}
+
 // conditionFromResult names the condition a resolution implies. An accepted
 // resolution has no condition: it only becomes an observation on a finding.
 func conditionFromResult(result renderer.Result, profile renderer.Profile, tag string) (string, Status, string) {
@@ -129,17 +158,30 @@ func applyResolutions(ctx context.Context, doc ass.Document, targets AnalysisTar
 					name = strings.TrimSpace(result.Head)
 				}
 				condition, _, detail := conditionFromResult(result, profile, name)
+				var tag ass.Tag
+				var tagReady bool
 				for _, at := range bySpan[key] {
-					// The compared renderer only observes resolution-level
-					// conditions. Other conditions stay primary-only rather
-					// than claim an accepted status this pass never checked.
-					if !resolutionObservable(findings[at].Condition) {
+					finding := &findings[at]
+					status := observationStatus(result)
+					switch {
+					case deepCheckable(finding.Condition):
+						if !tagReady {
+							tag = resolvedLintTag(result, nested)
+							tagReady = true
+						}
+						status = comparedConditionStatus(tag, result, profile, start, finding.Condition)
+					case !resolutionObservable(finding.Condition):
+						// This pass never checked the condition, so it cannot
+						// report accepted, rejected, or any other status.
+						continue
+					case status != StatusAccepted && finding.Condition != condition:
 						continue
 					}
-					if status != StatusAccepted && findings[at].Condition != condition {
-						continue
-					}
-					findings[at].Renderers = append(findings[at].Renderers, observation)
+					finding.Renderers = append(finding.Renderers, Observation{
+						Renderer: profile.Kind().String(),
+						Role:     RoleCompared,
+						Status:   status,
+					})
 				}
 				if condition == "" {
 					return true

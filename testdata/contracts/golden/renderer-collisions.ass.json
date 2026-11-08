@@ -2391,6 +2391,11 @@
             "renderer": "libass",
             "role": "primary",
             "status": "rejected"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "rejected"
           }
         ],
         "sources": [
@@ -2442,6 +2447,11 @@
             "renderer": "libass",
             "role": "primary",
             "status": "rejected"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "rejected"
           }
         ],
         "sources": [
@@ -2492,6 +2502,11 @@
           {
             "renderer": "libass",
             "role": "primary",
+            "status": "rejected"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
             "status": "rejected"
           }
         ],
@@ -2784,6 +2799,11 @@
           {
             "renderer": "libass",
             "role": "primary",
+            "status": "rejected"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
             "status": "rejected"
           }
         ],
@@ -3469,6 +3489,11 @@
             "renderer": "libass",
             "role": "primary",
             "status": "rejected"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "rejected"
           }
         ],
         "sources": [
@@ -3520,6 +3545,11 @@
             "renderer": "libass",
             "role": "primary",
             "status": "rejected"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "rejected"
           }
         ],
         "sources": [
@@ -3570,6 +3600,11 @@
           {
             "renderer": "libass",
             "role": "primary",
+            "status": "rejected"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
             "status": "rejected"
           }
         ],
@@ -3862,6 +3897,11 @@
           {
             "renderer": "libass",
             "role": "primary",
+            "status": "rejected"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
             "status": "rejected"
           }
         ],
@@ -4019,6 +4059,11 @@
             "renderer": "libass",
             "role": "primary",
             "status": "rejected"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "rejected"
           }
         ],
         "sources": [
@@ -4070,6 +4115,11 @@
             "renderer": "libass",
             "role": "primary",
             "status": "rejected"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "rejected"
           }
         ],
         "sources": [
@@ -4120,6 +4170,11 @@
           {
             "renderer": "libass",
             "role": "primary",
+            "status": "rejected"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
             "status": "rejected"
           }
         ],
@@ -4412,6 +4467,11 @@
           {
             "renderer": "libass",
             "role": "primary",
+            "status": "rejected"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
             "status": "rejected"
           }
         ],
