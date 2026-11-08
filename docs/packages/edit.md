@@ -5,7 +5,7 @@
 `edit.TextEdit` holds a half-open range and a replacement:
 `Start`, `End`, and `Replacement`. Offsets are decoded UTF-8 byte offsets in
 the source string. A `Replacement` may be empty. The type carries no severity,
-rule ID, or authority.
+condition, or authority.
 
 `edit.Interval` holds the same half-open range. `Interval.Overlaps` reports
 whether two ranges intersect. It exists for deterministic ordering and for

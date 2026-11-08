@@ -55,40 +55,34 @@ func analyzeDocumentCompatibility(doc ass.Document, tree *ass.ConcreteDocument, 
 func compatibilityDiagnostics(findings []semantic.CompatibilityFinding, location func(ass.ConcreteSpan) (int, int)) []Diagnostic {
 	var out []Diagnostic
 	type key struct {
-		span                       ass.ConcreteSpan
-		dimension, targets, detail string
-		status                     semantic.CompatibilityStatus
+		span              ass.ConcreteSpan
+		condition, detail string
+		status            semantic.CompatibilityStatus
 	}
 	seen := make(map[key]bool)
 	for _, finding := range findings {
 		if finding.Status == semantic.CompatibilityEquivalent {
 			continue
 		}
-		left, right := finding.Left.Profile, finding.Right.Profile
-		scope := ProfileScope(left) + " / " + ProfileScope(right)
-		k := key{finding.Source, finding.Dimension, scope, finding.Detail, finding.Status}
+		condition := behaviorCondition(finding.Dimension)
+		if finding.Status != semantic.CompatibilityDivergent {
+			condition = IssueRendererUnresolved
+		}
+		k := key{finding.Source, condition, finding.Detail, finding.Status}
 		if seen[k] {
 			continue
 		}
 		seen[k] = true
-		id := IssueRendererUnresolved
-		if finding.Status == semantic.CompatibilityDivergent {
-			id = IssueRendererDiff
-			switch finding.Dimension {
-			case "document/style-box-scaling":
-				id = IssueStyleBoxGeometry
-			case "document/style-border-mode":
-				id = IssueStyleBorderMode
-			}
-		}
-		rule := Rules[id]
+		rule := Rules[condition]
 		line, column := location(finding.Source)
-		description := "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety."
-		fix := "Review both renderer interpretations and verify the intended rendering before changing the source."
-		if id == IssueStyleBoxGeometry || id == IssueStyleBorderMode {
-			description, fix = rule.Description, rule.Fix
-		}
-		out = append(out, Diagnostic{ID: id, Severity: rule.Severity, Title: rule.Title, Description: description, Fix: fix, Line: line, Column: column, Tag: finding.Left.Resolution.Name, Field: finding.Dimension, Detail: string(finding.Status) + ": " + finding.Detail, Renderer: scope, SourceSpan: &finding.Source, Sources: slices.Clone(finding.Citations), spanJSON: true})
+		out = append(out, Diagnostic{
+			Condition: condition, Scenario: finding.Dimension,
+			Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
+			Fix: rule.Fix, Line: line, Column: column, Tag: finding.Left.Resolution.Name,
+			Field: finding.Dimension, Detail: string(finding.Status) + ": " + finding.Detail,
+			Renderers:  compatibilityObservations(finding),
+			SourceSpan: &finding.Source, Sources: slices.Clone(finding.Citations), spanJSON: true,
+		})
 	}
 	sort.SliceStable(out, func(i, j int) bool {
 		if out[i].Line == out[j].Line {

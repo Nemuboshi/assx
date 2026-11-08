@@ -41,7 +41,7 @@ Dimensions distinguish dispatch, arguments, accepted/rejected signatures,
 application, first-wins ownership, explicit behavior scenarios, tracked state,
 and document record layouts. Multiple failures at one span survive diagnostic
 deduplication. Findings are deterministic in source and requested target order.
-`ASS003` reports proven differences; `ASS031` reports unresolved or ignored
+`dispatch` reports proven differences; `unresolved` reports unresolved or ignored
 compatibility observations. The diagnostic `field` identifies the dimension
 and `renderer` identifies both pinned profiles.
 These findings are separate from renderer-local validity diagnostics.
@@ -156,9 +156,9 @@ steps, so an unverified conversion cannot read as evidence.
 
 This matrix records conversion and drawing evidence. Style validation checks
 colour syntax and the ASS v4+ `Alignment` range. Selected renderer comparisons
-also report two specific BorderStyle differences. ASS033 reports box scaling;
-ASS034 reports mode selection. These rules do not assert complete Style or frame
-equivalence. Their conditions are defined in [the rule catalog](../reference/catalog.md).
+also report two specific BorderStyle differences. border-box reports box scaling;
+border-mode reports mode selection. These rules do not assert complete Style or frame
+equivalence. Their conditions are defined in [the condition catalog](../reference/catalog.md).
 
 A Style row is not reported only because its value conversion is unresolved. The
 conversion alone does not justify a per-line warning.
@@ -176,12 +176,12 @@ The matrix records these limits as deliberate decisions:
   the same ordinary positions in that range. The matrix also records invalid
   values, SSA conversion, and override handling. In VSFilter, zero or negative
   Style alignment can prevent `\an` and `\a` from taking effect.
-- `BorderStyle` has no accepted-set check. ASS011 still checks fractional
+- `BorderStyle` has no accepted-set check. style-integer still checks fractional
   integer input. The matrix now traces mode selection through drawing. Value 4
   selects a whole-event background only in libass. Value 3 selects boxes in
   all three renderers, but geometry, scaling, and draw-pass tests differ.
-  ASS033 reports positive non-100-percent box scaling when comparing Mod with
-  either traditional renderer. ASS034 reports the value-4 mode difference.
+  border-box reports positive non-100-percent box scaling when comparing Mod with
+  either traditional renderer. border-mode reports the value-4 mode difference.
   Both use the resolved BorderStyle field span and selected profile pair.
   Neither rule supplies edits or applies to single-profile validation.
   Matching modes do not prove frame equivalence.

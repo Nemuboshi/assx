@@ -387,7 +387,7 @@ func TestProofBatchRejectsUnverifiableDialogueLayout(t *testing.T) {
 		t.Fatalf("proved = %d, want the three dialogue edits of the mapped row", proved)
 	}
 	for _, diagnostic := range findings {
-		if diagnostic.ID != IssueStyleInteger {
+		if diagnostic.Condition != IssueStyleInteger {
 			continue
 		}
 		if diagnostic.FixSafety == SafeFix || diagnostic.FixProof != nil || len(diagnostic.Edits) != 0 {

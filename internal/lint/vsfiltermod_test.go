@@ -20,15 +20,15 @@ func TestVSFilterModTagsWarnWithoutAutomaticFixes(t *testing.T) {
 			diagnostics := Analyze(ass.Dialogue{Text: text})
 			var diagnostic Diagnostic
 			for _, finding := range diagnostics {
-				if finding.ID == IssueVSFilterModTag && finding.Tag == tag {
+				if finding.Condition == IssueVSFilterModTag && finding.Tag == tag {
 					diagnostic = finding
 				}
 				if finding.FixSafety != "" || len(finding.Edits) != 0 {
-					t.Fatalf("Mod invocation authorized an edit: %s", finding.ID)
+					t.Fatalf("Mod invocation authorized an edit: %s", finding.Condition)
 				}
 			}
-			if diagnostic.ID == "" {
-				t.Fatalf("missing purposeful ASS005 for %s", tag)
+			if diagnostic.Condition == "" {
+				t.Fatalf("missing purposeful portability for %s", tag)
 			}
 			if diagnostic.Severity != Warning || diagnostic.FixSafety != "" || len(diagnostic.Edits) != 0 {
 				t.Fatalf("mod-tag warning has fix metadata: %#v", diagnostic)
@@ -51,10 +51,10 @@ func TestVSFilterModTagDisablesDialogueFixes(t *testing.T) {
 	foundWarning := false
 	foundNoEffect := false
 	for _, diagnostic := range diagnostics {
-		if diagnostic.ID == IssueVSFilterModTag {
+		if diagnostic.Condition == IssueVSFilterModTag {
 			foundWarning = true
 		}
-		if diagnostic.ID == IssueNoEffect {
+		if diagnostic.Condition == IssueNoEffect {
 			foundNoEffect = true
 		}
 		if diagnostic.FixSafety != "" || len(diagnostic.Edits) != 0 {
@@ -73,7 +73,7 @@ func TestVSFilterModTagDisablesDialogueFixes(t *testing.T) {
 func TestCommonTagsDoNotGetVSFilterModWarning(t *testing.T) {
 	diagnostics := Analyze(ass.Dialogue{Text: `{\fs20}x`})
 	for _, diagnostic := range diagnostics {
-		if diagnostic.ID == IssueVSFilterModTag {
+		if diagnostic.Condition == IssueVSFilterModTag {
 			t.Fatalf("common tag got VSFilterMod warning: %#v", diagnostic)
 		}
 	}

@@ -11,7 +11,7 @@ func TestAnalyzeReportsUnknownAndRepeatedSlashAsSuggestion(t *testing.T) {
 	diagnostics := Analyze(ass.Dialogue{Text: `{\\blur2\mystery}`})
 	ids := make(map[string]Severity)
 	for _, diagnostic := range diagnostics {
-		ids[diagnostic.ID] = diagnostic.Severity
+		ids[diagnostic.Condition] = diagnostic.Severity
 	}
 	if ids[IssueRepeatedSlash] != Suggestion || ids[IssueUnknownTag] != Suggestion {
 		t.Fatalf("diagnostic severities = %#v", ids)
@@ -39,12 +39,12 @@ func TestAnalyzeReportsSameValueAssignments(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			var findings []Diagnostic
 			for _, diagnostic := range Analyze(ass.Dialogue{Text: test.text}) {
-				if diagnostic.ID == IssueNoEffect {
+				if diagnostic.Condition == IssueNoEffect {
 					findings = append(findings, diagnostic)
 				}
 			}
 			if len(findings) != test.want {
-				t.Fatalf("ASS006 findings = %#v, want %d", findings, test.want)
+				t.Fatalf("no-effect findings = %#v, want %d", findings, test.want)
 			}
 			if test.name == "reset invalidates prior value" && !strings.Contains(findings[0].Detail, "Reset before") {
 				t.Fatalf("reset finding = %#v, want only the pre-reset assignment", findings[0])
@@ -57,7 +57,7 @@ func TestAnalyzeAssignsMultiSlotTagsOnlyWhenEverySlotMatches(t *testing.T) {
 	text := `{\xbord2\ybord2}A{\bord2}B`
 	var findings []Diagnostic
 	for _, diagnostic := range Analyze(ass.Dialogue{Text: text}) {
-		if diagnostic.ID == IssueNoEffect {
+		if diagnostic.Condition == IssueNoEffect {
 			findings = append(findings, diagnostic)
 		}
 	}
@@ -89,7 +89,7 @@ func TestAnalyzeAssignFirstWinsAndTransitionBehavior(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			count := 0
 			for _, diagnostic := range Analyze(ass.Dialogue{Text: test.text}) {
-				if diagnostic.ID == IssueNoEffect {
+				if diagnostic.Condition == IssueNoEffect {
 					count++
 				}
 			}
@@ -107,7 +107,7 @@ func TestUnverifiedRepeatedSlashEditRemainsUnavailable(t *testing.T) {
 	} {
 		diagnostics := Analyze(ass.Dialogue{Text: text})
 		for _, diagnostic := range diagnostics {
-			if diagnostic.ID == IssueRepeatedSlash && (diagnostic.FixSafety != "" || len(diagnostic.Edits) != 0) {
+			if diagnostic.Condition == IssueRepeatedSlash && (diagnostic.FixSafety != "" || len(diagnostic.Edits) != 0) {
 				t.Fatalf("unverified parser-prefix edit remains available: %#v", diagnostic)
 			}
 		}
@@ -134,7 +134,7 @@ func TestHeaderChecksAndUnsafeFixes(t *testing.T) {
 	text := "[Script Info]\r\nPlayResX: 1920\r\nPlayResY: 1080\r\nYCbCr Matrix: TV.601\r\n[Events]\r\nFormat: Layer, Start, End, Text\r\nDialogue: 0,0,1,text\r\n"
 	doc := ass.Parse(text)
 	diagnostics := AnalyzeHeaders(doc)
-	if len(diagnostics) != 2 || diagnostics[0].ID != IssueMatrixHeader || diagnostics[1].ID != IssueLayoutRes {
+	if len(diagnostics) != 2 || diagnostics[0].Condition != IssueMatrixHeader || diagnostics[1].Condition != IssueLayoutRes {
 		t.Fatalf("header diagnostics = %#v", diagnostics)
 	}
 	if diagnostics[0].FixSafety != UnsafeFix || diagnostics[1].FixSafety != UnsafeFix {
@@ -183,7 +183,7 @@ func provedNoEffectFix(t *testing.T) (string, Diagnostic) {
 	t.Helper()
 	doc := parseFontOverrideText(`{\fs21\fs21}A`)
 	for _, diagnostic := range AnalyzeDocument(doc) {
-		if diagnostic.ID == IssueNoEffect && diagnostic.FixProof != nil && len(diagnostic.Edits) == 1 {
+		if diagnostic.Condition == IssueNoEffect && diagnostic.FixProof != nil && len(diagnostic.Edits) == 1 {
 			return doc.Text, diagnostic
 		}
 	}
@@ -202,16 +202,16 @@ func TestApplyFixesAuthorizesOnlyTheProvedEdit(t *testing.T) {
 		edit    TextEdit
 		outside bool
 	}{
-		{"proved edit", proved.ID, provedEdit, false},
-		{"different replacement", proved.ID, TextEdit{Start: provedEdit.Start, End: provedEdit.End, Replacement: `\fs22`}, true},
-		{"wider span", proved.ID, TextEdit{Start: provedEdit.Start, End: provedEdit.End + 1, Replacement: provedEdit.Replacement}, true},
-		{"narrower span", proved.ID, TextEdit{Start: provedEdit.Start, End: provedEdit.End - 1, Replacement: provedEdit.Replacement}, true},
+		{"proved edit", proved.Condition, provedEdit, false},
+		{"different replacement", proved.Condition, TextEdit{Start: provedEdit.Start, End: provedEdit.End, Replacement: `\fs22`}, true},
+		{"wider span", proved.Condition, TextEdit{Start: provedEdit.Start, End: provedEdit.End + 1, Replacement: provedEdit.Replacement}, true},
+		{"narrower span", proved.Condition, TextEdit{Start: provedEdit.Start, End: provedEdit.End - 1, Replacement: provedEdit.Replacement}, true},
 		{"different rule", IssueRepeatedSlash, provedEdit, true},
 	}
 	for _, test := range cases {
 		t.Run(test.name, func(t *testing.T) {
 			diagnostic := proved
-			diagnostic.ID = test.id
+			diagnostic.Condition = test.id
 			diagnostic.Edits = []TextEdit{test.edit}
 			fixed, count, err := ApplyFixes(source, []Diagnostic{diagnostic}, false)
 			outside := err != nil && strings.Contains(err.Error(), "outside its proof scope")
@@ -250,19 +250,19 @@ func TestApplyFixesAuthorizesRepeatedProofEntry(t *testing.T) {
 // key, and one span can carry two rule identities.
 func TestProofEditMembershipMatchesLinearScan(t *testing.T) {
 	proved := []FixEditProof{
-		{ID: IssueNoEffect, Edit: TextEdit{Start: 1, End: 4, Replacement: `\b1`}},
-		{ID: IssueNoEffect, Edit: TextEdit{Start: 9, End: 14}},
-		{ID: IssueRepeatedSlash, Edit: TextEdit{Start: 9, End: 14}},
+		{Condition: IssueNoEffect, Edit: TextEdit{Start: 1, End: 4, Replacement: `\b1`}},
+		{Condition: IssueNoEffect, Edit: TextEdit{Start: 9, End: 14}},
+		{Condition: IssueRepeatedSlash, Edit: TextEdit{Start: 9, End: 14}},
 	}
 	proof := &FixProof{SourceEdits: proved}
 	membership := proofEditsOf(proof)
 	probes := append([]FixEditProof{}, proved...)
 	probes = append(probes,
-		FixEditProof{ID: IssueNoEffect, Edit: TextEdit{Start: 1, End: 4}},
-		FixEditProof{ID: IssueNoEffect, Edit: TextEdit{Start: 1, End: 5, Replacement: `\b1`}},
-		FixEditProof{ID: IssueNoEffect, Edit: TextEdit{Start: 0, End: 4, Replacement: `\b1`}},
-		FixEditProof{ID: IssueUnknownTag, Edit: TextEdit{Start: 9, End: 14}},
-		FixEditProof{ID: IssueNoEffect, Edit: TextEdit{Start: 100, End: 101}},
+		FixEditProof{Condition: IssueNoEffect, Edit: TextEdit{Start: 1, End: 4}},
+		FixEditProof{Condition: IssueNoEffect, Edit: TextEdit{Start: 1, End: 5, Replacement: `\b1`}},
+		FixEditProof{Condition: IssueNoEffect, Edit: TextEdit{Start: 0, End: 4, Replacement: `\b1`}},
+		FixEditProof{Condition: IssueUnknownTag, Edit: TextEdit{Start: 9, End: 14}},
+		FixEditProof{Condition: IssueNoEffect, Edit: TextEdit{Start: 100, End: 101}},
 	)
 	for _, probe := range probes {
 		got, want := membership.contains(probe), proofContainsEdit(proof, probe)
@@ -306,16 +306,17 @@ func TestRuleRegistryHasStableMetadata(t *testing.T) {
 	rules := []struct {
 		id, want string
 	}{
-		{IssueArgumentCount, "ASS001"}, {IssueInvalidValue, "ASS002"},
-		{IssueRendererDiff, "ASS003"}, {IssueFontComma, "ASS004"},
-		{IssueVSFilterModTag, "ASS005"}, {IssueNoEffect, "ASS006"},
-		{IssueUnknownTag, "ASS007"}, {IssueMatrixHeader, "ASS008"},
-		{IssueLayoutRes, "ASS009"}, {IssueRepeatedSlash, "ASS010"},
-		{IssueStyleInteger, "ASS011"}, {IssueStyleFloat, "ASS012"},
-		{IssueRedundantStyleOverrides, "ASS013"}, {IssueRepeatedOpenBrace, "ASS014"},
-		{IssueUndefinedStyle, "ASS017"},
-		{IssueEmptyOverrideBlock, "ASS018"}, {IssueOverrideJunk, "ASS019"}, {IssueMalformedDrawing, "ASS020"},
-		{IssueStyleBoxGeometry, "ASS033"}, {IssueStyleBorderMode, "ASS034"},
+		{IssueArgumentCount, "arity"}, {IssueInvalidValue, "value"},
+		{ConditionDispatch, "dispatch"}, {ConditionState, "state"},
+		{ConditionLayout, "layout"}, {IssueFontComma, "font-comma"},
+		{IssueVSFilterModTag, "portability"}, {IssueNoEffect, "no-effect"},
+		{IssueUnknownTag, "unknown-tag"}, {IssueMatrixHeader, "matrix-header"},
+		{IssueLayoutRes, "layout-resolution"}, {IssueRepeatedSlash, "repeated-slash"},
+		{IssueStyleInteger, "style-integer"}, {IssueStyleFloat, "style-float"},
+		{IssueRedundantStyleOverrides, "redundant-style"}, {IssueRepeatedOpenBrace, "repeated-brace"},
+		{IssueUndefinedStyle, "style-reference"},
+		{IssueEmptyOverrideBlock, "empty-block"}, {IssueOverrideJunk, "junk"}, {IssueMalformedDrawing, "drawing"},
+		{IssueStyleBoxGeometry, "border-box"}, {IssueStyleBorderMode, "border-mode"},
 	}
 	for _, test := range rules {
 		id := test.id
@@ -323,7 +324,7 @@ func TestRuleRegistryHasStableMetadata(t *testing.T) {
 			t.Errorf("rule ID = %q, want %q", id, test.want)
 		}
 		rule, ok := Rules[id]
-		if !ok || rule.ID != id || rule.Title == "" || rule.Description == "" {
+		if !ok || rule.Condition != id || rule.Title == "" || rule.Description == "" {
 			t.Errorf("rule %q is missing required metadata: %#v", id, rule)
 		}
 	}
@@ -343,7 +344,7 @@ func TestNoEffectTransformFixRequiresVerifiedSignature(t *testing.T) {
 		diagnostics := Analyze(dialogue)
 		var transform []Diagnostic
 		for _, diagnostic := range diagnostics {
-			if diagnostic.ID == IssueNoEffect && diagnostic.Tag == "t" {
+			if diagnostic.Condition == IssueNoEffect && diagnostic.Tag == "t" {
 				transform = append(transform, diagnostic)
 			}
 		}

@@ -11,7 +11,7 @@ import (
 func overrideJunkDiagnostic(dialogue ass.Dialogue, column int, junk string, span ass.ConcreteSpan) Diagnostic {
 	rule := Rules[IssueOverrideJunk]
 	return Diagnostic{
-		ID: rule.ID, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
+		Condition: rule.Condition, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
 		Fix: rule.Fix, Line: dialogue.Line, Column: column,
 		Detail: fmt.Sprintf("Ignored data: %q.", junk), Sources: rule.Sources,
 		SourceSpan: &span,

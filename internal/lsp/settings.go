@@ -49,7 +49,7 @@ func parseSettings(raw jsontext.Value) (settings, error) {
 	}
 	for _, id := range slices.Sorted(maps.Keys(config.Rules)) {
 		rule := config.Rules[id]
-		result.Options.Rules = append(result.Options.Rules, lint.RuleOverride{ID: id, Disabled: rule.Disabled, Severity: rule.Severity})
+		result.Options.Rules = append(result.Options.Rules, lint.RuleOverride{Condition: id, Disabled: rule.Disabled, Severity: rule.Severity})
 	}
 	if err := result.Options.Rules.Validate(); err != nil {
 		return settings{}, err

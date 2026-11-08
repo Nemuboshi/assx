@@ -5,7 +5,7 @@ Renderer: libass
 Unchecked text runs: 0 (unknown semantic state).
 Glyph lookup does not test renderer fallback or shaping.
 
-info[FONT001]  Font dependency  1:1
+info[font-missing]  Font dependency  1:1
   1 | é
     | ^
   Font family "Absent" was not found in the scanned font set.

@@ -132,7 +132,9 @@ func TestSafeFixScopeDoesNotTrustDiagnosticRenderer(t *testing.T) {
 		t.Fatal(err)
 	}
 	for i := range submitted {
-		submitted[i].Renderer = "libass / xy-vsfilter / vsfiltermod"
+		submitted[i].Renderers = append(submitted[i].Renderers, Observation{
+			Renderer: "VSFilterMod", Role: RoleCompared, Status: StatusAccepted,
+		})
 	}
 	if _, _, err := ApplyFixesForTargets(doc.Text, submitted, false, DefaultAnalysisTargets()); err == nil {
 		t.Fatal("diagnostic scope expanded proof authorization")

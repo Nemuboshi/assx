@@ -41,8 +41,8 @@ func TestRendererTargetCLI(t *testing.T) {
 				if d.FixProof != nil {
 					proof = d.FixProof
 				}
-				if d.Renderer == "" {
-					t.Errorf("missing scope for %s", d.ID)
+				if len(d.Renderers) == 0 {
+					t.Errorf("missing scope for %s", d.Condition)
 				}
 			}
 			if proof == nil {
@@ -117,8 +117,8 @@ func TestPrimaryValidityAndCompatibilityScopes(t *testing.T) {
 			t.Fatal(err)
 		}
 		for _, d := range ds {
-			if d.Severity == lint.Error && strings.Contains(d.Renderer, " / ") {
-				t.Fatalf("compatibility promoted to primary error: %s", d.ID)
+			if d.Severity == lint.Error && lint.IsComparisonCondition(d.Condition) {
+				t.Fatalf("compatibility promoted to primary error: %s", d.Condition)
 			}
 		}
 	}

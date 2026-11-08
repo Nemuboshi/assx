@@ -21,11 +21,11 @@ func TestSettingsUseDefaultTargetsAndValidateBuildGates(t *testing.T) {
 	if err != nil || len(explicit.Options.Targets.Compatibility) != 0 {
 		t.Fatalf("explicit primary must not retain default compatibility: %+v, %v", explicit, err)
 	}
-	settings, err := parseSettings(jsontext.Value(`{"assx":{"renderers":["vsfiltermod","libass"],"rules":{"ASS007":{"disabled":true}}}}`))
+	settings, err := parseSettings(jsontext.Value(`{"assx":{"renderers":["vsfiltermod","libass"],"rules":{"unknown-tag":{"disabled":true}}}}`))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if settings.Options.Targets.Primary.Kind() != renderer.VSFilterMod || len(settings.Options.Targets.Compatibility) != 1 || settings.Options.Targets.Compatibility[0].Kind() != renderer.Libass || len(settings.Options.Rules) != 1 || settings.Options.Rules[0].ID != lint.IssueUnknownTag {
+	if settings.Options.Targets.Primary.Kind() != renderer.VSFilterMod || len(settings.Options.Targets.Compatibility) != 1 || settings.Options.Targets.Compatibility[0].Kind() != renderer.Libass || len(settings.Options.Rules) != 1 || settings.Options.Rules[0].Condition != lint.IssueUnknownTag {
 		t.Fatalf("settings = %+v", settings)
 	}
 	deduped, err := parseSettings(jsontext.Value(`{"assx":{"renderers":["libass","libass","xy-vsfilter"]}}`))

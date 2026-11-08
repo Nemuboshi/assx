@@ -46,7 +46,7 @@ func TestCustomEventFormatIsFlagged(t *testing.T) {
 			findings := diagnosticsForIDs(AnalyzeEventFields(doc), IssueEventFormat)
 			if len(findings) == 0 {
 				if test.detail != "" {
-					t.Fatalf("custom format produced no ASS024 finding")
+					t.Fatalf("custom format produced no event-format finding")
 				}
 				return
 			}
@@ -315,12 +315,12 @@ func TestEventRulesRunThroughAnalyzeDocument(t *testing.T) {
 	findings := AnalyzeDocument(doc)
 	ids := map[string]int{}
 	for _, finding := range findings {
-		ids[finding.ID]++
+		ids[finding.Condition]++
 	}
 	if ids[IssueEventFormat] != 1 || ids[IssueTimecode] != 2 || ids[IssueShortEvent] != 0 {
 		t.Fatalf("wired diagnostics = %#v", findings)
 	}
-	// Reversed event without Text field name: libass drops events, so ASS027
+	// Reversed event without Text field name: libass drops events, so duration
 	// never sees it; here Text exists but Start>End triggers duration only
 	// when both cells parse, and the shorthand cells above do not.
 	if ids[IssueEventDuration] != 0 {

@@ -14,7 +14,7 @@ func AnalyzeNoEffectsForRenderer(dialogue ass.Dialogue, profile renderer.Profile
 	findings, _ := analyzeResolvedDialogue(dialogue, profile, nil, nil, nil)
 	var out []Diagnostic
 	for _, finding := range findings {
-		if finding.ID != IssueNoEffect {
+		if finding.Condition != IssueNoEffect {
 			continue
 		}
 		// A single-profile observation never carries an edit or a proof.

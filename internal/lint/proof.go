@@ -17,8 +17,8 @@ import (
 )
 
 type FixEditProof struct {
-	ID   string   `json:"id"`
-	Edit TextEdit `json:"edit"`
+	Condition string   `json:"condition"`
+	Edit      TextEdit `json:"edit"`
 }
 
 type FixTarget struct {
@@ -104,7 +104,7 @@ func proveSafeFixesBatchContext(ctx context.Context, doc ass.Document, diagnosti
 		}
 		candidates = append(candidates, i)
 		for _, sourceEdit := range diagnostic.Edits {
-			selected = append(selected, FixEditProof{ID: diagnostic.ID, Edit: sourceEdit})
+			selected = append(selected, FixEditProof{Condition: diagnostic.Condition, Edit: sourceEdit})
 		}
 	}
 	if len(candidates) == 0 {
@@ -172,7 +172,7 @@ func fixEditsForDiagnostics(diagnostics []Diagnostic, indexes []int) []FixEditPr
 	var edits []FixEditProof
 	for _, index := range indexes {
 		for _, sourceEdit := range diagnostics[index].Edits {
-			edits = append(edits, FixEditProof{ID: diagnostics[index].ID, Edit: sourceEdit})
+			edits = append(edits, FixEditProof{Condition: diagnostics[index].Condition, Edit: sourceEdit})
 		}
 	}
 	return edits
@@ -185,7 +185,7 @@ func fixEditIndex(diagnostics []Diagnostic) map[FixEditProof]struct{} {
 			continue
 		}
 		for _, sourceEdit := range diagnostic.Edits {
-			valid[FixEditProof{ID: diagnostic.ID, Edit: sourceEdit}] = struct{}{}
+			valid[FixEditProof{Condition: diagnostic.Condition, Edit: sourceEdit}] = struct{}{}
 		}
 	}
 	return valid
@@ -243,7 +243,7 @@ func proofDocument(source string, edits []FixEditProof) ass.Document {
 		return doc
 	}
 	for _, candidate := range edits {
-		switch candidate.ID {
+		switch candidate.Condition {
 		case IssueNoEffect, IssueRepeatedSlash, IssueRedundantStyleOverrides,
 			IssueRepeatedOpenBrace, IssueEmptyOverrideBlock:
 			doc.Dialogues = []ass.Dialogue{{Text: source, Line: 1}}
@@ -313,7 +313,7 @@ func verifyStyleIntegerEdits(before, after ass.Document, edits []FixEditProof) (
 
 func styleFieldEdited(field ass.StyleField, edits []FixEditProof, id string) bool {
 	for _, candidate := range edits {
-		if candidate.ID == id && candidate.Edit.Start < field.ValueEnd && field.ValueStart < candidate.Edit.End {
+		if candidate.Condition == id && candidate.Edit.Start < field.ValueEnd && field.ValueStart < candidate.Edit.End {
 			return true
 		}
 	}
@@ -322,7 +322,7 @@ func styleFieldEdited(field ass.StyleField, edits []FixEditProof, id string) boo
 
 func hasStyleFieldEdits(edits []FixEditProof) bool {
 	for _, candidate := range edits {
-		if candidate.ID == IssueStyleInteger {
+		if candidate.Condition == IssueStyleInteger {
 			return true
 		}
 	}
@@ -403,7 +403,7 @@ func dialogueEditsByIndex(doc ass.Document, edits []FixEditProof) map[int][]FixE
 func affectedDialogues(doc ass.Document, edits []FixEditProof, byDialogue map[int][]FixEditProof) []int {
 	styleChanged := false
 	for _, candidate := range edits {
-		if candidate.ID != IssueStyleInteger {
+		if candidate.Condition != IssueStyleInteger {
 			continue
 		}
 		for _, field := range doc.StyleFields {
@@ -425,7 +425,7 @@ func affectedDialogues(doc ass.Document, edits []FixEditProof, byDialogue map[in
 func removedRanges(dialogue ass.Dialogue, edits []FixEditProof) []ass.ConcreteSpan {
 	var out []ass.ConcreteSpan
 	for _, candidate := range edits {
-		if candidate.ID != IssueNoEffect && candidate.ID != IssueRedundantStyleOverrides {
+		if candidate.Condition != IssueNoEffect && candidate.Condition != IssueRedundantStyleOverrides {
 			continue
 		}
 		start := max(candidate.Edit.Start-dialogue.TextStart, 0)

@@ -52,14 +52,14 @@ func TestStyleAlignmentNumpadRange(t *testing.T) {
 	}
 }
 
-// A fractional Alignment value is an ASS011 concern, not an ASS032 concern, so
+// A fractional Alignment value is a style-integer concern, not an alignment concern, so
 // the two rules never both report the same field.
-func TestStyleAlignmentFractionalLeftToASS011(t *testing.T) {
+func TestStyleAlignmentFractionalLeftToStyleInteger(t *testing.T) {
 	doc := ass.Parse("[V4+ Styles]\nFormat: Name, Alignment\nStyle: Default,0.5\n")
 	if findings := diagnosticsForIDs(AnalyzeStyles(doc), IssueStyleAlignment); len(findings) != 0 {
-		t.Fatalf("fractional Alignment must not be an ASS032 finding: %#v", findings)
+		t.Fatalf("fractional Alignment must not be an alignment finding: %#v", findings)
 	}
 	if findings := diagnosticsForIDs(AnalyzeStyles(doc), IssueStyleInteger); len(findings) == 0 {
-		t.Fatalf("fractional Alignment must stay an ASS011 finding")
+		t.Fatalf("fractional Alignment must stay an style-integer finding")
 	}
 }

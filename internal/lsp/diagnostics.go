@@ -76,11 +76,11 @@ func (server *Server) publish(ctx context.Context, output io.Writer, uri string)
 				if diagnostic.Detail != "" {
 					message += ": " + diagnostic.Detail
 				}
-				if diagnostic.Renderer != "" {
-					message += " [" + diagnostic.Renderer + "]"
+				if names := diagnostic.RendererNames(); names != "" {
+					message += " [" + names + "]"
 				}
 				params.Diagnostics = append(params.Diagnostics, protocolDiagnostic{
-					Range: span, Severity: severity, Code: diagnostic.ID, Source: "assx", Message: message,
+					Range: span, Severity: severity, Code: diagnostic.Condition, Source: "assx", Message: message,
 					Data: fmt.Sprintf("%s:%d", identity, ordinal),
 				})
 			}

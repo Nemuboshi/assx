@@ -119,12 +119,12 @@ The primary renderer determines invocation validity.
 Compatibility comparison and SafeFix checks use the normalized requested profile set.
 Consumers can request renderer-local observations:
 
-- `lint.AnalyzeNoEffectsForRenderer` for ASS006 observations;
-- `lint.AnalyzeRedundantStyleOverridesForRenderer` for ASS013;
+- `lint.AnalyzeNoEffectsForRenderer` for no-effect observations;
+- `lint.AnalyzeRedundantStyleOverridesForRenderer` for redundant-style;
 - `fontcheck.ExtractUsages` for font state, uncertainty, source spans, and drawing visibility.
 
-These observations carry no automatic edits. ASS006 owns tag-level no-effect
-diagnostics. ASS013 owns the grouping and edit policy for Style-equivalent
+These observations carry no automatic edits. no-effect owns tag-level no-effect
+diagnostics. redundant-style owns the grouping and edit policy for Style-equivalent
 runs. Both read this evaluator. Plain Dialogue lines bypass it.
 
 See [lint](lint.md)

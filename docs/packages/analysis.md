@@ -47,16 +47,16 @@ Empty `Options` select the current default targets and the default rule
 catalog. An explicit libass-only selection must pass a non-nil
 compatibility slice, because the libass profile is the zero `renderer.Profile`.
 `Analyze` copies the targets and the rule policy into the result and rejects
-an invalid policy. It never mutates the global rule catalog. The policy
+an invalid policy. It never mutates the global condition catalog. The policy
 controls findings and authorization. It does not disable required semantic
 state transitions, and it applies before cross-rule overlap suppression: a
-disabled ASS013 does not suppress enabled ASS006 candidates.
+disabled redundant-style does not suppress enabled no-effect candidates.
 
 ## Deferred proof
 
 `ProveFixes` takes finding IDs from this result and proves them as one batch
 in report order. It clones the stored candidates, so a later call cannot see
-caller edits, and a failed batch cannot damage the result. Rule IDs and
+caller edits, and a failed batch cannot damage the result. Conditions and
 finding IDs stay separate. It rejects a foreign ID, an unknown ID, a
 duplicate ID, and a non-candidate ID. A candidate that cannot be proved
 returns its diagnostic without automatic edits, as the eager path does.

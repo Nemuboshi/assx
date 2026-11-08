@@ -12,7 +12,7 @@ func diagnosticsForIDs(diags []Diagnostic, ids ...string) []Diagnostic {
 	var out []Diagnostic
 	for _, diagnostic := range diags {
 		for _, id := range ids {
-			if diagnostic.ID == id {
+			if diagnostic.Condition == id {
 				out = append(out, diagnostic)
 			}
 		}
@@ -60,7 +60,7 @@ func TestLegacyAlignmentAliasRendererDifference(t *testing.T) {
 		dialogue := ass.Dialogue{Text: test.text, Line: 1}
 		found := false
 		for _, diagnostic := range Analyze(dialogue) {
-			if diagnostic.ID == IssueRendererDiff && diagnostic.Tag == "a" {
+			if isBehaviorCondition(diagnostic.Condition) && diagnostic.Tag == "a" {
 				found = true
 			}
 		}
@@ -162,7 +162,7 @@ func TestKeywordCaseWarnings(t *testing.T) {
 func TestRegistryCoversAllShippedRules(t *testing.T) {
 	for _, id := range []string{IssueUnterminatedBlock, IssueMalformedStyleColour, IssueKeywordCase} {
 		rule := Rules[id]
-		if rule.ID != id || rule.Title == "" || rule.Description == "" || rule.Fix == "" {
+		if rule.Condition != id || rule.Title == "" || rule.Description == "" || rule.Fix == "" {
 			t.Fatalf("rule %s metadata = %#v", id, rule)
 		}
 		for _, source := range rule.Sources {

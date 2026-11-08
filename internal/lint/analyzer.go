@@ -14,9 +14,38 @@ import (
 
 type TextEdit = edit.TextEdit
 
+// Status is one renderer's outcome for one condition at one span.
+type Status string
+
+const (
+	StatusAccepted  Status = "accepted"
+	StatusRejected  Status = "rejected"
+	StatusIgnored   Status = "ignored"
+	StatusUnknown   Status = "unknown"
+	StatusUnmodeled Status = "unmodeled"
+	StatusInferred  Status = "inferred"
+)
+
+// Role tells which selected renderer produced an observation.
+type Role string
+
+const (
+	RolePrimary  Role = "primary"
+	RoleCompared Role = "compared"
+)
+
+// Observation keeps one renderer's result next to the condition it observed.
+type Observation struct {
+	Renderer string `json:"renderer"`
+	Role     Role   `json:"role"`
+	Status   Status `json:"status"`
+	Citation string `json:"citation,omitempty"`
+}
+
 type Diagnostic struct {
 	File        string            `json:"file"`
-	ID          string            `json:"id"`
+	Condition   string            `json:"condition"`
+	Scenario    string            `json:"scenario,omitempty"`
 	Severity    Severity          `json:"severity"`
 	Title       string            `json:"title"`
 	Description string            `json:"description"`
@@ -30,7 +59,7 @@ type Diagnostic struct {
 	Tag         string            `json:"tag,omitempty"`
 	Field       string            `json:"field,omitempty"`
 	Detail      string            `json:"detail,omitempty"`
-	Renderer    string            `json:"renderer,omitempty"`
+	Renderers   []Observation     `json:"renderers,omitempty"`
 	SourceSpan  *ass.ConcreteSpan `json:"source_span,omitempty"`
 	Sources     []string          `json:"sources"`
 	spanJSON    bool
@@ -48,7 +77,7 @@ func analyzeUnterminatedBlocks(dialogue ass.Dialogue) []Diagnostic {
 		if close < 0 {
 			rule := Rules[IssueUnterminatedBlock]
 			diagnostics = append(diagnostics, Diagnostic{
-				ID: rule.ID, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
+				Condition: rule.Condition, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
 				Fix: rule.Fix, Line: dialogue.Line, Column: open + 1,
 				Detail:  fmt.Sprintf("No closing brace follows the '{' at column %d; the rest of the line renders as literal text.", open+1),
 				Sources: rule.Sources, SourceSpan: &ass.ConcreteSpan{Start: dialogue.TextStart + open, End: dialogue.TextStart + open + 1},
@@ -64,6 +93,15 @@ type dialogueAnalyzer struct {
 	line        int
 	textStart   int
 	diagnostics []Diagnostic
+}
+
+// RendererNames joins observations for display, primary first.
+func (d Diagnostic) RendererNames() string {
+	names := make([]string, 0, len(d.Renderers))
+	for _, observation := range d.Renderers {
+		names = append(names, observation.Renderer)
+	}
+	return strings.Join(names, " / ")
 }
 
 func (d Diagnostic) MarshalJSON() ([]byte, error) {
@@ -88,14 +126,26 @@ func (d *Diagnostic) UnmarshalJSON(data []byte) error {
 
 func Analyze(dialogue ass.Dialogue) []Diagnostic {
 	targets := DefaultAnalysisTargets()
-	findings, _ := analyzeResolvedDialogue(dialogue, targets.Primary, nil, nil, nil)
+	var findings []Diagnostic
+	for _, profile := range targets.Profiles() {
+		role := RoleCompared
+		if profile == targets.Primary {
+			role = RolePrimary
+		}
+		pass, _ := analyzeResolvedDialogue(dialogue, profile, nil, nil, nil)
+		for i := range pass {
+			if len(pass[i].Renderers) == 0 {
+				pass[i].Renderers = []Observation{{
+					Renderer: profile.Kind().String(), Role: role,
+					Status: statusForCondition(pass[i].Condition),
+				}}
+			}
+		}
+		findings = append(findings, pass...)
+	}
 	findings = append(findings, portabilityDiagnostics(dialogue, targets)...)
 	findings = append(findings, AnalyzeCompatibility(dialogue, targets.Profiles())...)
-	for i := range findings {
-		if findings[i].Renderer == "" {
-			findings[i].Renderer = ProfileScope(targets.Primary)
-		}
-	}
+	findings = assemble(findings, targets.Primary)
 	proofDialogue := dialogue
 	if proofDialogue.Line == 0 {
 		proofDialogue.Line = 1
@@ -141,7 +191,7 @@ func (a *dialogueAnalyzer) add(id string, tag ass.Tag, detail string) {
 	rule := Rules[id]
 	span := ass.ConcreteSpan{Start: a.textStart + tag.Start, End: a.textStart + tag.End}
 	a.diagnostics = append(a.diagnostics, Diagnostic{
-		ID: rule.ID, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
+		Condition: rule.Condition, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
 		Fix: rule.Fix, FixSafety: rule.FixSafety, Line: a.line, Column: tag.Column, Tag: tag.Name,
 		Detail: detail, Sources: rule.Sources, SourceSpan: &span,
 	})
@@ -236,7 +286,7 @@ func analyzeRepeatedOpenBraces(dialogue ass.Dialogue) []Diagnostic {
 		if runEnd > open+1 {
 			rule := Rules[IssueRepeatedOpenBrace]
 			diagnostics = append(diagnostics, Diagnostic{
-				ID: rule.ID, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
+				Condition: rule.Condition, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
 				Fix: rule.Fix, FixSafety: rule.FixSafety, Line: dialogue.Line, Column: open + 2,
 				Edits:   []TextEdit{{Start: dialogue.TextStart + open + 1, End: dialogue.TextStart + runEnd}},
 				Sources: rule.Sources, SourceSpan: &ass.ConcreteSpan{Start: dialogue.TextStart + open + 1, End: dialogue.TextStart + runEnd},

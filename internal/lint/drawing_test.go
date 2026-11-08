@@ -11,12 +11,12 @@ func TestMalformedDrawingRule(t *testing.T) {
 	diagnostics := AnalyzeDocument(doc)
 	var found *Diagnostic
 	for i := range diagnostics {
-		if diagnostics[i].ID == IssueMalformedDrawing {
+		if diagnostics[i].Condition == IssueMalformedDrawing {
 			found = &diagnostics[i]
 			break
 		}
 	}
 	if found == nil || found.Severity != Warning || found.FixSafety != "" || len(found.Edits) != 0 {
-		t.Fatalf("ASS020 = %#v", found)
+		t.Fatalf("drawing = %#v", found)
 	}
 }

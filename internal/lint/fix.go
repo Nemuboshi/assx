@@ -57,7 +57,7 @@ func countFixes(diagnostics []Diagnostic, proofs map[int]*FixProof, memberships 
 				membership := memberships[proof]
 				authorized := true
 				for _, sourceEdit := range diagnostic.Edits {
-					if !membership.contains(FixEditProof{ID: diagnostic.ID, Edit: sourceEdit}) {
+					if !membership.contains(FixEditProof{Condition: diagnostic.Condition, Edit: sourceEdit}) {
 						authorized = false
 						break
 					}
@@ -139,7 +139,7 @@ func ApplyFixesForTargets(text string, diagnostics []Diagnostic, includeUnsafe b
 }
 
 // applyFixes re-authorizes every SafeFix under the given rule policy before
-// it writes anything. A nil policy means the default rule catalog.
+// it writes anything. A nil policy means the default condition catalog.
 func applyFixes(text string, diagnostics []Diagnostic, includeUnsafe bool, targets AnalysisTargets, policy RulePolicy) (string, int, error) {
 	proofs := fixProofsByRef(diagnostics)
 	for _, diagnostic := range diagnostics {
@@ -177,7 +177,7 @@ func applyFixes(text string, diagnostics []Diagnostic, includeUnsafe bool, targe
 				groups = append(groups, safeProofEdits{proof: proof, known: proofEditsOf(proof)})
 			}
 			for _, sourceEdit := range diagnostic.Edits {
-				item := FixEditProof{ID: diagnostic.ID, Edit: sourceEdit}
+				item := FixEditProof{Condition: diagnostic.Condition, Edit: sourceEdit}
 				if !groups[groupIndex].known.contains(item) {
 					return "", 0, fmt.Errorf("SafeFix edit is outside its proof scope")
 				}

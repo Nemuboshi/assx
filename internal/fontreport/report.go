@@ -22,12 +22,12 @@ type Catalog struct {
 }
 
 type Diagnostic struct {
-	ID       string            `json:"id"`
-	Severity string            `json:"severity"`
-	Detail   string            `json:"detail"`
-	Usages   []fontcheck.Usage `json:"usages"`
-	Missing  string            `json:"missing_characters,omitempty"`
-	Matched  []fontcheck.Face  `json:"matched_faces"`
+	Condition string            `json:"condition"`
+	Severity  string            `json:"severity"`
+	Detail    string            `json:"detail"`
+	Usages    []fontcheck.Usage `json:"usages"`
+	Missing   string            `json:"missing_characters,omitempty"`
+	Matched   []fontcheck.Face  `json:"matched_faces"`
 }
 
 // Result is the versioned font-domain JSON contract. It has no fix fields.
@@ -53,11 +53,11 @@ func Build(path string, profile renderer.Profile, source fontcheck.Source, findi
 		r.Catalog.Mode = "directory"
 	}
 	for _, f := range findings {
-		d := Diagnostic{ID: "FONT001", Severity: "info", Usages: f.Usages, Missing: f.Missing, Matched: f.Matched}
+		d := Diagnostic{Condition: "font-missing", Severity: "info", Usages: f.Usages, Missing: f.Missing, Matched: f.Matched}
 		family := f.Usages[0].Request.Family
 		d.Detail = fmt.Sprintf("Font family %q was not found in the scanned font set.", family)
 		if f.Kind == fontcheck.MissingCharacters {
-			d.ID = "FONT002"
+			d.Condition = "font-glyph"
 			d.Detail = fmt.Sprintf("Selected font face(s) for %q do not contain these characters: %q.", family, f.Missing)
 		}
 		r.Findings = append(r.Findings, d)
@@ -85,7 +85,7 @@ func Pretty(w io.Writer, r Result, source string, color bool, width int) error {
 	for _, d := range r.Findings {
 		u := d.Usages[0]
 		group.Diagnostics = append(group.Diagnostics, report.Diagnostic{
-			ID: d.ID, Severity: d.Severity, Title: "Font dependency", Detail: d.Detail,
+			Condition: d.Condition, Severity: d.Severity, Title: "Font dependency", Detail: d.Detail,
 			Line: u.Line, Column: u.Column, SourceColumn: u.SourceColumn, SourceWidth: u.Span.End - u.Span.Start,
 		})
 	}
@@ -101,7 +101,7 @@ func Plain(w io.Writer, r Result) error {
 	}
 	for _, d := range r.Findings {
 		u := d.Usages[0]
-		_, _ = fmt.Fprintf(out, "INFO[%s] %d:%d %s\n", d.ID, u.Line, u.SourceColumn, d.Detail)
+		_, _ = fmt.Fprintf(out, "INFO[%s] %d:%d %s\n", d.Condition, u.Line, u.SourceColumn, d.Detail)
 	}
 	_, _ = fmt.Fprintf(out, "%d advisory findings.\n", len(r.Findings))
 	return out.Flush()

@@ -139,11 +139,11 @@ func (b *proofBatch) build(edits []FixEditProof, validEdits map[FixEditProof]str
 		return nil, fmt.Errorf("SafeFix proof has no renderer targets")
 	}
 	for _, sourceEdit := range edits {
-		if !supportedProofRule(sourceEdit.ID) {
-			return nil, fmt.Errorf("rule %s has no renderer proof", sourceEdit.ID)
+		if !supportedProofRule(sourceEdit.Condition) {
+			return nil, fmt.Errorf("rule %s has no renderer proof", sourceEdit.Condition)
 		}
 		if _, ok := validEdits[sourceEdit]; !ok {
-			return nil, fmt.Errorf("rule %s edit does not match a current lint finding", sourceEdit.ID)
+			return nil, fmt.Errorf("rule %s edit does not match a current lint finding", sourceEdit.Condition)
 		}
 	}
 	targets, err := b.fixTargetsChecked()
@@ -191,7 +191,7 @@ func (b *proofBatch) build(edits []FixEditProof, validEdits map[FixEditProof]str
 	}
 	syntaxOnly := len(edits) != 0
 	for _, sourceEdit := range edits {
-		if sourceEdit.ID != IssueEmptyOverrideBlock {
+		if sourceEdit.Condition != IssueEmptyOverrideBlock {
 			syntaxOnly = false
 			break
 		}

@@ -5,38 +5,38 @@ import "fmt"
 // RuleOverride changes one rule for one analysis session. An empty Severity
 // keeps the rule default.
 type RuleOverride struct {
-	ID       string
-	Disabled bool
-	Severity Severity
+	Condition string
+	Disabled  bool
+	Severity  Severity
 }
 
-// RulePolicy lists per-rule overrides. IDs must be known and unique, and a
+// RulePolicy lists per-condition overrides. Conditions must be known and unique, and a
 // severity must be valid. Nil or empty keeps the default catalog. The policy
 // controls findings and authorization. It never disables semantic state
 // transitions.
 type RulePolicy []RuleOverride
 
-// Validate rejects an override with no ID, a repeated ID, an unknown rule,
+// Validate rejects an override with no condition, a repeated condition, an unknown condition,
 // or an invalid severity. Nil and empty policies are valid.
 func (policy RulePolicy) Validate() error { return policy.validate() }
 
 func (policy RulePolicy) validate() error {
 	seen := make(map[string]bool, len(policy))
 	for _, override := range policy {
-		if override.ID == "" {
-			return fmt.Errorf("rule policy override has no ID")
+		if override.Condition == "" {
+			return fmt.Errorf("rule policy override has no condition")
 		}
-		if seen[override.ID] {
-			return fmt.Errorf("rule policy repeats ID %s", override.ID)
+		if seen[override.Condition] {
+			return fmt.Errorf("rule policy repeats condition %s", override.Condition)
 		}
-		seen[override.ID] = true
-		if _, known := Rules[override.ID]; !known {
-			return fmt.Errorf("rule policy names unknown rule %s", override.ID)
+		seen[override.Condition] = true
+		if _, known := Rules[override.Condition]; !known {
+			return fmt.Errorf("rule policy names unknown condition %s", override.Condition)
 		}
 		switch override.Severity {
 		case "", Error, Warning, Suggestion:
 		default:
-			return fmt.Errorf("rule policy for %s has invalid severity %q", override.ID, override.Severity)
+			return fmt.Errorf("rule policy for %s has invalid severity %q", override.Condition, override.Severity)
 		}
 	}
 	return nil
@@ -44,7 +44,7 @@ func (policy RulePolicy) validate() error {
 
 func (policy RulePolicy) disabled(id string) bool {
 	for _, override := range policy {
-		if override.ID == id {
+		if override.Condition == id {
 			return override.Disabled
 		}
 	}
@@ -52,18 +52,18 @@ func (policy RulePolicy) disabled(id string) bool {
 }
 
 // apply drops disabled rules and rewrites severities after discovery, in
-// report order. It never mutates the global rule catalog.
+// report order. It never mutates the global condition catalog.
 func (policy RulePolicy) apply(findings []Diagnostic) []Diagnostic {
 	if len(policy) == 0 {
 		return findings
 	}
 	overrides := make(map[string]RuleOverride, len(policy))
 	for _, override := range policy {
-		overrides[override.ID] = override
+		overrides[override.Condition] = override
 	}
 	out := make([]Diagnostic, 0, len(findings))
 	for _, diagnostic := range findings {
-		override, overridden := overrides[diagnostic.ID]
+		override, overridden := overrides[diagnostic.Condition]
 		if overridden && override.Disabled {
 			continue
 		}

@@ -119,7 +119,7 @@ func TestPublishedDiagnosticUsesExactUTF16Range(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, diagnostic := range message.Params.Diagnostics {
-		if diagnostic.Code == "ASS007" {
+		if diagnostic.Code == "unknown-tag" {
 			if diagnostic.Range.Start.Line != 2 || diagnostic.Range.Start.Character != 53 || diagnostic.Range.End.Character != 61 {
 				t.Fatalf("unknown tag range = %+v", diagnostic.Range)
 			}
@@ -167,7 +167,7 @@ func TestForcedAnalysisDoesNotTreatForeignTextAsASS(t *testing.T) {
 
 func TestPublishedDiagnosticsHonorRulePolicy(t *testing.T) {
 	var server Server
-	server.settings.Options.Rules = lint.RulePolicy{{ID: lint.IssueUnknownTag, Disabled: true}}
+	server.settings.Options.Rules = lint.RulePolicy{{Condition: lint.IssueUnknownTag, Disabled: true}}
 	text := "[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{\\unknown}x\n"
 	uri := "file:///test.ass"
 	if err := server.documents.Open(uri, 1, text); err != nil {
@@ -181,7 +181,7 @@ func TestPublishedDiagnosticsHonorRulePolicy(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if bytes.Contains(payload, []byte(`"code":"ASS007"`)) {
+	if bytes.Contains(payload, []byte(`"code":"unknown-tag"`)) {
 		t.Fatalf("disabled rule was published: %s", payload)
 	}
 }
@@ -213,7 +213,7 @@ func TestPublishedDiagnosticsRetainRendererContext(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, diagnostic := range message.Params.Diagnostics {
-		if diagnostic.Code == "ASS031" && strings.Contains(diagnostic.Message, "[libass / xy-VSFilter]") {
+		if diagnostic.Code == "unresolved" && strings.Contains(diagnostic.Message, "[libass / xy-VSFilter]") {
 			return
 		}
 	}
@@ -247,7 +247,7 @@ func TestPublishedDiagnosticsUseSelectedPrimaryRenderer(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		got := bytes.Contains(payload, []byte(`"code":"ASS001"`))
+		got := bytes.Contains(payload, []byte(`"code":"arity"`))
 		if got != tc.want {
 			t.Errorf("ASS001 present = %t, want %t: %s", got, tc.want, payload)
 		}

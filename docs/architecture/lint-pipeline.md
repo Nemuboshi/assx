@@ -54,7 +54,8 @@ flowchart LR
   V --> DIA["per dialogue: semantic.PrepareDialogue, EachOperation → []Diagnostic"]
   DIA --> PORT["portability pass → []Diagnostic"]
   PORT --> COMP["compatibility pass: semantic.CompareDocument → []Diagnostic"]
-  COMP --> SCOPE["scope, sort, dedupe"]
+  COMP --> ASM["assemble: merge observations, derive severity"]
+  ASM --> SCOPE["sort, dedupe"]
   SCOPE --> CAND["candidates: SafeFix with edits"]
   CAND --> PROOF["ProveFixes → []Diagnostic with FixProof"]
   PROOF --> VIEW["lintreport view"]
@@ -106,7 +107,7 @@ sequenceDiagram
 
 The diagnostic `Data` field holds `identity:ordinal`. The identity is the
 document version and the settings generation. The server accepts a code action
-only when the client returns that identity, the rule ID, and the range. A stale
+only when the client returns that identity, the condition, and the range. A stale
 or foreign identity yields no action.
 
 ## Invariants
@@ -115,7 +116,7 @@ or foreign identity yields no action.
 | --- | --- |
 | One profile produces one projected view | `PrepareDocument`, `profile.DocumentView` |
 | A renderer-scoped pass strips fixes | `scopeDiagnostics` |
-| A location may carry different rules, an identical observation appears once | `scopeDiagnostics` |
+| A location carries each condition once, with merged observations | `assemble` |
 | Output order is line, then column | stable sort after the passes |
 | SafeFix requires one proof for the complete edit group across every target | `ProveFixes` batch |
 | A file that does not round-trip byte for byte is not written | CLI write guard |

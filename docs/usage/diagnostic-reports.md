@@ -6,11 +6,11 @@
 Pretty output uses Lip Gloss v2 and `github.com/charmbracelet/x/ansi` for terminal cell width and grapheme-safe cropping. `github.com/rivo/uniseg` expands tabs at grapheme boundaries. Versions are pinned in `go.mod`.
 
 Tag and dialogue-text columns are relative to the dialogue text; event and Style field positions use parser byte spans. `lintreport.Build` normalizes these to the physical source line using `ass.Dialogue.TextStart` and `LineStart`. Tag diagnostics, including repeated-slash findings, underline the concrete expression.
-Compatibility diagnostics use physical-line columns and are not offset again by the Dialogue Text start.
+Compatibility observations use physical-line columns and are not offset again by the Dialogue Text start.
 Their `field` identifies the comparison dimension. `source_span` supplies an absolute decoded-byte range.
 Standalone compatibility maps this range through the Dialogue Text offset.
-Scope text does not affect source spans.
-Fix badges and counts authorize each edit against its proof and resolve grouped proof references, including after JSON round trips. Missing or unmatched ranges get a point marker at the diagnostic location. The presenter never infers a source range from a proposed edit.
+Renderer names do not affect source spans.
+Fix badges and counts authorize each edit against its proof and resolve grouped proof references, including after JSON round trips. Findings list one observation per renderer; the presenter prints the names in order. Missing or unmatched ranges get a point marker at the diagnostic location. The presenter never infers a source range from a proposed edit.
 
 Lint diagnostics carry decoded-byte `SourceSpan` ranges at their creation sites. New ranges do not change legacy JSON fields. Compatibility `source_span` remains in JSON and survives a JSON round trip. The presenter uses a span only when it lies on the reported physical line. Otherwise, it keeps the previous CLI caret location.
 

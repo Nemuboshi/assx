@@ -168,27 +168,27 @@ func TestAnalyzeOptionIsolation(t *testing.T) {
 	text := perftest.StyleEdit(t)
 	options := Options{
 		Targets: lint.DefaultAnalysisTargets(),
-		Rules:   lint.RulePolicy{{ID: lint.IssueNoEffect, Disabled: true}},
+		Rules:   lint.RulePolicy{{Condition: lint.IssueNoEffect, Disabled: true}},
 	}
 	result := analyzeTestResult(t, text, options)
 	if len(result.Findings()) == 0 {
 		t.Fatal("no findings")
 	}
 	for _, finding := range result.Findings() {
-		if finding.Diagnostic.ID == lint.IssueNoEffect {
+		if finding.Diagnostic.Condition == lint.IssueNoEffect {
 			t.Fatalf("disabled rule reported: %#v", finding.Diagnostic)
 		}
 	}
-	options.Rules[0] = lint.RuleOverride{ID: lint.IssueStyleInteger, Disabled: true}
+	options.Rules[0] = lint.RuleOverride{Condition: lint.IssueStyleInteger, Disabled: true}
 	second := analyzeTestResult(t, text, options)
 	for _, finding := range second.Findings() {
-		if finding.Diagnostic.ID == lint.IssueStyleInteger {
+		if finding.Diagnostic.Condition == lint.IssueStyleInteger {
 			t.Fatalf("second result reused the first policy: %#v", finding.Diagnostic)
 		}
 	}
 	firstNoEffect, firstStyleInteger := false, false
 	for _, finding := range result.Findings() {
-		switch finding.Diagnostic.ID {
+		switch finding.Diagnostic.Condition {
 		case lint.IssueNoEffect:
 			firstNoEffect = true
 		case lint.IssueStyleInteger:
@@ -212,8 +212,8 @@ func TestAnalyzeRendererSelections(t *testing.T) {
 	second := analyzeTestResult(t, text, Options{Targets: lint.AnalysisTargets{Primary: xy, Compatibility: []renderer.Profile{libass}}})
 	scoped := func(result *Result, id string) string {
 		for _, finding := range result.Findings() {
-			if finding.Diagnostic.ID == id {
-				return finding.Diagnostic.Renderer
+			if finding.Diagnostic.Condition == id {
+				return finding.Diagnostic.RendererNames()
 			}
 		}
 		t.Fatalf("no %s finding", id)
@@ -234,7 +234,7 @@ func TestAnalyzeRendererSelections(t *testing.T) {
 	}
 	proved := 0
 	for _, diagnostic := range mustProve(t, mod) {
-		if diagnostic.ID == lint.IssueNoEffect && diagnostic.FixSafety == lint.SafeFix {
+		if diagnostic.Condition == lint.IssueNoEffect && diagnostic.FixSafety == lint.SafeFix {
 			proved++
 		}
 	}
@@ -245,7 +245,7 @@ func TestAnalyzeRendererSelections(t *testing.T) {
 
 func TestResultCustomPolicyProofAndApply(t *testing.T) {
 	text := perftest.StyleEdit(t)
-	result := analyzeTestResult(t, text, Options{Rules: lint.RulePolicy{{ID: lint.IssueStyleInteger, Disabled: true}}})
+	result := analyzeTestResult(t, text, Options{Rules: lint.RulePolicy{{Condition: lint.IssueStyleInteger, Disabled: true}}})
 	ids := candidateIDs(result)
 	if want := perftest.StyleEditDialogueCount * 3; len(ids) != want {
 		t.Fatalf("candidates=%d, want %d", len(ids), want)
@@ -374,9 +374,9 @@ func TestAnalyzeEmptyTargetsVersusExplicitLibassOnly(t *testing.T) {
 func TestAnalyzeRejectsInvalidPolicy(t *testing.T) {
 	snapshot := mustSnapshot(t, "[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{\\b1}x\n")
 	for _, policy := range []lint.RulePolicy{
-		{{ID: "ASS999"}},
-		{{ID: lint.IssueNoEffect}, {ID: lint.IssueNoEffect, Disabled: true}},
-		{{ID: lint.IssueNoEffect, Severity: lint.Severity("hint")}},
+		{{Condition: "ASS999"}},
+		{{Condition: lint.IssueNoEffect}, {Condition: lint.IssueNoEffect, Disabled: true}},
+		{{Condition: lint.IssueNoEffect, Severity: lint.Severity("hint")}},
 	} {
 		if result, err := Analyze(context.Background(), snapshot, Options{Rules: policy}); err == nil || result != nil {
 			t.Fatalf("invalid policy accepted: %v %#v", err, result)

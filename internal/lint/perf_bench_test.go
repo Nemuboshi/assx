@@ -43,7 +43,7 @@ func benchmarkLateProofFailureStage(b *testing.B, dialogues int) {
 	lastLine := failure.Dialogues[len(failure.Dialogues)-1].Line
 	var candidates int
 	for _, diagnostic := range primaryFindings(initial) {
-		if diagnostic.ID != IssueNoEffect {
+		if diagnostic.Condition != IssueNoEffect {
 			continue
 		}
 		candidates++
@@ -84,7 +84,7 @@ func benchmarkStyleEditStage(b *testing.B) {
 		if diagnostic.FixSafety != SafeFix || (diagnostic.FixProof == nil && diagnostic.FixProofRef == 0) {
 			continue
 		}
-		switch diagnostic.ID {
+		switch diagnostic.Condition {
 		case IssueStyleInteger:
 			styleProofs++
 		case IssueNoEffect:
@@ -143,7 +143,7 @@ func TestBenchmarkLateProofFailure(t *testing.T) {
 			if unknown && (diagnostic.FixSafety != "" || diagnostic.FixProof != nil || diagnostic.FixProofRef != 0 || len(diagnostic.Edits) != 0) {
 				t.Fatalf("unresolved final dialogue offers a fix: %#v", diagnostic)
 			}
-			if diagnostic.ID != IssueNoEffect {
+			if diagnostic.Condition != IssueNoEffect {
 				continue
 			}
 			noEffects++

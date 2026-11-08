@@ -3,5 +3,5 @@ Font catalog: exclusive directory "/fonts".
 Renderer: libass
 Unchecked text runs: 0 (unknown semantic state).
 Glyph lookup does not test renderer fallback or shaping.
-INFO[FONT001] 1:1 Font family "Absent" was not found in the scanned font set.
+INFO[font-missing] 1:1 Font family "Absent" was not found in the scanned font set.
 1 advisory findings.

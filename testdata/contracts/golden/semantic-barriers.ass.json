@@ -3589,16 +3589,28 @@
     "diagnostics": [
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS003",
+        "condition": "layout",
+        "scenario": "document/style-layout",
         "severity": "warning",
-        "title": "Renderer behavior differs",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "title": "Renderer layout differs",
+        "description": "The selected renderers read or lay out this record differently.",
+        "suggested_fix": "Use the canonical record layout or verify each renderer.",
         "line": 11,
         "column": 1,
         "field": "document/style-layout",
         "detail": "divergent: libass: name=\" Default\" at [214,222), fontname=\" Go Regular\" at [223,234), fontsize=\" 24\" at [235,238), bold=\" 0\" at [239,241), italic=\" 0\" at [242,244), alignment=\" 2\" at [245,247); xy-VSFilter: name=\" Default\" at [214,222), fontname=\" Go Regular\" at [223,234), fontsize=\" 24\" at [235,238), primarycolour=\" 0\" at [239,241), secondarycolour=\" 0\" at [242,244), outlinecolour=\" 2\" at [245,247), backcolour=\"\" at [247,247), bold=\"\" at [247,247), italic=\"\" at [247,247), underline=\"\" at [247,247), strikeout=\"\" at [247,247), scalex=\"\" at [247,247), scaley=\"\" at [247,247), spacing=\"\" at [247,247), angle=\"\" at [247,247), borderstyle=\"\" at [247,247), outline=\"\" at [247,247), shadow=\"\" at [247,247), alignment=\"\" at [247,247), marginl=\"\" at [247,247), marginr=\"\" at [247,247), marginv=\"\" at [247,247), encoding=\"\" at [247,247).",
-        "renderer": "libass / xy-VSFilter",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "accepted"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "accepted"
+          }
+        ],
         "source_span": {
           "Start": 208,
           "End": 247
@@ -3610,16 +3622,28 @@
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS003",
+        "condition": "layout",
+        "scenario": "document/style-layout",
         "severity": "warning",
-        "title": "Renderer behavior differs",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "title": "Renderer layout differs",
+        "description": "The selected renderers read or lay out this record differently.",
+        "suggested_fix": "Use the canonical record layout or verify each renderer.",
         "line": 12,
         "column": 1,
         "field": "document/style-layout",
         "detail": "divergent: libass: name=\" Alt\" at [254,258), fontname=\" Go Regular\" at [259,270), fontsize=\" 32\" at [271,274), bold=\" 0\" at [275,277), italic=\" 0\" at [278,280), alignment=\" 7\" at [281,283); xy-VSFilter: name=\" Alt\" at [254,258), fontname=\" Go Regular\" at [259,270), fontsize=\" 32\" at [271,274), primarycolour=\" 0\" at [275,277), secondarycolour=\" 0\" at [278,280), outlinecolour=\" 7\" at [281,283), backcolour=\"\" at [283,283), bold=\"\" at [283,283), italic=\"\" at [283,283), underline=\"\" at [283,283), strikeout=\"\" at [283,283), scalex=\"\" at [283,283), scaley=\"\" at [283,283), spacing=\"\" at [283,283), angle=\"\" at [283,283), borderstyle=\"\" at [283,283), outline=\"\" at [283,283), shadow=\"\" at [283,283), alignment=\"\" at [283,283), marginl=\"\" at [283,283), marginr=\"\" at [283,283), marginv=\"\" at [283,283), encoding=\"\" at [283,283).",
-        "renderer": "libass / xy-VSFilter",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "accepted"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "accepted"
+          }
+        ],
         "source_span": {
           "Start": 248,
           "End": 283
@@ -3631,7 +3655,7 @@
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS006",
+        "condition": "no-effect",
         "severity": "suggestion",
         "title": "Override has no effect",
         "description": "An override is replaced, reset, or ignored before it affects dialogue text, or repeats the value already active in every affected state slot.",
@@ -3640,7 +3664,13 @@
         "column": 3,
         "tag": "fs",
         "detail": "Overwritten before any dialogue text used it. A later unmodeled operation prevents proving this fix safe for the selected renderer targets.",
-        "renderer": "libass",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "ignored"
+          }
+        ],
         "sources": [
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_render.c#L1075",
@@ -3652,7 +3682,7 @@
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS001",
+        "condition": "arity",
         "severity": "error",
         "title": "Invalid argument count",
         "description": "A tag has an argument count outside the checked forms.",
@@ -3661,7 +3691,18 @@
         "column": 29,
         "tag": "clip",
         "detail": "Found 3 arguments; expected 0 or 1 or 2 or 4 for libass.",
-        "renderer": "libass",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "rejected"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "rejected"
+          }
+        ],
         "sources": [
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L405",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L494",
@@ -3676,17 +3717,31 @@
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS031",
+        "condition": "unresolved",
+        "scenario": "signature",
         "severity": "warning",
         "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "description": "The selected renderer rejects, ignores, or cannot conclusively interpret this invocation.",
+        "suggested_fix": "Check the exact command and target build before changing the source.",
         "line": 15,
         "column": 78,
         "tag": "clip",
         "field": "signature",
         "detail": "ignored-or-unsupported: libass: verified rejection; xy-VSFilter: verified rejection.",
-        "renderer": "libass / xy-VSFilter",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "accepted",
+            "citation": "libass:libass/ass_parse.c:53-60,213-227,729-747 xy:src/subtitles/RTS.cpp:2141,2352-2384 vsm:src/subtitles/RTS.cpp:2460,2953-3000"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "accepted",
+            "citation": "libass:libass/ass_parse.c:53-60,213-227,729-747 xy:src/subtitles/RTS.cpp:2141,2352-2384 vsm:src/subtitles/RTS.cpp:2460,2953-3000"
+          }
+        ],
         "source_span": {
           "Start": 450,
           "End": 462
@@ -3697,7 +3752,7 @@
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS006",
+        "condition": "no-effect",
         "severity": "suggestion",
         "title": "Override has no effect",
         "description": "An override is replaced, reset, or ignored before it affects dialogue text, or repeats the value already active in every affected state slot.",
@@ -3706,7 +3761,13 @@
         "column": 3,
         "tag": "fs",
         "detail": "Overwritten before any dialogue text used it. A later unmodeled operation prevents proving this fix safe for the selected renderer targets.",
-        "renderer": "libass",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "ignored"
+          }
+        ],
         "sources": [
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_render.c#L1075",
@@ -3718,7 +3779,7 @@
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS007",
+        "condition": "unknown-tag",
         "severity": "suggestion",
         "title": "Unknown or misplaced override tag",
         "description": "The tag is unknown, or a text escape was placed in an override block.",
@@ -3727,7 +3788,18 @@
         "column": 13,
         "tag": "u",
         "detail": "The complete command head has no recognized value; the selected renderer consumes a shorter prefix.",
-        "renderer": "libass",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "unknown"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "unknown"
+          }
+        ],
         "sources": [
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L348",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L1119",
@@ -3737,17 +3809,31 @@
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS031",
+        "condition": "unresolved",
+        "scenario": "application",
         "severity": "warning",
         "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "description": "The selected renderer rejects, ignores, or cannot conclusively interpret this invocation.",
+        "suggested_fix": "Check the exact command and target build before changing the source.",
         "line": 16,
         "column": 62,
         "tag": "u",
         "field": "application",
         "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
-        "renderer": "libass / xy-VSFilter",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "accepted",
+            "citation": "libass:libass/ass_parse.c:890-897 xy:src/subtitles/RTS.cpp:2702-2708"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "accepted",
+            "citation": "libass:libass/ass_parse.c:890-897 xy:src/subtitles/RTS.cpp:2702-2708"
+          }
+        ],
         "source_span": {
           "Start": 526,
           "End": 537
@@ -3758,36 +3844,29 @@
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS031",
+        "condition": "unresolved",
+        "scenario": "arguments",
         "severity": "warning",
         "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 16,
-        "column": 62,
-        "tag": "u",
-        "field": "state",
-        "detail": "unresolved: libass: underline=unresolved, active Style \"Default\"; xy-VSFilter: underline=unresolved, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass / xy-VSFilter",
-        "source_span": {
-          "Start": 526,
-          "End": 537
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "description": "The selected renderer rejects, ignores, or cannot conclusively interpret this invocation.",
+        "suggested_fix": "Check the exact command and target build before changing the source.",
         "line": 17,
         "column": 52,
         "tag": "t",
         "field": "arguments",
         "detail": "unresolved: libass resolves 3 argument(s): \"0\" at [599,600), \"500\" at [601,604), \"\\\\fs30\\\\t(0,100,\\\\frz20)\" at [605,626); xy-VSFilter resolves 3 argument(s): \"0\" at [599,600), \"500\" at [601,604), \"\\\\fs30\\\\t(0,100,\\\\frz20)\" at [605,626).",
-        "renderer": "libass / xy-VSFilter",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "accepted"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "accepted"
+          }
+        ],
         "source_span": {
           "Start": 596,
           "End": 627
@@ -3796,74 +3875,31 @@
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS031",
+        "condition": "unresolved",
+        "scenario": "application",
         "severity": "warning",
         "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 17,
-        "column": 52,
-        "tag": "t",
-        "field": "signature",
-        "detail": "unresolved: libass: unresolved argument shape; xy-VSFilter: unresolved argument shape.",
-        "renderer": "libass / xy-VSFilter",
-        "source_span": {
-          "Start": 596,
-          "End": 627
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 17,
-        "column": 52,
-        "tag": "t",
-        "field": "application",
-        "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
-        "renderer": "libass / xy-VSFilter",
-        "source_span": {
-          "Start": 596,
-          "End": 627
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 17,
-        "column": 52,
-        "tag": "t",
-        "field": "state",
-        "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass / xy-VSFilter",
-        "source_span": {
-          "Start": 596,
-          "End": 627
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "description": "The selected renderer rejects, ignores, or cannot conclusively interpret this invocation.",
+        "suggested_fix": "Check the exact command and target build before changing the source.",
         "line": 17,
         "column": 66,
         "tag": "t",
         "field": "application",
         "detail": "unresolved: libass: applied=false, ignored=false; xy-VSFilter: applied=false, ignored=false.",
-        "renderer": "libass / xy-VSFilter",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "accepted",
+            "citation": "libass:libass/ass_parse.c:670-727 xy:src/subtitles/RTS.cpp:2670-2700 vsm:src/subtitles/RTS.cpp:3613-3644"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "accepted",
+            "citation": "libass:libass/ass_parse.c:670-727 xy:src/subtitles/RTS.cpp:2670-2700 vsm:src/subtitles/RTS.cpp:3613-3644"
+          }
+        ],
         "source_span": {
           "Start": 610,
           "End": 626
@@ -3874,36 +3910,31 @@
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS031",
+        "condition": "unresolved",
+        "scenario": "application",
         "severity": "warning",
         "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 17,
-        "column": 66,
-        "tag": "t",
-        "field": "state",
-        "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass / xy-VSFilter",
-        "source_span": {
-          "Start": 610,
-          "End": 626
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "description": "The selected renderer rejects, ignores, or cannot conclusively interpret this invocation.",
+        "suggested_fix": "Check the exact command and target build before changing the source.",
         "line": 17,
         "column": 83,
         "tag": "k",
         "field": "application",
         "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
-        "renderer": "libass / xy-VSFilter",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "accepted",
+            "citation": "libass:libass/ass_parse.c:861-868 xy:src/subtitles/RTS.cpp:2565-2571"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "accepted",
+            "citation": "libass:libass/ass_parse.c:861-868 xy:src/subtitles/RTS.cpp:2565-2571"
+          }
+        ],
         "source_span": {
           "Start": 627,
           "End": 631
@@ -3914,36 +3945,31 @@
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS031",
+        "condition": "unresolved",
+        "scenario": "application",
         "severity": "warning",
         "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 17,
-        "column": 83,
-        "tag": "k",
-        "field": "state",
-        "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass / xy-VSFilter",
-        "source_span": {
-          "Start": 627,
-          "End": 631
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "description": "The selected renderer rejects, ignores, or cannot conclusively interpret this invocation.",
+        "suggested_fix": "Check the exact command and target build before changing the source.",
         "line": 17,
         "column": 87,
         "tag": "kf",
         "field": "application",
         "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
-        "renderer": "libass / xy-VSFilter",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "accepted",
+            "citation": "libass:libass/ass_parse.c:845-852 xy:src/subtitles/RTS.cpp:2544-2553"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "accepted",
+            "citation": "libass:libass/ass_parse.c:845-852 xy:src/subtitles/RTS.cpp:2544-2553"
+          }
+        ],
         "source_span": {
           "Start": 631,
           "End": 636
@@ -3954,26 +3980,7 @@
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 17,
-        "column": 87,
-        "tag": "kf",
-        "field": "state",
-        "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass / xy-VSFilter",
-        "source_span": {
-          "Start": 631,
-          "End": 636
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS017",
+        "condition": "style-reference",
         "severity": "warning",
         "title": "Undefined style reference",
         "description": "A dialogue or override tag references a style that is not defined in the script.",
@@ -3982,22 +3989,42 @@
         "column": 3,
         "tag": "r",
         "detail": "Override tag references undefined style \"Missing\".",
-        "renderer": "libass",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "rejected"
+          }
+        ],
         "sources": null
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS031",
+        "condition": "unresolved",
+        "scenario": "application",
         "severity": "warning",
         "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "description": "The selected renderer rejects, ignores, or cannot conclusively interpret this invocation.",
+        "suggested_fix": "Check the exact command and target build before changing the source.",
         "line": 18,
         "column": 48,
         "tag": "r",
         "field": "application",
         "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
-        "renderer": "libass / xy-VSFilter",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "accepted",
+            "citation": "libass:libass/ass_parse.c:805-811 xy:src/subtitles/RTS.cpp:2643-2647"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "accepted",
+            "citation": "libass:libass/ass_parse.c:805-811 xy:src/subtitles/RTS.cpp:2643-2647"
+          }
+        ],
         "source_span": {
           "Start": 719,
           "End": 728
@@ -4005,28 +4032,9 @@
         "sources": [
           "libass:libass/ass_parse.c:805-811 xy:src/subtitles/RTS.cpp:2643-2647"
         ]
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 18,
-        "column": 48,
-        "tag": "r",
-        "field": "state",
-        "detail": "unresolved: libass: no modeled slot transition, active Style \"Missing\"; xy-VSFilter: no modeled slot transition, active Style \"Missing\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass / xy-VSFilter",
-        "source_span": {
-          "Start": 719,
-          "End": 728
-        },
-        "sources": []
       }
     ],
-    "summary": "Fixes available: 0 safe, 0 unsafe, 22 not auto-fixable.",
+    "summary": "Fixes available: 0 safe, 0 unsafe, 14 not auto-fixable.",
     "output_sha256": "a662872335aa7826b8c31db3214c17d7f38fbc6ae0235294528c9cbc7c85fd91",
     "changed": false
   },
@@ -4481,16 +4489,28 @@
     "diagnostics": [
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS003",
+        "condition": "layout",
+        "scenario": "document/style-layout",
         "severity": "warning",
-        "title": "Renderer behavior differs",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "title": "Renderer layout differs",
+        "description": "The selected renderers read or lay out this record differently.",
+        "suggested_fix": "Use the canonical record layout or verify each renderer.",
         "line": 11,
         "column": 1,
         "field": "document/style-layout",
         "detail": "divergent: libass: name=\" Default\" at [214,222), fontname=\" Go Regular\" at [223,234), fontsize=\" 24\" at [235,238), bold=\" 0\" at [239,241), italic=\" 0\" at [242,244), alignment=\" 2\" at [245,247); xy-VSFilter: name=\" Default\" at [214,222), fontname=\" Go Regular\" at [223,234), fontsize=\" 24\" at [235,238), primarycolour=\" 0\" at [239,241), secondarycolour=\" 0\" at [242,244), outlinecolour=\" 2\" at [245,247), backcolour=\"\" at [247,247), bold=\"\" at [247,247), italic=\"\" at [247,247), underline=\"\" at [247,247), strikeout=\"\" at [247,247), scalex=\"\" at [247,247), scaley=\"\" at [247,247), spacing=\"\" at [247,247), angle=\"\" at [247,247), borderstyle=\"\" at [247,247), outline=\"\" at [247,247), shadow=\"\" at [247,247), alignment=\"\" at [247,247), marginl=\"\" at [247,247), marginr=\"\" at [247,247), marginv=\"\" at [247,247), encoding=\"\" at [247,247).",
-        "renderer": "libass / xy-VSFilter",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "accepted"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "accepted"
+          }
+        ],
         "source_span": {
           "Start": 208,
           "End": 247
@@ -4502,16 +4522,28 @@
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS003",
+        "condition": "layout",
+        "scenario": "document/style-layout",
         "severity": "warning",
-        "title": "Renderer behavior differs",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "title": "Renderer layout differs",
+        "description": "The selected renderers read or lay out this record differently.",
+        "suggested_fix": "Use the canonical record layout or verify each renderer.",
         "line": 12,
         "column": 1,
         "field": "document/style-layout",
         "detail": "divergent: libass: name=\" Alt\" at [254,258), fontname=\" Go Regular\" at [259,270), fontsize=\" 32\" at [271,274), bold=\" 0\" at [275,277), italic=\" 0\" at [278,280), alignment=\" 7\" at [281,283); xy-VSFilter: name=\" Alt\" at [254,258), fontname=\" Go Regular\" at [259,270), fontsize=\" 32\" at [271,274), primarycolour=\" 0\" at [275,277), secondarycolour=\" 0\" at [278,280), outlinecolour=\" 7\" at [281,283), backcolour=\"\" at [283,283), bold=\"\" at [283,283), italic=\"\" at [283,283), underline=\"\" at [283,283), strikeout=\"\" at [283,283), scalex=\"\" at [283,283), scaley=\"\" at [283,283), spacing=\"\" at [283,283), angle=\"\" at [283,283), borderstyle=\"\" at [283,283), outline=\"\" at [283,283), shadow=\"\" at [283,283), alignment=\"\" at [283,283), marginl=\"\" at [283,283), marginr=\"\" at [283,283), marginv=\"\" at [283,283), encoding=\"\" at [283,283).",
-        "renderer": "libass / xy-VSFilter",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "accepted"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "accepted"
+          }
+        ],
         "source_span": {
           "Start": 248,
           "End": 283
@@ -4523,7 +4555,7 @@
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS006",
+        "condition": "no-effect",
         "severity": "suggestion",
         "title": "Override has no effect",
         "description": "An override is replaced, reset, or ignored before it affects dialogue text, or repeats the value already active in every affected state slot.",
@@ -4532,7 +4564,13 @@
         "column": 3,
         "tag": "fs",
         "detail": "Overwritten before any dialogue text used it. A later unmodeled operation prevents proving this fix safe for the selected renderer targets.",
-        "renderer": "libass",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "ignored"
+          }
+        ],
         "sources": [
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_render.c#L1075",
@@ -4544,7 +4582,7 @@
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS001",
+        "condition": "arity",
         "severity": "error",
         "title": "Invalid argument count",
         "description": "A tag has an argument count outside the checked forms.",
@@ -4553,7 +4591,18 @@
         "column": 29,
         "tag": "clip",
         "detail": "Found 3 arguments; expected 0 or 1 or 2 or 4 for libass.",
-        "renderer": "libass",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "rejected"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "rejected"
+          }
+        ],
         "sources": [
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L405",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L494",
@@ -4568,17 +4617,31 @@
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS031",
+        "condition": "unresolved",
+        "scenario": "signature",
         "severity": "warning",
         "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "description": "The selected renderer rejects, ignores, or cannot conclusively interpret this invocation.",
+        "suggested_fix": "Check the exact command and target build before changing the source.",
         "line": 15,
         "column": 78,
         "tag": "clip",
         "field": "signature",
         "detail": "ignored-or-unsupported: libass: verified rejection; xy-VSFilter: verified rejection.",
-        "renderer": "libass / xy-VSFilter",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "accepted",
+            "citation": "libass:libass/ass_parse.c:53-60,213-227,729-747 xy:src/subtitles/RTS.cpp:2141,2352-2384 vsm:src/subtitles/RTS.cpp:2460,2953-3000"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "accepted",
+            "citation": "libass:libass/ass_parse.c:53-60,213-227,729-747 xy:src/subtitles/RTS.cpp:2141,2352-2384 vsm:src/subtitles/RTS.cpp:2460,2953-3000"
+          }
+        ],
         "source_span": {
           "Start": 450,
           "End": 462
@@ -4589,7 +4652,7 @@
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS006",
+        "condition": "no-effect",
         "severity": "suggestion",
         "title": "Override has no effect",
         "description": "An override is replaced, reset, or ignored before it affects dialogue text, or repeats the value already active in every affected state slot.",
@@ -4598,7 +4661,13 @@
         "column": 3,
         "tag": "fs",
         "detail": "Overwritten before any dialogue text used it. A later unmodeled operation prevents proving this fix safe for the selected renderer targets.",
-        "renderer": "libass",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "ignored"
+          }
+        ],
         "sources": [
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_render.c#L1075",
@@ -4610,7 +4679,7 @@
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS007",
+        "condition": "unknown-tag",
         "severity": "suggestion",
         "title": "Unknown or misplaced override tag",
         "description": "The tag is unknown, or a text escape was placed in an override block.",
@@ -4619,7 +4688,18 @@
         "column": 13,
         "tag": "u",
         "detail": "The complete command head has no recognized value; the selected renderer consumes a shorter prefix.",
-        "renderer": "libass",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "unknown"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "unknown"
+          }
+        ],
         "sources": [
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L348",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L1119",
@@ -4629,17 +4709,31 @@
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS031",
+        "condition": "unresolved",
+        "scenario": "application",
         "severity": "warning",
         "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "description": "The selected renderer rejects, ignores, or cannot conclusively interpret this invocation.",
+        "suggested_fix": "Check the exact command and target build before changing the source.",
         "line": 16,
         "column": 62,
         "tag": "u",
         "field": "application",
         "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
-        "renderer": "libass / xy-VSFilter",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "accepted",
+            "citation": "libass:libass/ass_parse.c:890-897 xy:src/subtitles/RTS.cpp:2702-2708"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "accepted",
+            "citation": "libass:libass/ass_parse.c:890-897 xy:src/subtitles/RTS.cpp:2702-2708"
+          }
+        ],
         "source_span": {
           "Start": 526,
           "End": 537
@@ -4650,36 +4744,29 @@
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS031",
+        "condition": "unresolved",
+        "scenario": "arguments",
         "severity": "warning",
         "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 16,
-        "column": 62,
-        "tag": "u",
-        "field": "state",
-        "detail": "unresolved: libass: underline=unresolved, active Style \"Default\"; xy-VSFilter: underline=unresolved, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass / xy-VSFilter",
-        "source_span": {
-          "Start": 526,
-          "End": 537
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "description": "The selected renderer rejects, ignores, or cannot conclusively interpret this invocation.",
+        "suggested_fix": "Check the exact command and target build before changing the source.",
         "line": 17,
         "column": 52,
         "tag": "t",
         "field": "arguments",
         "detail": "unresolved: libass resolves 3 argument(s): \"0\" at [599,600), \"500\" at [601,604), \"\\\\fs30\\\\t(0,100,\\\\frz20)\" at [605,626); xy-VSFilter resolves 3 argument(s): \"0\" at [599,600), \"500\" at [601,604), \"\\\\fs30\\\\t(0,100,\\\\frz20)\" at [605,626).",
-        "renderer": "libass / xy-VSFilter",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "accepted"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "accepted"
+          }
+        ],
         "source_span": {
           "Start": 596,
           "End": 627
@@ -4688,74 +4775,31 @@
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS031",
+        "condition": "unresolved",
+        "scenario": "application",
         "severity": "warning",
         "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 17,
-        "column": 52,
-        "tag": "t",
-        "field": "signature",
-        "detail": "unresolved: libass: unresolved argument shape; xy-VSFilter: unresolved argument shape.",
-        "renderer": "libass / xy-VSFilter",
-        "source_span": {
-          "Start": 596,
-          "End": 627
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 17,
-        "column": 52,
-        "tag": "t",
-        "field": "application",
-        "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
-        "renderer": "libass / xy-VSFilter",
-        "source_span": {
-          "Start": 596,
-          "End": 627
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 17,
-        "column": 52,
-        "tag": "t",
-        "field": "state",
-        "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass / xy-VSFilter",
-        "source_span": {
-          "Start": 596,
-          "End": 627
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "description": "The selected renderer rejects, ignores, or cannot conclusively interpret this invocation.",
+        "suggested_fix": "Check the exact command and target build before changing the source.",
         "line": 17,
         "column": 66,
         "tag": "t",
         "field": "application",
         "detail": "unresolved: libass: applied=false, ignored=false; xy-VSFilter: applied=false, ignored=false.",
-        "renderer": "libass / xy-VSFilter",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "accepted",
+            "citation": "libass:libass/ass_parse.c:670-727 xy:src/subtitles/RTS.cpp:2670-2700 vsm:src/subtitles/RTS.cpp:3613-3644"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "accepted",
+            "citation": "libass:libass/ass_parse.c:670-727 xy:src/subtitles/RTS.cpp:2670-2700 vsm:src/subtitles/RTS.cpp:3613-3644"
+          }
+        ],
         "source_span": {
           "Start": 610,
           "End": 626
@@ -4766,36 +4810,31 @@
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS031",
+        "condition": "unresolved",
+        "scenario": "application",
         "severity": "warning",
         "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 17,
-        "column": 66,
-        "tag": "t",
-        "field": "state",
-        "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass / xy-VSFilter",
-        "source_span": {
-          "Start": 610,
-          "End": 626
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "description": "The selected renderer rejects, ignores, or cannot conclusively interpret this invocation.",
+        "suggested_fix": "Check the exact command and target build before changing the source.",
         "line": 17,
         "column": 83,
         "tag": "k",
         "field": "application",
         "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
-        "renderer": "libass / xy-VSFilter",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "accepted",
+            "citation": "libass:libass/ass_parse.c:861-868 xy:src/subtitles/RTS.cpp:2565-2571"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "accepted",
+            "citation": "libass:libass/ass_parse.c:861-868 xy:src/subtitles/RTS.cpp:2565-2571"
+          }
+        ],
         "source_span": {
           "Start": 627,
           "End": 631
@@ -4806,36 +4845,31 @@
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS031",
+        "condition": "unresolved",
+        "scenario": "application",
         "severity": "warning",
         "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 17,
-        "column": 83,
-        "tag": "k",
-        "field": "state",
-        "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass / xy-VSFilter",
-        "source_span": {
-          "Start": 627,
-          "End": 631
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "description": "The selected renderer rejects, ignores, or cannot conclusively interpret this invocation.",
+        "suggested_fix": "Check the exact command and target build before changing the source.",
         "line": 17,
         "column": 87,
         "tag": "kf",
         "field": "application",
         "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
-        "renderer": "libass / xy-VSFilter",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "accepted",
+            "citation": "libass:libass/ass_parse.c:845-852 xy:src/subtitles/RTS.cpp:2544-2553"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "accepted",
+            "citation": "libass:libass/ass_parse.c:845-852 xy:src/subtitles/RTS.cpp:2544-2553"
+          }
+        ],
         "source_span": {
           "Start": 631,
           "End": 636
@@ -4846,26 +4880,7 @@
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 17,
-        "column": 87,
-        "tag": "kf",
-        "field": "state",
-        "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass / xy-VSFilter",
-        "source_span": {
-          "Start": 631,
-          "End": 636
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS017",
+        "condition": "style-reference",
         "severity": "warning",
         "title": "Undefined style reference",
         "description": "A dialogue or override tag references a style that is not defined in the script.",
@@ -4874,22 +4889,42 @@
         "column": 3,
         "tag": "r",
         "detail": "Override tag references undefined style \"Missing\".",
-        "renderer": "libass",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "rejected"
+          }
+        ],
         "sources": null
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS031",
+        "condition": "unresolved",
+        "scenario": "application",
         "severity": "warning",
         "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "description": "The selected renderer rejects, ignores, or cannot conclusively interpret this invocation.",
+        "suggested_fix": "Check the exact command and target build before changing the source.",
         "line": 18,
         "column": 48,
         "tag": "r",
         "field": "application",
         "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
-        "renderer": "libass / xy-VSFilter",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "accepted",
+            "citation": "libass:libass/ass_parse.c:805-811 xy:src/subtitles/RTS.cpp:2643-2647"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "accepted",
+            "citation": "libass:libass/ass_parse.c:805-811 xy:src/subtitles/RTS.cpp:2643-2647"
+          }
+        ],
         "source_span": {
           "Start": 719,
           "End": 728
@@ -4897,28 +4932,9 @@
         "sources": [
           "libass:libass/ass_parse.c:805-811 xy:src/subtitles/RTS.cpp:2643-2647"
         ]
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 18,
-        "column": 48,
-        "tag": "r",
-        "field": "state",
-        "detail": "unresolved: libass: no modeled slot transition, active Style \"Missing\"; xy-VSFilter: no modeled slot transition, active Style \"Missing\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass / xy-VSFilter",
-        "source_span": {
-          "Start": 719,
-          "End": 728
-        },
-        "sources": []
       }
     ],
-    "summary": "Fixes available: 0 safe, 0 unsafe, 22 not auto-fixable.",
+    "summary": "Fixes available: 0 safe, 0 unsafe, 14 not auto-fixable.",
     "output_sha256": "a662872335aa7826b8c31db3214c17d7f38fbc6ae0235294528c9cbc7c85fd91",
     "changed": false
   },
@@ -4927,16 +4943,28 @@
     "diagnostics": [
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS003",
+        "condition": "layout",
+        "scenario": "document/style-layout",
         "severity": "warning",
-        "title": "Renderer behavior differs",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "title": "Renderer layout differs",
+        "description": "The selected renderers read or lay out this record differently.",
+        "suggested_fix": "Use the canonical record layout or verify each renderer.",
         "line": 11,
         "column": 1,
         "field": "document/style-layout",
         "detail": "divergent: libass: name=\" Default\" at [214,222), fontname=\" Go Regular\" at [223,234), fontsize=\" 24\" at [235,238), bold=\" 0\" at [239,241), italic=\" 0\" at [242,244), alignment=\" 2\" at [245,247); xy-VSFilter: name=\" Default\" at [214,222), fontname=\" Go Regular\" at [223,234), fontsize=\" 24\" at [235,238), primarycolour=\" 0\" at [239,241), secondarycolour=\" 0\" at [242,244), outlinecolour=\" 2\" at [245,247), backcolour=\"\" at [247,247), bold=\"\" at [247,247), italic=\"\" at [247,247), underline=\"\" at [247,247), strikeout=\"\" at [247,247), scalex=\"\" at [247,247), scaley=\"\" at [247,247), spacing=\"\" at [247,247), angle=\"\" at [247,247), borderstyle=\"\" at [247,247), outline=\"\" at [247,247), shadow=\"\" at [247,247), alignment=\"\" at [247,247), marginl=\"\" at [247,247), marginr=\"\" at [247,247), marginv=\"\" at [247,247), encoding=\"\" at [247,247).",
-        "renderer": "libass / xy-VSFilter",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "accepted"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "accepted"
+          }
+        ],
         "source_span": {
           "Start": 208,
           "End": 247
@@ -4948,16 +4976,28 @@
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS003",
+        "condition": "layout",
+        "scenario": "document/style-layout",
         "severity": "warning",
-        "title": "Renderer behavior differs",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "title": "Renderer layout differs",
+        "description": "The selected renderers read or lay out this record differently.",
+        "suggested_fix": "Use the canonical record layout or verify each renderer.",
         "line": 12,
         "column": 1,
         "field": "document/style-layout",
         "detail": "divergent: libass: name=\" Alt\" at [254,258), fontname=\" Go Regular\" at [259,270), fontsize=\" 32\" at [271,274), bold=\" 0\" at [275,277), italic=\" 0\" at [278,280), alignment=\" 7\" at [281,283); xy-VSFilter: name=\" Alt\" at [254,258), fontname=\" Go Regular\" at [259,270), fontsize=\" 32\" at [271,274), primarycolour=\" 0\" at [275,277), secondarycolour=\" 0\" at [278,280), outlinecolour=\" 7\" at [281,283), backcolour=\"\" at [283,283), bold=\"\" at [283,283), italic=\"\" at [283,283), underline=\"\" at [283,283), strikeout=\"\" at [283,283), scalex=\"\" at [283,283), scaley=\"\" at [283,283), spacing=\"\" at [283,283), angle=\"\" at [283,283), borderstyle=\"\" at [283,283), outline=\"\" at [283,283), shadow=\"\" at [283,283), alignment=\"\" at [283,283), marginl=\"\" at [283,283), marginr=\"\" at [283,283), marginv=\"\" at [283,283), encoding=\"\" at [283,283).",
-        "renderer": "libass / xy-VSFilter",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "accepted"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "accepted"
+          }
+        ],
         "source_span": {
           "Start": 248,
           "End": 283
@@ -4969,7 +5009,7 @@
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS006",
+        "condition": "no-effect",
         "severity": "suggestion",
         "title": "Override has no effect",
         "description": "An override is replaced, reset, or ignored before it affects dialogue text, or repeats the value already active in every affected state slot.",
@@ -4978,7 +5018,13 @@
         "column": 3,
         "tag": "fs",
         "detail": "Overwritten before any dialogue text used it. A later unmodeled operation prevents proving this fix safe for the selected renderer targets.",
-        "renderer": "libass",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "ignored"
+          }
+        ],
         "sources": [
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_render.c#L1075",
@@ -4990,7 +5036,7 @@
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS001",
+        "condition": "arity",
         "severity": "error",
         "title": "Invalid argument count",
         "description": "A tag has an argument count outside the checked forms.",
@@ -4999,7 +5045,18 @@
         "column": 29,
         "tag": "clip",
         "detail": "Found 3 arguments; expected 0 or 1 or 2 or 4 for libass.",
-        "renderer": "libass",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "rejected"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "rejected"
+          }
+        ],
         "sources": [
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L405",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L494",
@@ -5014,17 +5071,31 @@
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS031",
+        "condition": "unresolved",
+        "scenario": "signature",
         "severity": "warning",
         "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "description": "The selected renderer rejects, ignores, or cannot conclusively interpret this invocation.",
+        "suggested_fix": "Check the exact command and target build before changing the source.",
         "line": 15,
         "column": 78,
         "tag": "clip",
         "field": "signature",
         "detail": "ignored-or-unsupported: libass: verified rejection; xy-VSFilter: verified rejection.",
-        "renderer": "libass / xy-VSFilter",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "accepted",
+            "citation": "libass:libass/ass_parse.c:53-60,213-227,729-747 xy:src/subtitles/RTS.cpp:2141,2352-2384 vsm:src/subtitles/RTS.cpp:2460,2953-3000"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "accepted",
+            "citation": "libass:libass/ass_parse.c:53-60,213-227,729-747 xy:src/subtitles/RTS.cpp:2141,2352-2384 vsm:src/subtitles/RTS.cpp:2460,2953-3000"
+          }
+        ],
         "source_span": {
           "Start": 450,
           "End": 462
@@ -5035,7 +5106,7 @@
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS006",
+        "condition": "no-effect",
         "severity": "suggestion",
         "title": "Override has no effect",
         "description": "An override is replaced, reset, or ignored before it affects dialogue text, or repeats the value already active in every affected state slot.",
@@ -5044,7 +5115,13 @@
         "column": 3,
         "tag": "fs",
         "detail": "Overwritten before any dialogue text used it. A later unmodeled operation prevents proving this fix safe for the selected renderer targets.",
-        "renderer": "libass",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "ignored"
+          }
+        ],
         "sources": [
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_render.c#L1075",
@@ -5056,7 +5133,7 @@
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS007",
+        "condition": "unknown-tag",
         "severity": "suggestion",
         "title": "Unknown or misplaced override tag",
         "description": "The tag is unknown, or a text escape was placed in an override block.",
@@ -5065,7 +5142,18 @@
         "column": 13,
         "tag": "u",
         "detail": "The complete command head has no recognized value; the selected renderer consumes a shorter prefix.",
-        "renderer": "libass",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "unknown"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "unknown"
+          }
+        ],
         "sources": [
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L348",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L1119",
@@ -5075,17 +5163,31 @@
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS031",
+        "condition": "unresolved",
+        "scenario": "application",
         "severity": "warning",
         "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "description": "The selected renderer rejects, ignores, or cannot conclusively interpret this invocation.",
+        "suggested_fix": "Check the exact command and target build before changing the source.",
         "line": 16,
         "column": 62,
         "tag": "u",
         "field": "application",
         "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
-        "renderer": "libass / xy-VSFilter",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "accepted",
+            "citation": "libass:libass/ass_parse.c:890-897 xy:src/subtitles/RTS.cpp:2702-2708"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "accepted",
+            "citation": "libass:libass/ass_parse.c:890-897 xy:src/subtitles/RTS.cpp:2702-2708"
+          }
+        ],
         "source_span": {
           "Start": 526,
           "End": 537
@@ -5096,36 +5198,29 @@
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS031",
+        "condition": "unresolved",
+        "scenario": "arguments",
         "severity": "warning",
         "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 16,
-        "column": 62,
-        "tag": "u",
-        "field": "state",
-        "detail": "unresolved: libass: underline=unresolved, active Style \"Default\"; xy-VSFilter: underline=unresolved, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass / xy-VSFilter",
-        "source_span": {
-          "Start": 526,
-          "End": 537
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "description": "The selected renderer rejects, ignores, or cannot conclusively interpret this invocation.",
+        "suggested_fix": "Check the exact command and target build before changing the source.",
         "line": 17,
         "column": 52,
         "tag": "t",
         "field": "arguments",
         "detail": "unresolved: libass resolves 3 argument(s): \"0\" at [599,600), \"500\" at [601,604), \"\\\\fs30\\\\t(0,100,\\\\frz20)\" at [605,626); xy-VSFilter resolves 3 argument(s): \"0\" at [599,600), \"500\" at [601,604), \"\\\\fs30\\\\t(0,100,\\\\frz20)\" at [605,626).",
-        "renderer": "libass / xy-VSFilter",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "accepted"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "accepted"
+          }
+        ],
         "source_span": {
           "Start": 596,
           "End": 627
@@ -5134,74 +5229,31 @@
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS031",
+        "condition": "unresolved",
+        "scenario": "application",
         "severity": "warning",
         "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 17,
-        "column": 52,
-        "tag": "t",
-        "field": "signature",
-        "detail": "unresolved: libass: unresolved argument shape; xy-VSFilter: unresolved argument shape.",
-        "renderer": "libass / xy-VSFilter",
-        "source_span": {
-          "Start": 596,
-          "End": 627
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 17,
-        "column": 52,
-        "tag": "t",
-        "field": "application",
-        "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
-        "renderer": "libass / xy-VSFilter",
-        "source_span": {
-          "Start": 596,
-          "End": 627
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 17,
-        "column": 52,
-        "tag": "t",
-        "field": "state",
-        "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass / xy-VSFilter",
-        "source_span": {
-          "Start": 596,
-          "End": 627
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "description": "The selected renderer rejects, ignores, or cannot conclusively interpret this invocation.",
+        "suggested_fix": "Check the exact command and target build before changing the source.",
         "line": 17,
         "column": 66,
         "tag": "t",
         "field": "application",
         "detail": "unresolved: libass: applied=false, ignored=false; xy-VSFilter: applied=false, ignored=false.",
-        "renderer": "libass / xy-VSFilter",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "accepted",
+            "citation": "libass:libass/ass_parse.c:670-727 xy:src/subtitles/RTS.cpp:2670-2700 vsm:src/subtitles/RTS.cpp:3613-3644"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "accepted",
+            "citation": "libass:libass/ass_parse.c:670-727 xy:src/subtitles/RTS.cpp:2670-2700 vsm:src/subtitles/RTS.cpp:3613-3644"
+          }
+        ],
         "source_span": {
           "Start": 610,
           "End": 626
@@ -5212,36 +5264,31 @@
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS031",
+        "condition": "unresolved",
+        "scenario": "application",
         "severity": "warning",
         "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 17,
-        "column": 66,
-        "tag": "t",
-        "field": "state",
-        "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass / xy-VSFilter",
-        "source_span": {
-          "Start": 610,
-          "End": 626
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "description": "The selected renderer rejects, ignores, or cannot conclusively interpret this invocation.",
+        "suggested_fix": "Check the exact command and target build before changing the source.",
         "line": 17,
         "column": 83,
         "tag": "k",
         "field": "application",
         "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
-        "renderer": "libass / xy-VSFilter",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "accepted",
+            "citation": "libass:libass/ass_parse.c:861-868 xy:src/subtitles/RTS.cpp:2565-2571"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "accepted",
+            "citation": "libass:libass/ass_parse.c:861-868 xy:src/subtitles/RTS.cpp:2565-2571"
+          }
+        ],
         "source_span": {
           "Start": 627,
           "End": 631
@@ -5252,36 +5299,31 @@
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS031",
+        "condition": "unresolved",
+        "scenario": "application",
         "severity": "warning",
         "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 17,
-        "column": 83,
-        "tag": "k",
-        "field": "state",
-        "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass / xy-VSFilter",
-        "source_span": {
-          "Start": 627,
-          "End": 631
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "description": "The selected renderer rejects, ignores, or cannot conclusively interpret this invocation.",
+        "suggested_fix": "Check the exact command and target build before changing the source.",
         "line": 17,
         "column": 87,
         "tag": "kf",
         "field": "application",
         "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
-        "renderer": "libass / xy-VSFilter",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "accepted",
+            "citation": "libass:libass/ass_parse.c:845-852 xy:src/subtitles/RTS.cpp:2544-2553"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "accepted",
+            "citation": "libass:libass/ass_parse.c:845-852 xy:src/subtitles/RTS.cpp:2544-2553"
+          }
+        ],
         "source_span": {
           "Start": 631,
           "End": 636
@@ -5292,26 +5334,7 @@
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 17,
-        "column": 87,
-        "tag": "kf",
-        "field": "state",
-        "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass / xy-VSFilter",
-        "source_span": {
-          "Start": 631,
-          "End": 636
-        },
-        "sources": []
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS017",
+        "condition": "style-reference",
         "severity": "warning",
         "title": "Undefined style reference",
         "description": "A dialogue or override tag references a style that is not defined in the script.",
@@ -5320,22 +5343,42 @@
         "column": 3,
         "tag": "r",
         "detail": "Override tag references undefined style \"Missing\".",
-        "renderer": "libass",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "rejected"
+          }
+        ],
         "sources": null
       },
       {
         "file": "semantic-barriers.ass",
-        "id": "ASS031",
+        "condition": "unresolved",
+        "scenario": "application",
         "severity": "warning",
         "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "description": "The selected renderer rejects, ignores, or cannot conclusively interpret this invocation.",
+        "suggested_fix": "Check the exact command and target build before changing the source.",
         "line": 18,
         "column": 48,
         "tag": "r",
         "field": "application",
         "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
-        "renderer": "libass / xy-VSFilter",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "accepted",
+            "citation": "libass:libass/ass_parse.c:805-811 xy:src/subtitles/RTS.cpp:2643-2647"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "accepted",
+            "citation": "libass:libass/ass_parse.c:805-811 xy:src/subtitles/RTS.cpp:2643-2647"
+          }
+        ],
         "source_span": {
           "Start": 719,
           "End": 728
@@ -5343,28 +5386,9 @@
         "sources": [
           "libass:libass/ass_parse.c:805-811 xy:src/subtitles/RTS.cpp:2643-2647"
         ]
-      },
-      {
-        "file": "semantic-barriers.ass",
-        "id": "ASS031",
-        "severity": "warning",
-        "title": "Renderer command interpretation is unresolved",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
-        "line": 18,
-        "column": 48,
-        "tag": "r",
-        "field": "state",
-        "detail": "unresolved: libass: no modeled slot transition, active Style \"Missing\"; xy-VSFilter: no modeled slot transition, active Style \"Missing\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass / xy-VSFilter",
-        "source_span": {
-          "Start": 719,
-          "End": 728
-        },
-        "sources": []
       }
     ],
-    "summary": "Fixes available: 0 safe, 0 unsafe, 22 not auto-fixable.",
+    "summary": "Fixes available: 0 safe, 0 unsafe, 14 not auto-fixable.",
     "output_sha256": "a662872335aa7826b8c31db3214c17d7f38fbc6ae0235294528c9cbc7c85fd91",
     "changed": false
   }

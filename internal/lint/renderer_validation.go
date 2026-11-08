@@ -90,7 +90,11 @@ func analyzeDocumentForProfileContext(ctx context.Context, doc ass.Document, pro
 // boundary for ALL diagnostics, including shared header and Style checks.
 func scopeDiagnostics(diagnostics []Diagnostic, profile renderer.Profile) []Diagnostic {
 	for i := range diagnostics {
-		diagnostics[i].Renderer = ProfileScope(profile)
+		diagnostics[i].Renderers = []Observation{{
+			Renderer: profile.Kind().String(),
+			Role:     RolePrimary,
+			Status:   statusForCondition(diagnostics[i].Condition),
+		}}
 		diagnostics[i].FixSafety = ""
 		diagnostics[i].FixProof = nil
 		diagnostics[i].FixProofRef = 0
@@ -111,7 +115,7 @@ func scopeDiagnostics(diagnostics []Diagnostic, profile renderer.Profile) []Diag
 	seen := make(map[key]bool, len(diagnostics))
 	out := diagnostics[:0]
 	for _, d := range diagnostics {
-		k := key{d.ID, d.Tag, d.Field, d.Detail, d.Line, d.Column}
+		k := key{d.Condition, d.Tag, d.Field, d.Detail, d.Line, d.Column}
 		if seen[k] {
 			continue
 		}
@@ -136,7 +140,7 @@ func analyzeResolvedDialogue(dialogue ass.Dialogue, profile renderer.Profile, st
 		if strings.TrimSpace(node.Block.Content) == "" {
 			rule := Rules[IssueEmptyOverrideBlock]
 			analyzer.diagnostics = append(analyzer.diagnostics, Diagnostic{
-				ID: rule.ID, Severity: rule.Severity, Title: rule.Title,
+				Condition: rule.Condition, Severity: rule.Severity, Title: rule.Title,
 				Description: rule.Description, Fix: rule.Fix,
 				Line: dialogue.Line, Column: node.Block.Span.Start + 1,
 				FixSafety: rule.FixSafety, Edits: []TextEdit{{Start: dialogue.TextStart + node.Block.Span.Start, End: dialogue.TextStart + node.Block.Span.End}},
@@ -341,7 +345,7 @@ func (d *resolvedDrawingCollector) flush() {
 	rule := Rules[IssueMalformedDrawing]
 	for _, problem := range ass.ParseDrawing(d.fragments).Issues {
 		d.findings = append(d.findings, Diagnostic{
-			ID: rule.ID, Severity: rule.Severity, Title: rule.Title,
+			Condition: rule.Condition, Severity: rule.Severity, Title: rule.Title,
 			Description: rule.Description, Fix: rule.Fix,
 			Line: d.dialogue.Line, Column: problem.Start + 1,
 			Detail: problem.Detail, Sources: rule.Sources,

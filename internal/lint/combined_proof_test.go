@@ -14,12 +14,12 @@ func TestApplyRechecksCombinedIndependentProofGroups(t *testing.T) {
 	findings := AnalyzeDocumentForTargets(doc, targets)
 	var separate []Diagnostic
 	for _, d := range findings {
-		if d.FixSafety != SafeFix || d.ID != IssueNoEffect || d.Tag != "fs" {
+		if d.FixSafety != SafeFix || d.Condition != IssueNoEffect || d.Tag != "fs" {
 			continue
 		}
 		edits := make([]FixEditProof, 0, len(d.Edits))
 		for _, edit := range d.Edits {
-			edits = append(edits, FixEditProof{ID: d.ID, Edit: edit})
+			edits = append(edits, FixEditProof{Condition: d.Condition, Edit: edit})
 		}
 		proof, err := buildFixProof(doc.Text, edits, targets)
 		if err != nil {

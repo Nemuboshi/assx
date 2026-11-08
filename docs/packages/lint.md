@@ -25,25 +25,36 @@ build availability. The shared typed decoder takes the resulting explicit
 policy. Lint does not mutate the registry or widen a universal `TagSpec.Counts`
 list to legalize VSFilterMod-only shapes.
 
+## Finding model
+
+One diagnostic is one condition at one span. `renderers` lists one observation
+per selected renderer, primary first, with the status that renderer produced.
+`scenario` refines conditions that have several causes.
+
+`severity` is derived from the observations, not stored per rule: an error-class
+condition is an error only when the primary observation is `rejected`; otherwise
+it is a warning. Decorative conditions stay suggestions. A `rules` override
+replaces the derived severity and can disable the condition entirely.
+
 ## Diagnostic scope and policy
 
 - A single-profile analysis never supplies SafeFix edits or an edit safety
-  classification. This holds for shared document checks and for the ASS006,
-  ASS013, and font APIs.
+  classification. This holds for shared document checks and for the no-effect,
+  redundant-style, and font APIs.
 - Target-configured analysis supplies fixes only after it proves every requested
   profile. Application recomputes the authorized edits under the same primary and
   compatibility policy.
-- The `renderer` JSON field names the renderer or renderer pair.
-- Compatibility findings identify both profiles and use physical-line columns.
-  Primary tag findings use dialogue-relative columns. Findings keep stable source
-  ordering.
-- Primary error diagnostics produce exit status 1. Compatibility diagnostics
-  remain warnings.
+- One finding lists one observation per selected renderer, primary first.
+- Compatibility observations name every compared renderer. Primary tag findings
+  use dialogue-relative columns; document findings use physical-line columns.
+  Findings keep stable source ordering.
+- An error finding produces exit status 1. Warning and suggestion findings do
+  not.
 - First-wins effects and reset/style provenance come from the semantic evaluator.
   Lint keeps no second state engine.
 
-The rule catalog owns each condition, severity, and limit:
-[rule catalog](../reference/catalog.md). The profile page owns prefix collisions
+The [condition catalog](../reference/catalog.md) defines each condition, its
+scenario space, and its limits. The profile page owns prefix collisions
 and build availability: [profiles](profiles.md). The comparison APIs own
 differential results: [compatibility](compatibility.md).
 

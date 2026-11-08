@@ -55,7 +55,7 @@ func TestUnknownOperationBlocksRetroactiveSafeFix(t *testing.T) {
 	diagnostics := lint.Analyze(ass.Dialogue{Text: `{\fs10\fs20\unknownTag}x`})
 	foundUnknown := false
 	for _, d := range diagnostics {
-		if d.ID == lint.IssueUnknownTag {
+		if d.Condition == lint.IssueUnknownTag {
 			foundUnknown = true
 		}
 		if d.FixSafety == lint.SafeFix && len(d.Edits) > 0 {

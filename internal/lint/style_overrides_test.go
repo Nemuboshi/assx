@@ -17,7 +17,7 @@ func TestRedundantStyleOverridesSafeFix(t *testing.T) {
 	}
 	doc := ass.Parse(string(data))
 	diagnostics := primaryFindings(AnalyzeDocument(doc))
-	if len(diagnostics) != 1 || diagnostics[0].ID != IssueRedundantStyleOverrides {
+	if len(diagnostics) != 1 || diagnostics[0].Condition != IssueRedundantStyleOverrides {
 		t.Fatalf("diagnostics = %#v", diagnostics)
 	}
 	if diagnostics[0].FixSafety != SafeFix || len(diagnostics[0].Edits) != 3 {
@@ -103,7 +103,7 @@ func TestRedundantStyleOverrideProperties(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			doc := parseStyleOverrideText(test.format, test.style, test.text)
 			diagnostics := AnalyzeRedundantStyleOverrides(doc)
-			if len(diagnostics) != 1 || diagnostics[0].ID != IssueRedundantStyleOverrides {
+			if len(diagnostics) != 1 || diagnostics[0].Condition != IssueRedundantStyleOverrides {
 				t.Fatalf("diagnostics = %#v", diagnostics)
 			}
 			if diagnostics[0].Severity != Suggestion || diagnostics[0].FixSafety != "" {
@@ -111,7 +111,7 @@ func TestRedundantStyleOverrideProperties(t *testing.T) {
 				t.Fatalf("finding metadata = %#v", diagnostics[0])
 			}
 			if rule := Rules[IssueRedundantStyleOverrides]; rule.Title != "Overrides match style" || rule.Severity != Suggestion || rule.FixSafety != SafeFix {
-				t.Fatalf("ASS013 rule metadata = %#v", rule)
+				t.Fatalf("redundant-style rule metadata = %#v", rule)
 			}
 		})
 	}
@@ -133,7 +133,7 @@ func TestRedundantStyleOverrideRestorationAndOverlap(t *testing.T) {
 
 	doc := parseStyleOverrideText(format, style, `{\bord4\bord2}A`)
 	diagnostics := primaryFindings(AnalyzeDocument(doc))
-	if len(diagnostics) != 1 || diagnostics[0].ID != IssueRedundantStyleOverrides {
+	if len(diagnostics) != 1 || diagnostics[0].Condition != IssueRedundantStyleOverrides {
 		t.Fatalf("redundant sequence diagnostics = %#v", diagnostics)
 	}
 	fixed, count, err := ApplyFixes(doc.Text, diagnostics, false)
@@ -142,8 +142,8 @@ func TestRedundantStyleOverrideRestorationAndOverlap(t *testing.T) {
 	}
 
 	overlap := primaryFindings(AnalyzeDocument(parseStyleOverrideText(format, style, `{\bord2\bord2}A`)))
-	if len(overlap) != 1 || overlap[0].ID != IssueRedundantStyleOverrides {
-		t.Fatalf("ASS006/ASS013 overlap was not assigned to ASS013: %#v", overlap)
+	if len(overlap) != 1 || overlap[0].Condition != IssueRedundantStyleOverrides {
+		t.Fatalf("no-effect/redundant-style overlap was not assigned to redundant-style: %#v", overlap)
 	}
 }
 
@@ -153,7 +153,7 @@ func TestRedundantStyleOverridesDoNotModelUnsupportedProperties(t *testing.T) {
 		t.Run(text, func(t *testing.T) {
 			doc := parseStyleOverrideText("Name, Outline", "Default,2", text)
 			if diagnostics := AnalyzeRedundantStyleOverrides(doc); len(diagnostics) != 0 {
-				t.Fatalf("unsupported property produced ASS013: %#v", diagnostics)
+				t.Fatalf("unsupported property produced redundant-style: %#v", diagnostics)
 			}
 		})
 	}
@@ -184,7 +184,7 @@ func TestSameValueAssignmentsKeepPreviousEffectiveOwner(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			doc := parseStyleOverrideText(test.format, test.style, test.text)
 			diagnostics := primaryFindings(AnalyzeDocument(doc))
-			if len(diagnostics) != 1 || diagnostics[0].ID != IssueNoEffect || diagnostics[0].FixSafety != SafeFix {
+			if len(diagnostics) != 1 || diagnostics[0].Condition != IssueNoEffect || diagnostics[0].FixSafety != SafeFix {
 				t.Fatalf("diagnostics = %#v", diagnostics)
 			}
 			fixed, count, err := ApplyFixes(doc.Text, diagnostics, false)
@@ -192,8 +192,8 @@ func TestSameValueAssignmentsKeepPreviousEffectiveOwner(t *testing.T) {
 				t.Fatalf("safe fix = (%q, %d, %v), want to preserve %q", fixed, count, err, test.want)
 			}
 			for _, remaining := range AnalyzeDocument(ass.Parse(fixed)) {
-				if remaining.ID == IssueNoEffect {
-					t.Fatalf("fixed dialogue still has ASS006: %#v", remaining)
+				if remaining.Condition == IssueNoEffect {
+					t.Fatalf("fixed dialogue still has no-effect: %#v", remaining)
 				}
 			}
 		})
@@ -203,7 +203,7 @@ func TestSameValueAssignmentsKeepPreviousEffectiveOwner(t *testing.T) {
 func TestRedundantStyleFixPreservesOtherTags(t *testing.T) {
 	doc := parseFontOverrideText(`{\c&H00FF00&\fnCourier New\fnArial}A{\fnArial}B`)
 	diagnostics := primaryFindings(AnalyzeDocument(doc))
-	if len(diagnostics) != 1 || diagnostics[0].ID != IssueRedundantStyleOverrides {
+	if len(diagnostics) != 1 || diagnostics[0].Condition != IssueRedundantStyleOverrides {
 		t.Fatalf("diagnostics = %#v", diagnostics)
 	}
 	fixed, count, err := ApplyFixes(doc.Text, diagnostics, false)
@@ -230,8 +230,8 @@ func TestRedundantStyleRuleUsesRendererDialogueStyleLookup(t *testing.T) {
 			doc := parseStyleDefinitionsText("Name, Fontname, Fontsize", definitions, name, `{\fs20}A`)
 			var styleFinding, undefinedFinding bool
 			for _, diagnostic := range AnalyzeDocument(doc) {
-				styleFinding = styleFinding || diagnostic.ID == IssueRedundantStyleOverrides
-				undefinedFinding = undefinedFinding || diagnostic.ID == IssueUndefinedStyle
+				styleFinding = styleFinding || diagnostic.Condition == IssueRedundantStyleOverrides
+				undefinedFinding = undefinedFinding || diagnostic.Condition == IssueUndefinedStyle
 			}
 			if !styleFinding || undefinedFinding {
 				t.Fatalf("dialogue Style %q did not resolve consistently: style=%t undefined=%t", name, styleFinding, undefinedFinding)
@@ -255,8 +255,8 @@ func TestRedundantStyleRuleKeepsNonDefaultNamesCaseSensitive(t *testing.T) {
 			doc := parseStyleDefinitionsText("Name, Fontname, Fontsize", definitions, test.name, test.text)
 			var styleFinding, undefinedFinding bool
 			for _, diagnostic := range AnalyzeDocument(doc) {
-				styleFinding = styleFinding || diagnostic.ID == IssueRedundantStyleOverrides
-				undefinedFinding = undefinedFinding || diagnostic.ID == IssueUndefinedStyle
+				styleFinding = styleFinding || diagnostic.Condition == IssueRedundantStyleOverrides
+				undefinedFinding = undefinedFinding || diagnostic.Condition == IssueUndefinedStyle
 			}
 			if styleFinding != test.want || undefinedFinding == test.want {
 				t.Fatalf("Style %q: redundant=%t undefined=%t, want redundant=%t", test.name, styleFinding, undefinedFinding, test.want)
@@ -296,7 +296,7 @@ func TestRedundantStyleOverridesFollowActiveResetStyle(t *testing.T) {
 		`{\rOther\fs24}A{\r\fs20}B`,
 	)
 	diagnostics := AnalyzeRedundantStyleOverrides(doc)
-	if len(diagnostics) != 1 || diagnostics[0].ID != IssueRedundantStyleOverrides || len(diagnostics[0].Edits) != 2 {
+	if len(diagnostics) != 1 || diagnostics[0].Condition != IssueRedundantStyleOverrides || len(diagnostics[0].Edits) != 2 {
 		t.Fatalf("diagnostics = %#v", diagnostics)
 	}
 	fixed, count, err := ApplyFixes(doc.Text, diagnostics, false)

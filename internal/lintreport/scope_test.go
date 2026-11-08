@@ -1,7 +1,6 @@
 package lintreport
 
 import (
-	"strings"
 	"testing"
 
 	"assx/internal/ass"
@@ -15,12 +14,12 @@ func TestCompatibilityScopeUsesPhysicalColumn(t *testing.T) {
 	view := Build("scope.ass", findings, doc)
 	found := false
 	for i, diagnostic := range findings {
-		if !strings.Contains(diagnostic.Renderer, " / ") || diagnostic.Tag != "blur" {
+		if len(diagnostic.Renderers) < 2 || diagnostic.Tag != "blur" {
 			continue
 		}
 		found = true
 		shown := view.Groups[0].Diagnostics[i]
-		if shown.SourceColumn != diagnostic.Column || shown.Renderer != diagnostic.Renderer {
+		if shown.SourceColumn != diagnostic.Column || shown.Renderer != diagnostic.RendererNames() {
 			t.Fatalf("compatibility span or scope changed: column %d to %d", diagnostic.Column, shown.SourceColumn)
 		}
 	}
@@ -55,7 +54,7 @@ func TestPrimaryScopeUsesConcretePrefixSpan(t *testing.T) {
 	view := Build("scope.ass", findings, doc)
 	found := false
 	for i, diagnostic := range findings {
-		if diagnostic.ID != lint.IssueInvalidValue || diagnostic.Tag != "fs" {
+		if diagnostic.Condition != lint.IssueInvalidValue || diagnostic.Tag != "fs" {
 			continue
 		}
 		found = true

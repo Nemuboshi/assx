@@ -19,7 +19,7 @@ func Render(output io.Writer, path string, diagnostics []report.Diagnostic, elap
 	sort.SliceStable(ordered, func(i, j int) bool {
 		if ordered[i].Line == ordered[j].Line {
 			if ordered[i].Column == ordered[j].Column {
-				return ordered[i].ID < ordered[j].ID
+				return ordered[i].Condition < ordered[j].Condition
 			}
 			return ordered[i].Column < ordered[j].Column
 		}
@@ -29,7 +29,7 @@ func Render(output io.Writer, path string, diagnostics []report.Diagnostic, elap
 		_, _ = fmt.Fprintln(writer, "No issues found.")
 	} else {
 		for i, d := range ordered {
-			_, _ = fmt.Fprintf(writer, "%s[%s] %s:%d:%d\n", strings.ToUpper(string(d.Severity)), d.ID, path, d.Line, d.Column)
+			_, _ = fmt.Fprintf(writer, "%s[%s] %s:%d:%d\n", strings.ToUpper(string(d.Severity)), d.Condition, path, d.Line, d.Column)
 			_, _ = fmt.Fprintf(writer, "    %s\n", d.Title)
 			if d.Renderer != "" {
 				_, _ = fmt.Fprintf(writer, "    renderer: %s\n", d.Renderer)

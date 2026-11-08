@@ -28,7 +28,7 @@ assx fonts check [--force-ass] file.ass
 assx fonts check --font-dir ./fonts --format json file.ass
 ```
 
-Font checks return advisory `FONT001` and `FONT002` findings. They do not change lint counts, fixes, or exit status.
+Font checks return advisory `font-missing` and `font-glyph` findings. They do not change lint counts, fixes, or exit status.
 The font command returns 0 when checks complete, or 2 for usage and operational failures.
 See [font checking](docs/usage/font-checking.md) for catalog scope, JSON, cache behavior, and limits.
 
@@ -38,7 +38,7 @@ All analysis uses the lossless concrete syntax tree and pinned profile engine.
 SafeFix application recomputes authorized edits under the caller's primary and compatibility policy.
 See [the verification rules](docs/rules/verification.md) for evidence scope and limits.
 
-For diagnostic IDs and explanations, see the [rule catalog](docs/reference/catalog.md). For pretty report behavior, see [diagnostic reports](docs/usage/diagnostic-reports.md).
+For condition names and explanations, see the [condition catalog](docs/reference/catalog.md). For pretty report behavior, see [diagnostic reports](docs/usage/diagnostic-reports.md).
 For reproducible performance benchmarks, profiling, and the pinned baseline, see [performance benchmarks](docs/development/performance.md).
 
 ## Development
@@ -50,7 +50,7 @@ Start from the folder that owns the subject:
 - [docs/usage/](docs/usage) states what a user sees.
 - [docs/packages/](docs/packages) states the API contract of one package per page.
 - [docs/architecture/](docs/architecture) states the package graph, the lint flow, and the request paths.
-- [docs/reference/](docs/reference) holds the rule catalog and the evidence matrices.
+- [docs/reference/](docs/reference) holds the condition catalog and the evidence matrices.
 - [docs/development/](docs/development) holds the benchmark harness and its baseline.
 - [docs/rules/](docs/rules) states the development rules.
 

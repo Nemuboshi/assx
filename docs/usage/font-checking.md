@@ -20,8 +20,8 @@ The command does not change the ASS file or font files. Catalog scans can update
 
 | Code | Meaning |
 | --- | --- |
-| `FONT001` | The requested family is absent from the scanned font set. |
-| `FONT002` | The selected font faces lack one or more requested characters. |
+| `font-missing` | The requested family is absent from the scanned font set. |
+| `font-glyph` | The selected font faces lack one or more requested characters. |
 
 Results are advisory. Completed checks return exit 0, including checks with findings or unknown semantic state.
 Usage errors, source read errors, unavailable directories, and unreadable font entries return exit 2.
@@ -41,7 +41,7 @@ JSON version 1 is an object with these fields:
 - `file`: input path.
 - `renderer`: name.
 - `catalog`: `system` or `directory` mode, plus the exclusive directory when specified.
-- `findings`: font IDs, informational severity, details, usages, missing characters, and selected faces.
+- `findings`: condition names (`font-missing`, `font-glyph`), informational severity, details, usages, missing characters, and selected faces.
 - `unchecked`: text runs with unknown effective state.
 - `limit`: the coverage limitation.
 
@@ -73,7 +73,7 @@ Discarding the cache is safe. Cache write failure does not change scan results.
 
 ## Removed options
 
-Font checks no longer run inside lint.
-`ASS015` and `ASS016` remain reserved and correspond to `FONT001` and `FONT002`.
+Font checks no longer run inside lint. They report the `font-missing` and
+`font-glyph` conditions in the separate font-domain JSON contract.
 Removed lint flags return exit 2 with migration guidance.
 A font command rejects lint fix and compatibility flags.

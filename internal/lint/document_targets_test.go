@@ -41,7 +41,7 @@ func TestSafeFixProofUsesEachTargetsStyleLayout(t *testing.T) {
 	findings := AnalyzeDocumentForTargets(doc, targets)
 	redundant := false
 	for _, finding := range findings {
-		if finding.ID != IssueNoEffect && finding.ID != IssueRedundantStyleOverrides {
+		if finding.Condition != IssueNoEffect && finding.Condition != IssueRedundantStyleOverrides {
 			continue
 		}
 		redundant = true
@@ -80,7 +80,7 @@ func TestUnknownDialectKeepsOriginalVSFilterView(t *testing.T) {
 		t.Fatal("SSA Marked field was renamed to an ASS layer")
 	}
 	for _, finding := range AnalyzeDocumentForTargets(doc, AnalysisTargets{Primary: xy}) {
-		if finding.ID == IssueUndefinedStyle {
+		if finding.Condition == IssueUndefinedStyle {
 			t.Fatalf("valid SSA Style was lost: %#v", finding)
 		}
 	}
@@ -120,10 +120,10 @@ func TestSafeFixReauthorizesSameSetWithDifferentPrimary(t *testing.T) {
 			continue
 		}
 		// Equal target sets do not authorize a different rule's edit policy.
-		findings[i].ID = IssueNoEffect
+		findings[i].Condition = IssueNoEffect
 		proof := findings[i].FixProof
 		for j := range proof.SourceEdits {
-			proof.SourceEdits[j].ID = IssueNoEffect
+			proof.SourceEdits[j].Condition = IssueNoEffect
 		}
 		if _, _, err := ApplyFixesForTargets(doc.Text, findings, false, second); err == nil {
 			t.Fatal("same target set bypassed caller-primary edit authorization")

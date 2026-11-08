@@ -494,16 +494,28 @@
     "diagnostics": [
       {
         "file": "utf8bom.ass",
-        "id": "ASS003",
+        "condition": "layout",
+        "scenario": "document/style-layout",
         "severity": "warning",
-        "title": "Renderer behavior differs",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "title": "Renderer layout differs",
+        "description": "The selected renderers read or lay out this record differently.",
+        "suggested_fix": "Use the canonical record layout or verify each renderer.",
         "line": 11,
         "column": 1,
         "field": "document/style-layout",
         "detail": "divergent: libass: name=\" Default\" at [224,232), fontname=\" Go Regular\" at [233,244), fontsize=\" 24\" at [245,248), bold=\" 0\" at [249,251), italic=\" 0\" at [252,254), alignment=\" 2\" at [255,257); xy-VSFilter: name=\" Default\" at [224,232), fontname=\" Go Regular\" at [233,244), fontsize=\" 24\" at [245,248), primarycolour=\" 0\" at [249,251), secondarycolour=\" 0\" at [252,254), outlinecolour=\" 2\" at [255,257), backcolour=\"\" at [257,257), bold=\"\" at [257,257), italic=\"\" at [257,257), underline=\"\" at [257,257), strikeout=\"\" at [257,257), scalex=\"\" at [257,257), scaley=\"\" at [257,257), spacing=\"\" at [257,257), angle=\"\" at [257,257), borderstyle=\"\" at [257,257), outline=\"\" at [257,257), shadow=\"\" at [257,257), alignment=\"\" at [257,257), marginl=\"\" at [257,257), marginr=\"\" at [257,257), marginv=\"\" at [257,257), encoding=\"\" at [257,257).",
-        "renderer": "libass / xy-VSFilter",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "accepted"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "accepted"
+          }
+        ],
         "source_span": {
           "Start": 218,
           "End": 257
@@ -515,16 +527,28 @@
       },
       {
         "file": "utf8bom.ass",
-        "id": "ASS003",
+        "condition": "layout",
+        "scenario": "document/style-layout",
         "severity": "warning",
-        "title": "Renderer behavior differs",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "title": "Renderer layout differs",
+        "description": "The selected renderers read or lay out this record differently.",
+        "suggested_fix": "Use the canonical record layout or verify each renderer.",
         "line": 12,
         "column": 1,
         "field": "document/style-layout",
         "detail": "divergent: libass: name=\" Alt\" at [265,269), fontname=\" Go Regular\" at [270,281), fontsize=\" 32\" at [282,285), bold=\" 0\" at [286,288), italic=\" 0\" at [289,291), alignment=\" 7\" at [292,294); xy-VSFilter: name=\" Alt\" at [265,269), fontname=\" Go Regular\" at [270,281), fontsize=\" 32\" at [282,285), primarycolour=\" 0\" at [286,288), secondarycolour=\" 0\" at [289,291), outlinecolour=\" 7\" at [292,294), backcolour=\"\" at [294,294), bold=\"\" at [294,294), italic=\"\" at [294,294), underline=\"\" at [294,294), strikeout=\"\" at [294,294), scalex=\"\" at [294,294), scaley=\"\" at [294,294), spacing=\"\" at [294,294), angle=\"\" at [294,294), borderstyle=\"\" at [294,294), outline=\"\" at [294,294), shadow=\"\" at [294,294), alignment=\"\" at [294,294), marginl=\"\" at [294,294), marginr=\"\" at [294,294), marginv=\"\" at [294,294), encoding=\"\" at [294,294).",
-        "renderer": "libass / xy-VSFilter",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "accepted"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "accepted"
+          }
+        ],
         "source_span": {
           "Start": 259,
           "End": 294
@@ -536,7 +560,7 @@
       },
       {
         "file": "utf8bom.ass",
-        "id": "ASS006",
+        "condition": "no-effect",
         "severity": "suggestion",
         "title": "Override has no effect",
         "description": "An override is replaced, reset, or ignored before it affects dialogue text, or repeats the value already active in every affected state slot.",
@@ -546,7 +570,7 @@
           "source_sha256": "f35243ebda94f944297a63274bd2e46cf05cf1bd1369a7b69fe82dce713fcfa2",
           "source_edits": [
             {
-              "id": "ASS006",
+              "condition": "no-effect",
               "edit": {
                 "start": 438,
                 "end": 443,
@@ -932,7 +956,13 @@
         "column": 3,
         "tag": "fs",
         "detail": "Overwritten before any dialogue text used it.",
-        "renderer": "libass",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "ignored"
+          }
+        ],
         "sources": [
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_render.c#L1075",
@@ -1432,16 +1462,28 @@
     "diagnostics": [
       {
         "file": "utf8bom.ass",
-        "id": "ASS003",
+        "condition": "layout",
+        "scenario": "document/style-layout",
         "severity": "warning",
-        "title": "Renderer behavior differs",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "title": "Renderer layout differs",
+        "description": "The selected renderers read or lay out this record differently.",
+        "suggested_fix": "Use the canonical record layout or verify each renderer.",
         "line": 11,
         "column": 1,
         "field": "document/style-layout",
         "detail": "divergent: libass: name=\" Default\" at [224,232), fontname=\" Go Regular\" at [233,244), fontsize=\" 24\" at [245,248), bold=\" 0\" at [249,251), italic=\" 0\" at [252,254), alignment=\" 2\" at [255,257); xy-VSFilter: name=\" Default\" at [224,232), fontname=\" Go Regular\" at [233,244), fontsize=\" 24\" at [245,248), primarycolour=\" 0\" at [249,251), secondarycolour=\" 0\" at [252,254), outlinecolour=\" 2\" at [255,257), backcolour=\"\" at [257,257), bold=\"\" at [257,257), italic=\"\" at [257,257), underline=\"\" at [257,257), strikeout=\"\" at [257,257), scalex=\"\" at [257,257), scaley=\"\" at [257,257), spacing=\"\" at [257,257), angle=\"\" at [257,257), borderstyle=\"\" at [257,257), outline=\"\" at [257,257), shadow=\"\" at [257,257), alignment=\"\" at [257,257), marginl=\"\" at [257,257), marginr=\"\" at [257,257), marginv=\"\" at [257,257), encoding=\"\" at [257,257).",
-        "renderer": "libass / xy-VSFilter",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "accepted"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "accepted"
+          }
+        ],
         "source_span": {
           "Start": 218,
           "End": 257
@@ -1453,16 +1495,28 @@
       },
       {
         "file": "utf8bom.ass",
-        "id": "ASS003",
+        "condition": "layout",
+        "scenario": "document/style-layout",
         "severity": "warning",
-        "title": "Renderer behavior differs",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "title": "Renderer layout differs",
+        "description": "The selected renderers read or lay out this record differently.",
+        "suggested_fix": "Use the canonical record layout or verify each renderer.",
         "line": 12,
         "column": 1,
         "field": "document/style-layout",
         "detail": "divergent: libass: name=\" Alt\" at [265,269), fontname=\" Go Regular\" at [270,281), fontsize=\" 32\" at [282,285), bold=\" 0\" at [286,288), italic=\" 0\" at [289,291), alignment=\" 7\" at [292,294); xy-VSFilter: name=\" Alt\" at [265,269), fontname=\" Go Regular\" at [270,281), fontsize=\" 32\" at [282,285), primarycolour=\" 0\" at [286,288), secondarycolour=\" 0\" at [289,291), outlinecolour=\" 7\" at [292,294), backcolour=\"\" at [294,294), bold=\"\" at [294,294), italic=\"\" at [294,294), underline=\"\" at [294,294), strikeout=\"\" at [294,294), scalex=\"\" at [294,294), scaley=\"\" at [294,294), spacing=\"\" at [294,294), angle=\"\" at [294,294), borderstyle=\"\" at [294,294), outline=\"\" at [294,294), shadow=\"\" at [294,294), alignment=\"\" at [294,294), marginl=\"\" at [294,294), marginr=\"\" at [294,294), marginv=\"\" at [294,294), encoding=\"\" at [294,294).",
-        "renderer": "libass / xy-VSFilter",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "accepted"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "accepted"
+          }
+        ],
         "source_span": {
           "Start": 259,
           "End": 294
@@ -1482,16 +1536,28 @@
     "diagnostics": [
       {
         "file": "utf8bom.ass",
-        "id": "ASS003",
+        "condition": "layout",
+        "scenario": "document/style-layout",
         "severity": "warning",
-        "title": "Renderer behavior differs",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "title": "Renderer layout differs",
+        "description": "The selected renderers read or lay out this record differently.",
+        "suggested_fix": "Use the canonical record layout or verify each renderer.",
         "line": 11,
         "column": 1,
         "field": "document/style-layout",
         "detail": "divergent: libass: name=\" Default\" at [224,232), fontname=\" Go Regular\" at [233,244), fontsize=\" 24\" at [245,248), bold=\" 0\" at [249,251), italic=\" 0\" at [252,254), alignment=\" 2\" at [255,257); xy-VSFilter: name=\" Default\" at [224,232), fontname=\" Go Regular\" at [233,244), fontsize=\" 24\" at [245,248), primarycolour=\" 0\" at [249,251), secondarycolour=\" 0\" at [252,254), outlinecolour=\" 2\" at [255,257), backcolour=\"\" at [257,257), bold=\"\" at [257,257), italic=\"\" at [257,257), underline=\"\" at [257,257), strikeout=\"\" at [257,257), scalex=\"\" at [257,257), scaley=\"\" at [257,257), spacing=\"\" at [257,257), angle=\"\" at [257,257), borderstyle=\"\" at [257,257), outline=\"\" at [257,257), shadow=\"\" at [257,257), alignment=\"\" at [257,257), marginl=\"\" at [257,257), marginr=\"\" at [257,257), marginv=\"\" at [257,257), encoding=\"\" at [257,257).",
-        "renderer": "libass / xy-VSFilter",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "accepted"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "accepted"
+          }
+        ],
         "source_span": {
           "Start": 218,
           "End": 257
@@ -1503,16 +1569,28 @@
       },
       {
         "file": "utf8bom.ass",
-        "id": "ASS003",
+        "condition": "layout",
+        "scenario": "document/style-layout",
         "severity": "warning",
-        "title": "Renderer behavior differs",
-        "description": "Compatibility observation for independently interpreted renderer profiles; separate from invocation validity and edit safety.",
-        "suggested_fix": "Review both renderer interpretations and verify the intended rendering before changing the source.",
+        "title": "Renderer layout differs",
+        "description": "The selected renderers read or lay out this record differently.",
+        "suggested_fix": "Use the canonical record layout or verify each renderer.",
         "line": 12,
         "column": 1,
         "field": "document/style-layout",
         "detail": "divergent: libass: name=\" Alt\" at [265,269), fontname=\" Go Regular\" at [270,281), fontsize=\" 32\" at [282,285), bold=\" 0\" at [286,288), italic=\" 0\" at [289,291), alignment=\" 7\" at [292,294); xy-VSFilter: name=\" Alt\" at [265,269), fontname=\" Go Regular\" at [270,281), fontsize=\" 32\" at [282,285), primarycolour=\" 0\" at [286,288), secondarycolour=\" 0\" at [289,291), outlinecolour=\" 7\" at [292,294), backcolour=\"\" at [294,294), bold=\"\" at [294,294), italic=\"\" at [294,294), underline=\"\" at [294,294), strikeout=\"\" at [294,294), scalex=\"\" at [294,294), scaley=\"\" at [294,294), spacing=\"\" at [294,294), angle=\"\" at [294,294), borderstyle=\"\" at [294,294), outline=\"\" at [294,294), shadow=\"\" at [294,294), alignment=\"\" at [294,294), marginl=\"\" at [294,294), marginr=\"\" at [294,294), marginv=\"\" at [294,294), encoding=\"\" at [294,294).",
-        "renderer": "libass / xy-VSFilter",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "accepted"
+          },
+          {
+            "renderer": "xy-VSFilter",
+            "role": "compared",
+            "status": "accepted"
+          }
+        ],
         "source_span": {
           "Start": 259,
           "End": 294

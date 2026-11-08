@@ -29,7 +29,7 @@ func scopedProfiles(t *testing.T) (renderer.Profile, renderer.Profile, renderer.
 
 func hasIssue(ds []Diagnostic, id string) bool {
 	for _, d := range ds {
-		if d.ID == id {
+		if d.Condition == id {
 			return true
 		}
 	}
@@ -55,7 +55,7 @@ func TestScopedValidityPreservesDefaultStrictness(t *testing.T) {
 				t.Fatalf("scoped diagnostics: %#v", ds)
 			}
 			for _, d := range ds {
-				if d.Renderer != ProfileScope(tt.profile) || d.Edits != nil || d.FixSafety != "" {
+				if d.RendererNames() != ProfileScope(tt.profile) || d.Edits != nil || d.FixSafety != "" {
 					t.Fatalf("unexpected scope or automatic edit: %#v", d)
 				}
 			}
@@ -215,7 +215,7 @@ func TestScopedDiagnosticLocationsAndCertainty(t *testing.T) {
 		ds := AnalyzeForRenderer(ass.Dialogue{Line: 7, Text: tc.source}, tc.profile)
 		found := false
 		for _, d := range ds {
-			if d.ID != tc.id {
+			if d.Condition != tc.id {
 				continue
 			}
 			found = true
@@ -234,8 +234,8 @@ func TestScopedExistingConsumerJSONContext(t *testing.T) {
 	got := AnalyzeNoEffectsForRenderer(ass.Dialogue{
 		Line: 1, Text: `{\pos(1,2)\pos(3,4)}A`,
 	}, xy)
-	if len(got) != 1 || got[0].Renderer != ProfileScope(xy) {
-		t.Fatalf("renderer-local ASS006 omitted scope: %#v", got)
+	if len(got) != 1 || got[0].RendererNames() != ProfileScope(xy) {
+		t.Fatalf("renderer-local no-effect omitted scope: %#v", got)
 	}
 	for _, d := range got {
 		if d.Edits != nil || d.FixSafety != "" {

@@ -14,17 +14,17 @@ func TestStylePrecisionFindingsAndFixClasses(t *testing.T) {
 	if len(diagnostics) != 4 {
 		t.Fatalf("got %d style findings, want 4: %#v", len(diagnostics), diagnostics)
 	}
-	if diagnostics[0].ID != IssueStyleInteger || diagnostics[0].Field != "Default.marginl" || diagnostics[0].FixSafety != "" {
+	if diagnostics[0].Condition != IssueStyleInteger || diagnostics[0].Field != "Default.marginl" || diagnostics[0].FixSafety != "" {
 		t.Fatalf("integer precision diagnostic = %#v", diagnostics[0])
 	}
-	if diagnostics[1].ID != IssueStyleFloat || diagnostics[1].Field != "Default.fontsize" || diagnostics[1].FixSafety != UnsafeFix {
+	if diagnostics[1].Condition != IssueStyleFloat || diagnostics[1].Field != "Default.fontsize" || diagnostics[1].FixSafety != UnsafeFix {
 		t.Fatalf("float precision diagnostic = %#v", diagnostics[1])
 	}
-	if diagnostics[2].ID != IssueStyleInteger || diagnostics[2].Field != "Default.italic" ||
+	if diagnostics[2].Condition != IssueStyleInteger || diagnostics[2].Field != "Default.italic" ||
 		diagnostics[2].FixSafety != "" || len(diagnostics[2].Edits) != 0 {
 		t.Fatalf("unmodeled integer Style state remained fixable: %#v", diagnostics[2])
 	}
-	if diagnostics[3].ID != IssueStyleFloat || diagnostics[3].Field != "Default.scalex" {
+	if diagnostics[3].Condition != IssueStyleFloat || diagnostics[3].Field != "Default.scalex" {
 		t.Fatalf("scale precision diagnostic = %#v", diagnostics[3])
 	}
 	safeOnly, safeCount, err := ApplyFixes(text, diagnostics, false)
@@ -70,9 +70,9 @@ func TestMatrixAndLayoutHeaderBoundaries(t *testing.T) {
 }
 
 func TestCountFixesSeparatesApplicableFromUnfixable(t *testing.T) {
-	proof := &FixProof{SourceEdits: []FixEditProof{{ID: IssueNoEffect, Edit: TextEdit{Start: 0, End: 0}}}}
+	proof := &FixProof{SourceEdits: []FixEditProof{{Condition: IssueNoEffect, Edit: TextEdit{Start: 0, End: 0}}}}
 	diagnostics := []Diagnostic{
-		{ID: IssueNoEffect, FixSafety: SafeFix, FixProof: proof, Edits: []TextEdit{{Start: 0, End: 0}}},
+		{Condition: IssueNoEffect, FixSafety: SafeFix, FixProof: proof, Edits: []TextEdit{{Start: 0, End: 0}}},
 		{FixSafety: UnsafeFix, Edits: []TextEdit{{Start: 0, End: 0}}},
 		{FixSafety: UnsafeFix},
 		{},

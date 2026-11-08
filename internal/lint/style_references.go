@@ -54,7 +54,7 @@ func analyzeStyleReferences(doc ass.Document, profile renderer.Profile) []Diagno
 func undefinedStyleDiagnostic(line, column int, tag, field, detail string, span ass.ConcreteSpan) Diagnostic {
 	rule := Rules[IssueUndefinedStyle]
 	return Diagnostic{
-		ID: rule.ID, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
+		Condition: rule.Condition, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
 		Fix: rule.Fix, Line: line, Column: column, Tag: tag, Field: field,
 		Detail: detail, Sources: rule.Sources, SourceSpan: &span,
 	}

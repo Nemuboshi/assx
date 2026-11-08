@@ -23,7 +23,7 @@ func TestDialogueStyleReferencesFollowRendererResolution(t *testing.T) {
 				t.Fatalf("style %q diagnostics = %#v", name, diagnostics)
 			}
 			diagnostic := diagnostics[0]
-			if diagnostic.ID != IssueUndefinedStyle || diagnostic.Severity != Warning || diagnostic.Field != "Style" || diagnostic.FixSafety != "" || len(diagnostic.Edits) != 0 {
+			if diagnostic.Condition != IssueUndefinedStyle || diagnostic.Severity != Warning || diagnostic.Field != "Style" || diagnostic.FixSafety != "" || len(diagnostic.Edits) != 0 {
 				t.Fatalf("undefined dialogue style diagnostic = %#v", diagnostic)
 			}
 		})
@@ -55,7 +55,7 @@ func TestResetStyleReferencesUseExactLookupAndIgnoreBareReset(t *testing.T) {
 	for _, reset := range []string{"rdefault", "rmain", "rMAIN"} {
 		doc := styleReferenceDocument(styles, "Default", "{\\"+reset+"}text")
 		diagnostics := undefinedStyleFindings(doc)
-		if len(diagnostics) != 1 || diagnostics[0].ID != IssueUndefinedStyle || diagnostics[0].Severity != Warning || diagnostics[0].Tag != "r" || diagnostics[0].FixSafety != "" || len(diagnostics[0].Edits) != 0 {
+		if len(diagnostics) != 1 || diagnostics[0].Condition != IssueUndefinedStyle || diagnostics[0].Severity != Warning || diagnostics[0].Tag != "r" || diagnostics[0].FixSafety != "" || len(diagnostics[0].Edits) != 0 {
 			t.Fatalf("reset %q diagnostics = %#v", reset, diagnostics)
 		}
 	}
@@ -68,7 +68,7 @@ func TestDialogueAndResetReferencesShareUndefinedStyleRule(t *testing.T) {
 		t.Fatalf("undefined references = %#v", diagnostics)
 	}
 	for _, diagnostic := range diagnostics {
-		if diagnostic.ID != "ASS017" || diagnostic.Severity != Warning {
+		if diagnostic.Condition != "style-reference" || diagnostic.Severity != Warning {
 			t.Errorf("diagnostic = %#v", diagnostic)
 		}
 	}
@@ -97,7 +97,7 @@ func styleReferenceDocument(styles, dialogueStyle, text string) ass.Document {
 func undefinedStyleFindings(doc ass.Document) []Diagnostic {
 	var findings []Diagnostic
 	for _, diagnostic := range AnalyzeDocument(doc) {
-		if diagnostic.ID == IssueUndefinedStyle {
+		if diagnostic.Condition == IssueUndefinedStyle {
 			findings = append(findings, diagnostic)
 		}
 	}

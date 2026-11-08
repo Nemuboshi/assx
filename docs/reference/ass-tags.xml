@@ -225,7 +225,7 @@
   <tag name="fn" status="V">
     <params status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:556-565 xy:src/subtitles/RTS.cpp:2447-2453 vsm:src/subtitles/RTS.cpp:3102-3106">
       <sig n="1" form="both" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:556-565 xy:src/subtitles/RTS.cpp:2447-2453 vsm:src/subtitles/RTS.cpp:3102-3106">
-        <p i="1" name="family" kind="name" range="any text; empty or 0 selects the style Fontname; commas in the parenthesized form split the argument (ASS004)"/>
+        <p i="1" name="family" kind="name" range="any text; empty or 0 selects the style Fontname; commas in the parenthesized form split the argument (font-comma)"/>
       </sig>
       <sig n="0" form="bare" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:556-565 xy:src/subtitles/RTS.cpp:2447-2453 vsm:src/subtitles/RTS.cpp:3102-3106">
         <p i="1" name="empty" kind="none" range="Empty bare suffix: renderer-defined reset, fallback, or zero value (pinned source citation)"/>
@@ -239,7 +239,7 @@
     </scen>
     <scen id="arg-form" status="V" verified="libass xy vsm" base="both-forms" vsfilter="both-forms" vsfiltermod="both-forms"
           cite="libass:libass/ass_parse.c:302-349 xy:src/subtitles/RTS.cpp:2110-2152 vsm:src/subtitles/RTS.cpp:2447-2462">
-      Commas inside \fn(...) split arguments everywhere (ASS004): the name
+      Commas inside \fn(...) split arguments everywhere (font-comma): the name
       becomes the piece before the first comma; the remainder is a second arg
       no renderer consumes as part of the name.
     </scen>
@@ -752,7 +752,7 @@
       libass maps every value with (val &amp; 3) == 0 — including \a4 and \a8 —
       to 5 (middle-center, "vsfilter quirk" comment at 599-600). xy/vsm bit-map:
       ((n-1)&amp;3)+1 + (n&amp;4?6:0) + (n&amp;8?3:0). \a4/\a8 therefore land
-      on different alignments (ASS003, todo item 14).
+      on different alignments (dispatch, todo item 14).
     </scen>
     <scen id="out-of-range" status="V" verified="libass xy vsm" base="style-reset" vsfilter="style-reset" vsfiltermod="style-reset"
           cite="libass:libass/ass_parse.c:596-603 xy:src/subtitles/RTS.cpp:2312 vsm:src/subtitles/RTS.cpp:2913">
@@ -968,7 +968,7 @@
       Rectangular clip: libass integer-converts each coordinate
       (argtoi32 732-735); xy adds +0.5 first (2374-2377); VSFilterMod uses
       wcstol (2981-2984). Fractional rectangles differ by up to one pixel —
-      the ASS003 basis.
+      the dispatch basis.
     </scen>
     <scen id="repeat" status="V" verified="libass xy vsm" base="latch-blocked" vsfilter="latch-blocked" vsfiltermod="latch-blocked"
           cite="libass:libass/ass_parse.c:745-747,421-423 xy:src/subtitles/RTS.cpp:2356,2362 vsm:src/subtitles/RTS.cpp:2957,2965">
@@ -1047,7 +1047,7 @@
       \t() with no usable body: libass still sets detect_collisions = 0 at 694
       before bailing at 710; xy still raises m_fAnimated/m_fAnimated2 at
       2698-2699. Empty transforms are NOT inert — they keep the line out of
-      collision layout (ASS006 prose).
+      collision layout (no-effect prose).
     </scen>
     <scen id="arg-count" status="V" verified="libass xy" base="ignored" vsfilter="keep-previous" vsfiltermod="unchecked"
           cite="libass:libass/ass_parse.c:709-710 xy:src/subtitles/RTS.cpp:2675-2696">

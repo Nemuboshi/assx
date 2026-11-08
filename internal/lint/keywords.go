@@ -47,7 +47,7 @@ func AnalyzeKeywords(doc ass.Document) []Diagnostic {
 			if strings.EqualFold(canonical, prefix) && canonical != prefix {
 				rule := Rules[IssueKeywordCase]
 				diagnostics = append(diagnostics, Diagnostic{
-					ID: rule.ID, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
+					Condition: rule.Condition, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
 					Fix: rule.Fix, Line: raw.Line, Column: len(raw.Content) - len(trimmed) + 1,
 					Field:      canonical,
 					Detail:     fmt.Sprintf("libass only accepts the exact keyword %q; the %q spelling here is honored by VSFilter but dropped by libass.", keyword, prefix+":"),

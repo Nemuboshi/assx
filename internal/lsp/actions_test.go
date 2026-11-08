@@ -42,7 +42,7 @@ func TestCodeActionRequiresCurrentPublishedIdentityAndVersionedEdits(t *testing.
 	var data string
 	var diagnosticRange sourcepos.Range
 	for _, diagnostic := range published.Params.Diagnostics {
-		if diagnostic.Code == "ASS006" {
+		if diagnostic.Code == "no-effect" {
 			data, diagnosticRange = diagnostic.Data, diagnostic.Range
 			break
 		}
@@ -55,7 +55,7 @@ func TestCodeActionRequiresCurrentPublishedIdentityAndVersionedEdits(t *testing.
 			"textDocument": map[string]any{"uri": uri},
 			"range":        diagnosticRange,
 			"context": map[string]any{"diagnostics": []any{
-				map[string]any{"code": "ASS006", "data": identity, "range": diagnosticRange},
+				map[string]any{"code": "no-effect", "data": identity, "range": diagnosticRange},
 			}},
 		})
 		if err != nil {
@@ -177,7 +177,7 @@ func TestCodeActionsWithholdUnsafeAndTentativeFindings(t *testing.T) {
 	}
 	var found bool
 	for _, diagnostic := range notification.Params.Diagnostics {
-		if diagnostic.Code != "ASS008" {
+		if diagnostic.Code != "matrix-header" {
 			continue
 		}
 		found = true

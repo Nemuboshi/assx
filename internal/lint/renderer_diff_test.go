@@ -20,7 +20,7 @@ func TestFractionalRectClipRendererDifference(t *testing.T) {
 		dialogue := ass.Dialogue{Text: test.text, Line: 1}
 		found := false
 		for _, diagnostic := range Analyze(dialogue) {
-			if diagnostic.ID == IssueRendererDiff && (diagnostic.Tag == "clip" || diagnostic.Tag == "iclip") {
+			if isBehaviorCondition(diagnostic.Condition) && (diagnostic.Tag == "clip" || diagnostic.Tag == "iclip") {
 				found = true
 			}
 		}

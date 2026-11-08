@@ -172,7 +172,7 @@
     <note>
       Every renderer applies !! to the integer, so any nonzero value becomes 1.
       Garbage input differs: libass yields 0 (ass.c:299) while GetInt throws
-      (STS.cpp:1249). ASS022 already reports the malformed case.
+      (STS.cpp:1249). style-colour already reports the malformed case.
     </note>
   </stylefield>
 
@@ -205,7 +205,7 @@
     <conv renderer="vsm" parse="vsfilter-float" post="none" verified="vsm" cite="vsm:src/subtitles/STS.cpp:1863"/>
     <note>
       libass stores a double. xy and VSFilterMod store a 32-bit float. A value
-      with more than seven significant digits can round differently. ASS012
+      with more than seven significant digits can round differently. style-float
       reports that case. The conversion is value-dependent, so the comparison
       resolves per value.
     </note>
@@ -270,14 +270,14 @@
     <conv renderer="xy" parse="vsfilter-int" post="borderstyle" verified="xy" cite="xy:src/subtitles/STS.cpp:1519,1540"/>
     <conv renderer="vsm" parse="vsfilter-int" post="borderstyle" verified="vsm" cite="vsm:src/subtitles/STS.cpp:1873,1903"/>
     <note>
-      Policy: assx has no BorderStyle accepted-set check. ASS011 can still report
-      a fractional integer field. ASS033 reports the verified box-scaling condition;
-      ASS034 reports the value-4 mode difference. Neither rule supplies edits.
+      Policy: assx has no BorderStyle accepted-set check. style-integer can still report
+      a fractional integer field. border-box reports the verified box-scaling condition;
+      border-mode reports the value-4 mode difference. Neither rule supplies edits.
       Both require matching resolved ASS v4+ fields and complete rows.
-      BorderStyle must be a whole decimal integer. ASS033 also requires positive
+      BorderStyle must be a whole decimal integer. border-box also requires positive
       ScaleX, ScaleY, and Outline, with at least one scale different from 100.
       Those numbers must have equal float32 and float64 values. Its target pair
-      must include Mod and either traditional renderer. ASS034 requires libass
+      must include Mod and either traditional renderer. border-mode requires libass
       and either VSFilter renderer. The rules describe Style definitions, including
       unused Styles. They do not trace Dialogue overrides or prove final pixels.
       Malformed, hexadecimal, SSA, and v4++ inputs remain outside these checks.
@@ -378,7 +378,7 @@
     <conv renderer="xy" parse="vsfilter-align" post="none" verified="xy" cite="xy:src/subtitles/STS.cpp:1522 xy:src/subtitles/RTS.cpp:3264-3268"/>
     <conv renderer="vsm" parse="vsfilter-align" post="none" verified="vsm" cite="vsm:src/subtitles/STS.cpp:1876"/>
     <note>
-      Policy: ASS032 reports whole ASS v4+ Alignment integers outside 1 to 9.
+      Policy: alignment reports whole ASS v4+ Alignment integers outside 1 to 9.
       It does not compare frames or apply a fix. SSA uses a separate mapping.
       Status: source-verified for all three pinned renderers.
 
@@ -397,7 +397,7 @@
       at the top. For example, 10 selects top-left and 11 selects top-centre.
       This describes base layout only. xy has another margin adjustment switch
       with no case above the third row (RTS.cpp:4331-4336). Host margin settings
-      can therefore add differences. ASS032 still treats these values as invalid.
+      can therefore add differences. alignment still treats these values as invalid.
 
       Negative values except INT32_MIN become absolute values before layout.
       They can select the same base position as their positive counterpart.

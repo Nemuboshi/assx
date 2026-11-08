@@ -10,8 +10,8 @@ import (
 )
 
 // scaledRedundantStyleDoc builds one dialogue per requested count. Every
-// dialogue carries an override block that is wholly Style-redundant (ASS013)
-// and whose two tags are also first-wins no-effect findings (ASS006) whose
+// dialogue carries an override block that is wholly Style-redundant (redundant-style)
+// and whose two tags are also first-wins no-effect findings (no-effect) whose
 // edits overlap the redundant block edit.
 func scaledRedundantStyleDoc(dialogues int) ass.Document {
 	var text strings.Builder
@@ -36,7 +36,7 @@ func overlapWork(t *testing.T, dialogues int) (comparisons int, noEffect, redund
 	findings := analyzeDocumentForProfile(doc, DefaultAnalysisTargets().Primary, nil)
 	comparisons = int(overlapComparisons.Load() - before)
 	for _, finding := range findings {
-		switch finding.ID {
+		switch finding.Condition {
 		case IssueNoEffect:
 			noEffect++
 		case IssueRedundantStyleOverrides:

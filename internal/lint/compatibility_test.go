@@ -19,13 +19,13 @@ func TestCompatibilityDiagnosticsSeparateValidityAndFixSafety(t *testing.T) {
 	findings := AnalyzeCompatibility(dialogue, []renderer.Profile{libass, mod})
 	var signature, dispatch, ownership bool
 	for _, d := range findings {
-		if d.ID == IssueArgumentCount || d.FixSafety != "" || len(d.Edits) != 0 {
+		if d.Condition == IssueArgumentCount || d.FixSafety != "" || len(d.Edits) != 0 {
 			t.Fatalf("compatibility leaked validity or edits: %#v", d)
 		}
 		if d.Line != 7 || d.Column < 2 {
 			t.Fatalf("wrong source position: %#v", d)
 		}
-		if d.ID == IssueRendererDiff {
+		if d.Condition != IssueRendererUnresolved {
 			if !strings.Contains(d.Detail, "libass") || !strings.Contains(d.Detail, "VSFilterMod") {
 				t.Fatalf("missing one side: %#v", d)
 			}
@@ -47,7 +47,7 @@ func TestCompatibilityDiagnosticsSeparateValidityAndFixSafety(t *testing.T) {
 	}
 	strict := false
 	for _, d := range before {
-		if d.ID == IssueArgumentCount {
+		if d.Condition == IssueArgumentCount {
 			strict = true
 		}
 	}
@@ -84,7 +84,7 @@ func TestCompatibilityReportsIgnoredAndUnverifiedSeparately(t *testing.T) {
 	unresolved := AnalyzeCompatibility(ass.Dialogue{Text: `{\be200}A`, Line: 1}, nil)
 	for _, d := range unresolved {
 		if d.Field == "behavior/out-of-range" {
-			if d.ID != IssueRendererUnresolved || !strings.Contains(d.Detail, "unresolved") {
+			if d.Condition != IssueRendererUnresolved || !strings.Contains(d.Detail, "unresolved") {
 				t.Fatal("unverified evidence claimed compatibility")
 			}
 			return

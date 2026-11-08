@@ -11,8 +11,8 @@ import (
 const styleEditBlock = `{` + `\b1\b1\fs20\fs20\t(0,500,\fscx100)}`
 
 // styleEditWorkload asserts the Style-edit benchmark contract before timing:
-// the fractional MarginL value yields one proved ASS011 edit, every dialogue
-// yields proved ASS006 edits, and fixed bytes carry the integer Style value
+// the fractional MarginL value yields one proved style-integer edit, every dialogue
+// yields proved no-effect edits, and fixed bytes carry the integer Style value
 // and no override-block candidate.
 func TestStyleEditWorkloadProvesDocumentWide(t *testing.T) {
 	text := perftest.StyleEdit(t)
@@ -26,7 +26,7 @@ func TestStyleEditWorkloadProvesDocumentWide(t *testing.T) {
 	var styleCandidates, styleProofs int
 	var dialogueCandidates, dialogueProofs int
 	for _, diagnostic := range primary {
-		switch diagnostic.ID {
+		switch diagnostic.Condition {
 		case IssueStyleInteger:
 			styleCandidates++
 			if diagnostic.FixSafety == SafeFix && (diagnostic.FixProof != nil || diagnostic.FixProofRef != 0) {
@@ -84,7 +84,7 @@ func TestLateProofFailureScalesCandidates(t *testing.T) {
 		lastLine := doc.Dialogues[len(doc.Dialogues)-1].Line
 		var proved, revoked int
 		for _, diagnostic := range primary {
-			if diagnostic.ID != IssueNoEffect {
+			if diagnostic.Condition != IssueNoEffect {
 				continue
 			}
 			if diagnostic.FixSafety == SafeFix && (diagnostic.FixProof != nil || diagnostic.FixProofRef != 0) {

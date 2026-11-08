@@ -56,7 +56,7 @@ func analyzeEventFields(doc ass.Document, profile renderer.Profile, includeKarao
 			}
 			span := ass.ConcreteSpan{Start: dialogue.LineStart + column - 1, End: dialogue.LineStart + column - 1}
 			diagnostics = append(diagnostics, Diagnostic{
-				ID: rule.ID, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
+				Condition: rule.Condition, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
 				Fix: rule.Fix, Line: dialogue.Line, Column: column, Field: "Dialogue",
 				Detail:  "The line ends before all Format fields have a value; libass discards the event and VSFilter stops parsing at the missing cell.",
 				Sources: rule.Sources, SourceSpan: &span,
@@ -94,7 +94,7 @@ func eventFormatFindings(doc ass.Document) []Diagnostic {
 			detail = "The Format line has no Text field, so libass silently discards every following Dialogue line."
 		}
 		diagnostics = append(diagnostics, Diagnostic{
-			ID: rule.ID, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
+			Condition: rule.Condition, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
 			Fix: rule.Fix, Line: raw.Line, Column: len(raw.Content) - len(trimmed) + 1, Field: "Format",
 			Detail: detail, Sources: rule.Sources,
 			SourceSpan: &ass.ConcreteSpan{Start: raw.Offset + len(raw.Content) - len(trimmed), End: raw.Offset + len(raw.Content)},
@@ -131,7 +131,7 @@ func analyzeTimecodes(dialogue ass.Dialogue) []Diagnostic {
 		}
 		rule := Rules[IssueTimecode]
 		diagnostics = append(diagnostics, Diagnostic{
-			ID: rule.ID, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
+			Condition: rule.Condition, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
 			Fix: rule.Fix, Line: dialogue.Line, Column: field.Start - dialogue.LineStart + 1, Field: name,
 			Detail:  fmt.Sprintf("The %s field %q is not H:MM:SS.CS; libass reads it as 0:00:00.00 and VSFilter discards the event.", name, value),
 			Sources: rule.Sources, SourceSpan: &ass.ConcreteSpan{Start: field.Start, End: field.End},
@@ -153,7 +153,7 @@ func analyzeEventDuration(dialogue ass.Dialogue) []Diagnostic {
 		detail = "End is earlier than Start; libass keeps an event that never matches any frame and VSFilter drops the entry while parsing."
 	}
 	return []Diagnostic{{
-		ID: rule.ID, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
+		Condition: rule.Condition, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
 		Fix: rule.Fix, Line: dialogue.Line, Column: field.Start - dialogue.LineStart + 1, Field: "End",
 		Detail: detail, Sources: rule.Sources, SourceSpan: &ass.ConcreteSpan{Start: field.Start, End: field.End},
 	}}
@@ -174,7 +174,7 @@ func analyzeLayer(dialogue ass.Dialogue) []Diagnostic {
 		detail = "The Layer field is empty; libass silently uses layer 0 while VSFilter rejects the line."
 	}
 	return []Diagnostic{{
-		ID: rule.ID, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
+		Condition: rule.Condition, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
 		Fix: rule.Fix, Line: dialogue.Line, Column: field.Start - dialogue.LineStart + 1, Field: "Layer",
 		Detail: detail, Sources: rule.Sources, SourceSpan: &ass.ConcreteSpan{Start: field.Start, End: field.End},
 	}}
@@ -214,7 +214,7 @@ func analyzeKaraokeWithCursor(dialogue ass.Dialogue, findCursor func() (int64, b
 	rule := Rules[IssueKaraoke]
 	field, _ := dialogue.Field("end")
 	return []Diagnostic{{
-		ID: rule.ID, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
+		Condition: rule.Condition, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
 		Fix: rule.Fix, Line: dialogue.Line, Column: field.Start - dialogue.LineStart + 1, Field: "Text",
 		Detail:  fmt.Sprintf("The karaoke syllables total %d ms, longer than the %d ms event, so the trailing syllables never reach their highlight window.", cursor, duration),
 		Sources: rule.Sources, SourceSpan: &ass.ConcreteSpan{Start: field.Start, End: field.End},
@@ -257,7 +257,7 @@ func analyzeEffect(dialogue ass.Dialogue) []Diagnostic {
 	if !recognized {
 		rule := Rules[IssueEffectField]
 		return []Diagnostic{{
-			ID: rule.ID, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
+			Condition: rule.Condition, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
 			Fix: rule.Fix, Line: dialogue.Line, Column: field.Start - dialogue.LineStart + 1, Field: "Effect",
 			Detail:  fmt.Sprintf("Effect %q is not one of Banner;, Scroll up;, Scroll down;; every renderer treats the whole field as a no-op.", value),
 			Sources: rule.Sources, SourceSpan: &ass.ConcreteSpan{Start: field.Start, End: field.End},
@@ -266,7 +266,7 @@ func analyzeEffect(dialogue ass.Dialogue) []Diagnostic {
 	rule := Rules[IssueEffectField]
 	if effect != canonical {
 		return []Diagnostic{{
-			ID: rule.ID, Severity: Warning, Title: rule.Title, Description: rule.Description,
+			Condition: rule.Condition, Severity: Warning, Title: rule.Title, Description: rule.Description,
 			Fix: rule.Fix, Line: dialogue.Line, Column: field.Start - dialogue.LineStart + 1, Field: "Effect",
 			Detail:  fmt.Sprintf("libass only accepts the exact spelling %q; %q runs in VSFilter but is ignored by libass.", canonical, effect),
 			Sources: rule.Sources, SourceSpan: &ass.ConcreteSpan{Start: field.Start, End: field.End},
@@ -278,7 +278,7 @@ func analyzeEffect(dialogue ass.Dialogue) []Diagnostic {
 	}
 	if effectParamCount(params) < required {
 		return []Diagnostic{{
-			ID: rule.ID, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
+			Condition: rule.Condition, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,
 			Fix: rule.Fix, Line: dialogue.Line, Column: field.Start - dialogue.LineStart + 1, Field: "Effect",
 			Detail:  fmt.Sprintf("%q needs at least %d parameter(s) after it; without them the effect is a silent no-op.", canonical, required),
 			Sources: rule.Sources, SourceSpan: &ass.ConcreteSpan{Start: field.Start, End: field.End},

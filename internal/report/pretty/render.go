@@ -43,7 +43,7 @@ func Render(output io.Writer, summary report.Summary, source string, color bool,
 			if diagnostics[i].SourceColumn != diagnostics[j].SourceColumn {
 				return diagnostics[i].SourceColumn < diagnostics[j].SourceColumn
 			}
-			return diagnostics[i].ID < diagnostics[j].ID
+			return diagnostics[i].Condition < diagnostics[j].Condition
 		})
 		lastSourceLine, lastFrameStart := 0, -1
 		for i, d := range diagnostics {
@@ -51,7 +51,7 @@ func Render(output io.Writer, summary report.Summary, source string, color bool,
 			if color {
 				severity = severityStyle(d.Severity).Render(severity)
 			}
-			id := clean(d.ID)
+			id := clean(d.Condition)
 			if color {
 				id = lipgloss.NewStyle().Faint(true).Render(id)
 			}

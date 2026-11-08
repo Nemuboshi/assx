@@ -13,13 +13,13 @@ func TestSafeFixProofCarriesEveryDefaultRenderer(t *testing.T) {
 	diagnostics := AnalyzeDocument(doc)
 	var finding *Diagnostic
 	for i := range diagnostics {
-		if diagnostics[i].ID == IssueNoEffect && diagnostics[i].FixSafety == SafeFix {
+		if diagnostics[i].Condition == IssueNoEffect && diagnostics[i].FixSafety == SafeFix {
 			finding = &diagnostics[i]
 			break
 		}
 	}
 	if finding == nil || finding.FixProof == nil {
-		t.Fatalf("expected a proved ASS006 fix: %#v", diagnostics)
+		t.Fatalf("expected a proved no-effect fix: %#v", diagnostics)
 	}
 	if len(finding.FixProof.SourceEdits) == 0 {
 		t.Fatalf("proof omits edit ranges: %#v", finding.FixProof)
@@ -52,7 +52,7 @@ func TestEmptyOverrideSafeFixRequiresResolvedOperations(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			diagnostics := AnalyzeDocument(parseFontOverrideText(test.text))
 			for _, diagnostic := range diagnostics {
-				if diagnostic.ID != IssueEmptyOverrideBlock {
+				if diagnostic.Condition != IssueEmptyOverrideBlock {
 					continue
 				}
 				if test.wantSafe {
@@ -64,7 +64,7 @@ func TestEmptyOverrideSafeFixRequiresResolvedOperations(t *testing.T) {
 				}
 				return
 			}
-			t.Fatalf("no ASS018 diagnostic for %q", test.text)
+			t.Fatalf("no empty-block diagnostic for %q", test.text)
 		})
 	}
 }
@@ -135,7 +135,7 @@ func TestGroupedProofSerializesOnceWithReferences(t *testing.T) {
 
 func TestApplyFixesRejectsDanglingProofReference(t *testing.T) {
 	diagnostics := []Diagnostic{{
-		ID: IssueNoEffect, FixSafety: SafeFix, FixProofRef: 1,
+		Condition: IssueNoEffect, FixSafety: SafeFix, FixProofRef: 1,
 		Edits: []TextEdit{{Start: 1, End: 2}},
 	}}
 	if safe, _, unfixable := CountFixes(diagnostics); safe != 0 || unfixable != 1 {
@@ -174,7 +174,7 @@ func TestSafeFixCannotUseAModOnlyPrefixProofInDefaultMode(t *testing.T) {
 		t.Fatal(err)
 	}
 	_, err = buildFixProof(source, []FixEditProof{{
-		ID: IssueNoEffect, Edit: TextEdit{Start: 1, End: 7},
+		Condition: IssueNoEffect, Edit: TextEdit{Start: 1, End: 7},
 	}}, DefaultAnalysisTargets())
 	if err == nil {
 		t.Fatal("default libass/xy proof accepted removal of the Mod prefix collision")
@@ -193,9 +193,9 @@ func TestDefaultFixApplicationRejectsModOnlyProof(t *testing.T) {
 	}
 	edit := TextEdit{Start: 6, End: 11}
 	diagnostic := Diagnostic{
-		ID: IssueNoEffect, FixSafety: SafeFix, Edits: []TextEdit{edit},
+		Condition: IssueNoEffect, FixSafety: SafeFix, Edits: []TextEdit{edit},
 		FixProof: &FixProof{
-			SourceEdits: []FixEditProof{{ID: IssueNoEffect, Edit: edit}},
+			SourceEdits: []FixEditProof{{Condition: IssueNoEffect, Edit: edit}},
 			Targets:     fixTargets([]renderer.Profile{mod}),
 		},
 	}
@@ -208,18 +208,18 @@ func TestSafeFixRejectsEditOutsideItsRuleSource(t *testing.T) {
 	source := fontOverrideDocument(`{\fs21\fs21}A`, "")
 	fieldStart := strings.Index(source, "PlayResX: 640") + len("PlayResX: ")
 	edit := TextEdit{Start: fieldStart, End: fieldStart + 3, Replacement: "1280"}
-	candidate := FixEditProof{ID: IssueNoEffect, Edit: edit}
+	candidate := FixEditProof{Condition: IssueNoEffect, Edit: edit}
 	if _, err := buildFixProof(source, []FixEditProof{candidate}, DefaultAnalysisTargets()); err == nil {
-		t.Fatal("ASS006 proof accepted a PlayResX edit")
+		t.Fatal("no-effect proof accepted a PlayResX edit")
 	}
 	forged := Diagnostic{
-		ID: IssueNoEffect, FixSafety: SafeFix, Edits: []TextEdit{edit},
+		Condition: IssueNoEffect, FixSafety: SafeFix, Edits: []TextEdit{edit},
 		FixProof: &FixProof{
 			SourceEdits: []FixEditProof{candidate}, Targets: fixTargets(defaultFixTargets()),
 		},
 	}
 	if _, _, err := ApplyFixes(source, []Diagnostic{forged}, false); err == nil {
-		t.Fatal("ApplyFixes accepted a caller-supplied ASS006 header edit")
+		t.Fatal("ApplyFixes accepted a caller-supplied no-effect header edit")
 	}
 }
 
@@ -230,7 +230,7 @@ func TestSafeFixRejectsStaleSourceAndMissingProof(t *testing.T) {
 		t.Fatal("SafeFix applied after its source changed")
 	}
 	unproved := []Diagnostic{{
-		ID: IssueNoEffect, FixSafety: SafeFix, Edits: []TextEdit{{Start: 1, End: 2}},
+		Condition: IssueNoEffect, FixSafety: SafeFix, Edits: []TextEdit{{Start: 1, End: 2}},
 	}}
 	fixed, count, err := ApplyFixes("abc", unproved, true)
 	if err != nil || count != 0 || fixed != "abc" {
@@ -246,7 +246,7 @@ func TestSafeFixProofPreservesFirstWinsOwnership(t *testing.T) {
 	diagnostics := AnalyzeDocument(doc)
 	var finding *Diagnostic
 	for i := range diagnostics {
-		if diagnostics[i].ID == IssueNoEffect && diagnostics[i].Tag == "an" {
+		if diagnostics[i].Condition == IssueNoEffect && diagnostics[i].Tag == "an" {
 			finding = &diagnostics[i]
 			break
 		}

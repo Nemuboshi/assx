@@ -41,7 +41,7 @@ func TestFontsCommandReportsDomainAndStaysReadOnly(t *testing.T) {
 			if code := run(args, &out, &stderr); code != 0 {
 				t.Fatalf("exit %d: %s", code, &stderr)
 			}
-			for _, id := range []string{"FONT001", "FONT002"} {
+			for _, id := range []string{"font-missing", "font-glyph"} {
 				if !strings.Contains(out.String(), id) {
 					t.Fatalf("missing %s: %s", id, &out)
 				}
@@ -56,8 +56,8 @@ func TestFontsCommandReportsDomainAndStaysReadOnly(t *testing.T) {
 					Domain   string                `json:"domain"`
 					Renderer struct{ Name string } `json:"renderer"`
 					Findings []struct {
-						ID     string
-						Usages []struct {
+						Condition string `json:"condition"`
+						Usages    []struct {
 							Span struct{ Start, End int } `json:"source_span"`
 						}
 						Matched []struct{ Path string } `json:"matched_faces"`
@@ -70,7 +70,7 @@ func TestFontsCommandReportsDomainAndStaysReadOnly(t *testing.T) {
 				if report.Domain != "font" || report.Renderer.Name != "libass" || len(report.Findings) != 2 || len(report.Unchecked) != 1 {
 					t.Fatalf("report = %#v", report)
 				}
-				if report.Findings[0].ID != "FONT002" || len(report.Findings[0].Matched) != 1 {
+				if report.Findings[0].Condition != "font-glyph" || len(report.Findings[0].Matched) != 1 {
 					t.Fatalf("face selection = %#v", report.Findings)
 				}
 				span := report.Findings[1].Usages[0].Span
@@ -128,7 +128,7 @@ func TestFontsCommandEmptyCatalogAndOutputFailure(t *testing.T) {
 	for _, format := range []string{"json", "pretty", "plain"} {
 		args := []string{"fonts", "check", "--format", format, "--font-dir", empty, path}
 		var out, stderr bytes.Buffer
-		if code := run(args, &out, &stderr); code != 0 || !strings.Contains(out.String(), "FONT001") || strings.Contains(out.String(), "FONT002") {
+		if code := run(args, &out, &stderr); code != 0 || !strings.Contains(out.String(), "font-missing") || strings.Contains(out.String(), "font-glyph") {
 			t.Fatalf("empty catalog: exit %d: %s, %s", code, &out, &stderr)
 		}
 		if code := run(args, fontFailedWriter{}, &stderr); code != 2 || !strings.Contains(stderr.String(), "output failed") {
@@ -178,8 +178,8 @@ func TestFontsCommandUTF16UsesDecodedSourceSpans(t *testing.T) {
 	}
 	var result struct {
 		Findings []struct {
-			ID     string
-			Usages []struct {
+			Condition string `json:"condition"`
+			Usages    []struct {
 				Span struct{ Start, End int } `json:"source_span"`
 			}
 		}
@@ -187,7 +187,7 @@ func TestFontsCommandUTF16UsesDecodedSourceSpans(t *testing.T) {
 	if err := json.Unmarshal(out.Bytes(), &result); err != nil {
 		t.Fatal(err)
 	}
-	if len(result.Findings) != 2 || result.Findings[1].ID != "FONT001" {
+	if len(result.Findings) != 2 || result.Findings[1].Condition != "font-missing" {
 		t.Fatalf("findings: %#v", result)
 	}
 	span := result.Findings[1].Usages[0].Span

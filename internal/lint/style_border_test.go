@@ -33,7 +33,7 @@ func TestStyleBorderCompatibilityRules(t *testing.T) {
 		{name: "two VSFilters share outline mode", border: "4", profiles: []renderer.Profile{xy, mod}},
 		{name: "single renderer", border: "4", profiles: []renderer.Profile{libass}},
 		{name: "duplicate profiles", border: "4", profiles: []renderer.Profile{libass, xy, libass}, id: IssueStyleBorderMode, count: 1},
-		{name: "all mode pairs", border: "4", profiles: []renderer.Profile{libass, xy, mod}, id: IssueStyleBorderMode, count: 2},
+		{name: "all mode pairs", border: "4", profiles: []renderer.Profile{libass, xy, mod}, id: IssueStyleBorderMode, count: 1},
 		{name: "signed and padded integer", border: " +004 ", id: IssueStyleBorderMode, count: 1},
 		{name: "fractional integer is separate", border: "4.5"},
 		{name: "malformed integer", border: "4junk"},
@@ -49,7 +49,7 @@ func TestStyleBorderCompatibilityRules(t *testing.T) {
 		{name: "vertical box scaling", border: "3", y: "50", profiles: []renderer.Profile{xy, mod}, id: IssueStyleBoxGeometry, count: 1},
 		{name: "reversed box pair", border: "3", x: "200", profiles: []renderer.Profile{mod, libass}, id: IssueStyleBoxGeometry, count: 1},
 		{name: "scale exponent", border: "3", x: "2e2", profiles: []renderer.Profile{xy, mod}, id: IssueStyleBoxGeometry, count: 1},
-		{name: "all box pairs", border: "3", x: "200", profiles: []renderer.Profile{libass, xy, mod}, id: IssueStyleBoxGeometry, count: 2},
+		{name: "all box pairs", border: "3", x: "200", profiles: []renderer.Profile{libass, xy, mod}, id: IssueStyleBoxGeometry, count: 1},
 		{name: "scale exception has no build guard", border: "3", x: "200", profiles: []renderer.Profile{xy, disabledMod}, id: IssueStyleBoxGeometry, count: 1},
 		{name: "Mod builds share box scaling", border: "3", x: "200", profiles: []renderer.Profile{mod, disabledMod}},
 		{name: "no unshifted box", border: "3", x: "200", outline: "0", profiles: []renderer.Profile{libass, mod}},
@@ -77,13 +77,13 @@ func TestStyleBorderCompatibilityRules(t *testing.T) {
 				t.Fatalf("got %d findings, want %d: %#v", len(findings), tc.count, findings)
 			}
 			for _, finding := range findings {
-				if finding.ID != tc.id || finding.Severity != Warning || finding.Description != Rules[tc.id].Description || finding.Fix != Rules[tc.id].Fix {
+				if finding.Condition != tc.id || finding.Severity != Warning || finding.Description != Rules[tc.id].Description || finding.Fix != Rules[tc.id].Fix {
 					t.Fatalf("wrong rule metadata: %#v", finding)
 				}
 				if finding.FixSafety != "" || len(finding.Edits) != 0 || finding.FixProof != nil {
 					t.Fatalf("compatibility warning offers a fix: %#v", finding)
 				}
-				if finding.Renderer == "" || len(finding.Sources) != 2 || finding.SourceSpan == nil || source[finding.SourceSpan.Start:finding.SourceSpan.End] != strings.TrimSpace(tc.border) {
+				if len(finding.Renderers) == 0 || len(finding.Sources) != 2 || finding.SourceSpan == nil || source[finding.SourceSpan.Start:finding.SourceSpan.End] != strings.TrimSpace(tc.border) {
 					t.Fatalf("missing scope, evidence, or field span: %#v", finding)
 				}
 			}
@@ -125,7 +125,7 @@ func TestStyleBorderComparisonKeepsIndependentLayoutFindings(t *testing.T) {
 		source = strings.Replace(source, borderStyleFormat, borderStyleFormat+", Justify", 1)
 		source = strings.TrimSuffix(source, "\n") + ",0\n"
 		findings := AnalyzeDocumentCompatibility(ass.Parse(source), []renderer.Profile{libass, mod})
-		if len(diagnosticsForIDs(findings, tc.id)) != 1 || len(diagnosticsForIDs(findings, IssueRendererDiff)) != 1 {
+		if len(diagnosticsForIDs(findings, tc.id)) != 1 || len(diagnosticsForIDs(findings, ConditionLayout)) != 1 {
 			t.Fatalf("layout and BorderStyle differences must remain separate: %#v", findings)
 		}
 	}

@@ -24,7 +24,7 @@ type Diagnostic struct {
 	Column       int
 	SourceColumn int
 	SourceWidth  int
-	ID           string
+	Condition    string
 	Severity     string
 	Title        string
 	Description  string

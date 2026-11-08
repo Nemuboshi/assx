@@ -49,7 +49,7 @@ func TestReviewKaraokeCursorUsesP05State(t *testing.T) {
 			}
 			got, ok := karaokeCursorResolved(tree, tc.profile)
 			if ok != tc.cursorKnown || (ok && got != tc.want) {
-				t.Fatalf("ASS030 cursor=%d known=%v, want %d known=%v (P05=%#v)",
+				t.Fatalf("karaoke cursor=%d known=%v, want %d known=%v (P05=%#v)",
 					got, ok, tc.want, tc.cursorKnown, last)
 			}
 		})
@@ -82,13 +82,13 @@ func TestReviewRendererScopedKaraokeDocumentWarnings(t *testing.T) {
 			for _, ds := range [][]Diagnostic{full, eventOnly} {
 				count := 0
 				for _, d := range ds {
-					if d.ID != IssueKaraoke {
+					if d.Condition != IssueKaraoke {
 						continue
 					}
 					count++
-					if d.Renderer != ProfileScope(tc.profile) || d.FixSafety != "" ||
+					if d.RendererNames() != ProfileScope(tc.profile) || d.FixSafety != "" ||
 						len(d.Edits) != 0 || !strings.Contains(d.Detail, "2000 ms") {
-						t.Fatalf("incorrect scoped ASS030: %#v", d)
+						t.Fatalf("incorrect scoped karaoke: %#v", d)
 					}
 				}
 				want := 0
@@ -96,11 +96,11 @@ func TestReviewRendererScopedKaraokeDocumentWarnings(t *testing.T) {
 					want = 1
 				}
 				if count != want {
-					t.Fatalf("wanted %d ASS030 findings, found %d: %#v", want, count, ds)
+					t.Fatalf("wanted %d karaoke findings, found %d: %#v", want, count, ds)
 				}
 			}
 			if hasIssue(full, IssueRendererUnresolved) != tc.unresolved {
-				t.Fatalf("ASS031 expectation=%v, findings=%#v", tc.unresolved, full)
+				t.Fatalf("unresolved expectation=%v, findings=%#v", tc.unresolved, full)
 			}
 		})
 	}

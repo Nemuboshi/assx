@@ -33,7 +33,7 @@ func allCandidateHandles(session *Session) []CandidateID {
 func findingsWithID(findings []PendingFinding, id string) []PendingFinding {
 	var out []PendingFinding
 	for _, finding := range findings {
-		if finding.Diagnostic.ID == id {
+		if finding.Diagnostic.Condition == id {
 			out = append(out, finding)
 		}
 	}
@@ -53,9 +53,9 @@ func candidateDiagnostics(diagnostics []Diagnostic) []Diagnostic {
 }
 
 // redundantStyleDoc has Default Bold 0. Each dialogue carries one override
-// block that is wholly Style-redundant (ASS013). Both tags inside the block
-// are also first-wins no-effect findings (ASS006) whose edits overlap the
-// ASS013 block edit.
+// block that is wholly Style-redundant (redundant-style). Both tags inside the block
+// are also first-wins no-effect findings (no-effect) whose edits overlap the
+// redundant-style block edit.
 func redundantStyleDoc() ass.Document {
 	text := "[Script Info]\nPlayResX: 1920\nPlayResY: 1080\nYCbCr Matrix: None\n" +
 		"[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\n" +
@@ -81,10 +81,10 @@ func TestSessionDiscoveryStripsSafeFixAndNeverBuildsProof(t *testing.T) {
 	}
 	findings := session.Findings()
 	if got := len(findingsWithID(findings, IssueNoEffect)); got != perftest.StyleEditDialogueCount*3 {
-		t.Fatalf("pending ASS006 = %d, want %d", got, perftest.StyleEditDialogueCount*3)
+		t.Fatalf("pending no-effect = %d, want %d", got, perftest.StyleEditDialogueCount*3)
 	}
 	if got := len(findingsWithID(findings, IssueStyleInteger)); got != 1 {
-		t.Fatalf("pending ASS011 = %d, want 1", got)
+		t.Fatalf("pending style-integer = %d, want 1", got)
 	}
 	for _, finding := range findings {
 		if !finding.HasFixCandidate {
@@ -132,24 +132,24 @@ func TestSessionDisabledRuleKeepsOverlappedCandidates(t *testing.T) {
 	doc := redundantStyleDoc()
 	enabled := discoverTestSession(t, doc, nil)
 	if got := len(findingsWithID(enabled.Findings(), IssueRedundantStyleOverrides)); got != 2 {
-		t.Fatalf("enabled ASS013 findings = %d, want 2", got)
+		t.Fatalf("enabled redundant-style findings = %d, want 2", got)
 	}
 	if got := len(findingsWithID(enabled.Findings(), IssueNoEffect)); got != 0 {
-		t.Fatalf("enabled ASS013 must suppress overlapping ASS006 findings, got %d", got)
+		t.Fatalf("enabled redundant-style must suppress overlapping no-effect findings, got %d", got)
 	}
 
-	disabled := discoverTestSession(t, doc, RulePolicy{{ID: IssueRedundantStyleOverrides, Disabled: true}})
+	disabled := discoverTestSession(t, doc, RulePolicy{{Condition: IssueRedundantStyleOverrides, Disabled: true}})
 	if got := len(findingsWithID(disabled.Findings(), IssueRedundantStyleOverrides)); got != 0 {
-		t.Fatalf("disabled ASS013 findings = %d, want 0", got)
+		t.Fatalf("disabled redundant-style findings = %d, want 0", got)
 	}
 	overlapped := findingsWithID(disabled.Findings(), IssueNoEffect)
 	if len(overlapped) != 4 {
-		t.Fatalf("disabled ASS013 must keep ASS006 findings, got %d", len(overlapped))
+		t.Fatalf("disabled redundant-style must keep no-effect findings, got %d", len(overlapped))
 	}
 	var handles []CandidateID
 	for _, finding := range overlapped {
 		if !finding.HasFixCandidate {
-			t.Fatalf("overlapped ASS006 lost its candidate: %#v", finding.Diagnostic)
+			t.Fatalf("overlapped no-effect lost its candidate: %#v", finding.Diagnostic)
 		}
 		handles = append(handles, finding.Candidate)
 	}
@@ -174,11 +174,11 @@ func TestSessionDisabledRuleKeepsOverlappedCandidates(t *testing.T) {
 
 func TestSessionSeverityOverrideAndResultCopies(t *testing.T) {
 	session := discoverTestSession(t, ass.Parse(perftest.StyleEdit(t)), RulePolicy{
-		{ID: IssueNoEffect, Severity: Error},
-		{ID: IssueStyleInteger, Disabled: true},
+		{Condition: IssueNoEffect, Severity: Error},
+		{Condition: IssueStyleInteger, Disabled: true},
 	})
 	if got := len(findingsWithID(session.Findings(), IssueStyleInteger)); got != 0 {
-		t.Fatalf("disabled ASS011 findings = %d, want 0", got)
+		t.Fatalf("disabled style-integer findings = %d, want 0", got)
 	}
 	for _, finding := range findingsWithID(session.Findings(), IssueNoEffect) {
 		if finding.Diagnostic.Severity != Error {
@@ -210,7 +210,7 @@ func TestSessionSeverityOverrideAndResultCopies(t *testing.T) {
 		t.Fatal(err)
 	}
 	if len(authorized) != perftest.StyleEditDialogueCount*3 {
-		t.Fatalf("authorized = %d, want %d (ASS011 disabled)", len(authorized), perftest.StyleEditDialogueCount*3)
+		t.Fatalf("authorized = %d, want %d (style-integer disabled)", len(authorized), perftest.StyleEditDialogueCount*3)
 	}
 	authorized[0].Edits = nil
 	authorized[0].Sources = append(authorized[0].Sources, "mutated")
@@ -234,9 +234,9 @@ func TestSessionRejectsInvalidPolicy(t *testing.T) {
 		name   string
 		policy RulePolicy
 	}{
-		{"unknown id", RulePolicy{{ID: "ASS999"}}},
-		{"duplicate id", RulePolicy{{ID: IssueNoEffect}, {ID: IssueNoEffect, Disabled: true}}},
-		{"invalid severity", RulePolicy{{ID: IssueNoEffect, Severity: Severity("hint")}}},
+		{"unknown id", RulePolicy{{Condition: "ASS999"}}},
+		{"duplicate id", RulePolicy{{Condition: IssueNoEffect}, {Condition: IssueNoEffect, Disabled: true}}},
+		{"invalid severity", RulePolicy{{Condition: IssueNoEffect, Severity: Severity("hint")}}},
 		{"empty id", RulePolicy{{Disabled: true}}},
 	} {
 		t.Run(test.name, func(t *testing.T) {
@@ -280,7 +280,7 @@ func TestSessionLateBarrierRevokesLastDialogue(t *testing.T) {
 	var handles []CandidateID
 	var revoked int
 	for _, finding := range session.Findings() {
-		if finding.Diagnostic.ID != IssueNoEffect {
+		if finding.Diagnostic.Condition != IssueNoEffect {
 			continue
 		}
 		if finding.HasFixCandidate {
@@ -303,7 +303,7 @@ func TestSessionLateBarrierRevokesLastDialogue(t *testing.T) {
 	}
 	var proved int
 	for _, diagnostic := range authorized {
-		if diagnostic.ID == IssueNoEffect && diagnostic.FixSafety == SafeFix {
+		if diagnostic.Condition == IssueNoEffect && diagnostic.FixSafety == SafeFix {
 			proved++
 		}
 	}

@@ -2,11 +2,12 @@ package lint
 
 import (
 	"context"
+	"sort"
+	"sync/atomic"
 
 	"assx/internal/ass"
 	editpkg "assx/internal/edit"
-	"sort"
-	"sync/atomic"
+	"assx/internal/semantic"
 )
 
 // overlapComparisons counts the interval decisions the redundant-Style
@@ -76,6 +77,40 @@ func analyzeDocumentForTargetsUnprovedContext(ctx context.Context, doc ass.Docum
 	if err != nil {
 		return nil, err
 	}
+	stampPass(findings, targets.Primary, RolePrimary)
+	for _, profile := range targets.Profiles() {
+		if profile == targets.Primary {
+			continue
+		}
+		view := profile.DocumentView(doc)
+		if shared != nil {
+			if prepared, ok := shared.viewFor(doc, profile); ok {
+				view = prepared
+			}
+		}
+		styles := semantic.StyleStatesByName(view.StyleFields)
+		for _, dialogue := range view.Dialogues {
+			if err := ctx.Err(); err != nil {
+				return nil, err
+			}
+			var prepared *semantic.PreparedDialogue
+			if shared != nil {
+				prepared = shared.preparations.PrepareText(profile, dialogue.Text)
+			}
+			pass, _ := analyzeResolvedDialogue(dialogue, profile, styles, nil, prepared)
+			kept := pass[:0]
+			for _, finding := range pass {
+				// Decorative conditions come from the primary pass, which owns
+				// the overlap suppression they participate in.
+				if finding.Condition == IssueNoEffect {
+					continue
+				}
+				kept = append(kept, finding)
+			}
+			stampPass(kept, profile, RoleCompared)
+			findings = append(findings, kept...)
+		}
+	}
 	for _, dialogue := range doc.Dialogues {
 		if err := ctx.Err(); err != nil {
 			return nil, err
@@ -84,18 +119,7 @@ func analyzeDocumentForTargetsUnprovedContext(ctx context.Context, doc ass.Docum
 	}
 	tree, _ := shared.concreteDocument(doc)
 	findings = append(findings, analyzeDocumentCompatibility(doc, tree, targets.Profiles(), shared.compatibilityMode())...)
-	for i := range findings {
-		if findings[i].Renderer == "" {
-			findings[i].Renderer = ProfileScope(targets.Primary)
-		}
-	}
-	sort.SliceStable(findings, func(i, j int) bool {
-		if findings[i].Line == findings[j].Line {
-			return findings[i].Column < findings[j].Column
-		}
-		return findings[i].Line < findings[j].Line
-	})
-	return policy.apply(findings), nil
+	return policy.apply(assemble(findings, targets.Primary)), nil
 }
 
 func AnalyzeDocument(doc ass.Document) []Diagnostic {
@@ -121,7 +145,7 @@ func suppressOverlappingNoEffect(diagnostics, redundant []Diagnostic) []Diagnost
 	filtered := make([]Diagnostic, 0, len(diagnostics))
 	var index *intervalIndex
 	for _, diagnostic := range diagnostics {
-		if diagnostic.ID != IssueNoEffect || len(diagnostic.Edits) == 0 {
+		if diagnostic.Condition != IssueNoEffect || len(diagnostic.Edits) == 0 {
 			filtered = append(filtered, diagnostic)
 			continue
 		}

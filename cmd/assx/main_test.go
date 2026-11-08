@@ -114,7 +114,7 @@ func TestRunVSFilterModTagWarningDisablesFixes(t *testing.T) {
 	}
 	foundWarning := false
 	for _, diagnostic := range diagnostics {
-		if diagnostic.ID == lint.IssueVSFilterModTag {
+		if diagnostic.Condition == lint.IssueVSFilterModTag {
 			foundWarning = true
 		}
 		if diagnostic.FixSafety != "" || len(diagnostic.Edits) != 0 {
@@ -178,7 +178,7 @@ func TestRunJSONStaysValidAndReportsUnknownTagsAsSuggestion(t *testing.T) {
 	if err := json.Unmarshal([]byte(stdout.String()), &diagnostics); err != nil {
 		t.Fatalf("invalid JSON: %v\n%s", err, stdout.String())
 	}
-	if len(diagnostics) != 1 || diagnostics[0]["id"] != "ASS007" || diagnostics[0]["severity"] != "suggestion" {
+	if len(diagnostics) != 1 || diagnostics[0]["condition"] != "unknown-tag" || diagnostics[0]["severity"] != "suggestion" {
 		t.Fatalf("diagnostics = %#v", diagnostics)
 	}
 	if !strings.Contains(stderr.String(), "Fixes available: 0 safe, 0 unsafe, 1 not auto-fixable.") {
@@ -189,14 +189,14 @@ func TestRunJSONStaysValidAndReportsUnknownTagsAsSuggestion(t *testing.T) {
 	if code := run([]string{"--format", "plain", "--renderer=libass", path}, &stdout, &stderr); code != 0 {
 		t.Fatalf("plain run returned %d: %s", code, stderr.String())
 	}
-	if !strings.Contains(stdout.String(), "SUGGESTION[ASS007]") || !strings.Contains(stdout.String(), "1 suggestions") {
+	if !strings.Contains(stdout.String(), "SUGGESTION[unknown-tag]") || !strings.Contains(stdout.String(), "1 suggestions") {
 		t.Fatalf("plain suggestion output = %q", stdout.String())
 	}
 }
 
 func TestPlainDoesNotCountUnknownSeverityAsSuggestion(t *testing.T) {
 	var stdout strings.Builder
-	if err := plain.Render(&stdout, "sample.ass", []report.Diagnostic{{ID: "ASS999", Severity: "future", Title: "Unknown severity"}}, 0, ""); err != nil {
+	if err := plain.Render(&stdout, "sample.ass", []report.Diagnostic{{Condition: "ASS999", Severity: "future", Title: "Unknown severity"}}, 0, ""); err != nil {
 		t.Fatal(err)
 	}
 	if !strings.Contains(stdout.String(), "Summary: 1 diagnostics (0 errors, 0 warnings, 0 suggestions).") {

@@ -91,7 +91,7 @@ func (server *Server) codeActions(ctx context.Context, raw jsontext.Value) ([]co
 		}
 		matched := false
 		for _, client := range params.Context.Diagnostics {
-			if client.Data == fmt.Sprintf("%s:%d", identity, ordinal) && client.Code == finding.Diagnostic.ID && client.Range == rangeValue {
+			if client.Data == fmt.Sprintf("%s:%d", identity, ordinal) && client.Code == finding.Diagnostic.Condition && client.Range == rangeValue {
 				matched = true
 				break
 			}

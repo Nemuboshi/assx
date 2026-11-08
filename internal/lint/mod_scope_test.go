@@ -36,7 +36,7 @@ func TestP09ModOrthoFallbackIsNotOutOfRange(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, diagnostic := range AnalyzeForRenderer(ass.Dialogue{Text: `{\ortho2}A`}, profile) {
-		if diagnostic.ID == IssueInvalidValue {
+		if diagnostic.Condition == IssueInvalidValue {
 			t.Fatalf("original-Style fallback rejected: %#v", diagnostic)
 		}
 		if diagnostic.FixSafety != "" || len(diagnostic.Edits) != 0 {

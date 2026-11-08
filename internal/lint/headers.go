@@ -83,7 +83,7 @@ func headerDiagnostic(doc ass.Document, id string, field ass.HeaderField, exists
 		span = ass.ConcreteSpan{Start: field.ValueStart, End: field.ValueEnd}
 	}
 	return Diagnostic{
-		ID: rule.ID, Severity: rule.Severity, FixSafety: rule.FixSafety,
+		Condition: rule.Condition, Severity: rule.Severity, FixSafety: rule.FixSafety,
 		Title: rule.Title, Description: rule.Description, Fix: rule.Fix,
 		Line: line, Column: column, Detail: detail, Sources: rule.Sources, Edits: edits, SourceSpan: &span,
 	}

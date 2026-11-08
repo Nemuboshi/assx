@@ -35,10 +35,10 @@ async function smokeTest(): Promise<void> {
   await extension.activate();
   const diagnostics = await until(() => {
     const found = vscode.languages.getDiagnostics(document.uri);
-    return found.some(item => item.code === 'ASS006') ? found : undefined;
-  }, 'ASS006 diagnostic');
-  const finding = diagnostics.find(item => item.code === 'ASS006');
-  if (!finding) throw new Error('ASS006 was not published');
+    return found.some(item => item.code === 'no-effect') ? found : undefined;
+  }, 'no-effect diagnostic');
+  const finding = diagnostics.find(item => item.code === 'no-effect');
+  if (!finding) throw new Error('no-effect was not published');
 
   const tag = new vscode.Position(2, document.lineAt(2).text.indexOf('\\pos') + 2);
   const hovers = await vscode.commands.executeCommand<vscode.Hover[]>('vscode.executeHoverProvider', document.uri, tag);

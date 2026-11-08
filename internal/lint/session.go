@@ -245,7 +245,7 @@ type candidateKey struct {
 }
 
 func candidateKeyOf(diagnostic Diagnostic) candidateKey {
-	return candidateKey{id: diagnostic.ID, edits: fmt.Sprintf("%v", diagnostic.Edits)}
+	return candidateKey{id: diagnostic.Condition, edits: fmt.Sprintf("%v", diagnostic.Edits)}
 }
 
 func (s *Session) authorize(diagnostics []Diagnostic) error {
@@ -259,7 +259,7 @@ func (s *Session) authorize(diagnostics []Diagnostic) error {
 		}
 		key := candidateKeyOf(diagnostic)
 		if pool[key] == 0 {
-			return fmt.Errorf("SafeFix finding %s is not a session candidate", diagnostic.ID)
+			return fmt.Errorf("SafeFix finding %s is not a session candidate", diagnostic.Condition)
 		}
 		pool[key]--
 	}

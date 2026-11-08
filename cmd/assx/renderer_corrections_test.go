@@ -18,8 +18,8 @@ func TestDefaultProfilePrefixCorrections(t *testing.T) {
 		t.Run(tc.portable, func(t *testing.T) {
 			var invalid, portability bool
 			for _, d := range lint.Analyze(ass.Dialogue{Text: tc.source}) {
-				invalid = invalid || d.ID == lint.IssueInvalidValue && d.Tag == tc.matched && d.Severity == lint.Error && d.Column == 3
-				portability = portability || d.ID == lint.IssueVSFilterModTag && d.Tag == tc.portable && d.Severity == lint.Warning
+				invalid = invalid || d.Condition == lint.IssueInvalidValue && d.Tag == tc.matched && d.Severity == lint.Error && d.Column == 3
+				portability = portability || d.Condition == lint.IssueVSFilterModTag && d.Tag == tc.portable && d.Severity == lint.Warning
 				if d.FixSafety != "" || len(d.Edits) != 0 {
 					t.Fatal("prefix collision authorized an edit")
 				}
@@ -32,13 +32,13 @@ func TestDefaultProfilePrefixCorrections(t *testing.T) {
 }
 
 func TestDefaultCompatibilityAddsScopedObservations(t *testing.T) {
-	path := writeRendererFixture(t, `{\pos(1,2)}x`)
+	path := writeRendererFixture(t, `{\a4}x`)
 	for _, args := range [][]string{nil, {"--renderer=libass"}} {
 		var out, errOut strings.Builder
 		if code := run(append(append([]string{"--format=json"}, args...), path), &out, &errOut); code != 0 {
 			t.Fatalf("compatibility changed primary success: %d %s", code, errOut.String())
 		}
-		paired := strings.Contains(out.String(), " / xy-VSFilter")
+		paired := strings.Contains(out.String(), "\"renderer\": \"xy-VSFilter\"")
 		if paired != (args == nil) {
 			t.Fatalf("compatibility selection not reflected: args=%v paired=%t", args, paired)
 		}
@@ -50,7 +50,7 @@ func TestRejectedPositionKeepsStrictErrorAndFixFence(t *testing.T) {
 	diagnostics := lint.Analyze(ass.Dialogue{Text: source})
 	var strict bool
 	for _, diagnostic := range diagnostics {
-		strict = strict || diagnostic.ID == lint.IssueArgumentCount && diagnostic.Severity == lint.Error
+		strict = strict || diagnostic.Condition == lint.IssueArgumentCount && diagnostic.Severity == lint.Error
 		if diagnostic.FixSafety == lint.SafeFix {
 			t.Fatal("malformed position lost its fix fence")
 		}

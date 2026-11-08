@@ -181,7 +181,7 @@ func (c *styleRunCollector) diagnostic() (Diagnostic, bool) {
 	first := c.candidates[0]
 	rule := Rules[IssueRedundantStyleOverrides]
 	return Diagnostic{
-		ID: rule.ID, Severity: rule.Severity, FixSafety: safety,
+		Condition: rule.Condition, Severity: rule.Severity, FixSafety: safety,
 		Title: rule.Title, Description: rule.Description, Fix: rule.Fix, Sources: rule.Sources,
 		Line: c.dialogue.Line, Column: first.Column, Tag: first.Name,
 		Detail:     "The override tags leave the active Style properties unchanged across dialogue text.",

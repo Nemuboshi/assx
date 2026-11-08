@@ -17,7 +17,7 @@ import (
 )
 
 // Options selects the analysis targets and rule policy. Empty values use
-// the default targets and the default rule catalog.
+// the default targets and the default condition catalog.
 type Options struct {
 	Targets lint.AnalysisTargets
 	Rules   lint.RulePolicy
