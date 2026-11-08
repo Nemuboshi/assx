@@ -1,101 +1,88 @@
 # Lint pipeline
 
-This page states how one lint run moves from source bytes to reported
-diagnostics. The package pages define the API of each stage.
+This page states the layer structure, the data that moves between the layers,
+and the state that authorizes an edit. The package pages define each API.
 
-## Layers
+## Layer dependencies
 
-| Layer | Package | Job |
-| --- | --- | --- |
-| Source | `internal/ass` | Decode, recognize input, parse the concrete tree, keep spans |
-| Dispatch | `internal/ass/spec`, `internal/ass/renderer` | Select a profile, project the document, resolve tag signatures |
-| Evaluation | `internal/semantic` | Evaluate effective state, notify observers, compare renderers |
-| Policy | `internal/lint` | Apply rule policy, group edit candidates, prove fixes |
-| Orchestration | `internal/analysis` | Own the snapshot, the options, and the deferred proof |
-| Presentation | `internal/lintreport`, `internal/report` | Render pretty, plain, or JSON output and set the exit code |
-
-A lower layer never imports a higher layer. `internal/lint` uses `internal/ass`
-and `internal/semantic`; it does not own parser or state logic.
-
-## One run
+An arrow means "imports". The graph has no cycle.
 
 ```mermaid
-flowchart TD
-    A[Source bytes] --> B[ass.DecodeSource]
-    B --> C[ass.Recognize]
-    C -->|Rejected| X[Exit 2]
-    C --> D[analysis.NewSnapshot]
-    D --> E[analysis.Analyze]
-    E --> F[ass.Parse]
-    F --> G[lint.Discover]
-    G --> H[PrepareDocument: one view per target]
-    H --> I[Document pass: headers, keywords, styles, event fields]
-    I --> J[Dialogue pass: semantic evaluation with observers]
-    J --> K[Compatibility pass: pairwise renderer results]
-    K --> L[Scope, sort, dedupe, suppress overlaps]
-    L --> M[Candidates: SafeFix with edits]
-    M --> N[lint.Session.ProveFixes]
-    N --> O[lintreport view]
-    O --> P[pretty, plain, or JSON]
-    P --> Q[Exit 0 or 1]
+graph LR
+  CLI["cmd/assx"] --> LSP["internal/lsp"]
+  CLI --> AN["internal/analysis"]
+  CLI --> LR["internal/lintreport"]
+  LSP --> AN
+  LSP --> LINT["internal/lint"]
+  AN --> LINT
+  AN --> ASS["internal/ass"]
+  AN --> REN["internal/ass/renderer"]
+  LINT --> SEM["internal/semantic"]
+  LINT --> ASS
+  LINT --> REN
+  LINT --> SPEC["internal/ass/spec"]
+  LINT --> EDIT["internal/edit"]
+  SEM --> ASS
+  SEM --> REN
+  SEM --> SPEC
+  REN --> ASS
+  REN --> SPEC
+  ASS --> SPEC
+  LR --> LINT
+  LR --> ASS
+```
+
+Additional edges: `internal/sourcepos` imports `internal/edit`;
+`internal/lintreport` and `internal/report/pretty` import `internal/report`;
+`internal/fontcheck` imports `internal/ass`, `internal/ass/renderer`, and
+`internal/semantic`; `internal/fontreport` imports `internal/fontcheck` and
+`internal/report`.
+
+## Data flow
+
+Each edge names the value that the next stage consumes.
+
+```mermaid
+flowchart LR
+  B["file bytes"] --> D["ass.DecodeSource → Source"]
+  D --> R["ass.Recognize → Classification"]
+  R --> S["analysis.Snapshot"]
+  S --> P["ass.Parse → ass.Document"]
+  P --> PREP["lint.PrepareDocument → one view per target"]
+  PREP --> DISC["lint.Discover → lint.Session"]
+  DISC --> V["primary profile pass: document checks → []Diagnostic"]
+  V --> DIA["per dialogue: semantic.PrepareDialogue, EachOperation → []Diagnostic"]
+  DIA --> PORT["portability pass → []Diagnostic"]
+  PORT --> COMP["compatibility pass: semantic.CompareDocument → []Diagnostic"]
+  COMP --> SCOPE["scope, sort, dedupe"]
+  SCOPE --> CAND["candidates: SafeFix with edits"]
+  CAND --> PROOF["ProveFixes → []Diagnostic with FixProof"]
+  PROOF --> VIEW["lintreport view"]
+  VIEW --> OUT["pretty, plain, JSON, exit code"]
 ```
 
 `lint.Discover` records candidates and never builds a proof. It prepares the
 document once, so validation, compatibility, and the redundant-Style collector
 share one projected view and one resolved expression per profile.
 
-## Deferred proof
+## State and ownership
 
-The split exists because proof is expensive and most runs never apply an edit.
+| State | Owner | Valid while | Invalidated by |
+| --- | --- | --- | --- |
+| `Snapshot` (URI, UTF-8 text, version) | `analysis.Result` | one analysis | different text |
+| `Options` (targets, rule policy) | caller, copied into the result | one run | different target or policy |
+| `Session` (id, document, targets, policy, findings, candidates, proof batch) | `lint`, held by `analysis.Result` | the source that `Discover` parsed | another source |
+| `CandidateID` (session id, ordinal) | `Session` | that session | another session, stale or foreign handle |
+| `FixProof` (proof id, source and edited hashes, per-target interpretation) | diagnostic | the current source and the complete edit group | any edit, target change, or foreign source |
+| `FindingID` (result id, ordinal) | `analysis.Result` | that result | a newer analysis |
 
-```mermaid
-sequenceDiagram
-    participant CLI
-    participant Analysis
-    participant Lint
-    CLI->>Analysis: Analyze(snapshot, options)
-    Analysis->>Lint: Discover(ctx, doc, targets, policy)
-    Lint-->>Analysis: Session with findings and candidates
-    Analysis->>Lint: ProveFixes(ctx, handles)
-    Lint->>Lint: rebuild each target view from the source
-    Lint->>Lint: compare interpretation before and after the edit group
-    Lint-->>Analysis: authorized diagnostics with FixProof
-    Analysis-->>CLI: diagnostics in report order
-```
-
-A `SafeFix` label without a proof carries no edits. A finding that fails proof
-keeps its observation and loses the fix. `--unsafe-fix` adds the unsafe class;
-it does not bypass proof.
-
-## CLI path
-
-```mermaid
-sequenceDiagram
-    participant Main as cmd/assx
-    participant Analysis
-    participant Lint
-    participant File
-    Main->>File: read, symlink resolve
-    Main->>Main: decode, recognize, parse flags
-    Main->>Analysis: Analyze
-    Analysis->>Lint: Discover
-    Main->>Analysis: Diagnostics
-    Analysis->>Lint: ProveFixes
-    alt --fix or --unsafe-fix
-        Main->>Analysis: ApplyFixes
-        Main->>Main: verify lossless round trip
-        Main->>File: writeAtomically
-        Main->>Analysis: Analyze again on the fixed text
-    end
-    Main->>Main: lint.CountFixes, render, exit
-```
-
-The CLI refuses a write when the file does not round-trip byte for byte. A
-`Tentative` recognition result permits analysis and blocks every write.
+A `SafeFix` label without a proof carries no edits and never authorizes a
+write. A finding that fails proof keeps its observation and loses the fix.
 
 ## Editor path
 
-The language server uses the same orchestration with a different proof point.
+The language server uses the same orchestration and proves at the code action,
+not at the publish.
 
 ```mermaid
 sequenceDiagram
@@ -117,14 +104,19 @@ sequenceDiagram
     Server-->>Editor: textDocumentEdit
 ```
 
-The diagnostic `Data` field holds `identity:ordinal`. The server accepts a code
-action only when the client sends back that identity, the rule ID, and the
+The diagnostic `Data` field holds `identity:ordinal`. The identity is the text
+hash, the document version, and the settings generation. The server accepts a
+code action only when the client returns that identity, the rule ID, and the
 range. A stale or foreign identity yields no action.
 
 ## Invariants
 
-- One profile produces one projected view. A renderer-scoped pass strips fixes.
-- A location may carry different rules, but an identical observation appears once.
-- Output order is by line, then column, in every format.
-- SafeFix requires one proof for the complete edit group across every target.
-- Equal modeled state does not prove equal frames. `tools/rendercheck` checks frames.
+| Invariant | Where it holds |
+| --- | --- |
+| One profile produces one projected view | `PrepareDocument`, `profile.DocumentView` |
+| A renderer-scoped pass strips fixes | `scopeDiagnostics` |
+| A location may carry different rules, an identical observation appears once | `scopeDiagnostics` |
+| Output order is line, then column | stable sort after the passes |
+| SafeFix requires one proof for the complete edit group across every target | `ProveFixes` batch |
+| A file that does not round-trip byte for byte is not written | CLI write guard |
+| Equal modeled state does not prove equal frames | `tools/rendercheck` |
