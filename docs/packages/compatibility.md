@@ -66,7 +66,7 @@ pixel-identical rendering; no `equivalent` dimension does.
 
 ## Evidence and reference cases
 
-`docs/ass-rules/ass-tags.xml` explicitly scopes verified scenario cells. The generated
+`docs/reference/ass-tags.xml` explicitly scopes verified scenario cells. The generated
 matrix now retains those rows alongside signatures. Missing rows do not inherit
 editorial scenario defaults, `status="S"` and unverified renderer cells cannot
 prove equivalence, and unknown builds cannot borrow an enabled branch's proof.
@@ -139,9 +139,9 @@ duplicating a complete renderer document loader.
 
 ## Style field conversion evidence
 
-[the Style field matrix](../ass-rules/ass-style-fields.xml) records the raw-text-to-value
+[the Style field matrix](../reference/ass-style-fields.xml) records the raw-text-to-value
 conversion of each Style field for each pinned renderer. It is separate from
-[the tag matrix](../ass-rules/ass-tags.xml). Style fields have no arity, no prefix
+[the tag matrix](../reference/ass-tags.xml). Style fields have no arity, no prefix
 dispatch and no paren form, so they cannot use the tag schema. The tag matrix
 owns override-tag dispatch. This matrix owns Style value conversion.
 
@@ -158,7 +158,7 @@ This matrix records conversion and drawing evidence. Style validation checks
 colour syntax and the ASS v4+ `Alignment` range. Selected renderer comparisons
 also report two specific BorderStyle differences. ASS033 reports box scaling;
 ASS034 reports mode selection. These rules do not assert complete Style or frame
-equivalence. Their conditions are defined in [the rule catalog](../ass-rules/catalog.md).
+equivalence. Their conditions are defined in [the rule catalog](../reference/catalog.md).
 
 A Style row is not reported only because its value conversion is unresolved. The
 conversion alone does not justify a per-line warning.

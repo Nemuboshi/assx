@@ -131,6 +131,19 @@ Drawing mode is parsed into commands, coordinates, and source spans. The rule re
 
 The drawing AST models `m`, `n`, `l`, `b`, `s`, `p`, and `c`, and preserves drawing state across intervening override blocks. Community references include ASSWipe drawing repair and ASSFoundation's drawing parser.
 
+## ASS030 — Karaoke timing exceeds the event
+
+Renderer-scoped validation reads the `karaoke_cursor` state from the same
+semantic observer that produces the other dialogue findings. It also requires
+source-verified signatures for every contributing karaoke tag. Partially
+consumed arguments, such as `\k200junk`, and inferred-only VSFilterMod
+signatures cannot produce a definitive timing warning. Standalone event analysis
+uses the same evaluator and proof checks, including the default CLI.
+
+The rule sums the `\k`, `\K`, `\kf`, and `\ko` durations. It reports a sum
+that runs past the event end, where the last syllables never reach their
+highlight window. There is no automatic fix.
+
 ## ASS031 — Renderer command interpretation is unresolved
 
 Explicit renderer-scoped validation uses this warning when a command is disabled or build-conditional, matched but semantically unmodeled, backed only by inferred signature evidence, or malformed in a way that prevents a verified interpretation. The finding does not assert a cross-renderer incompatibility and never authorizes an automatic edit. The default CLI also emits this warning for unresolved or ignored cross-renderer compatibility observations. Unverified tracked-state agreement remains one of these observations. See [renderer-scoped lint validation](../packages/lint.md) and [compatibility](../packages/compatibility.md).

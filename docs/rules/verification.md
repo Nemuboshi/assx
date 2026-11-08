@@ -60,7 +60,7 @@ job does not execute xy-VSFilter or VSFilterMod binaries.
 
 ## Renderer evidence
 
-`docs/ass-rules/ass-tags.xml` is the single owner of signatures, scenarios, and
+`docs/reference/ass-tags.xml` is the single owner of signatures, scenarios, and
 source pins. Its header defines the status and evidence vocabulary. Do not
 collapse syntactic acceptance, effective state, cross-renderer compatibility, and
 safe-to-edit equivalence into one flag.

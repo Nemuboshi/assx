@@ -39,15 +39,23 @@ See [font checking](docs/usage/font-checking.md) for catalog scope, JSON, cache 
 
 All analysis uses the lossless concrete syntax tree and pinned profile engine.
 SafeFix application recomputes authorized edits under the caller's primary and compatibility policy.
-See [the evidence contract](docs/rules/verification.md) for evidence scope and limits.
+See [the verification rules](docs/rules/verification.md) for evidence scope and limits.
 
-For diagnostic IDs and explanations, see the [rule catalog](docs/ass-rules/catalog.md). For pretty report behavior, see [diagnostic reports](docs/usage/diagnostic-reports.md).
+For diagnostic IDs and explanations, see the [rule catalog](docs/reference/catalog.md). For pretty report behavior, see [diagnostic reports](docs/usage/diagnostic-reports.md).
 For reproducible performance benchmarks, profiling, and the pinned baseline, see [performance benchmarks](docs/development/performance.md).
 
 ## Development
 
-Use the [documentation index](docs/README.md) to find subject documents.
 Use ASD-STE100 for repository documentation. Keep technical names and evidence exact.
+
+Start from the folder that owns the subject:
+
+- [docs/usage/](docs/usage) states what a user sees.
+- [docs/packages/](docs/packages) states the API contract of one package per page.
+- [docs/architecture/](docs/architecture) states the package graph, the lint flow, and the request paths.
+- [docs/reference/](docs/reference) holds the rule catalog and the evidence matrices.
+- [docs/development/](docs/development) holds the benchmark harness and its baseline.
+- [docs/rules/](docs/rules) states the development rules.
 
 Requires Go 1.27.0 or later. From the repository root:
 

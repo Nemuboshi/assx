@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  ass-style-fields.xsl — presentation layer for docs/ass-rules/ass-style-fields.xml.
+  ass-style-fields.xsl — presentation layer for docs/reference/ass-style-fields.xml.
 
   Data lives only in the XML; this file holds no behavior claims. Referenced by
   <?xml-stylesheet?> in ass-style-fields.xml. Browsers will not fetch this
@@ -8,13 +8,13 @@
   HTML export. Regenerate after editing the XML, from the repo root:
 
     # Linux (xsltproc, from the libxslt package)
-    xsltproc -o docs/ass-rules/ass-style-fields.html docs/ass-rules/ass-style-fields.xsl docs/ass-rules/ass-style-fields.xml
+    xsltproc -o docs/reference/ass-style-fields.html docs/reference/ass-style-fields.xsl docs/reference/ass-style-fields.xml
 
     # Windows (PowerShell)
     $x = New-Object System.Xml.Xsl.XslCompiledTransform
-    $x.Load('docs/ass-rules/ass-style-fields.xsl'); $x.Transform('docs/ass-rules/ass-style-fields.xml', 'docs/ass-rules/ass-style-fields.html')
+    $x.Load('docs/reference/ass-style-fields.xsl'); $x.Transform('docs/reference/ass-style-fields.xml', 'docs/reference/ass-style-fields.html')
 
-  docs/ass-rules/ass-style-fields.html is gitignored: the XML is the source, the HTML is a view.
+  docs/reference/ass-style-fields.html is gitignored: the XML is the source, the HTML is a view.
 -->
 <xsl:stylesheet version="1.0"
                 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"

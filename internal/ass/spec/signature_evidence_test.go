@@ -119,7 +119,7 @@ func validateSignatureEvidence(sig xmlSig, parentVerified string) error {
 // An actual XML mutation test guards the original review finding. Removing a
 // VSFilterMod-only restriction must never fall back to "all renderers".
 func TestMatrixSignatureApplicabilityMutations(t *testing.T) {
-	path := filepath.Join("..", "..", "..", "docs", "ass-rules", "ass-tags.xml")
+	path := filepath.Join("..", "..", "..", "docs", "reference", "ass-tags.xml")
 	raw, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)

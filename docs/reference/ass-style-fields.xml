@@ -3,12 +3,12 @@
 <!--
   ass-style-fields.xml — ASS Style-field conversion matrix.
 
-  This file is separate from docs/ass-rules/ass-tags.xml. The tag matrix owns override-tag
+  This file is separate from docs/reference/ass-tags.xml. The tag matrix owns override-tag
   dispatch. Style fields have no arity, no prefix dispatch and no paren form, so
   they cannot use the tag schema. This matrix owns the raw-text-to-stored-value
   conversion of one Style field per renderer.
 
-  Pins (same commits as docs/ass-rules/ass-tags.xml):
+  Pins (same commits as docs/reference/ass-tags.xml):
     libass      f61db56   ref/renderers/libass
     xy-VSFilter 135a3015  ref/renderers/xy-VSFilter
     VSFilterMod 7a00567   ref/renderers/VSFilterMod

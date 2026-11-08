@@ -128,7 +128,7 @@ setting selects the gate. This scope limit is deliberate.
 
 ## Evidence pipeline and verification
 
-docs/ass-tags.xml is the authoritative per-signature evidence source.
+[the tag matrix](../reference/ass-tags.xml) is the authoritative per-signature evidence source.
 go generate ./internal/ass/renderer produces matrix_generated.go with
 applicability and independently verified renderer masks, citations and raw
 signature shapes. The source digest canonicalizes CRLF and standalone CR to LF

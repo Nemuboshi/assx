@@ -25,65 +25,28 @@ build availability. The shared typed decoder takes the resulting explicit
 policy. Lint does not mutate the registry or widen a universal `TagSpec.Counts`
 list to legalize VSFilterMod-only shapes.
 
-## Diagnostic semantics
+## Diagnostic scope and policy
 
-- A source-verified rejected signature is **ASS001**, with valid forms
-  sourced from the selected profile. The traditional structural checks and
-  pinned rectangle/vector clipping grammar remain strict where evidence is
-  not exhaustive.
-- Malformed values are **ASS002**. Ignored scalar suffix data stays **ASS019**,
-  and raw junk, braces, repeated slashes, and drawing errors retain their
-  previous rule identifiers.
-- Unknown names are **ASS007**. Names shadowed by prefix dispatch are checked
-  as the **actual matched command**: `\\fsvp6` is an invalid `\\fs` argument
-  in the traditional profiles, while it resolves to `\\fsvp` in enabled
-  VSFilterMod builds.
-- **ASS031** covers two observation classes. Renderer-scoped validation uses it
-  for per-profile uncertainty: disabled or build-conditional dispatch, a
-  matched but unmodeled command, inferred signatures, and malformed/unresolved
-  invocation shapes. The compatibility APIs use it for unresolved or ignored
-  cross-renderer observations, including tracked-state agreement that the
-  shared proof gate cannot verify. Verified
-  equal tracked state reports `equivalent` and emits no finding. Neither class
-  asserts a proven incompatibility; **ASS003** reports those. Style field
-  conversion evidence is recorded separately in
-  [the Style field matrix](../ass-rules/ass-style-fields.xml). That matrix names each
-  conversion; it does not by itself resolve the observation.
-- Style value checks are separate from conversion evidence. **ASS011** reports a
-  fractional integer field, **ASS012** reports a float-precision difference, and
-  **ASS022** reports a malformed colour. **ASS032** reports an ASS v4+
-  `Alignment` value outside 1 to 9. ASS032 checks a valid value only; it does not
-  compare renderer byte order or alignment equivalence. Legacy SSA `Alignment`
-  uses a bitfield mapping and is not checked by ASS032.
-- **ASS033** reports verified BorderStyle 3 box-scaling differences.
-  **ASS034** reports the BorderStyle 4 mode difference.
-  They compare declared ASS v4+ Styles only when the relevant resolved fields agree.
-  Their conditions and limits are in [the rule catalog](../ass-rules/catalog.md).
-  Both use separate IDs, physical field spans, and selected renderer pairs.
-  Neither warning supplies edits or claims final pixel differences.
-- VSFilterMod's verified three-argument `\\pos` is allowed only in a build
-  whose extension is enabled. Unknown build capabilities remain unresolved.
-  First-wins effects and reset/style provenance are produced by the
-  semantic evaluator, with no alternate lint state engine.
-- Renderer-scoped **ASS030** reads the `karaoke_cursor` state from the
-  same semantic observer used for other dialogue findings. It also requires
-  source-verified signatures for every contributing karaoke tag. Partially
-  consumed arguments (such as `\\k200junk`) and inferred-only VSFilterMod
-  signatures cannot produce a definitive timing warning. Standalone event
-  analysis uses the same evaluator and proof checks, including the default CLI.
+- A single-profile analysis never supplies SafeFix edits or an edit safety
+  classification. This holds for shared document checks and for the ASS006,
+  ASS013, and font APIs.
+- Target-configured analysis supplies fixes only after it proves every requested
+  profile. Application recomputes the authorized edits under the same primary and
+  compatibility policy.
+- The `renderer` JSON field identifies the pinned profile, including Mod
+  capabilities.
+- Compatibility findings identify both profiles and use physical-line columns.
+  Primary tag findings use dialogue-relative columns. Findings keep stable source
+  ordering.
+- Primary error diagnostics produce exit status 1. Compatibility diagnostics
+  remain warnings.
+- First-wins effects and reset/style provenance come from the semantic evaluator.
+  Lint keeps no second state engine.
 
-The `renderer` JSON field identifies the pinned profile, including Mod capabilities.
-Compatibility findings identify both profiles and use physical-line columns.
-Primary tag findings use dialogue-relative columns. Findings retain stable source ordering.
-Primary error diagnostics produce exit status 1; compatibility diagnostics remain warnings.
-ASS005 remains a portability lint for Mod-only names when the requested scope excludes Mod. A single-profile analysis **never supplies
-SafeFix edits or an edit safety classification**, including on shared
-document checks and the existing ASS006/ASS013/font APIs. Target-configured analysis supplies fixes only after proving every requested profile.
-Application recomputes authorized edits with that same primary and compatibility policy. Differential compatibility is provided separately by the
-[comparison APIs](compatibility.md). Those APIs use ASS003 for
-proven tag and layout differences, ASS033/ASS034 for the specific Style
-differences, and ASS031 for unresolved compatibility observations;
-invocation validity remains the responsibility of the APIs described here.
+The rule catalog owns each condition, severity, and limit:
+[rule catalog](../reference/catalog.md). The profile page owns prefix collisions
+and build availability: [profiles](profiles.md). The comparison APIs own
+differential results: [compatibility](compatibility.md).
 
 ## Regression and performance
 

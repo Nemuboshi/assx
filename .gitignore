@@ -5,6 +5,6 @@ ref/
 /dist/
 /.ci/
 /tools/rendercheck/target/
-/docs/ass-rules/ass-tags.html
+/docs/reference/ass-tags.html
 /docs/todo.md
-/docs/ass-rules/ass-style-fields.html
+/docs/reference/ass-style-fields.html

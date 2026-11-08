@@ -11,7 +11,7 @@
 
 ## Code inspection
 
-Read the [documentation index](../README.md) before code analysis. Use its subject table to select the scope and evidence source.
+Read [the repository README](../../README.md) before code analysis. It names the folder that owns each subject.
 
 Reuse a finding only when its source revision, build scope, and assumptions still apply. Read only the cited source and affected callers needed for the change. Record new evidence and the condition that requires another check.
 
