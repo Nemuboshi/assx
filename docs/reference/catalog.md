@@ -131,6 +131,122 @@ Drawing mode is parsed into commands, coordinates, and source spans. The rule re
 
 The drawing AST models `m`, `n`, `l`, `b`, `s`, `p`, and `c`, and preserves drawing state across intervening override blocks. Community references include ASSWipe drawing repair and ASSFoundation's drawing parser.
 
+## ASS021 — Unterminated override block
+
+An opening brace has no closing brace after it. An escaped `\{` is not an
+opening brace. Both libass and VSFilter render the remainder of the line as
+literal text and apply no tag from that block. The finding points at the opening
+brace and gives the column that starts the literal text.
+
+The rule has no automatic fix. The intended end of the block is not in the
+source.
+
+References: libass [override block start](https://github.com/libass/libass/blob/f61db56/libass/ass_render.c#L2063-L2066); xy-VSFilter [override block scan](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L2952-L2958).
+
+## ASS022 — Malformed style colour
+
+A Style colour field is empty or has no leading digit in its base. A `&H` or
+`0x` field needs a hexadecimal digit after the prefix. A decimal field needs a
+digit. The rule reports one finding per field, at the field value.
+
+libass silently uses opaque black. xy-VSFilter rejects the line and can reload
+the file with another subtitle parser. The rule is an error because the two
+renderers diverge on a valid file.
+
+There is no automatic fix. A valid replacement requires the intended colour.
+
+References: libass [colour conversion](https://github.com/libass/libass/blob/f61db56/libass/ass.c#L338-L342) and [integer prefix parse](https://github.com/libass/libass/blob/f61db56/libass/ass.c#L292-L321); xy-VSFilter [colour field parse](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L1237-L1252), [Style Format parse](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L1553-L1557), and [style colour conversion](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L2775-L2790).
+
+## ASS023 — Keyword case is libass-incompatible
+
+A known keyword differs from the canonical spelling only by case. libass matches
+the prefix case-sensitively. xy-VSFilter lowercases the text first, so it honors
+the line while libass drops it.
+
+A space before the colon breaks both renderers, so only a pure case difference
+is reported. The checked keywords are:
+
+- Script Info: `PlayResX:`, `PlayResY:`, `LayoutResX:`, `LayoutResY:`, `Timer:`, `WrapStyle:`, `ScaledBorderAndShadow:`, `Kerning:`, `YCbCr Matrix:`, `Language:`, `ScriptType:`.
+- Styles: `Format:`, `Style:`.
+- Events: `Format:`, `Dialogue:`, `Comment:`.
+
+The finding covers the keyword and its colon. There is no automatic fix.
+
+References: libass [Script Info keywords](https://github.com/libass/libass/blob/f61db56/libass/ass.c#L824-L846), [Style keywords](https://github.com/libass/libass/blob/f61db56/libass/ass.c#L880-L918), and [Event keywords](https://github.com/libass/libass/blob/f61db56/libass/ass.c#L1015-L1047); xy-VSFilter [keyword lowercasing](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L1440-L1445).
+
+## ASS024 — Custom event Format line
+
+The Events Format line names fields in an order other than the standard v4+ or
+SSA order. libass maps each cell by its Format name. xy-VSFilter ignores the
+Format line and reads fixed positions, so every field after the first difference
+receives another value. A Format line without a Text field gets its own detail,
+because libass then discards every following event line.
+
+The rule reports one finding per Format line, at the Format value. There is no
+automatic fix: a reorder changes what both renderers read.
+
+References: libass [event field names](https://github.com/libass/libass/blob/f61db56/libass/ass.c#L49-L58), [Format parse](https://github.com/libass/libass/blob/f61db56/libass/ass.c#L481-L524), and [event keyword dispatch](https://github.com/libass/libass/blob/f61db56/libass/ass.c#L995-L1010); xy-VSFilter [fixed event positions](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L1455-L1472).
+
+## ASS025 — Event line has fewer fields than Format declares
+
+An event line ends before every Format field has a value. libass discards the
+event. xy-VSFilter throws at the missing cell and rejects the line. The rule
+reports one finding per line at the first event field, as an empty span.
+
+There is no automatic fix. The missing values are not in the source.
+
+References: libass [event cell count](https://github.com/libass/libass/blob/f61db56/libass/ass.c#L455-L472) and [event parse](https://github.com/libass/libass/blob/f61db56/libass/ass.c#L1037-L1045); xy-VSFilter [cell split](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L1284-L1301) and [event line parse](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L1491-L1495).
+
+## ASS026 — Malformed event timecode
+
+A Start or End cell does not have the four-group `H:MM:SS.CS` shape. The fourth
+group counts centiseconds. libass reads a malformed cell as `0:00:00.00`. In
+xy-VSFilter the unexpected separator shifts the later cells and the event is
+discarded.
+
+Start and End produce separate findings, at their own cells. There is no
+automatic fix.
+
+References: libass [timecode parse](https://github.com/libass/libass/blob/f61db56/libass/ass.c#L249-L260) and [event time assignment](https://github.com/libass/libass/blob/f61db56/libass/ass.c#L436-L438); xy-VSFilter [cell split](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L1284-L1301) and [timecode parse](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L1457-L1464).
+
+## ASS027 — Zero or negative event duration
+
+Both timecodes parse, and End is not later than Start. With equal values the
+event has zero duration and never renders. With an earlier End, libass keeps an
+event that never matches a frame and xy-VSFilter drops the entry while parsing.
+
+The rule reports at the End cell. There is no automatic fix.
+
+References: libass [event time assignment](https://github.com/libass/libass/blob/f61db56/libass/ass.c#L515) and [frame time selection](https://github.com/libass/libass/blob/f61db56/libass/ass_render.c#L3384-L3386); xy-VSFilter [entry time check](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L2065) and [render time range](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L2173).
+
+## ASS028 — Layer is not an integer
+
+The Layer cell is empty or is not one complete integer. Both engines accept
+decimal digits with an optional sign, or a `&H`/`0x` hexadecimal value. The rule
+requires the whole cell, because libass stops at the first invalid character
+while xy-VSFilter throws.
+
+libass silently uses layer 0. xy-VSFilter rejects the line. The rule reports at
+the Layer cell and has no automatic fix.
+
+References: libass [integer prefix parse](https://github.com/libass/libass/blob/f61db56/libass/ass.c#L292-L337) and [layer assignment](https://github.com/libass/libass/blob/f61db56/libass/ass.c#L516-L518); xy-VSFilter [cell split](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L1284-L1305) and [Layer read](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/STS.cpp#L1456).
+
+## ASS029 — Effect field is not honored
+
+An empty Effect field is correct. Only `Banner;`, `Scroll up;`, and `Scroll down;`
+change rendering, and each needs integer parameters separated by `;`. `Banner;`
+needs one parameter and each scroll needs three.
+
+One rule ID covers three conditions:
+
+- The name is not one of the three, so every renderer treats the field as a no-op.
+- The name differs in case. libass matches case-sensitively, while both VSFilter forks compare case-insensitively.
+- A recognized name has too few parameters, so the effect has no effect.
+
+The finding covers the Effect cell. There is no automatic fix.
+
+References: libass [effect parse](https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L923-L997); xy-VSFilter [effect parse](https://github.com/Masaiki/xy-VSFilter/blob/135a3015/src/subtitles/RTS.cpp#L1940-L1988); VSFilterMod [effect parse](https://github.com/AmusementClub/VSFilterMod/blob/7a00567e4a49b6310691b9a6791646b2a018bfa2/src/subtitles/RTS.cpp#L2113-L2164).
+
 ## ASS030 — Karaoke timing exceeds the event
 
 Renderer-scoped validation reads the `karaoke_cursor` state from the same
