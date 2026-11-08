@@ -14,7 +14,7 @@ import (
 // No per-tag interface allocations or runtime registration are required.
 
 func (m *evaluator) handleTransformChild(tag ass.Tag, tagSpec spec.TagSpec) SemanticUncertainty {
-	if m.profile.Kind() == renderer.VSFilterMod {
+	if m.profile.RecursiveTransformChildren() {
 		// Mod recursively applies all handlers. Do not publish a static value
 		// for animated assignments or let a later child retain pos3 depth.
 		if tagSpec.Behavior == spec.Assign && len(tagSpec.Slots) != 0 {
@@ -44,7 +44,7 @@ func (m *evaluator) handleTransformChild(tag ass.Tag, tagSpec spec.TagSpec) Sema
 }
 
 func (m *evaluator) consumeTransform(tag ass.Tag, index int) bool {
-	if len(tag.Children) > 0 {
+	if len(m.children[tag.Start]) > 0 {
 		m.markActiveLive()
 	}
 	noEffect := m.transitionHasNoEffect(tag)
@@ -155,8 +155,8 @@ func (m *evaluator) assignmentValues(tag ass.Tag, tagSpec spec.TagSpec, slots []
 	} else {
 		values, valuesKnown = CanonicalTagState(tag, tagSpec, slots)
 	}
-	modReset := tagSpec.VSFilterModOnly && m.profile.Kind() == renderer.VSFilterMod && len(tag.Args) == 0
-	if tag.Name == "ortho" && m.profile.Kind() == renderer.VSFilterMod && len(tag.Args) == 1 {
+	modReset := tagSpec.VSFilterModOnly && len(tag.Args) == 0
+	if tag.Name == "ortho" && len(tag.Args) == 1 {
 		decoded := ass.DecodeExactInteger(tag.Args[0])
 		if decoded.Status != ass.ValueValid || decoded.Integer < -1<<31 || decoded.Integer > 1<<31-1 {
 			return nil, false
@@ -240,10 +240,11 @@ func (m *evaluator) accumulate(tag ass.Tag) SemanticUncertainty {
 }
 
 func (m *evaluator) transitionHasNoEffect(tag ass.Tag) bool {
-	if len(tag.Children) == 0 {
+	if len(m.children[tag.Start]) == 0 {
 		return true
 	}
-	for _, child := range tag.Children {
+	for _, childStart := range m.children[tag.Start] {
+		child := m.operations[childStart].tag
 		tagSpec, known := m.policyFor(child)
 		if !known || child.RepeatedSlashes > 0 || !tagSpec.TransformComparable || RelativeFontSize(child) {
 			return false

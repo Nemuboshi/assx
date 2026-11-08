@@ -45,6 +45,12 @@
   rejects an overlap, a half range, or a range on another value kind.
   Prose range attributes stay documentation; code reads only these fields.
 
+  <meta><behavior renderer="..."> supplies the evaluator modes fixed for one
+  profile: transform-children (static|recursive), effect-in-transform
+  (true|false), and style-transform (none|mod). A <tag><spec renderer="...">
+  row adds a tag-scoped evaluation flag such as position-depth. The generator
+  validates both and emits them without runtime XML reads.
+
   Optional <params exhaustive="libass xy vsm" exhaustive-cite="...">
   explicitly records an independently source-proven complete accepted-arity
   set for those renderers. Verified signatures alone are not an exhaustive
@@ -67,6 +73,11 @@
     <pin renderer="libass" commit="f61db567e6593df3470e91594bcd4ad2d0473aff" path="ref/renderers/libass"/>
     <pin renderer="xy-VSFilter" commit="135a30153a38fa846cb5c39df0f258403e92096e" path="ref/renderers/xy-VSFilter"/>
     <pin renderer="VSFilterMod" commit="7a00567e4a49b6310691b9a6791646b2a018bfa2" path="ref/renderers/VSFilterMod"/>
+
+    <!-- Per-renderer evaluation modes. Omitted fields keep the neutral mode. -->
+    <behavior renderer="libass" transform-children="static" style-transform="none"/>
+    <behavior renderer="xy" transform-children="static" style-transform="none"/>
+    <behavior renderer="vsm" transform-children="recursive" effect-in-transform="true" style-transform="mod"/>
 
     <matching>
       libass: byte-wise case-sensitive prefix match (mystrcmp,
@@ -820,7 +831,8 @@
       A negative value is kept: no renderer clamps or rejects it. libass blends
       val*pwr + old*(1-pwr); xy/vsm assign CalcAnimation(wcstod).
     </scen>
-  </tag>
+    <spec renderer="vsm" position-depth="true"/>
+</tag>
 
   <tag name="move" status="V">
     <params status="V" verified="libass xy vsm" exhaustive="libass xy vsm" exhaustive-cite="libass:libass/ass_parse.c:494-514 xy:src/subtitles/RTS.cpp:2575-2596 vsm:src/subtitles/RTS.cpp:3439-3464" cite="libass:libass/ass_parse.c:494-514 xy:src/subtitles/RTS.cpp:2575-2596 vsm:src/subtitles/RTS.cpp:3439-3464">

@@ -150,6 +150,7 @@ type evaluator struct {
 	activeStyle       string
 	baseValid         bool
 	operations        map[int]resolvedOperation
+	children          map[int][]int
 }
 
 // EvaluateResolved evaluates the lossless CST under one pinned renderer.
@@ -157,15 +158,14 @@ func EvaluateResolved(tree ass.ConcreteDialogue, profile renderer.Profile, optio
 	if options.Observer.Text == nil && !tree.HasCandidates() {
 		return Evaluation{}
 	}
-	if profile.Kind() == renderer.VSFilterMod {
+	if profile.ModStyleTransform() {
 		options.Styles = modStyleStates(options.Styles)
 	}
-	tokens, operations := resolveTokens(tree, profile)
-	return evaluateResolvedCore(tokens, operations, profile, options)
+	return evaluateResolvedCore(resolveTokens(tree, profile), profile, options)
 }
 
 // evaluateResolvedCore runs the state engine over prepared resolution output.
-func evaluateResolvedCore(tokens []semanticToken, operations map[int]resolvedOperation, profile renderer.Profile, options EvaluationOptions) Evaluation {
+func evaluateResolvedCore(built *program, profile renderer.Profile, options EvaluationOptions) Evaluation {
 	name := DialogueStyleLookupName(options.DialogueStyle)
 	m := evaluator{
 		options:       options,
@@ -195,8 +195,9 @@ func evaluateResolvedCore(tokens []semanticToken, operations map[int]resolvedOpe
 			}
 		}
 	}
-	m.operations = operations
-	for _, token := range tokens {
+	m.operations = built.operations
+	m.children = built.children
+	for _, token := range built.tokens {
 		visit(token)
 	}
 	out := make([]NoEffect, 0, len(m.candidates))
@@ -329,7 +330,7 @@ func (m *evaluator) consumeTag(tag ass.Tag) TagEvent {
 		m.blockProofs(&event, reason)
 		return event
 	}
-	if m.profile.Kind() == renderer.VSFilterMod && tag.Name == "pos" && len(tag.Args) == 3 {
+	if tag.Name == "pos" && len(tag.Args) == 3 && m.profile.PositionDepth("pos") {
 		m.applyModPositionDepth(tag, index, &event)
 		return event
 	}
@@ -339,7 +340,7 @@ func (m *evaluator) consumeTag(tag ass.Tag) TagEvent {
 		m.blockProofs(&event, UncertaintyUnresolved)
 		return event
 	}
-	modEffectChild := tag.InTransition && m.profile.Kind() == renderer.VSFilterMod && op.signature == renderer.SignatureVerified &&
+	modEffectChild := tag.InTransition && m.profile.EffectInTransform() && op.signature == renderer.SignatureVerified &&
 		(tag.Name == "pos" || tag.Name == "move" || tag.Name == "org" || tag.Name == "fad" || tag.Name == "fade")
 	if modEffectChild {
 		// Mod reaches effect handlers inside transforms without animation.

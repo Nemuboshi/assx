@@ -42,6 +42,60 @@ func (p Profile) Behavior(name, scenario string) BehaviorEvidence {
 	return BehaviorEvidence{}
 }
 
+type transformChildrenMode uint8
+
+const (
+	transformChildrenStatic transformChildrenMode = iota
+	transformChildrenRecursive
+)
+
+type styleTransformMode uint8
+
+const (
+	styleTransformNone styleTransformMode = iota
+	styleTransformMod
+)
+
+// generatedProfileBehavior holds the evaluation modes fixed for one profile.
+type generatedProfileBehavior struct {
+	transformChildren transformChildrenMode
+	effectInTransform bool
+	styleTransform    styleTransformMode
+}
+
+// generatedTagSpec holds per-renderer evaluation flags for one tag.
+type generatedTagSpec struct {
+	scope         uint8
+	positionDepth bool
+}
+
+// EvaluationModes returns the profile's evaluation modes.
+func (p Profile) EvaluationModes() generatedProfileBehavior { return matrixBehavior[p.kind] }
+
+// RecursiveTransformChildren reports whether transform children apply their
+// handlers recursively instead of publishing a static value.
+func (p Profile) RecursiveTransformChildren() bool {
+	return p.EvaluationModes().transformChildren == transformChildrenRecursive
+}
+
+// EffectInTransform reports whether effect handlers run inside a transform.
+func (p Profile) EffectInTransform() bool { return p.EvaluationModes().effectInTransform }
+
+// ModStyleTransform reports whether Style values use the Mod parsing model.
+func (p Profile) ModStyleTransform() bool {
+	return p.EvaluationModes().styleTransform == styleTransformMod
+}
+
+// PositionDepth reports whether the tag's third argument sets Mod depth.
+func (p Profile) PositionDepth(name string) bool {
+	for _, spec := range matrixTagSpecs[name] {
+		if spec.scope&bit(p.kind) != 0 {
+			return spec.positionDepth
+		}
+	}
+	return false
+}
+
 type tagMeta struct {
 	scenarios          []generatedScenario
 	signatures         []generatedSignature

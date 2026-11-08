@@ -13,11 +13,10 @@ import (
 // projected text, Style layouts, and edited sources each need their own
 // prepared dialogue.
 type PreparedDialogue struct {
-	tree       ass.ConcreteDialogue
-	profile    renderer.Profile
-	tokens     []semanticToken
-	operations map[int]resolvedOperation
-	entries    []resolvedEntry
+	tree    ass.ConcreteDialogue
+	profile renderer.Profile
+	program *program
+	entries []resolvedEntry
 }
 
 // PrepareDialogue resolves every expression in the tree under the profile.
@@ -26,14 +25,8 @@ func PrepareDialogue(ctx context.Context, tree ass.ConcreteDialogue, profile ren
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	tokens, operations, entries := operationsFromTokens(tree, profile, true)
-	return &PreparedDialogue{
-		tree:       tree,
-		profile:    profile,
-		tokens:     tokens,
-		operations: operations,
-		entries:    entries,
-	}, nil
+	built, entries := operationsFromTokens(tree, profile, true)
+	return &PreparedDialogue{tree: tree, profile: profile, program: built, entries: entries}, nil
 }
 
 // Evaluate runs the state engine over the prepared operations under the
@@ -77,10 +70,10 @@ func evaluatePrepared(prepared *PreparedDialogue, options EvaluationOptions) Eva
 		return Evaluation{}
 	}
 	profile := prepared.profile
-	if profile.Kind() == renderer.VSFilterMod {
+	if profile.ModStyleTransform() {
 		options.Styles = modStyleStates(options.Styles)
 	}
-	return evaluateResolvedCore(prepared.tokens, prepared.operations, profile, options)
+	return evaluateResolvedCore(prepared.program, profile, options)
 }
 
 // DialoguePreparations caches prepared dialogue operations for one analysis

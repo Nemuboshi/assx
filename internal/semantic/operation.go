@@ -44,9 +44,18 @@ func (m *evaluator) policyFor(tag ass.Tag) (spec.TagSpec, bool) {
 // matching decisions. Children of a transform are resolved before evaluation,
 // so parent no-effect checks cannot accidentally consult the global name table.
 // A flat explicit stack avoids recursive parsing on adversarial nesting.
-func resolveTokens(tree ass.ConcreteDialogue, profile renderer.Profile) ([]semanticToken, map[int]resolvedOperation) {
-	tokens, operations, _ := operationsFromTokens(tree, profile, false)
-	return tokens, operations
+func resolveTokens(tree ass.ConcreteDialogue, profile renderer.Profile) *program {
+	built, _ := operationsFromTokens(tree, profile, false)
+	return built
+}
+
+// program is one dialogue flattened once per renderer. Transform nesting is a
+// child-index map, not a recursive tree: evaluation walks the token stream and
+// looks up a parent's children by source offset.
+type program struct {
+	tokens     []semanticToken
+	operations map[int]resolvedOperation
+	children   map[int][]int // parent tag start -> child tag starts, in source order
 }
 
 // resolvedEntry is one operation in renderer.Profile.WalkDialogue emission
@@ -62,7 +71,7 @@ type resolvedEntry struct {
 // outputs feed the evaluator. With collectEntries set, the third result
 // replays renderer.Profile.WalkDialogue emission order. One-shot callers pass
 // false, which keeps the walk allocation shape of a plain evaluation.
-func operationsFromTokens(tree ass.ConcreteDialogue, profile renderer.Profile, collectEntries bool) ([]semanticToken, map[int]resolvedOperation, []resolvedEntry) {
+func operationsFromTokens(tree ass.ConcreteDialogue, profile renderer.Profile, collectEntries bool) (*program, []resolvedEntry) {
 	source := tree.Source
 	type entry struct {
 		op     resolvedOperation
@@ -141,22 +150,30 @@ func operationsFromTokens(tree ass.ConcreteDialogue, profile renderer.Profile, c
 			}
 		}
 	}
-	// Populate the borrowed child views bottom-up. No independent parser or
-	// interpreter reconstructs child tag names or argument forms.
+	// Keep the borrowed child views for observers, and build the flat
+	// child-index map the evaluator walks instead of recursing.
 	for i := len(entries) - 1; i >= 0; i-- {
 		if parent := entries[i].parent; parent >= 0 {
 			entries[parent].op.tag.Children = append(entries[parent].op.tag.Children, entries[i].op.tag)
 		}
 	}
+	var children map[int][]int
 	operations := make(map[int]resolvedOperation, len(entries))
 	for i := range entries {
 		slices.Reverse(entries[i].op.tag.Children)
 		operations[entries[i].op.tag.Start] = entries[i].op
+		if parent := entries[i].parent; parent >= 0 {
+			if children == nil {
+				children = make(map[int][]int)
+			}
+			parentStart := entries[parent].op.tag.Start
+			children[parentStart] = append(children[parentStart], entries[i].op.tag.Start)
+		}
 	}
 	for i := range tokens {
 		if tokens[i].hasTag {
 			tokens[i].tag = operations[tokens[i].tag.Start].tag
 		}
 	}
-	return tokens, operations, out
+	return &program{tokens: tokens, operations: operations, children: children}, out
 }

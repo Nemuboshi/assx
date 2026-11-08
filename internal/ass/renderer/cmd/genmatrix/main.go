@@ -45,8 +45,21 @@ type scenario struct {
 	Cite     string `xml:"cite,attr"`
 }
 
+type behavior struct {
+	Renderer          string `xml:"renderer,attr"`
+	TransformChildren string `xml:"transform-children,attr"`
+	EffectInTransform string `xml:"effect-in-transform,attr"`
+	StyleTransform    string `xml:"style-transform,attr"`
+}
+
+type tagSpec struct {
+	Renderer      string `xml:"renderer,attr"`
+	PositionDepth string `xml:"position-depth,attr"`
+}
+
 type tag struct {
 	Name      string     `xml:"name,attr"`
+	Specs     []tagSpec  `xml:"spec"`
 	Scenarios []scenario `xml:"scen"`
 	Params    struct {
 		Exhaustive     string      `xml:"exhaustive,attr"`
@@ -55,8 +68,9 @@ type tag struct {
 	} `xml:"params"`
 }
 type matrix struct {
-	Tags   []tag `xml:"tag"`
-	Groups []struct {
+	Behaviors []behavior `xml:"meta>behavior"`
+	Tags      []tag      `xml:"tag"`
+	Groups    []struct {
 		Names string `xml:"names,attr"`
 	} `xml:"taggroup"`
 }
@@ -322,6 +336,83 @@ func run() error {
 			fmt.Fprintf(&out, "}, exhaustive:%d, exhaustiveCitation:%q},\n", complete, t.Params.ExhaustiveCite)
 		} else {
 			fmt.Fprintln(&out, "}},")
+		}
+	}
+	fmt.Fprintln(&out, "}")
+	var modes [3]struct {
+		transform int
+		effect    bool
+		style     int
+	}
+	for _, row := range m.Behaviors {
+		scope, err := mask(row.Renderer)
+		if err != nil {
+			return fmt.Errorf("behavior: %w", err)
+		}
+		var transform int
+		switch row.TransformChildren {
+		case "", "static":
+		case "recursive":
+			transform = 1
+		default:
+			return fmt.Errorf("behavior: invalid transform-children %q", row.TransformChildren)
+		}
+		var style int
+		switch row.StyleTransform {
+		case "", "none":
+		case "mod":
+			style = 1
+		default:
+			return fmt.Errorf("behavior: invalid style-transform %q", row.StyleTransform)
+		}
+		var effect bool
+		switch row.EffectInTransform {
+		case "", "false":
+		case "true":
+			effect = true
+		default:
+			return fmt.Errorf("behavior: invalid effect-in-transform %q", row.EffectInTransform)
+		}
+		for kind := 0; kind < 3; kind++ {
+			if scope&(1<<kind) != 0 {
+				modes[kind] = struct {
+					transform int
+					effect    bool
+					style     int
+				}{transform, effect, style}
+			}
+		}
+	}
+	fmt.Fprintln(&out, "var matrixBehavior = [3]generatedProfileBehavior{")
+	for _, mode := range modes {
+		fmt.Fprintf(&out, "{transformChildren: %d, effectInTransform: %t, styleTransform: %d},\n", mode.transform, mode.effect, mode.style)
+	}
+	fmt.Fprintln(&out, "}")
+	fmt.Fprintln(&out, "var matrixTagSpecs = map[string][]generatedTagSpec{")
+	for _, t := range m.Tags {
+		var rows []string
+		seen := make(map[uint8]bool)
+		for _, spec := range t.Specs {
+			scope, err := mask(spec.Renderer)
+			if err != nil {
+				return fmt.Errorf("%s spec: %w", t.Name, err)
+			}
+			if seen[scope] {
+				return fmt.Errorf("%s spec: duplicate renderer scope", t.Name)
+			}
+			seen[scope] = true
+			var depth bool
+			switch spec.PositionDepth {
+			case "", "false":
+			case "true":
+				depth = true
+			default:
+				return fmt.Errorf("%s spec: invalid position-depth %q", t.Name, spec.PositionDepth)
+			}
+			rows = append(rows, fmt.Sprintf("{scope: %d, positionDepth: %t}", scope, depth))
+		}
+		if len(rows) != 0 {
+			fmt.Fprintf(&out, "%q: {%s},\n", t.Name, strings.Join(rows, ", "))
 		}
 	}
 	fmt.Fprintln(&out, "}")
