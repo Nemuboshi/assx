@@ -179,9 +179,6 @@ func TestSafeFixCannotUseAModOnlyPrefixProofInDefaultMode(t *testing.T) {
 	if err == nil {
 		t.Fatal("default libass/xy proof accepted removal of the Mod prefix collision")
 	}
-	if mod.Version() == "" {
-		t.Fatal("VSFilterMod test profile has no pinned version")
-	}
 	defaultTargets := fixTargets(defaultFixTargets())
 	if len(defaultTargets) != 2 || defaultTargets[0].Renderer == mod.Kind().String() || defaultTargets[1].Renderer == mod.Kind().String() {
 		t.Fatalf("default proof scope includes VSFilterMod: %#v", defaultTargets)

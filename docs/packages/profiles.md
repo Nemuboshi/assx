@@ -8,8 +8,8 @@ rewrite the CST or assign a global dialect to it.
 All CLI and API validity checks use this profile path.
 The default primary is libass, with xy-VSFilter compatibility targets.
 
-A Profile identifies exactly one renderer source revision, plus build-scoped
-feature states. It is a value type with immutable configuration. The name
+A Profile names one pinned renderer. It is a value type with immutable
+configuration. The name
 dispatch tables are private and read-only. A Result is a detached value:
 source offsets and argument text refer to the original decoded dialogue;
 copies of mutable TagSpec slice fields are made before returning them.
@@ -128,8 +128,7 @@ before hashing, so different Git checkout settings cannot invalidate the
 evidence hash. The generator's -check mode compares canonical line endings;
 .gitattributes also pins the XML and generated Go file to LF on checkout.
 Unverified tag groups become explicit stubs, without inventing signatures.
-A test pins the XML digest to generated code and
-compares source revision hashes to Profile.Version. Existing
+A test pins the XML digest to generated code. Existing
 internal/ass/spec evidence validators remain authoritative.
 
 Optional source-checkout tests independently extract actual dispatch order

@@ -319,8 +319,8 @@ func TestProfilesHaveValueSemanticsAndDetachedResults(t *testing.T) {
 		t.Fatal("shared signature changed")
 	}
 	for _, profile := range p {
-		if len(profile.Version()) != 40 || strings.TrimSpace(profile.Kind().String()) == "" {
-			t.Fatal("bad pinned profile identity")
+		if strings.TrimSpace(profile.Kind().String()) == "" {
+			t.Fatal("bad profile identity")
 		}
 	}
 	var wg sync.WaitGroup

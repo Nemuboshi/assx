@@ -43,18 +43,6 @@ func New(kind Kind) (Profile, error) {
 }
 func Standard(kind Kind) (Profile, error) { return New(kind) }
 func (p Profile) Kind() Kind              { return p.kind }
-func (p Profile) Version() string {
-	switch p.kind {
-	case Libass:
-		return "f61db567e6593df3470e91594bcd4ad2d0473aff"
-	case XYVSFilter:
-		return "135a30153a38fa846cb5c39df0f258403e92096e"
-	case VSFilterMod:
-		return "7a00567e4a49b6310691b9a6791646b2a018bfa2"
-	default:
-		return ""
-	}
-}
 
 type MatchStatus uint8
 

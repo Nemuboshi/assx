@@ -45,21 +45,10 @@ func TestGeneratedMatrixHasNoEvidenceDrift(t *testing.T) {
 		t.Fatalf("unexpected source pin count: %d", len(m.Pins))
 	}
 	for _, pin := range m.Pins {
-		var kind Kind
 		switch pin.Renderer {
-		case "libass":
-			kind = Libass
-		case "xy-VSFilter":
-			kind = XYVSFilter
-		case "VSFilterMod":
-			kind = VSFilterMod
+		case "libass", "xy-VSFilter", "VSFilterMod":
 		default:
 			t.Errorf("unexpected pinned renderer %s", pin.Renderer)
-			continue
-		}
-		p, _ := Standard(kind)
-		if p.Version() != pin.Commit {
-			t.Errorf("renderer pin drift: %s vs %s", p.Version(), pin.Commit)
 		}
 	}
 }
