@@ -133,7 +133,7 @@ comparison, and [contracts](../rules/verification.md) for SafeFix proof scope.
 An unmodeled extension remains a proof barrier.
 
 The CLI exposes `--renderer` and `--compat`.
-JSON and both text presenters identify the pinned scope.
+JSON and both text presenters name the renderer.
 See [usage](../../README.md) and [reports](../usage/diagnostic-reports.md).
 
 ## Representation and cost boundaries

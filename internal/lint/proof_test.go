@@ -28,11 +28,6 @@ func TestSafeFixProofCarriesEveryDefaultRenderer(t *testing.T) {
 		finding.FixProof.Targets[1].Renderer != "xy-VSFilter" {
 		t.Fatalf("default proof scope = %#v", finding.FixProof.Targets)
 	}
-	for _, target := range finding.FixProof.Targets {
-		if target.Version == "" {
-			t.Fatalf("target has no pinned version: %#v", target)
-		}
-	}
 	if len(finding.FixProof.Interpretations) != 2 ||
 		len(finding.FixProof.Interpretations[0].Dialogues) == 0 ||
 		len(finding.FixProof.Interpretations[0].Dialogues[0].Before) == 0 ||

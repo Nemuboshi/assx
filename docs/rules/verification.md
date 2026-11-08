@@ -35,15 +35,15 @@ across a regeneration.
 
 ## SafeFix proof scope
 
-For each fix marked `safe`, assx records every target renderer ID, pinned
-version, source edit range, and the source digest. It stores one full proof for
+For each fix marked `safe`, assx records every target renderer, the source edit
+ranges, and the source digest. It stores one full proof for
 an edit group and numbers the group; the remaining diagnostics carry that
 ordinal in `fix_proof_ref`. The interpretations stay next to the edits,
 including dispatch, signature citation, state, and source provenance.
 
 `--fix` checks the source digest, then rebuilds the evidence from the current
 source and the complete edit group, and compares the rebuild with the submitted
-proof. It does not trust diagnostic scope labels. A subset, revision, source, or
+proof. It does not trust diagnostic scope labels. A subset, source, or
 interpretation mismatch rejects the request. Separate proof groups also require
 combined edit verification before application.
 
@@ -59,7 +59,7 @@ A custom layout cannot borrow the primary renderer's integer field proof. A proo
 for VSFilterMod alone cannot authorize a default fix. `--renderer` selects
 primary validity. `--compat` extends compatibility and proof targets. An explicit
 renderer without compatibility selects only that primary. Profiles are normalized
-by renderer, revision, and build, so different builds remain distinct.
+by renderer.
 Compatibility validity never becomes a primary error.
 
 The proof compares each renderer's interpretation before and after the edit. It

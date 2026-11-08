@@ -235,9 +235,7 @@ func (b *proofBatch) build(edits []FixEditProof, validEdits map[FixEditProof]str
 		for _, dialogue := range profileAfter.Dialogues {
 			byLineAfter[dialogue.Line] = dialogue
 		}
-		target := FixTargetProof{Target: FixTarget{
-			Renderer: profile.Kind().String(), Version: profile.Version(),
-		}}
+		target := FixTargetProof{Target: FixTarget{Renderer: profile.Kind().String()}}
 		for _, dialogueIndex := range affected {
 			baseDialogue := b.beforeDoc.Dialogues[dialogueIndex]
 			beforeEntry, beforePresent := prep.beforeDialogue(baseDialogue.Line)
@@ -282,9 +280,6 @@ func (b *proofBatch) fixTargetsChecked() ([]FixTarget, error) {
 	}
 	targets := fixTargets(b.profiles)
 	for i := range targets {
-		if targets[i].Version == "" {
-			return nil, fmt.Errorf("renderer %s has no pinned version", targets[i].Renderer)
-		}
 		for j := 0; j < i; j++ {
 			if targets[i] == targets[j] {
 				return nil, fmt.Errorf("duplicate renderer target %s", targets[i].Renderer)

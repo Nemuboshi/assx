@@ -23,7 +23,6 @@ type FixEditProof struct {
 
 type FixTarget struct {
 	Renderer string `json:"renderer"`
-	Version  string `json:"version"`
 }
 
 type ProofDialogue struct {
@@ -70,9 +69,7 @@ func buildFixProofBatch(batch *proofBatch, edits []FixEditProof, validEdits map[
 func fixTargets(profiles []renderer.Profile) []FixTarget {
 	targets := make([]FixTarget, 0, len(profiles))
 	for _, profile := range profiles {
-		targets = append(targets, FixTarget{
-			Renderer: profile.Kind().String(), Version: profile.Version(),
-		})
+		targets = append(targets, FixTarget{Renderer: profile.Kind().String()})
 	}
 	return targets
 }
@@ -542,9 +539,6 @@ func profilesFromProof(targets []FixTarget) ([]renderer.Profile, error) {
 		profile, err := renderer.New(kind)
 		if err != nil {
 			return nil, err
-		}
-		if profile.Version() != target.Version {
-			return nil, fmt.Errorf("renderer version changed for %s", target.Renderer)
 		}
 		profiles = append(profiles, profile)
 	}

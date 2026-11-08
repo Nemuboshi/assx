@@ -13,7 +13,7 @@ Duplicate profiles are removed without changing caller order.
 The default CLI selects libass primary and xy-VSFilter compatibility.
 An explicit `--renderer` without `--compat` selects only that primary.
 An explicit empty compatibility value also selects only the primary.
-Target-configured analysis normalizes and sorts profiles by renderer and revision.
+Target-configured analysis normalizes and sorts profiles by renderer.
 Compatibility diagnostics never become primary validity errors.
 Compatibility APIs provide no edits or safety classification.
 SafeFix requires proof for every caller-requested profile.

@@ -150,7 +150,7 @@ func TestScopedDocumentConsumersAndJSON(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if !strings.Contains(string(b), `"renderer":"`+tt.name+`@`) {
+		if !strings.Contains(string(b), `"renderer":"`+tt.name+`"`) {
 			t.Errorf("%s renderer context missing from JSON: %s", tt.name, b)
 		}
 	}
@@ -158,7 +158,7 @@ func TestScopedDocumentConsumersAndJSON(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(string(before), `"renderer":"libass@`) {
+	if !strings.Contains(string(before), `"renderer":"libass"`) {
 		t.Fatalf("default JSON omits pinned primary scope: %s", before)
 	}
 	if !reflect.DeepEqual(modern, AnalyzeDocumentForRenderer(doc, mod)) {

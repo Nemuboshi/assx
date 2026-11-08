@@ -52,7 +52,6 @@ func TestSafeFixRejectsProofTampering(t *testing.T) {
 		name   string
 		change func(*FixProof)
 	}{
-		{"version", func(p *FixProof) { p.Targets[0].Version = "stale" }},
 		{"target subset", func(p *FixProof) { p.Targets = p.Targets[:1] }},
 		{"source edits", func(p *FixProof) { p.SourceEdits = nil }},
 		{"interpretations", func(p *FixProof) { p.Interpretations = nil }},

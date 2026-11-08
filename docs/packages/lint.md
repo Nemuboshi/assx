@@ -33,7 +33,7 @@ list to legalize VSFilterMod-only shapes.
 - Target-configured analysis supplies fixes only after it proves every requested
   profile. Application recomputes the authorized edits under the same primary and
   compatibility policy.
-- The `renderer` JSON field identifies the pinned profile.
+- The `renderer` JSON field names the renderer or renderer pair.
 - Compatibility findings identify both profiles and use physical-line columns.
   Primary tag findings use dialogue-relative columns. Findings keep stable source
   ordering.

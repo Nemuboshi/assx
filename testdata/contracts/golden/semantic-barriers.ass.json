@@ -3598,7 +3598,7 @@
         "column": 1,
         "field": "document/style-layout",
         "detail": "divergent: libass: name=\" Default\" at [214,222), fontname=\" Go Regular\" at [223,234), fontsize=\" 24\" at [235,238), bold=\" 0\" at [239,241), italic=\" 0\" at [242,244), alignment=\" 2\" at [245,247); xy-VSFilter: name=\" Default\" at [214,222), fontname=\" Go Regular\" at [223,234), fontsize=\" 24\" at [235,238), primarycolour=\" 0\" at [239,241), secondarycolour=\" 0\" at [242,244), outlinecolour=\" 2\" at [245,247), backcolour=\"\" at [247,247), bold=\"\" at [247,247), italic=\"\" at [247,247), underline=\"\" at [247,247), strikeout=\"\" at [247,247), scalex=\"\" at [247,247), scaley=\"\" at [247,247), spacing=\"\" at [247,247), angle=\"\" at [247,247), borderstyle=\"\" at [247,247), outline=\"\" at [247,247), shadow=\"\" at [247,247), alignment=\"\" at [247,247), marginl=\"\" at [247,247), marginr=\"\" at [247,247), marginv=\"\" at [247,247), encoding=\"\" at [247,247).",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 208,
           "End": 247
@@ -3619,7 +3619,7 @@
         "column": 1,
         "field": "document/style-layout",
         "detail": "divergent: libass: name=\" Alt\" at [254,258), fontname=\" Go Regular\" at [259,270), fontsize=\" 32\" at [271,274), bold=\" 0\" at [275,277), italic=\" 0\" at [278,280), alignment=\" 7\" at [281,283); xy-VSFilter: name=\" Alt\" at [254,258), fontname=\" Go Regular\" at [259,270), fontsize=\" 32\" at [271,274), primarycolour=\" 0\" at [275,277), secondarycolour=\" 0\" at [278,280), outlinecolour=\" 7\" at [281,283), backcolour=\"\" at [283,283), bold=\"\" at [283,283), italic=\"\" at [283,283), underline=\"\" at [283,283), strikeout=\"\" at [283,283), scalex=\"\" at [283,283), scaley=\"\" at [283,283), spacing=\"\" at [283,283), angle=\"\" at [283,283), borderstyle=\"\" at [283,283), outline=\"\" at [283,283), shadow=\"\" at [283,283), alignment=\"\" at [283,283), marginl=\"\" at [283,283), marginr=\"\" at [283,283), marginv=\"\" at [283,283), encoding=\"\" at [283,283).",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 248,
           "End": 283
@@ -3640,7 +3640,7 @@
         "column": 3,
         "tag": "fs",
         "detail": "Overwritten before any dialogue text used it. A later unmodeled operation prevents proving this fix safe for the selected renderer targets.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "renderer": "libass",
         "sources": [
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_render.c#L1075",
@@ -3661,7 +3661,7 @@
         "column": 29,
         "tag": "clip",
         "detail": "Found 3 arguments; expected 0 or 1 or 2 or 4 for libass.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "renderer": "libass",
         "sources": [
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L405",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L494",
@@ -3686,7 +3686,7 @@
         "tag": "clip",
         "field": "signature",
         "detail": "ignored-or-unsupported: libass: verified rejection; xy-VSFilter: verified rejection.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 450,
           "End": 462
@@ -3706,7 +3706,7 @@
         "column": 3,
         "tag": "fs",
         "detail": "Overwritten before any dialogue text used it. A later unmodeled operation prevents proving this fix safe for the selected renderer targets.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "renderer": "libass",
         "sources": [
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_render.c#L1075",
@@ -3727,7 +3727,7 @@
         "column": 13,
         "tag": "u",
         "detail": "The complete command head has no recognized value; the selected renderer consumes a shorter prefix.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "renderer": "libass",
         "sources": [
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L348",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L1119",
@@ -3747,7 +3747,7 @@
         "tag": "u",
         "field": "application",
         "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 526,
           "End": 537
@@ -3768,7 +3768,7 @@
         "tag": "u",
         "field": "state",
         "detail": "unresolved: libass: underline=unresolved, active Style \"Default\"; xy-VSFilter: underline=unresolved, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 526,
           "End": 537
@@ -3787,7 +3787,7 @@
         "tag": "t",
         "field": "arguments",
         "detail": "unresolved: libass resolves 3 argument(s): \"0\" at [599,600), \"500\" at [601,604), \"\\\\fs30\\\\t(0,100,\\\\frz20)\" at [605,626); xy-VSFilter resolves 3 argument(s): \"0\" at [599,600), \"500\" at [601,604), \"\\\\fs30\\\\t(0,100,\\\\frz20)\" at [605,626).",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 596,
           "End": 627
@@ -3806,7 +3806,7 @@
         "tag": "t",
         "field": "signature",
         "detail": "unresolved: libass: unresolved argument shape; xy-VSFilter: unresolved argument shape.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 596,
           "End": 627
@@ -3825,7 +3825,7 @@
         "tag": "t",
         "field": "application",
         "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 596,
           "End": 627
@@ -3844,7 +3844,7 @@
         "tag": "t",
         "field": "state",
         "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 596,
           "End": 627
@@ -3863,7 +3863,7 @@
         "tag": "t",
         "field": "application",
         "detail": "unresolved: libass: applied=false, ignored=false; xy-VSFilter: applied=false, ignored=false.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 610,
           "End": 626
@@ -3884,7 +3884,7 @@
         "tag": "t",
         "field": "state",
         "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 610,
           "End": 626
@@ -3903,7 +3903,7 @@
         "tag": "k",
         "field": "application",
         "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 627,
           "End": 631
@@ -3924,7 +3924,7 @@
         "tag": "k",
         "field": "state",
         "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 627,
           "End": 631
@@ -3943,7 +3943,7 @@
         "tag": "kf",
         "field": "application",
         "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 631,
           "End": 636
@@ -3964,7 +3964,7 @@
         "tag": "kf",
         "field": "state",
         "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 631,
           "End": 636
@@ -3982,7 +3982,7 @@
         "column": 3,
         "tag": "r",
         "detail": "Override tag references undefined style \"Missing\".",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "renderer": "libass",
         "sources": null
       },
       {
@@ -3997,7 +3997,7 @@
         "tag": "r",
         "field": "application",
         "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 719,
           "End": 728
@@ -4018,7 +4018,7 @@
         "tag": "r",
         "field": "state",
         "detail": "unresolved: libass: no modeled slot transition, active Style \"Missing\"; xy-VSFilter: no modeled slot transition, active Style \"Missing\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 719,
           "End": 728
@@ -4490,7 +4490,7 @@
         "column": 1,
         "field": "document/style-layout",
         "detail": "divergent: libass: name=\" Default\" at [214,222), fontname=\" Go Regular\" at [223,234), fontsize=\" 24\" at [235,238), bold=\" 0\" at [239,241), italic=\" 0\" at [242,244), alignment=\" 2\" at [245,247); xy-VSFilter: name=\" Default\" at [214,222), fontname=\" Go Regular\" at [223,234), fontsize=\" 24\" at [235,238), primarycolour=\" 0\" at [239,241), secondarycolour=\" 0\" at [242,244), outlinecolour=\" 2\" at [245,247), backcolour=\"\" at [247,247), bold=\"\" at [247,247), italic=\"\" at [247,247), underline=\"\" at [247,247), strikeout=\"\" at [247,247), scalex=\"\" at [247,247), scaley=\"\" at [247,247), spacing=\"\" at [247,247), angle=\"\" at [247,247), borderstyle=\"\" at [247,247), outline=\"\" at [247,247), shadow=\"\" at [247,247), alignment=\"\" at [247,247), marginl=\"\" at [247,247), marginr=\"\" at [247,247), marginv=\"\" at [247,247), encoding=\"\" at [247,247).",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 208,
           "End": 247
@@ -4511,7 +4511,7 @@
         "column": 1,
         "field": "document/style-layout",
         "detail": "divergent: libass: name=\" Alt\" at [254,258), fontname=\" Go Regular\" at [259,270), fontsize=\" 32\" at [271,274), bold=\" 0\" at [275,277), italic=\" 0\" at [278,280), alignment=\" 7\" at [281,283); xy-VSFilter: name=\" Alt\" at [254,258), fontname=\" Go Regular\" at [259,270), fontsize=\" 32\" at [271,274), primarycolour=\" 0\" at [275,277), secondarycolour=\" 0\" at [278,280), outlinecolour=\" 7\" at [281,283), backcolour=\"\" at [283,283), bold=\"\" at [283,283), italic=\"\" at [283,283), underline=\"\" at [283,283), strikeout=\"\" at [283,283), scalex=\"\" at [283,283), scaley=\"\" at [283,283), spacing=\"\" at [283,283), angle=\"\" at [283,283), borderstyle=\"\" at [283,283), outline=\"\" at [283,283), shadow=\"\" at [283,283), alignment=\"\" at [283,283), marginl=\"\" at [283,283), marginr=\"\" at [283,283), marginv=\"\" at [283,283), encoding=\"\" at [283,283).",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 248,
           "End": 283
@@ -4532,7 +4532,7 @@
         "column": 3,
         "tag": "fs",
         "detail": "Overwritten before any dialogue text used it. A later unmodeled operation prevents proving this fix safe for the selected renderer targets.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "renderer": "libass",
         "sources": [
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_render.c#L1075",
@@ -4553,7 +4553,7 @@
         "column": 29,
         "tag": "clip",
         "detail": "Found 3 arguments; expected 0 or 1 or 2 or 4 for libass.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "renderer": "libass",
         "sources": [
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L405",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L494",
@@ -4578,7 +4578,7 @@
         "tag": "clip",
         "field": "signature",
         "detail": "ignored-or-unsupported: libass: verified rejection; xy-VSFilter: verified rejection.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 450,
           "End": 462
@@ -4598,7 +4598,7 @@
         "column": 3,
         "tag": "fs",
         "detail": "Overwritten before any dialogue text used it. A later unmodeled operation prevents proving this fix safe for the selected renderer targets.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "renderer": "libass",
         "sources": [
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_render.c#L1075",
@@ -4619,7 +4619,7 @@
         "column": 13,
         "tag": "u",
         "detail": "The complete command head has no recognized value; the selected renderer consumes a shorter prefix.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "renderer": "libass",
         "sources": [
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L348",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L1119",
@@ -4639,7 +4639,7 @@
         "tag": "u",
         "field": "application",
         "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 526,
           "End": 537
@@ -4660,7 +4660,7 @@
         "tag": "u",
         "field": "state",
         "detail": "unresolved: libass: underline=unresolved, active Style \"Default\"; xy-VSFilter: underline=unresolved, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 526,
           "End": 537
@@ -4679,7 +4679,7 @@
         "tag": "t",
         "field": "arguments",
         "detail": "unresolved: libass resolves 3 argument(s): \"0\" at [599,600), \"500\" at [601,604), \"\\\\fs30\\\\t(0,100,\\\\frz20)\" at [605,626); xy-VSFilter resolves 3 argument(s): \"0\" at [599,600), \"500\" at [601,604), \"\\\\fs30\\\\t(0,100,\\\\frz20)\" at [605,626).",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 596,
           "End": 627
@@ -4698,7 +4698,7 @@
         "tag": "t",
         "field": "signature",
         "detail": "unresolved: libass: unresolved argument shape; xy-VSFilter: unresolved argument shape.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 596,
           "End": 627
@@ -4717,7 +4717,7 @@
         "tag": "t",
         "field": "application",
         "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 596,
           "End": 627
@@ -4736,7 +4736,7 @@
         "tag": "t",
         "field": "state",
         "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 596,
           "End": 627
@@ -4755,7 +4755,7 @@
         "tag": "t",
         "field": "application",
         "detail": "unresolved: libass: applied=false, ignored=false; xy-VSFilter: applied=false, ignored=false.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 610,
           "End": 626
@@ -4776,7 +4776,7 @@
         "tag": "t",
         "field": "state",
         "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 610,
           "End": 626
@@ -4795,7 +4795,7 @@
         "tag": "k",
         "field": "application",
         "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 627,
           "End": 631
@@ -4816,7 +4816,7 @@
         "tag": "k",
         "field": "state",
         "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 627,
           "End": 631
@@ -4835,7 +4835,7 @@
         "tag": "kf",
         "field": "application",
         "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 631,
           "End": 636
@@ -4856,7 +4856,7 @@
         "tag": "kf",
         "field": "state",
         "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 631,
           "End": 636
@@ -4874,7 +4874,7 @@
         "column": 3,
         "tag": "r",
         "detail": "Override tag references undefined style \"Missing\".",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "renderer": "libass",
         "sources": null
       },
       {
@@ -4889,7 +4889,7 @@
         "tag": "r",
         "field": "application",
         "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 719,
           "End": 728
@@ -4910,7 +4910,7 @@
         "tag": "r",
         "field": "state",
         "detail": "unresolved: libass: no modeled slot transition, active Style \"Missing\"; xy-VSFilter: no modeled slot transition, active Style \"Missing\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 719,
           "End": 728
@@ -4936,7 +4936,7 @@
         "column": 1,
         "field": "document/style-layout",
         "detail": "divergent: libass: name=\" Default\" at [214,222), fontname=\" Go Regular\" at [223,234), fontsize=\" 24\" at [235,238), bold=\" 0\" at [239,241), italic=\" 0\" at [242,244), alignment=\" 2\" at [245,247); xy-VSFilter: name=\" Default\" at [214,222), fontname=\" Go Regular\" at [223,234), fontsize=\" 24\" at [235,238), primarycolour=\" 0\" at [239,241), secondarycolour=\" 0\" at [242,244), outlinecolour=\" 2\" at [245,247), backcolour=\"\" at [247,247), bold=\"\" at [247,247), italic=\"\" at [247,247), underline=\"\" at [247,247), strikeout=\"\" at [247,247), scalex=\"\" at [247,247), scaley=\"\" at [247,247), spacing=\"\" at [247,247), angle=\"\" at [247,247), borderstyle=\"\" at [247,247), outline=\"\" at [247,247), shadow=\"\" at [247,247), alignment=\"\" at [247,247), marginl=\"\" at [247,247), marginr=\"\" at [247,247), marginv=\"\" at [247,247), encoding=\"\" at [247,247).",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 208,
           "End": 247
@@ -4957,7 +4957,7 @@
         "column": 1,
         "field": "document/style-layout",
         "detail": "divergent: libass: name=\" Alt\" at [254,258), fontname=\" Go Regular\" at [259,270), fontsize=\" 32\" at [271,274), bold=\" 0\" at [275,277), italic=\" 0\" at [278,280), alignment=\" 7\" at [281,283); xy-VSFilter: name=\" Alt\" at [254,258), fontname=\" Go Regular\" at [259,270), fontsize=\" 32\" at [271,274), primarycolour=\" 0\" at [275,277), secondarycolour=\" 0\" at [278,280), outlinecolour=\" 7\" at [281,283), backcolour=\"\" at [283,283), bold=\"\" at [283,283), italic=\"\" at [283,283), underline=\"\" at [283,283), strikeout=\"\" at [283,283), scalex=\"\" at [283,283), scaley=\"\" at [283,283), spacing=\"\" at [283,283), angle=\"\" at [283,283), borderstyle=\"\" at [283,283), outline=\"\" at [283,283), shadow=\"\" at [283,283), alignment=\"\" at [283,283), marginl=\"\" at [283,283), marginr=\"\" at [283,283), marginv=\"\" at [283,283), encoding=\"\" at [283,283).",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 248,
           "End": 283
@@ -4978,7 +4978,7 @@
         "column": 3,
         "tag": "fs",
         "detail": "Overwritten before any dialogue text used it. A later unmodeled operation prevents proving this fix safe for the selected renderer targets.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "renderer": "libass",
         "sources": [
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_render.c#L1075",
@@ -4999,7 +4999,7 @@
         "column": 29,
         "tag": "clip",
         "detail": "Found 3 arguments; expected 0 or 1 or 2 or 4 for libass.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "renderer": "libass",
         "sources": [
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L405",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L494",
@@ -5024,7 +5024,7 @@
         "tag": "clip",
         "field": "signature",
         "detail": "ignored-or-unsupported: libass: verified rejection; xy-VSFilter: verified rejection.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 450,
           "End": 462
@@ -5044,7 +5044,7 @@
         "column": 3,
         "tag": "fs",
         "detail": "Overwritten before any dialogue text used it. A later unmodeled operation prevents proving this fix safe for the selected renderer targets.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "renderer": "libass",
         "sources": [
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_render.c#L1075",
@@ -5065,7 +5065,7 @@
         "column": 13,
         "tag": "u",
         "detail": "The complete command head has no recognized value; the selected renderer consumes a shorter prefix.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "renderer": "libass",
         "sources": [
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L348",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L1119",
@@ -5085,7 +5085,7 @@
         "tag": "u",
         "field": "application",
         "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 526,
           "End": 537
@@ -5106,7 +5106,7 @@
         "tag": "u",
         "field": "state",
         "detail": "unresolved: libass: underline=unresolved, active Style \"Default\"; xy-VSFilter: underline=unresolved, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 526,
           "End": 537
@@ -5125,7 +5125,7 @@
         "tag": "t",
         "field": "arguments",
         "detail": "unresolved: libass resolves 3 argument(s): \"0\" at [599,600), \"500\" at [601,604), \"\\\\fs30\\\\t(0,100,\\\\frz20)\" at [605,626); xy-VSFilter resolves 3 argument(s): \"0\" at [599,600), \"500\" at [601,604), \"\\\\fs30\\\\t(0,100,\\\\frz20)\" at [605,626).",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 596,
           "End": 627
@@ -5144,7 +5144,7 @@
         "tag": "t",
         "field": "signature",
         "detail": "unresolved: libass: unresolved argument shape; xy-VSFilter: unresolved argument shape.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 596,
           "End": 627
@@ -5163,7 +5163,7 @@
         "tag": "t",
         "field": "application",
         "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 596,
           "End": 627
@@ -5182,7 +5182,7 @@
         "tag": "t",
         "field": "state",
         "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 596,
           "End": 627
@@ -5201,7 +5201,7 @@
         "tag": "t",
         "field": "application",
         "detail": "unresolved: libass: applied=false, ignored=false; xy-VSFilter: applied=false, ignored=false.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 610,
           "End": 626
@@ -5222,7 +5222,7 @@
         "tag": "t",
         "field": "state",
         "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 610,
           "End": 626
@@ -5241,7 +5241,7 @@
         "tag": "k",
         "field": "application",
         "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 627,
           "End": 631
@@ -5262,7 +5262,7 @@
         "tag": "k",
         "field": "state",
         "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 627,
           "End": 631
@@ -5281,7 +5281,7 @@
         "tag": "kf",
         "field": "application",
         "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 631,
           "End": 636
@@ -5302,7 +5302,7 @@
         "tag": "kf",
         "field": "state",
         "detail": "unresolved: libass: no modeled slot transition, active Style \"Default\"; xy-VSFilter: no modeled slot transition, active Style \"Default\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 631,
           "End": 636
@@ -5320,7 +5320,7 @@
         "column": 3,
         "tag": "r",
         "detail": "Override tag references undefined style \"Missing\".",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "renderer": "libass",
         "sources": null
       },
       {
@@ -5335,7 +5335,7 @@
         "tag": "r",
         "field": "application",
         "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 719,
           "End": 728
@@ -5356,7 +5356,7 @@
         "tag": "r",
         "field": "state",
         "detail": "unresolved: libass: no modeled slot transition, active Style \"Missing\"; xy-VSFilter: no modeled slot transition, active Style \"Missing\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 719,
           "End": 728

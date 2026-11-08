@@ -13,8 +13,7 @@ import (
 )
 
 type Renderer struct {
-	Name     string `json:"name"`
-	Revision string `json:"revision"`
+	Name string `json:"name"`
 }
 
 type Catalog struct {
@@ -45,7 +44,7 @@ type Result struct {
 
 func Build(path string, profile renderer.Profile, source fontcheck.Source, findings []fontcheck.Finding, usages []fontcheck.Usage) Result {
 	r := Result{Domain: "font", Version: 1, File: path,
-		Renderer: Renderer{Name: profile.Kind().String(), Revision: profile.Version()},
+		Renderer: Renderer{Name: profile.Kind().String()},
 		Catalog:  Catalog{Mode: "system", Directory: source.Directory},
 		Findings: []Diagnostic{}, Unchecked: []fontcheck.Usage{},
 		Limit: "Glyph lookup does not test renderer fallback or shaping.",
@@ -76,7 +75,7 @@ func (r Result) notes() []string {
 	if r.Catalog.Mode == "directory" {
 		catalog = fmt.Sprintf("Font catalog: exclusive directory %q.", r.Catalog.Directory)
 	}
-	return []string{catalog, "Renderer: " + r.Renderer.Name + "@" + r.Renderer.Revision,
+	return []string{catalog, "Renderer: " + r.Renderer.Name,
 		fmt.Sprintf("Unchecked text runs: %d (unknown semantic state).", len(r.Unchecked)), r.Limit}
 }
 

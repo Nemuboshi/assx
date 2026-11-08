@@ -213,7 +213,7 @@ func TestPublishedDiagnosticsRetainRendererContext(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, diagnostic := range message.Params.Diagnostics {
-		if diagnostic.Code == "ASS031" && strings.Contains(diagnostic.Message, "libass@") && strings.Contains(diagnostic.Message, "xy-VSFilter@") {
+		if diagnostic.Code == "ASS031" && strings.Contains(diagnostic.Message, "[libass / xy-VSFilter]") {
 			return
 		}
 	}

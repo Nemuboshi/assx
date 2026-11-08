@@ -38,7 +38,7 @@ func TestDefaultCompatibilityAddsScopedObservations(t *testing.T) {
 		if code := run(append(append([]string{"--format=json"}, args...), path), &out, &errOut); code != 0 {
 			t.Fatalf("compatibility changed primary success: %d %s", code, errOut.String())
 		}
-		paired := strings.Contains(out.String(), " / xy-VSFilter@")
+		paired := strings.Contains(out.String(), " / xy-VSFilter")
 		if paired != (args == nil) {
 			t.Fatalf("compatibility selection not reflected: args=%v paired=%t", args, paired)
 		}

@@ -1891,7 +1891,7 @@
         "column": 1,
         "field": "document/style-layout",
         "detail": "divergent: libass: name=\" Default\" at [214,222), fontname=\" Go Regular\" at [223,234), fontsize=\" 24\" at [235,238), bold=\" 0\" at [239,241), italic=\" 0\" at [242,244), alignment=\" 2\" at [245,247); xy-VSFilter: name=\" Default\" at [214,222), fontname=\" Go Regular\" at [223,234), fontsize=\" 24\" at [235,238), primarycolour=\" 0\" at [239,241), secondarycolour=\" 0\" at [242,244), outlinecolour=\" 2\" at [245,247), backcolour=\"\" at [247,247), bold=\"\" at [247,247), italic=\"\" at [247,247), underline=\"\" at [247,247), strikeout=\"\" at [247,247), scalex=\"\" at [247,247), scaley=\"\" at [247,247), spacing=\"\" at [247,247), angle=\"\" at [247,247), borderstyle=\"\" at [247,247), outline=\"\" at [247,247), shadow=\"\" at [247,247), alignment=\"\" at [247,247), marginl=\"\" at [247,247), marginr=\"\" at [247,247), marginv=\"\" at [247,247), encoding=\"\" at [247,247).",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 208,
           "End": 247
@@ -1912,7 +1912,7 @@
         "column": 1,
         "field": "document/style-layout",
         "detail": "divergent: libass: name=\" Alt\" at [254,258), fontname=\" Go Regular\" at [259,270), fontsize=\" 32\" at [271,274), bold=\" 0\" at [275,277), italic=\" 0\" at [278,280), alignment=\" 7\" at [281,283); xy-VSFilter: name=\" Alt\" at [254,258), fontname=\" Go Regular\" at [259,270), fontsize=\" 32\" at [271,274), primarycolour=\" 0\" at [275,277), secondarycolour=\" 0\" at [278,280), outlinecolour=\" 7\" at [281,283), backcolour=\"\" at [283,283), bold=\"\" at [283,283), italic=\"\" at [283,283), underline=\"\" at [283,283), strikeout=\"\" at [283,283), scalex=\"\" at [283,283), scaley=\"\" at [283,283), spacing=\"\" at [283,283), angle=\"\" at [283,283), borderstyle=\"\" at [283,283), outline=\"\" at [283,283), shadow=\"\" at [283,283), alignment=\"\" at [283,283), marginl=\"\" at [283,283), marginr=\"\" at [283,283), marginv=\"\" at [283,283), encoding=\"\" at [283,283).",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 248,
           "End": 283
@@ -1952,19 +1952,16 @@
           ],
           "targets": [
             {
-              "renderer": "libass",
-              "version": "f61db567e6593df3470e91594bcd4ad2d0473aff"
+              "renderer": "libass"
             },
             {
-              "renderer": "xy-VSFilter",
-              "version": "135a30153a38fa846cb5c39df0f258403e92096e"
+              "renderer": "xy-VSFilter"
             }
           ],
           "interpretations": [
             {
               "target": {
-                "renderer": "libass",
-                "version": "f61db567e6593df3470e91594bcd4ad2d0473aff"
+                "renderer": "libass"
               },
               "dialogues": [
                 {
@@ -2266,8 +2263,7 @@
             },
             {
               "target": {
-                "renderer": "xy-VSFilter",
-                "version": "135a30153a38fa846cb5c39df0f258403e92096e"
+                "renderer": "xy-VSFilter"
               },
               "dialogues": [
                 {
@@ -2590,7 +2586,7 @@
         "column": 3,
         "tag": "fn",
         "detail": "The override tags leave the active Style properties unchanged across dialogue text.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "renderer": "libass",
         "sources": null
       },
       {
@@ -2604,7 +2600,7 @@
         "column": 3,
         "tag": "r",
         "detail": "Override tag references undefined style \"Nonexistent\".",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "renderer": "libass",
         "sources": null
       },
       {
@@ -2618,7 +2614,7 @@
         "column": 35,
         "field": "Style",
         "detail": "Dialogue references undefined style \"NotDefined\".",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "renderer": "libass",
         "sources": null
       },
       {
@@ -2633,7 +2629,7 @@
         "tag": "r",
         "field": "application",
         "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 595,
           "End": 608
@@ -2654,7 +2650,7 @@
         "tag": "r",
         "field": "state",
         "detail": "unresolved: libass: no modeled slot transition, active Style \"Nonexistent\"; xy-VSFilter: no modeled slot transition, active Style \"Nonexistent\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 595,
           "End": 608
@@ -2681,7 +2677,7 @@
         "column": 8,
         "tag": "fn",
         "detail": "Assigns the value already active in every affected state slot.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "renderer": "libass",
         "sources": [
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_render.c#L1075",
@@ -3551,7 +3547,7 @@
         "column": 1,
         "field": "document/style-layout",
         "detail": "divergent: libass: name=\" Default\" at [214,222), fontname=\" Go Regular\" at [223,234), fontsize=\" 24\" at [235,238), bold=\" 0\" at [239,241), italic=\" 0\" at [242,244), alignment=\" 2\" at [245,247); xy-VSFilter: name=\" Default\" at [214,222), fontname=\" Go Regular\" at [223,234), fontsize=\" 24\" at [235,238), primarycolour=\" 0\" at [239,241), secondarycolour=\" 0\" at [242,244), outlinecolour=\" 2\" at [245,247), backcolour=\"\" at [247,247), bold=\"\" at [247,247), italic=\"\" at [247,247), underline=\"\" at [247,247), strikeout=\"\" at [247,247), scalex=\"\" at [247,247), scaley=\"\" at [247,247), spacing=\"\" at [247,247), angle=\"\" at [247,247), borderstyle=\"\" at [247,247), outline=\"\" at [247,247), shadow=\"\" at [247,247), alignment=\"\" at [247,247), marginl=\"\" at [247,247), marginr=\"\" at [247,247), marginv=\"\" at [247,247), encoding=\"\" at [247,247).",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 208,
           "End": 247
@@ -3572,7 +3568,7 @@
         "column": 1,
         "field": "document/style-layout",
         "detail": "divergent: libass: name=\" Alt\" at [254,258), fontname=\" Go Regular\" at [259,270), fontsize=\" 32\" at [271,274), bold=\" 0\" at [275,277), italic=\" 0\" at [278,280), alignment=\" 7\" at [281,283); xy-VSFilter: name=\" Alt\" at [254,258), fontname=\" Go Regular\" at [259,270), fontsize=\" 32\" at [271,274), primarycolour=\" 0\" at [275,277), secondarycolour=\" 0\" at [278,280), outlinecolour=\" 7\" at [281,283), backcolour=\"\" at [283,283), bold=\"\" at [283,283), italic=\"\" at [283,283), underline=\"\" at [283,283), strikeout=\"\" at [283,283), scalex=\"\" at [283,283), scaley=\"\" at [283,283), spacing=\"\" at [283,283), angle=\"\" at [283,283), borderstyle=\"\" at [283,283), outline=\"\" at [283,283), shadow=\"\" at [283,283), alignment=\"\" at [283,283), marginl=\"\" at [283,283), marginr=\"\" at [283,283), marginv=\"\" at [283,283), encoding=\"\" at [283,283).",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 248,
           "End": 283
@@ -3593,7 +3589,7 @@
         "column": 3,
         "tag": "r",
         "detail": "Override tag references undefined style \"Nonexistent\".",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "renderer": "libass",
         "sources": null
       },
       {
@@ -3607,7 +3603,7 @@
         "column": 35,
         "field": "Style",
         "detail": "Dialogue references undefined style \"NotDefined\".",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "renderer": "libass",
         "sources": null
       },
       {
@@ -3622,7 +3618,7 @@
         "tag": "r",
         "field": "application",
         "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 575,
           "End": 588
@@ -3643,7 +3639,7 @@
         "tag": "r",
         "field": "state",
         "detail": "unresolved: libass: no modeled slot transition, active Style \"Nonexistent\"; xy-VSFilter: no modeled slot transition, active Style \"Nonexistent\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 575,
           "End": 588
@@ -3669,7 +3665,7 @@
         "column": 1,
         "field": "document/style-layout",
         "detail": "divergent: libass: name=\" Default\" at [214,222), fontname=\" Go Regular\" at [223,234), fontsize=\" 24\" at [235,238), bold=\" 0\" at [239,241), italic=\" 0\" at [242,244), alignment=\" 2\" at [245,247); xy-VSFilter: name=\" Default\" at [214,222), fontname=\" Go Regular\" at [223,234), fontsize=\" 24\" at [235,238), primarycolour=\" 0\" at [239,241), secondarycolour=\" 0\" at [242,244), outlinecolour=\" 2\" at [245,247), backcolour=\"\" at [247,247), bold=\"\" at [247,247), italic=\"\" at [247,247), underline=\"\" at [247,247), strikeout=\"\" at [247,247), scalex=\"\" at [247,247), scaley=\"\" at [247,247), spacing=\"\" at [247,247), angle=\"\" at [247,247), borderstyle=\"\" at [247,247), outline=\"\" at [247,247), shadow=\"\" at [247,247), alignment=\"\" at [247,247), marginl=\"\" at [247,247), marginr=\"\" at [247,247), marginv=\"\" at [247,247), encoding=\"\" at [247,247).",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 208,
           "End": 247
@@ -3690,7 +3686,7 @@
         "column": 1,
         "field": "document/style-layout",
         "detail": "divergent: libass: name=\" Alt\" at [254,258), fontname=\" Go Regular\" at [259,270), fontsize=\" 32\" at [271,274), bold=\" 0\" at [275,277), italic=\" 0\" at [278,280), alignment=\" 7\" at [281,283); xy-VSFilter: name=\" Alt\" at [254,258), fontname=\" Go Regular\" at [259,270), fontsize=\" 32\" at [271,274), primarycolour=\" 0\" at [275,277), secondarycolour=\" 0\" at [278,280), outlinecolour=\" 7\" at [281,283), backcolour=\"\" at [283,283), bold=\"\" at [283,283), italic=\"\" at [283,283), underline=\"\" at [283,283), strikeout=\"\" at [283,283), scalex=\"\" at [283,283), scaley=\"\" at [283,283), spacing=\"\" at [283,283), angle=\"\" at [283,283), borderstyle=\"\" at [283,283), outline=\"\" at [283,283), shadow=\"\" at [283,283), alignment=\"\" at [283,283), marginl=\"\" at [283,283), marginr=\"\" at [283,283), marginv=\"\" at [283,283), encoding=\"\" at [283,283).",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 248,
           "End": 283
@@ -3711,7 +3707,7 @@
         "column": 3,
         "tag": "r",
         "detail": "Override tag references undefined style \"Nonexistent\".",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "renderer": "libass",
         "sources": null
       },
       {
@@ -3725,7 +3721,7 @@
         "column": 35,
         "field": "Style",
         "detail": "Dialogue references undefined style \"NotDefined\".",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "renderer": "libass",
         "sources": null
       },
       {
@@ -3740,7 +3736,7 @@
         "tag": "r",
         "field": "application",
         "detail": "unresolved: libass: applied=true, ignored=false; xy-VSFilter: applied=true, ignored=false.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 575,
           "End": 588
@@ -3761,7 +3757,7 @@
         "tag": "r",
         "field": "state",
         "detail": "unresolved: libass: no modeled slot transition, active Style \"Nonexistent\"; xy-VSFilter: no modeled slot transition, active Style \"Nonexistent\". Tracked state alone cannot prove rendering compatibility.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 575,
           "End": 588

@@ -53,8 +53,8 @@ func TestFontsCommandReportsDomainAndStaysReadOnly(t *testing.T) {
 			}
 			if format == "json" {
 				var report struct {
-					Domain   string                          `json:"domain"`
-					Renderer struct{ Name, Revision string } `json:"renderer"`
+					Domain   string                `json:"domain"`
+					Renderer struct{ Name string } `json:"renderer"`
 					Findings []struct {
 						ID     string
 						Usages []struct {
@@ -67,7 +67,7 @@ func TestFontsCommandReportsDomainAndStaysReadOnly(t *testing.T) {
 				if err := json.Unmarshal(out.Bytes(), &report); err != nil {
 					t.Fatal(err)
 				}
-				if report.Domain != "font" || report.Renderer.Name != "libass" || report.Renderer.Revision == "" || len(report.Findings) != 2 || len(report.Unchecked) != 1 {
+				if report.Domain != "font" || report.Renderer.Name != "libass" || len(report.Findings) != 2 || len(report.Unchecked) != 1 {
 					t.Fatalf("report = %#v", report)
 				}
 				if report.Findings[0].ID != "FONT002" || len(report.Findings[0].Matched) != 1 {
@@ -139,10 +139,10 @@ func TestFontsCommandEmptyCatalogAndOutputFailure(t *testing.T) {
 
 func TestFontsCommandRendererScope(t *testing.T) {
 	path, fonts, _ := fontCommandFixture(t)
-	for _, tc := range []struct{ flag, name, revision string }{
-		{"libass", "libass", "f61db567e6593df3470e91594bcd4ad2d0473aff"},
-		{"xy-vsfilter", "xy-VSFilter", "135a30153a38fa846cb5c39df0f258403e92096e"},
-		{"vsfiltermod", "VSFilterMod", "7a00567e4a49b6310691b9a6791646b2a018bfa2"},
+	for _, tc := range []struct{ flag, name string }{
+		{"libass", "libass"},
+		{"xy-vsfilter", "xy-VSFilter"},
+		{"vsfiltermod", "VSFilterMod"},
 	} {
 		var out, stderr bytes.Buffer
 		args := []string{"fonts", "check", "--format=json", "--font-dir", fonts, "--renderer", tc.flag}
@@ -151,13 +151,13 @@ func TestFontsCommandRendererScope(t *testing.T) {
 		}
 		var result struct {
 			Renderer struct {
-				Name, Revision string
+				Name string
 			}
 		}
 		if err := json.Unmarshal(out.Bytes(), &result); err != nil {
 			t.Fatal(err)
 		}
-		if result.Renderer.Name != tc.name || result.Renderer.Revision != tc.revision {
+		if result.Renderer.Name != tc.name {
 			t.Fatalf("wrong scope: %#v", result)
 		}
 	}

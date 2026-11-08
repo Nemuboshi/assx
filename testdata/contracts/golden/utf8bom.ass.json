@@ -503,7 +503,7 @@
         "column": 1,
         "field": "document/style-layout",
         "detail": "divergent: libass: name=\" Default\" at [224,232), fontname=\" Go Regular\" at [233,244), fontsize=\" 24\" at [245,248), bold=\" 0\" at [249,251), italic=\" 0\" at [252,254), alignment=\" 2\" at [255,257); xy-VSFilter: name=\" Default\" at [224,232), fontname=\" Go Regular\" at [233,244), fontsize=\" 24\" at [245,248), primarycolour=\" 0\" at [249,251), secondarycolour=\" 0\" at [252,254), outlinecolour=\" 2\" at [255,257), backcolour=\"\" at [257,257), bold=\"\" at [257,257), italic=\"\" at [257,257), underline=\"\" at [257,257), strikeout=\"\" at [257,257), scalex=\"\" at [257,257), scaley=\"\" at [257,257), spacing=\"\" at [257,257), angle=\"\" at [257,257), borderstyle=\"\" at [257,257), outline=\"\" at [257,257), shadow=\"\" at [257,257), alignment=\"\" at [257,257), marginl=\"\" at [257,257), marginr=\"\" at [257,257), marginv=\"\" at [257,257), encoding=\"\" at [257,257).",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 218,
           "End": 257
@@ -524,7 +524,7 @@
         "column": 1,
         "field": "document/style-layout",
         "detail": "divergent: libass: name=\" Alt\" at [265,269), fontname=\" Go Regular\" at [270,281), fontsize=\" 32\" at [282,285), bold=\" 0\" at [286,288), italic=\" 0\" at [289,291), alignment=\" 7\" at [292,294); xy-VSFilter: name=\" Alt\" at [265,269), fontname=\" Go Regular\" at [270,281), fontsize=\" 32\" at [282,285), primarycolour=\" 0\" at [286,288), secondarycolour=\" 0\" at [289,291), outlinecolour=\" 7\" at [292,294), backcolour=\"\" at [294,294), bold=\"\" at [294,294), italic=\"\" at [294,294), underline=\"\" at [294,294), strikeout=\"\" at [294,294), scalex=\"\" at [294,294), scaley=\"\" at [294,294), spacing=\"\" at [294,294), angle=\"\" at [294,294), borderstyle=\"\" at [294,294), outline=\"\" at [294,294), shadow=\"\" at [294,294), alignment=\"\" at [294,294), marginl=\"\" at [294,294), marginr=\"\" at [294,294), marginv=\"\" at [294,294), encoding=\"\" at [294,294).",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 259,
           "End": 294
@@ -556,19 +556,16 @@
           ],
           "targets": [
             {
-              "renderer": "libass",
-              "version": "f61db567e6593df3470e91594bcd4ad2d0473aff"
+              "renderer": "libass"
             },
             {
-              "renderer": "xy-VSFilter",
-              "version": "135a30153a38fa846cb5c39df0f258403e92096e"
+              "renderer": "xy-VSFilter"
             }
           ],
           "interpretations": [
             {
               "target": {
-                "renderer": "libass",
-                "version": "f61db567e6593df3470e91594bcd4ad2d0473aff"
+                "renderer": "libass"
               },
               "dialogues": [
                 {
@@ -741,8 +738,7 @@
             },
             {
               "target": {
-                "renderer": "xy-VSFilter",
-                "version": "135a30153a38fa846cb5c39df0f258403e92096e"
+                "renderer": "xy-VSFilter"
               },
               "dialogues": [
                 {
@@ -936,7 +932,7 @@
         "column": 3,
         "tag": "fs",
         "detail": "Overwritten before any dialogue text used it.",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff",
+        "renderer": "libass",
         "sources": [
           "https://github.com/libass/libass/blob/f61db56/libass/ass_parse.c#L584",
           "https://github.com/libass/libass/blob/f61db56/libass/ass_render.c#L1075",
@@ -1445,7 +1441,7 @@
         "column": 1,
         "field": "document/style-layout",
         "detail": "divergent: libass: name=\" Default\" at [224,232), fontname=\" Go Regular\" at [233,244), fontsize=\" 24\" at [245,248), bold=\" 0\" at [249,251), italic=\" 0\" at [252,254), alignment=\" 2\" at [255,257); xy-VSFilter: name=\" Default\" at [224,232), fontname=\" Go Regular\" at [233,244), fontsize=\" 24\" at [245,248), primarycolour=\" 0\" at [249,251), secondarycolour=\" 0\" at [252,254), outlinecolour=\" 2\" at [255,257), backcolour=\"\" at [257,257), bold=\"\" at [257,257), italic=\"\" at [257,257), underline=\"\" at [257,257), strikeout=\"\" at [257,257), scalex=\"\" at [257,257), scaley=\"\" at [257,257), spacing=\"\" at [257,257), angle=\"\" at [257,257), borderstyle=\"\" at [257,257), outline=\"\" at [257,257), shadow=\"\" at [257,257), alignment=\"\" at [257,257), marginl=\"\" at [257,257), marginr=\"\" at [257,257), marginv=\"\" at [257,257), encoding=\"\" at [257,257).",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 218,
           "End": 257
@@ -1466,7 +1462,7 @@
         "column": 1,
         "field": "document/style-layout",
         "detail": "divergent: libass: name=\" Alt\" at [265,269), fontname=\" Go Regular\" at [270,281), fontsize=\" 32\" at [282,285), bold=\" 0\" at [286,288), italic=\" 0\" at [289,291), alignment=\" 7\" at [292,294); xy-VSFilter: name=\" Alt\" at [265,269), fontname=\" Go Regular\" at [270,281), fontsize=\" 32\" at [282,285), primarycolour=\" 0\" at [286,288), secondarycolour=\" 0\" at [289,291), outlinecolour=\" 7\" at [292,294), backcolour=\"\" at [294,294), bold=\"\" at [294,294), italic=\"\" at [294,294), underline=\"\" at [294,294), strikeout=\"\" at [294,294), scalex=\"\" at [294,294), scaley=\"\" at [294,294), spacing=\"\" at [294,294), angle=\"\" at [294,294), borderstyle=\"\" at [294,294), outline=\"\" at [294,294), shadow=\"\" at [294,294), alignment=\"\" at [294,294), marginl=\"\" at [294,294), marginr=\"\" at [294,294), marginv=\"\" at [294,294), encoding=\"\" at [294,294).",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 259,
           "End": 294
@@ -1495,7 +1491,7 @@
         "column": 1,
         "field": "document/style-layout",
         "detail": "divergent: libass: name=\" Default\" at [224,232), fontname=\" Go Regular\" at [233,244), fontsize=\" 24\" at [245,248), bold=\" 0\" at [249,251), italic=\" 0\" at [252,254), alignment=\" 2\" at [255,257); xy-VSFilter: name=\" Default\" at [224,232), fontname=\" Go Regular\" at [233,244), fontsize=\" 24\" at [245,248), primarycolour=\" 0\" at [249,251), secondarycolour=\" 0\" at [252,254), outlinecolour=\" 2\" at [255,257), backcolour=\"\" at [257,257), bold=\"\" at [257,257), italic=\"\" at [257,257), underline=\"\" at [257,257), strikeout=\"\" at [257,257), scalex=\"\" at [257,257), scaley=\"\" at [257,257), spacing=\"\" at [257,257), angle=\"\" at [257,257), borderstyle=\"\" at [257,257), outline=\"\" at [257,257), shadow=\"\" at [257,257), alignment=\"\" at [257,257), marginl=\"\" at [257,257), marginr=\"\" at [257,257), marginv=\"\" at [257,257), encoding=\"\" at [257,257).",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 218,
           "End": 257
@@ -1516,7 +1512,7 @@
         "column": 1,
         "field": "document/style-layout",
         "detail": "divergent: libass: name=\" Alt\" at [265,269), fontname=\" Go Regular\" at [270,281), fontsize=\" 32\" at [282,285), bold=\" 0\" at [286,288), italic=\" 0\" at [289,291), alignment=\" 7\" at [292,294); xy-VSFilter: name=\" Alt\" at [265,269), fontname=\" Go Regular\" at [270,281), fontsize=\" 32\" at [282,285), primarycolour=\" 0\" at [286,288), secondarycolour=\" 0\" at [289,291), outlinecolour=\" 7\" at [292,294), backcolour=\"\" at [294,294), bold=\"\" at [294,294), italic=\"\" at [294,294), underline=\"\" at [294,294), strikeout=\"\" at [294,294), scalex=\"\" at [294,294), scaley=\"\" at [294,294), spacing=\"\" at [294,294), angle=\"\" at [294,294), borderstyle=\"\" at [294,294), outline=\"\" at [294,294), shadow=\"\" at [294,294), alignment=\"\" at [294,294), marginl=\"\" at [294,294), marginr=\"\" at [294,294), marginv=\"\" at [294,294), encoding=\"\" at [294,294).",
-        "renderer": "libass@f61db567e6593df3470e91594bcd4ad2d0473aff / xy-VSFilter@135a30153a38fa846cb5c39df0f258403e92096e",
+        "renderer": "libass / xy-VSFilter",
         "source_span": {
           "Start": 259,
           "End": 294

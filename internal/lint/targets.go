@@ -18,7 +18,7 @@ type AnalysisTargets struct {
 func (targets AnalysisTargets) Profiles() []renderer.Profile {
 	profiles := append([]renderer.Profile{targets.Primary}, targets.Compatibility...)
 	slices.SortFunc(profiles, func(a, b renderer.Profile) int {
-		return cmp.Or(cmp.Compare(a.Kind(), b.Kind()), cmp.Compare(a.Version(), b.Version()))
+		return cmp.Compare(a.Kind(), b.Kind())
 	})
 	return slices.CompactFunc(profiles, func(a, b renderer.Profile) bool {
 		return a == b
@@ -32,7 +32,7 @@ func DefaultAnalysisTargets() AnalysisTargets {
 	return AnalysisTargets{Primary: libass, Compatibility: []renderer.Profile{xy}}
 }
 
-// ProfileScope identifies the pinned renderer and revision.
+// ProfileScope names the renderer. The pinned revision is internal.
 func ProfileScope(profile renderer.Profile) string {
-	return profile.Kind().String() + "@" + profile.Version()
+	return profile.Kind().String()
 }

@@ -79,7 +79,7 @@ func TestHoverUsesPinnedRendererEvidenceAndIgnoresPlainText(t *testing.T) {
 	}
 	request := languageParams(t, uri, position)
 	hover, err := server.hover(t.Context(), request)
-	if err != nil || hover == nil || !strings.Contains(hover.Contents.Value, "libass@") || !strings.Contains(hover.Contents.Value, "rejected") {
+	if err != nil || hover == nil || !strings.Contains(hover.Contents.Value, "libass:") || !strings.Contains(hover.Contents.Value, "rejected") {
 		t.Fatalf("libass hover = %+v, %v", hover, err)
 	}
 	configured, err := parseSettings(jsontext.Value(`{"assx":{"primaryRenderer":"vsfiltermod","compatibilityRenderers":[]}}`))
@@ -88,7 +88,7 @@ func TestHoverUsesPinnedRendererEvidenceAndIgnoresPlainText(t *testing.T) {
 	}
 	server.settings = configured
 	hover, err = server.hover(t.Context(), request)
-	if err != nil || hover == nil || !strings.Contains(hover.Contents.Value, "VSFilterMod@") || !strings.Contains(hover.Contents.Value, "verified") {
+	if err != nil || hover == nil || !strings.Contains(hover.Contents.Value, "VSFilterMod:") || !strings.Contains(hover.Contents.Value, "verified") {
 		t.Fatalf("Mod hover = %+v, %v", hover, err)
 	}
 	plain, err := doc.index.Position(strings.Index(text, "😀"))

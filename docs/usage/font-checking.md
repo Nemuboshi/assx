@@ -12,7 +12,7 @@ assx fonts check --renderer xy-vsfilter file.ass
 assx fonts check --renderer vsfiltermod file.ass
 ```
 
-The default primary renderer is libass. The report includes the pinned revision.
+The default primary renderer is libass. The report names it.
 Font checks use one primary renderer. They do not accept `--compat`, `--fix`, or `--unsafe-fix`.
 The command does not change the ASS file or font files. Catalog scans can update the metadata cache.
 
@@ -39,7 +39,7 @@ JSON version 1 is an object with these fields:
 - `domain`: `font`.
 - `version`: `1`.
 - `file`: input path.
-- `renderer`: name and pinned revision.
+- `renderer`: name.
 - `catalog`: `system` or `directory` mode, plus the exclusive directory when specified.
 - `findings`: font IDs, informational severity, details, usages, missing characters, and selected faces.
 - `unchecked`: text runs with unknown effective state.
