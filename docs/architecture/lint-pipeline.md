@@ -51,10 +51,11 @@ flowchart LR
   P --> PREP["lint.PrepareDocument → one view per target"]
   PREP --> DISC["lint.Discover → lint.Session"]
   DISC --> V["primary profile pass: document checks → []Diagnostic"]
-  V --> DIA["per dialogue: semantic.PrepareDialogue, EachOperation → []Diagnostic"]
+  V --> DIA["primary dialogue pass: PrepareDialogue, EachOperation → []Diagnostic"]
   DIA --> PORT["portability pass → []Diagnostic"]
   PORT --> COMP["compatibility pass: semantic.CompareDocument → []Diagnostic"]
-  COMP --> ASM["assemble: merge observations, derive severity"]
+  COMP --> OBS["compared resolutions → observations"]
+  OBS --> ASM["assemble: merge observations, derive severity"]
   ASM --> SCOPE["sort, dedupe"]
   SCOPE --> CAND["candidates: SafeFix with edits"]
   CAND --> PROOF["ProveFixes → []Diagnostic with FixProof"]
@@ -65,6 +66,13 @@ flowchart LR
 `lint.Discover` records candidates and never builds a proof. It prepares the
 document once, so validation, compatibility, and the redundant-Style collector
 share one projected view and one resolved expression per profile.
+
+The primary renderer runs the dialogue rules. A compared renderer does not run
+them again: its resolved operations become observations, and assembly fills the
+primary observation. Compared observations cover conditions that resolution
+decides: `arity`, `unknown-tag`, and `unresolved`. A lint-side value check,
+karaoke, layout, or drawing check stays primary-only, because a compared
+resolution says nothing about it.
 
 ## State and ownership
 

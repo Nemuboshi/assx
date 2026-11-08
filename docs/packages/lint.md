@@ -27,9 +27,14 @@ list to legalize VSFilterMod-only shapes.
 
 ## Finding model
 
-One diagnostic is one condition at one span. `renderers` lists one observation
-per selected renderer, primary first, with the status that renderer produced.
+One diagnostic is one condition at one span. `renderers` lists the observations
+that decided it, primary first, with the status that renderer produced.
 `scenario` refines conditions that have several causes.
+
+The primary renderer runs the dialogue rules and its observation is always
+present. A compared renderer reports only resolution-level conditions: `arity`,
+`unknown-tag`, and `unresolved`. Lint-side value checks, karaoke, layout, and
+drawing stay primary-only, because a compared resolution does not decide them.
 
 `severity` is derived from the observations, not stored per rule: an error-class
 condition is an error only when the primary observation is `rejected`; otherwise
@@ -44,7 +49,8 @@ replaces the derived severity and can disable the condition entirely.
 - Target-configured analysis supplies fixes only after it proves every requested
   profile. Application recomputes the authorized edits under the same primary and
   compatibility policy.
-- One finding lists one observation per selected renderer, primary first.
+- A finding lists the observations that decided it, primary first. A compared
+  observation appears only for a resolution-level condition.
 - Compatibility observations name every compared renderer. Primary tag findings
   use dialogue-relative columns; document findings use physical-line columns.
   Findings keep stable source ordering.

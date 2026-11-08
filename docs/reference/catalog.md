@@ -13,7 +13,8 @@ severity:
 - `severity` is derived: an error-class condition is an `error` only when the
   primary renderer rejects it; otherwise it is a `warning`. Decorative
   conditions stay `suggestion`.
-- `renderers` records one status per selected renderer (`accepted`, `rejected`,
+- `renderers` records a status for each selected renderer that decided the
+  condition (`accepted`, `rejected`,
   `ignored`, `unknown`, `unmodeled`, `inferred`).
 
 `error` exits with status 1. `warning` and `suggestion` exit successfully.

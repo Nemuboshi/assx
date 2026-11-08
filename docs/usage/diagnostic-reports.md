@@ -10,7 +10,7 @@ Compatibility observations use physical-line columns and are not offset again by
 Their `field` identifies the comparison dimension. `source_span` supplies an absolute decoded-byte range.
 Standalone compatibility maps this range through the Dialogue Text offset.
 Renderer names do not affect source spans.
-Fix badges and counts authorize each edit against its proof and resolve grouped proof references, including after JSON round trips. Findings list one observation per renderer; the presenter prints the names in order. Missing or unmatched ranges get a point marker at the diagnostic location. The presenter never infers a source range from a proposed edit.
+Fix badges and counts authorize each edit against its proof and resolve grouped proof references, including after JSON round trips. Findings list the observations that decided the condition, and the primary renderer is always present; the presenter prints the names in order. Missing or unmatched ranges get a point marker at the diagnostic location. The presenter never infers a source range from a proposed edit.
 
 Lint diagnostics carry decoded-byte `SourceSpan` ranges at their creation sites. New ranges do not change legacy JSON fields. Compatibility `source_span` remains in JSON and survives a JSON round trip. The presenter uses a span only when it lies on the reported physical line. Otherwise, it keeps the previous CLI caret location.
 
