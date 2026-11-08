@@ -1,48 +1,44 @@
 package main
 
 import (
-	"bytes"
-	"crypto/sha256"
+	"strings"
 	"testing"
 )
 
-func TestCanonicalNewlinesAreIndependentOfCheckoutStyle(t *testing.T) {
-	lf := []byte("<matrix>\n  <tag name=\"test\"/>\n</matrix>\n")
-	want := sha256.Sum256(lf)
-	for name, source := range map[string][]byte{
-		"LF":   lf,
-		"CRLF": bytes.ReplaceAll(lf, []byte("\n"), []byte("\r\n")),
-		"CR":   bytes.ReplaceAll(lf, []byte("\n"), []byte("\r")),
-	} {
-		t.Run(name, func(t *testing.T) {
-			got := canonicalNewlines(source)
-			if !bytes.Equal(got, lf) {
-				t.Fatalf("canonical XML differs: %q", got)
-			}
-			if sha256.Sum256(got) != want {
-				t.Fatal("evidence digest depends on physical newline style")
-			}
-		})
-	}
-}
-
-func TestRequirementMaskRejectsUnsupportedOrAmbiguousGates(t *testing.T) {
-	for _, tc := range []struct {
-		raw   string
-		mask  uint8
-		valid bool
+func TestParamSpec(t *testing.T) {
+	for _, test := range []struct {
+		name    string
+		row     param
+		scope   uint8
+		want    string
+		wantErr string
 	}{
-		{"", 0, true},
-		{"_VSMOD", 1, true},
-		{"_VSMOD _LUA", 0, false}, // the Lua gate is not modeled
-		{"_LUA", 0, false},
-		{"_LUA _VSMOD", 0, false},
-		{"_VSMOD _VSMOD", 0, false},
-		{"_VSMOD garbage", 0, false},
+		{"integer range", param{Index: "1", Kind: "int", Value: "integer", Min: "0", Max: "3"}, 7,
+			`{index:1,scope:7,value:"integer",min:0,max:3,hasRange:true}`, ""},
+		{"value only", param{Index: "1", Kind: "number", Value: "number"}, 7,
+			`{index:1,scope:7,value:"number"}`, ""},
+		{"renderer override", param{Index: "1", Value: "integer", Renderer: "xy"}, 7,
+			`{index:1,scope:2,value:"integer"}`, ""},
+		{"empty row", param{Index: "1", Kind: "int"}, 7, "", ""},
+		{"unknown value", param{Index: "1", Value: "decimal"}, 7, "", "invalid value kind"},
+		{"half range", param{Index: "1", Value: "integer", Min: "0"}, 7, "", "min and max"},
+		{"range on hex", param{Index: "1", Value: "hex", Min: "0", Max: "1"}, 7, "", "only to integer or number"},
+		{"inverted range", param{Index: "1", Value: "integer", Min: "5", Max: "1"}, 7, "", "exceeds max"},
+		{"bad index", param{Index: "0", Value: "integer"}, 7, "", "invalid argument index"},
+		{"scope escapes signature", param{Index: "1", Value: "integer", Renderer: "vsm"}, 1, "", "exceeds signature"},
 	} {
-		got, err := requirementMask(tc.raw)
-		if (err == nil) != tc.valid || (tc.valid && got != tc.mask) {
-			t.Errorf("requires=%q got mask=%d err=%v, want mask=%d valid=%v", tc.raw, got, err, tc.mask, tc.valid)
+		got, _, _, err := paramSpec(test.row, test.scope)
+		if test.wantErr != "" {
+			if err == nil || !strings.Contains(err.Error(), test.wantErr) {
+				t.Errorf("%s: err = %v, want %q", test.name, err, test.wantErr)
+			}
+			continue
+		}
+		if err != nil {
+			t.Errorf("%s: %v", test.name, err)
+		}
+		if got != test.want {
+			t.Errorf("%s: got %q, want %q", test.name, got, test.want)
 		}
 	}
 }

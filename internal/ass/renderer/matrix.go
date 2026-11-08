@@ -14,6 +14,7 @@ type generatedSignature struct {
 	verified uint8
 	requires featureMask // per-signature guards, not command-name dispatch
 	citation string
+	params   []generatedParam // structured argument value fields
 }
 type generatedScenario struct {
 	id       string

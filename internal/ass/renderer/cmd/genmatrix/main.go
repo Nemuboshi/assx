@@ -16,13 +16,23 @@ import (
 	"strings"
 )
 
+type param struct {
+	Index    string `xml:"i,attr"`
+	Kind     string `xml:"kind,attr"`
+	Value    string `xml:"value,attr"`
+	Min      string `xml:"min,attr"`
+	Max      string `xml:"max,attr"`
+	Renderer string `xml:"renderer,attr"`
+}
+
 type signature struct {
-	N        string `xml:"n,attr"`
-	Form     string `xml:"form,attr"`
-	Scope    string `xml:"renderer,attr"`
-	Verified string `xml:"verified,attr"`
-	Requires string `xml:"requires,attr"`
-	Cite     string `xml:"cite,attr"`
+	N        string  `xml:"n,attr"`
+	Form     string  `xml:"form,attr"`
+	Scope    string  `xml:"renderer,attr"`
+	Verified string  `xml:"verified,attr"`
+	Requires string  `xml:"requires,attr"`
+	Cite     string  `xml:"cite,attr"`
+	Params   []param `xml:"p"`
 }
 type scenario struct {
 	ID       string `xml:"id,attr"`
@@ -49,6 +59,59 @@ type matrix struct {
 	Groups []struct {
 		Names string `xml:"names,attr"`
 	} `xml:"taggroup"`
+}
+
+var valueKinds = map[string]string{
+	"integer": "integer", "number": "number", "hex": "hex", "bold": "bold",
+	"font": "font", "list": "list", "rect": "rect", "none": "none",
+}
+
+// paramSpec validates one argument row and returns its generated form.
+// The attribute subset is optional: a row without value, min, or max leaves
+// the fallback tag table in charge.
+func paramSpec(row param, sigScope uint8) (string, int, uint8, error) {
+	if row.Value == "" && row.Min == "" && row.Max == "" {
+		return "", 0, 0, nil
+	}
+	if _, ok := valueKinds[row.Value]; !ok {
+		return "", 0, 0, fmt.Errorf("invalid value kind %q", row.Value)
+	}
+	if (row.Min == "") != (row.Max == "") {
+		return "", 0, 0, fmt.Errorf("min and max must be set together")
+	}
+	scope := sigScope
+	if row.Renderer != "" {
+		var err error
+		scope, err = mask(row.Renderer)
+		if err != nil {
+			return "", 0, 0, err
+		}
+		if scope&^sigScope != 0 {
+			return "", 0, 0, fmt.Errorf("parameter scope %q exceeds signature scope", row.Renderer)
+		}
+	}
+	index, err := strconv.Atoi(row.Index)
+	if err != nil || index < 1 {
+		return "", 0, 0, fmt.Errorf("invalid argument index %q", row.Index)
+	}
+	if row.Min == "" {
+		return fmt.Sprintf("{index:%d,scope:%d,value:%q}", index, scope, row.Value), index, scope, nil
+	}
+	lo, err := strconv.Atoi(row.Min)
+	if err != nil {
+		return "", 0, 0, fmt.Errorf("invalid min %q", row.Min)
+	}
+	hi, err := strconv.Atoi(row.Max)
+	if err != nil {
+		return "", 0, 0, fmt.Errorf("invalid max %q", row.Max)
+	}
+	if lo > hi {
+		return "", 0, 0, fmt.Errorf("min %d exceeds max %d", lo, hi)
+	}
+	if row.Value != "integer" && row.Value != "number" {
+		return "", 0, 0, fmt.Errorf("range applies only to integer or number values, got %q", row.Value)
+	}
+	return fmt.Sprintf("{index:%d,scope:%d,value:%q,min:%d,max:%d,hasRange:true}", index, scope, row.Value, lo, hi), index, scope, nil
 }
 
 func mask(fields string) (uint8, error) {
@@ -181,11 +244,31 @@ func run() error {
 			default:
 				return fmt.Errorf("%s: invalid form %q", t.Name, s.Form)
 			}
+			var params []string
+			seenScope := make(map[int]uint8)
+			for _, row := range s.Params {
+				generated, index, scope, err := paramSpec(row, sc)
+				if err != nil {
+					return fmt.Errorf("%s/%d: %w", t.Name, n, err)
+				}
+				if generated == "" {
+					continue
+				}
+				if seenScope[index]&scope != 0 {
+					return fmt.Errorf("%s/%d: overlapping parameter rows for argument %d", t.Name, n, index)
+				}
+				seenScope[index] |= scope
+				params = append(params, generated)
+			}
 			fmt.Fprintf(&out, "{count:%d,form:%s,scope:%d,verified:%d,", n, form, sc, v)
 			if requires != 0 {
 				fmt.Fprintf(&out, "requires:%d,", requires)
 			}
-			fmt.Fprintf(&out, "citation:%q},", s.Cite)
+			fmt.Fprintf(&out, "citation:%q", s.Cite)
+			if len(params) != 0 {
+				fmt.Fprintf(&out, ",params:[]generatedParam{%s}", strings.Join(params, ","))
+			}
+			fmt.Fprint(&out, "},")
 		}
 		complete, e := mask(t.Params.Exhaustive)
 		if e != nil {

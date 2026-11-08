@@ -4,7 +4,6 @@ import (
 	"strings"
 
 	"assx/internal/ass"
-	"assx/internal/ass/spec"
 )
 
 // Pinned first-match branch order: libass/libass/ass_parse.c:355-916.
@@ -126,13 +125,7 @@ func (p Profile) Resolve(expr ass.ConcreteExpression, source string) Result {
 			}
 		}
 	}
-	s, known := spec.TagSpecs[r.Name]
-	if p.kind == VSFilterMod {
-		if mod, ok := spec.VSFilterModTagSpecs[r.Name]; ok {
-			s, known = mod, true
-		}
-	}
-	if known {
+	if s, known := p.CommandSpec(r.Name, len(r.Args), r.Form); known {
 		r.Policy = s
 		r.Policy.Slots = append([]string(nil), s.Slots...)
 		r.Policy.Counts = append([]int(nil), s.Counts...)
