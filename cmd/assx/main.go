@@ -55,11 +55,10 @@ func run(args []string, stdout, stderr io.Writer) int {
 	forceASS := flags.Bool("force-ass", false, "analyze unrecognized ASS input explicitly")
 	rendererName := flags.String("renderer", "libass", "primary renderer: libass, xy-vsfilter, or vsfiltermod")
 	compatNames := flags.String("compat", "", "additional compatibility renderers (comma-separated)")
-	modBuildName := flags.String("mod-build", "unknown", "VSFilterMod build capability: unknown, enabled, or disabled")
 	// Usage and fallback diagnostics on stderr are best-effort: their write
 	// failures cannot be reported through the same failing stream.
 	flags.Usage = func() {
-		_, _ = fmt.Fprintln(stderr, "Usage: assx [lint] [--format pretty|plain|json] [--renderer=libass|xy-vsfilter|vsfiltermod] [--compat=RENDERERS] [--mod-build=unknown|enabled|disabled] [--explain] [--fix] [--unsafe-fix] [--force-ass] file.ass")
+		_, _ = fmt.Fprintln(stderr, "Usage: assx [lint] [--format pretty|plain|json] [--renderer=libass|xy-vsfilter|vsfiltermod] [--compat=RENDERERS] [--explain] [--fix] [--unsafe-fix] [--force-ass] file.ass")
 	}
 	if err := flags.Parse(args); err != nil {
 		if strings.Contains(err.Error(), "flag provided but not defined: -check-fonts") || strings.Contains(err.Error(), "flag provided but not defined: -font-dir") {
@@ -79,7 +78,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return 2
 	}
 
-	targets, err := parseAnalysisTargets(flags, *rendererName, *compatNames, *modBuildName)
+	targets, err := parseAnalysisTargets(flags, *rendererName, *compatNames)
 	if err != nil {
 		_, _ = fmt.Fprintln(stderr, err)
 		return 2

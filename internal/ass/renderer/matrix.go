@@ -7,10 +7,6 @@ package renderer
 // must never become a proof of validity or safe rewriting.
 type featureMask uint8
 
-const (
-	requiresMod featureMask = 1 << iota // _VSMOD
-)
-
 type generatedSignature struct {
 	count    int
 	form     Form
@@ -39,11 +35,7 @@ type BehaviorEvidence struct {
 func (p Profile) Behavior(name, scenario string) BehaviorEvidence {
 	for _, row := range matrixTags[name].scenarios {
 		if row.id == scenario {
-			verified := row.verified&bit(p.kind) != 0
-			if p.kind == VSFilterMod && p.signatureAvailability(row.requires) != SignatureAvailable {
-				verified = false
-			}
-			return BehaviorEvidence{Outcome: row.outcomes[p.kind], Verified: verified, Citation: row.citation}
+			return BehaviorEvidence{Outcome: row.outcomes[p.kind], Verified: row.verified&bit(p.kind) != 0, Citation: row.citation}
 		}
 	}
 	return BehaviorEvidence{}

@@ -12,7 +12,7 @@ import (
 // The lint warning must never be more certain about the karaoke cursor than
 // the single P05 state machine that all renderer-aware consumers share.
 func TestReviewKaraokeCursorUsesP05State(t *testing.T) {
-	lib, xy, mod, _, _ := scopedProfiles(t)
+	lib, xy, mod := scopedProfiles(t)
 	for _, tc := range []struct {
 		name        string
 		profile     renderer.Profile
@@ -57,7 +57,7 @@ func TestReviewKaraokeCursorUsesP05State(t *testing.T) {
 }
 
 func TestReviewRendererScopedKaraokeDocumentWarnings(t *testing.T) {
-	lib, xy, mod, _, _ := scopedProfiles(t)
+	lib, xy, mod := scopedProfiles(t)
 	for _, tc := range []struct {
 		name       string
 		profile    renderer.Profile

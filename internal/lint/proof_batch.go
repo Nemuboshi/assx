@@ -136,11 +136,6 @@ type proofAfterKey struct {
 // match the original single-call pipeline, so rejected attempts report
 // identical failures and accepted proofs keep identical identity bytes.
 func (b *proofBatch) build(edits []FixEditProof, validEdits map[FixEditProof]struct{}) (*FixProof, error) {
-	for _, profile := range b.profiles {
-		if profile.Kind() == renderer.VSFilterMod && profile.Build().Mod == renderer.FeatureUnknown {
-			return nil, fmt.Errorf("VSFilterMod proof requires a known Mod capability")
-		}
-	}
 	if len(b.profiles) == 0 {
 		return nil, fmt.Errorf("SafeFix proof has no renderer targets")
 	}
@@ -243,7 +238,7 @@ func (b *proofBatch) build(edits []FixEditProof, validEdits map[FixEditProof]str
 		}
 		target := FixTargetProof{Target: FixTarget{
 			Renderer: profile.Kind().String(), Version: profile.Version(),
-			Capabilities: proofCapabilities(profile.Kind(), profile.Build()),
+			Capabilities: proofCapabilities(profile.Kind()),
 		}}
 		for _, dialogueIndex := range affected {
 			baseDialogue := b.beforeDoc.Dialogues[dialogueIndex]

@@ -21,17 +21,16 @@ func TestSettingsUseDefaultTargetsAndValidateBuildGates(t *testing.T) {
 	if err != nil || len(explicit.Options.Targets.Compatibility) != 0 {
 		t.Fatalf("explicit primary must not retain default compatibility: %+v, %v", explicit, err)
 	}
-	settings, err := parseSettings(jsontext.Value(`{"assx":{"primaryRenderer":"vsfiltermod","compatibilityRenderers":["libass"],"vsfilterMod":{"mod":"enabled"},"rules":{"ASS007":{"disabled":true}}}}`))
+	settings, err := parseSettings(jsontext.Value(`{"assx":{"primaryRenderer":"vsfiltermod","compatibilityRenderers":["libass"],"rules":{"ASS007":{"disabled":true}}}}`))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if settings.Options.Targets.Primary.Kind() != renderer.VSFilterMod || settings.Options.Targets.Primary.Build().Mod != renderer.FeatureEnabled || len(settings.Options.Targets.Compatibility) != 1 || settings.Options.Targets.Compatibility[0].Kind() != renderer.Libass || len(settings.Options.Rules) != 1 || settings.Options.Rules[0].ID != lint.IssueUnknownTag {
+	if settings.Options.Targets.Primary.Kind() != renderer.VSFilterMod || len(settings.Options.Targets.Compatibility) != 1 || settings.Options.Targets.Compatibility[0].Kind() != renderer.Libass || len(settings.Options.Rules) != 1 || settings.Options.Rules[0].ID != lint.IssueUnknownTag {
 		t.Fatalf("settings = %+v", settings)
 	}
 	for _, invalid := range []string{
 		`{"assx":{"primaryRenderer":"bogus"}}`,
 		`{"assx":{"vsfilterMod":{"mod":"yes"}}}`,
-		`{"assx":{"vsfilterMod":{"lua":"disabled"}}}`,
 		`{"assx":{"rules":{"UNKNOWN":{"disabled":true}}}}`,
 		`{"assx":{"compatibilityRenderers":["libass","libass"]}}`,
 	} {

@@ -13,7 +13,7 @@ func portabilityDiagnostics(dialogue ass.Dialogue, targets AnalysisTargets) []Di
 			return nil
 		}
 	}
-	mod, _ := renderer.New(renderer.VSFilterMod, renderer.Build{Mod: renderer.FeatureEnabled})
+	mod, _ := renderer.Standard(renderer.VSFilterMod)
 	analyzer := dialogueAnalyzer{line: dialogue.Line, textStart: dialogue.TextStart}
 	mod.WalkDialogue(ass.ParseConcreteDialogue(dialogue.Text), func(result renderer.Result, nested bool) bool {
 		if (result.Status == renderer.Matched || result.Status == renderer.Disabled) && result.HasPolicy && result.Policy.VSFilterModOnly {

@@ -10,7 +10,7 @@ import (
 )
 
 func TestModScalarStateAndProvenance(t *testing.T) {
-	profile := mustMod(t, renderer.FeatureEnabled)
+	profile := mustMod(t)
 	for _, tc := range []struct{ source, slot, value string }{
 		{`{\z1.25}A`, "z_depth", "100:100"},
 		{`{\frs1.29}A`, "font_orient", "12:12"},
@@ -37,7 +37,7 @@ func TestModScalarStateAndProvenance(t *testing.T) {
 }
 
 func TestModStyleDefaultsAndOriginalBareReset(t *testing.T) {
-	profile := mustMod(t, renderer.FeatureEnabled)
+	profile := mustMod(t)
 	styles := map[string]StyleState{
 		"Default": CanonicalStyleState(map[string]string{"fontsize": "20"}),
 		"Other": {Slots: map[string]bool{"z_depth": true}, Values: map[string]StateValue{
@@ -89,29 +89,26 @@ func TestModStyleDefaultsAndOriginalBareReset(t *testing.T) {
 	}
 }
 
-func TestModDefaultsPreserveExplicitUnknownAndBuildScope(t *testing.T) {
+func TestModDefaultsPreserveExplicitUnknown(t *testing.T) {
 	styles := map[string]StyleState{"Default": {Values: map[string]StateValue{"z_depth": UnknownValue()}}}
-	for _, feature := range []renderer.Feature{renderer.FeatureEnabled, renderer.FeatureDisabled, renderer.FeatureUnknown} {
-		profile := mustMod(t, feature)
-		EvaluateResolved(ass.ParseConcreteDialogue(`{\r}A`), profile, EvaluationOptions{
-			Styles: styles, DialogueStyle: "Default",
-			Observer: Observer{Text: func(_ string, _ int, state StateView) {
-				if state.Value("z_depth").Known {
-					t.Error("explicit unknown depth became a zero default")
-				}
-				if state.Value("font_orient").Known != (feature == renderer.FeatureEnabled) {
-					t.Errorf("orientation default leaked across build scope %v", feature)
-				}
-			}},
-		})
-	}
+	EvaluateResolved(ass.ParseConcreteDialogue(`{\r}A`), mustMod(t), EvaluationOptions{
+		Styles: styles, DialogueStyle: "Default",
+		Observer: Observer{Text: func(_ string, _ int, state StateView) {
+			if state.Value("z_depth").Known {
+				t.Error("explicit unknown depth became a zero default")
+			}
+			if !state.Value("font_orient").Known {
+				t.Error("pinned build lost its orientation default")
+			}
+		}},
+	})
 	if styles["Default"].Slots != nil || len(styles["Default"].Values) != 1 {
 		t.Fatal("default insertion mutated caller maps")
 	}
 }
 
 func TestModUnknownStyleDoesNotInventDefaults(t *testing.T) {
-	profile := mustMod(t, renderer.FeatureEnabled)
+	profile := mustMod(t)
 	for _, source := range []string{`{\z}A`, `{\ortho2}A`, `{\rMissing\z}A`} {
 		EvaluateResolved(ass.ParseConcreteDialogue(source), profile, EvaluationOptions{
 			Observer: Observer{Text: func(_ string, _ int, state StateView) {
@@ -124,7 +121,7 @@ func TestModUnknownStyleDoesNotInventDefaults(t *testing.T) {
 }
 
 func TestModPositionDepthLatchResetAndTransform(t *testing.T) {
-	profile := mustMod(t, renderer.FeatureEnabled)
+	profile := mustMod(t)
 	for _, tc := range []struct {
 		source, depth string
 		owner         int
@@ -172,7 +169,7 @@ func TestModPositionDepthLatchResetAndTransform(t *testing.T) {
 }
 
 func TestModUnverifiedValuesAndShapesStayUnknown(t *testing.T) {
-	profile := mustMod(t, renderer.FeatureEnabled)
+	profile := mustMod(t)
 	for _, source := range []string{`{\z(1,2)}A`, `{\z()}A`, `{\z1junk}A`, `{\z1e300}A`, `{\frs214748364.8}A`, `{\ortho2147483648}A`, `{\fshp(2,3)}A`, "{\\ortho\u00a02}A", "{\\z\u00a0}A"} {
 		var last TagEvent
 		EvaluateResolved(ass.ParseConcreteDialogue(source), profile, EvaluationOptions{
@@ -186,7 +183,7 @@ func TestModUnverifiedValuesAndShapesStayUnknown(t *testing.T) {
 }
 
 func TestModTransformAssignmentsAndComplexLatchBarriers(t *testing.T) {
-	profile := mustMod(t, renderer.FeatureEnabled)
+	profile := mustMod(t)
 	for _, source := range []string{`{\t(0,100,\z2)}A`, `{\t(0,100,\frs2)}A`, `{\t(0,100,\fsvp2)}A`, `{\t(0,100,\fshp2)}A`, `{\t(0,100,\ortho1)}A`, `{\t(0,100,\pos(1,2,3)\z2)}A`} {
 		EvaluateResolved(ass.ParseConcreteDialogue(source), profile, EvaluationOptions{
 			Observer: Observer{Text: func(_ string, _ int, state StateView) {
@@ -210,7 +207,7 @@ func TestModTransformAssignmentsAndComplexLatchBarriers(t *testing.T) {
 }
 
 func TestMoveRejectedShapeDoesNotClaimPositionLatch(t *testing.T) {
-	for _, profile := range []renderer.Profile{mustProfile(t, renderer.Libass), mustProfile(t, renderer.XYVSFilter), mustMod(t, renderer.FeatureEnabled)} {
+	for _, profile := range []renderer.Profile{mustProfile(t, renderer.Libass), mustProfile(t, renderer.XYVSFilter), mustMod(t)} {
 		var events []TagEvent
 		EvaluateResolved(ass.ParseConcreteDialogue(`{\move(1,2,3,4,5,6,7,8)\pos(9,10)}A`), profile, EvaluationOptions{
 			Observer: Observer{Tag: func(event TagEvent, state StateView) {
@@ -227,7 +224,7 @@ func TestMoveRejectedShapeDoesNotClaimPositionLatch(t *testing.T) {
 }
 
 func TestModUnverifiedPositionCannotPublishDepth(t *testing.T) {
-	profile := mustMod(t, renderer.FeatureEnabled)
+	profile := mustMod(t)
 	for _, source := range []string{`{\posSuffix(1,2,3)}A`, "{\\pos(1,2,\u00a03)}A"} {
 		EvaluateResolved(ass.ParseConcreteDialogue(source), profile, EvaluationOptions{
 			Observer: Observer{Text: func(_ string, _ int, state StateView) {
@@ -240,7 +237,7 @@ func TestModUnverifiedPositionCannotPublishDepth(t *testing.T) {
 }
 
 func TestModFadRemainsReachableAndLatched(t *testing.T) {
-	for _, profile := range []renderer.Profile{mustProfile(t, renderer.Libass), mustProfile(t, renderer.XYVSFilter), mustMod(t, renderer.FeatureEnabled), mustMod(t, renderer.FeatureDisabled)} {
+	for _, profile := range []renderer.Profile{mustProfile(t, renderer.Libass), mustProfile(t, renderer.XYVSFilter), mustMod(t)} {
 		var events []TagEvent
 		EvaluateResolved(ass.ParseConcreteDialogue(`{\fad(10,20)\r\fad(30,40)}A`), profile, EvaluationOptions{Observer: Observer{Tag: func(event TagEvent, _ StateView) { events = append(events, event) }}})
 		if len(events) != 3 || events[0].Match != renderer.Matched || !events[0].Applied || events[2].Applied {

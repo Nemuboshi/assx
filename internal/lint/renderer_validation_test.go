@@ -10,7 +10,7 @@ import (
 	"assx/internal/ass/renderer"
 )
 
-func scopedProfiles(t *testing.T) (renderer.Profile, renderer.Profile, renderer.Profile, renderer.Profile, renderer.Profile) {
+func scopedProfiles(t *testing.T) (renderer.Profile, renderer.Profile, renderer.Profile) {
 	t.Helper()
 	lib, err := renderer.Standard(renderer.Libass)
 	if err != nil {
@@ -20,19 +20,11 @@ func scopedProfiles(t *testing.T) (renderer.Profile, renderer.Profile, renderer.
 	if err != nil {
 		t.Fatal(err)
 	}
-	enabled, err := renderer.New(renderer.VSFilterMod, renderer.Build{Mod: renderer.FeatureEnabled})
+	mod, err := renderer.New(renderer.VSFilterMod)
 	if err != nil {
 		t.Fatal(err)
 	}
-	unknown, err := renderer.New(renderer.VSFilterMod, renderer.Build{Mod: renderer.FeatureUnknown})
-	if err != nil {
-		t.Fatal(err)
-	}
-	disabled, err := renderer.New(renderer.VSFilterMod, renderer.Build{Mod: renderer.FeatureDisabled})
-	if err != nil {
-		t.Fatal(err)
-	}
-	return lib, xy, enabled, unknown, disabled
+	return lib, xy, mod
 }
 
 func hasIssue(ds []Diagnostic, id string) bool {
@@ -45,7 +37,7 @@ func hasIssue(ds []Diagnostic, id string) bool {
 }
 
 func TestScopedValidityPreservesDefaultStrictness(t *testing.T) {
-	lib, xy, enabled, unknown, disabled := scopedProfiles(t)
+	lib, xy, mod := scopedProfiles(t)
 	for _, tt := range []struct {
 		name                string
 		profile             renderer.Profile
@@ -53,9 +45,7 @@ func TestScopedValidityPreservesDefaultStrictness(t *testing.T) {
 	}{
 		{"libass", lib, true, false},
 		{"xy", xy, true, false},
-		{"mod enabled", enabled, false, false},
-		{"mod unknown", unknown, false, true},
-		{"mod disabled", disabled, true, false},
+		{"mod", mod, false, false},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			dialogue := ass.Dialogue{Line: 1, Text: `{\pos(1,2,3)}A`}
@@ -77,7 +67,7 @@ func TestScopedValidityPreservesDefaultStrictness(t *testing.T) {
 }
 
 func TestScopedPrefixCollisionsAndJunk(t *testing.T) {
-	lib, xy, mod, unknown, _ := scopedProfiles(t)
+	lib, xy, mod := scopedProfiles(t)
 	for _, raw := range []string{`\fsvp6`, `\frs10`, `\blend(add)`} {
 		for _, traditional := range []renderer.Profile{lib, xy} {
 			got := AnalyzeForRenderer(ass.Dialogue{Line: 3, Text: "{" + raw + "}X"}, traditional)
@@ -92,9 +82,6 @@ func TestScopedPrefixCollisionsAndJunk(t *testing.T) {
 		if hasIssue(got, IssueInvalidValue) || hasIssue(got, IssueUnknownTag) || hasIssue(got, IssueVSFilterModTag) {
 			t.Errorf("mod %s uses the wrong command: %#v", raw, got)
 		}
-		if got := AnalyzeForRenderer(ass.Dialogue{Line: 3, Text: "{" + raw + "}X"}, unknown); !hasIssue(got, IssueRendererUnresolved) {
-			t.Errorf("unknown mod capabilities treated %s as confirmed: %#v", raw, got)
-		}
 	}
 	for _, profile := range []renderer.Profile{lib, xy, mod} {
 		ds := AnalyzeForRenderer(ass.Dialogue{Line: 1, Text: `{\fs20junk}A`}, profile)
@@ -105,7 +92,7 @@ func TestScopedPrefixCollisionsAndJunk(t *testing.T) {
 }
 
 func TestScopedMalformedFormsNestedAndState(t *testing.T) {
-	lib, xy, mod, _, _ := scopedProfiles(t)
+	lib, xy, mod := scopedProfiles(t)
 	for _, profile := range []renderer.Profile{lib, xy, mod} {
 		for _, raw := range []string{`{\clip(1,2,3)}A`, `{\iclip(1,2,3)}A`} {
 			if ds := AnalyzeForRenderer(ass.Dialogue{Line: 1, Text: raw}, profile); !hasIssue(ds, IssueArgumentCount) {
@@ -133,7 +120,7 @@ func TestScopedMalformedFormsNestedAndState(t *testing.T) {
 }
 
 func TestScopedDocumentConsumersAndJSON(t *testing.T) {
-	lib, _, mod, _, _ := scopedProfiles(t)
+	lib, _, mod := scopedProfiles(t)
 	source := "[Script Info]\nPlayResX: 1920\nPlayResY: 1080\nLayoutResX: 1920\nLayoutResY: 1080\nYCbCr Matrix: None\n" +
 		"[V4+ Styles]\nFormat: Name, Fontname, Fontsize\nStyle: Default,Arial,20\n" +
 		"[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n" +
@@ -180,7 +167,7 @@ func TestScopedDocumentConsumersAndJSON(t *testing.T) {
 }
 
 func TestScopedDrawingAndSyntaxSurviveMigration(t *testing.T) {
-	lib, _, _, _, _ := scopedProfiles(t)
+	lib, _, _ := scopedProfiles(t)
 	ds := AnalyzeForRenderer(ass.Dialogue{Line: 1, Text: `{\p1}m 0 {\fs20}l 3{\p0}X{garbage\fs20}{\fnArial`}, lib)
 	if !hasIssue(ds, IssueMalformedDrawing) || !hasIssue(ds, IssueOverrideJunk) ||
 		!hasIssue(ds, IssueUnterminatedBlock) {
@@ -212,7 +199,7 @@ func BenchmarkAnalyzeDocumentRenderer(b *testing.B) {
 }
 
 func TestScopedDiagnosticLocationsAndCertainty(t *testing.T) {
-	lib, _, mod, unknown, _ := scopedProfiles(t)
+	lib, _, mod := scopedProfiles(t)
 	for _, tc := range []struct {
 		profile  renderer.Profile
 		source   string
@@ -221,7 +208,6 @@ func TestScopedDiagnosticLocationsAndCertainty(t *testing.T) {
 	}{
 		{lib, `{\pos(1,2,3)}A`, IssueArgumentCount, "pos", Error},
 		{mod, `{\pos(1,2,3,4)}A`, IssueArgumentCount, "pos", Error},
-		{unknown, `{\pos(1,2,3)}A`, IssueRendererUnresolved, "pos", Warning},
 		{lib, `{\fsvp6}A`, IssueInvalidValue, "fs", Error},
 		{mod, `{\posBogus}A`, IssueRendererUnresolved, "pos", Warning},
 		{lib, `{\pos(1,2}A`, IssueRendererUnresolved, "pos", Warning},
@@ -244,7 +230,7 @@ func TestScopedDiagnosticLocationsAndCertainty(t *testing.T) {
 }
 
 func TestScopedExistingConsumerJSONContext(t *testing.T) {
-	_, xy, _, _, _ := scopedProfiles(t)
+	_, xy, _ := scopedProfiles(t)
 	got := AnalyzeNoEffectsForRenderer(ass.Dialogue{
 		Line: 1, Text: `{\pos(1,2)\pos(3,4)}A`,
 	}, xy)

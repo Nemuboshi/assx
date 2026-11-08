@@ -96,7 +96,7 @@
       <span class="badge S">S</span> assumed or reported but not verified.
       The <code>verified</code> scope identifies exactly which renderers have
       cited source evidence for that row. Source verification alone never
-      proves a <code>SafeFix</code>: each requested renderer and build capability
+      proves a <code>SafeFix</code>: each requested renderer
       needs a separate edit-equivalence proof.
     </div>
 

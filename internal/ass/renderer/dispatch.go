@@ -31,18 +31,6 @@ func exactOnlyMod(name string) bool {
 	return false
 }
 
-func hasModGate(name string) bool {
-	switch name {
-	case "1img", "2img", "3img", "4img", "1vc", "2vc", "3vc", "4vc",
-		"1va", "2va", "3va", "4va", "blend", "distort", "frs",
-		"fsvp", "fshp", "jitter", "lua", "mover", "moves3",
-		"moves4", "movevc", "rndx", "rndy", "rndz", "rnds",
-		"rnd", "z", "ortho":
-		return true
-	}
-	return false
-}
-
 func (p Profile) selectName(head string) (name, fallback string, status MatchStatus) {
 	switch p.kind {
 	case Libass:
@@ -70,16 +58,6 @@ func (p Profile) selectName(head string) (name, fallback string, status MatchSta
 		for _, candidate := range modOrder {
 			if !strings.HasPrefix(head, candidate) {
 				continue
-			}
-			if hasModGate(candidate) && p.build.Mod != FeatureEnabled {
-				if p.build.Mod == FeatureDisabled {
-					continue
-				}
-				// Keep the build-off alternate instead of guessing the build.
-				off := p
-				off.build.Mod = FeatureDisabled
-				fallback, _, _ = off.selectName(head)
-				return candidate, fallback, Conditional
 			}
 			if exactOnlyMod(candidate) && head != candidate {
 				return candidate, "", Ignored
@@ -170,18 +148,7 @@ func (p Profile) Resolve(expr ass.ConcreteExpression, source string) Result {
 	// Missing matches imply rejection only when the entire applicable
 	// signature set is source-verified. Inferred entries cannot prove absence.
 	fullyVerified := true
-	hasAvailable := false
 	for _, s := range sigs {
-		switch s.Availability {
-		case SignatureUnavailable:
-			// Known-off branches are not part of this build's signature set.
-			continue
-		case SignatureConditional:
-			// Unknown compile-time branches prevent definitive rejection.
-			fullyVerified = false
-			continue
-		}
-		hasAvailable = true
 		if s.Evidence != SignatureVerified {
 			fullyVerified = false
 		}
@@ -194,7 +161,7 @@ func (p Profile) Resolve(expr ass.ConcreteExpression, source string) Result {
 	}
 	// Verified entries prove accepted forms, not that all forms were listed.
 	// Reject only when the pinned evidence separately proves completeness.
-	if r.Signature == SignatureUnknown && hasAvailable && fullyVerified {
+	if r.Signature == SignatureUnknown && fullyVerified {
 		if meta := matrixTags[r.Name]; meta.exhaustive&bit(p.kind) != 0 {
 			r.Signature = SignatureRejected
 			r.Citation = meta.exhaustiveCitation

@@ -39,7 +39,7 @@ func TestFontCutoverLintDoesNotAccessCatalog(t *testing.T) {
 	t.Setenv("HOME", cache)
 	t.Setenv("WINDIR", filepath.Join(cache, "unavailable"))
 	for _, format := range []string{"plain", "pretty", "json"} {
-		for _, options := range [][]string{nil, {"--fix"}, {"--unsafe-fix"}, {"--renderer=xy-vsfilter"}, {"--renderer=vsfiltermod", "--mod-build=enabled"}, {"--compat=libass,xy-vsfilter"}} {
+		for _, options := range [][]string{nil, {"--fix"}, {"--unsafe-fix"}, {"--renderer=xy-vsfilter"}, {"--renderer=vsfiltermod"}, {"--compat=libass,xy-vsfilter"}} {
 			path, _, _ := fontCommandFixture(t)
 			var out, stderr bytes.Buffer
 			args := append([]string{"lint", "--format", format}, options...)

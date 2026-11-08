@@ -82,7 +82,7 @@ func TestHoverUsesPinnedRendererEvidenceAndIgnoresPlainText(t *testing.T) {
 	if err != nil || hover == nil || !strings.Contains(hover.Contents.Value, "libass@") || !strings.Contains(hover.Contents.Value, "rejected") {
 		t.Fatalf("libass hover = %+v, %v", hover, err)
 	}
-	configured, err := parseSettings(jsontext.Value(`{"assx":{"primaryRenderer":"vsfiltermod","compatibilityRenderers":[],"vsfilterMod":{"mod":"enabled"}}}`))
+	configured, err := parseSettings(jsontext.Value(`{"assx":{"primaryRenderer":"vsfiltermod","compatibilityRenderers":[]}}`))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -127,7 +127,7 @@ func TestSignatureHelpTracksArgumentsAndNestedTransform(t *testing.T) {
 	}
 }
 
-func TestHoverReportsShadowedAndConditionalDispatchWithoutVerification(t *testing.T) {
+func TestHoverReportsShadowedAndRendererScopedDispatch(t *testing.T) {
 	const uri = "file:///collision.ass"
 	text := "[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{\\fsvp6}x\n"
 	var server Server
@@ -150,8 +150,8 @@ func TestHoverReportsShadowedAndConditionalDispatchWithoutVerification(t *testin
 	}
 	server.settings = configured
 	hover, err = server.hover(t.Context(), request)
-	if err != nil || hover == nil || !strings.Contains(hover.Contents.Value, "conditional build feature") || strings.Contains(hover.Contents.Value, "verified signature") {
-		t.Fatalf("conditional hover = %+v, %v", hover, err)
+	if err != nil || hover == nil || !strings.Contains(hover.Contents.Value, "verified signature") || strings.Contains(hover.Contents.Value, "conditional build feature") {
+		t.Fatalf("renderer-scoped hover = %+v, %v", hover, err)
 	}
 }
 

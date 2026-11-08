@@ -28,21 +28,9 @@ func TestRendererScopedPositionFirstWins(t *testing.T) {
 			secondApplied: true, known: true, wantSource: 1,
 		},
 		{
-			name:             "VSFilterMod enabled",
-			profile:          mustMod(t, renderer.FeatureEnabled),
+			name:             "VSFilterMod",
+			profile:          mustMod(t),
 			firstUncertainty: UncertaintyRendererDependent, secondApplied: false,
-			known: false, wantSource: -1,
-		},
-		{
-			name:         "VSFilterMod disabled",
-			profile:      mustMod(t, renderer.FeatureDisabled),
-			firstIgnored: true, firstUncertainty: UncertaintyMalformed,
-			secondApplied: true, known: true, wantSource: 1,
-		},
-		{
-			name:             "VSFilterMod unknown build",
-			profile:          mustMod(t, renderer.FeatureUnknown),
-			firstUncertainty: UncertaintyUnresolved, secondApplied: false,
 			known: false, wantSource: -1,
 		},
 	}
@@ -92,9 +80,9 @@ func mustProfile(t *testing.T, kind renderer.Kind) renderer.Profile {
 	return profile
 }
 
-func mustMod(t *testing.T, state renderer.Feature) renderer.Profile {
+func mustMod(t *testing.T) renderer.Profile {
 	t.Helper()
-	profile, err := renderer.New(renderer.VSFilterMod, renderer.Build{Mod: state})
+	profile, err := renderer.Standard(renderer.VSFilterMod)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -123,7 +111,7 @@ func TestRendererScopedPrefixShadowingAndUnmodeledExtension(t *testing.T) {
 		}
 	}
 
-	profile := mustMod(t, renderer.FeatureEnabled)
+	profile := mustMod(t)
 	var events []TagEvent
 	EvaluateResolved(ass.ParseConcreteDialogue(`{\fsvp6\frs10\blend(add)}A`), profile, EvaluationOptions{
 		Observer: Observer{Tag: func(e TagEvent, _ StateView) { events = append(events, e) }},
@@ -192,7 +180,7 @@ func TestRendererScopedStyleFontObserver(t *testing.T) {
 }
 
 func TestRendererScopedEstablishedOwnerSurvivesUncertainLaterPosition(t *testing.T) {
-	profile := mustMod(t, renderer.FeatureUnknown)
+	profile := mustMod(t)
 	var after StateValue
 	var owner int
 	EvaluateResolved(ass.ParseConcreteDialogue(`{\pos(4,5)\pos(1,2,3)}A`), profile, EvaluationOptions{
@@ -223,7 +211,7 @@ func TestRendererScopedUnclosedClipInvalidatesStateAndProvenance(t *testing.T) {
 	for _, profile := range []renderer.Profile{
 		mustProfile(t, renderer.Libass),
 		mustProfile(t, renderer.XYVSFilter),
-		mustMod(t, renderer.FeatureEnabled),
+		mustMod(t),
 	} {
 		for _, command := range []string{"clip", "iclip"} {
 			t.Run(profile.Kind().String()+"/"+command, func(t *testing.T) {
@@ -276,7 +264,7 @@ func TestRendererScopedUnclosedTransformInvalidatesAllState(t *testing.T) {
 	for _, profile := range []renderer.Profile{
 		mustProfile(t, renderer.Libass),
 		mustProfile(t, renderer.XYVSFilter),
-		mustMod(t, renderer.FeatureEnabled),
+		mustMod(t),
 	} {
 		t.Run(profile.Kind().String(), func(t *testing.T) {
 			var sawMalformed, sawText bool
@@ -314,7 +302,7 @@ func TestRendererScopedUnclosedSyntaxRevokesEarlierNoEffectProofs(t *testing.T) 
 	for _, profile := range []renderer.Profile{
 		mustProfile(t, renderer.Libass),
 		mustProfile(t, renderer.XYVSFilter),
-		mustMod(t, renderer.FeatureEnabled),
+		mustMod(t),
 	} {
 		t.Run(profile.Kind().String(), func(t *testing.T) {
 			evaluation := EvaluateResolved(ass.ParseConcreteDialogue("{\\fs20\\fs20\\clip(1,2,3}A"), profile, EvaluationOptions{})

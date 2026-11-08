@@ -135,8 +135,6 @@ func matchName(status renderer.MatchStatus) string {
 	switch status {
 	case renderer.Matched:
 		return "matched"
-	case renderer.Conditional:
-		return "conditional"
 	case renderer.Disabled:
 		return "disabled"
 	case renderer.Ignored:

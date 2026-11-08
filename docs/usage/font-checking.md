@@ -9,10 +9,10 @@ An explicit directory never falls back to system fonts.
 ```sh
 assx fonts check --font-dir ./fonts --format json file.ass
 assx fonts check --renderer xy-vsfilter file.ass
-assx fonts check --renderer vsfiltermod --mod-build enabled file.ass
+assx fonts check --renderer vsfiltermod file.ass
 ```
 
-The default primary renderer is libass. The report includes the pinned revision and build capabilities.
+The default primary renderer is libass. The report includes the pinned revision.
 Font checks use one primary renderer. They do not accept `--compat`, `--fix`, or `--unsafe-fix`.
 The command does not change the ASS file or font files. Catalog scans can update the metadata cache.
 
@@ -39,7 +39,7 @@ JSON version 1 is an object with these fields:
 - `domain`: `font`.
 - `version`: `1`.
 - `file`: input path.
-- `renderer`: name, pinned revision, and Mod build capability.
+- `renderer`: name and pinned revision.
 - `catalog`: `system` or `directory` mode, plus the exclusive directory when specified.
 - `findings`: font IDs, informational severity, details, usages, missing characters, and selected faces.
 - `unchecked`: text runs with unknown effective state.

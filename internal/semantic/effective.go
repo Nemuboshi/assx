@@ -157,7 +157,7 @@ func EvaluateResolved(tree ass.ConcreteDialogue, profile renderer.Profile, optio
 	if options.Observer.Text == nil && !tree.HasCandidates() {
 		return Evaluation{}
 	}
-	if profile.Kind() == renderer.VSFilterMod && profile.Build().Mod == renderer.FeatureEnabled {
+	if profile.Kind() == renderer.VSFilterMod {
 		options.Styles = modStyleStates(options.Styles)
 	}
 	tokens, operations := resolveTokens(tree, profile)
@@ -280,11 +280,6 @@ func (m *evaluator) consumeTag(tag ass.Tag) TagEvent {
 			reason = UncertaintyRendererDependent
 		}
 		m.blockProofs(&event, reason)
-		return event
-	case renderer.Conditional:
-		m.markActiveLive()
-		m.invalidateAll()
-		m.blockProofs(&event, UncertaintyRendererDependent)
 		return event
 	}
 	if op.signature == renderer.SignatureRejected {

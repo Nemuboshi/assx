@@ -29,41 +29,20 @@ func (k Kind) String() string {
 	}
 }
 
-// FeatureUnknown must never be treated as enabled when proving edit safety.
-type Feature uint8
-
-const (
-	FeatureUnknown Feature = iota
-	FeatureDisabled
-	FeatureEnabled
-)
-
-// Build models the optional VSFilterMod compile-time gate.
-type Build struct {
-	Mod Feature // _VSMOD
-}
-
 // Profiles have value semantics. Shared tables are private and read-only.
+// One pinned build per renderer, so no build capability is part of a profile.
 type Profile struct {
-	kind  Kind
-	build Build
+	kind Kind
 }
 
-func New(kind Kind, build Build) (Profile, error) {
+func New(kind Kind) (Profile, error) {
 	if kind > VSFilterMod {
 		return Profile{}, fmt.Errorf("unknown renderer %d", kind)
 	}
-	if build.Mod > FeatureEnabled {
-		return Profile{}, fmt.Errorf("unknown build capability")
-	}
-	if kind != VSFilterMod && build != (Build{}) {
-		return Profile{}, fmt.Errorf("%s does not have VSFilterMod build features", kind)
-	}
-	return Profile{kind: kind, build: build}, nil
+	return Profile{kind: kind}, nil
 }
-func Standard(kind Kind) (Profile, error) { return New(kind, Build{}) }
+func Standard(kind Kind) (Profile, error) { return New(kind) }
 func (p Profile) Kind() Kind              { return p.kind }
-func (p Profile) Build() Build            { return p.build }
 func (p Profile) Version() string {
 	switch p.kind {
 	case Libass:
@@ -82,7 +61,6 @@ type MatchStatus uint8
 const (
 	UnknownName MatchStatus = iota
 	Matched
-	Conditional
 	Disabled
 	Ignored // normalization matched but the apply command cannot consume the suffix
 )
@@ -109,28 +87,11 @@ type Argument struct {
 	Raw  string
 }
 
-// SignatureAvailability is compile-time reachability of an individual
-// argument shape. It is independent of the command-name match.
-type SignatureAvailability uint8
-
-const (
-	SignatureAvailable   SignatureAvailability = iota
-	SignatureConditional                       // an unknown build flag may enable the signature
-	SignatureUnavailable                       // a required build flag is known to be disabled
-)
-
-// FeatureRequirements describes the guards associated with one signature.
-type FeatureRequirements struct {
-	Mod bool // _VSMOD
-}
-
 type Signature struct {
-	Count        int
-	Form         Form
-	Evidence     SignatureStatus // Unknown unless available in this build
-	Availability SignatureAvailability
-	Requires     FeatureRequirements
-	Citation     string
+	Count    int
+	Form     Form
+	Evidence SignatureStatus
+	Citation string
 }
 type Result struct {
 	Renderer Kind
@@ -169,37 +130,16 @@ func (p Profile) Signatures(name string) []Signature {
 		if s.scope&mask == 0 {
 			continue
 		}
-		availability := p.signatureAvailability(s.requires)
-		evidence := SignatureUnknown
-		if availability == SignatureAvailable {
-			evidence = SignatureInferred
-			if s.verified&mask != 0 {
-				evidence = SignatureVerified
-			}
+		evidence := SignatureInferred
+		if s.verified&mask != 0 {
+			evidence = SignatureVerified
 		}
 		out = append(out, Signature{
 			Count: s.count, Form: s.form, Evidence: evidence,
-			Availability: availability,
-			Requires:     FeatureRequirements{Mod: s.requires&requiresMod != 0},
-			Citation:     s.citation,
+			Citation: s.citation,
 		})
 	}
 	return out
-}
-
-// Disabled requirements take precedence over unknown flags. A conditional
-// signature neither proves acceptance nor exhausts the available arities.
-func (p Profile) signatureAvailability(requires featureMask) SignatureAvailability {
-	if requires == 0 {
-		return SignatureAvailable
-	}
-	switch p.build.Mod {
-	case FeatureDisabled:
-		return SignatureUnavailable
-	case FeatureUnknown:
-		return SignatureConditional
-	}
-	return SignatureAvailable
 }
 
 func bit(k Kind) uint8 { return 1 << k }

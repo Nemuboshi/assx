@@ -184,7 +184,7 @@ func compareInterpretations(span ass.ConcreteSpan, a, b *Interpretation, lintOnl
 	ar, br := a.Resolution, b.Resolution
 	dispatchSources := []string{dispatchCitation(a.Profile), dispatchCitation(b.Profile)}
 	dispatch := CompatibilityEquivalent
-	if !ar.Closed || !br.Closed || a.Event.Tag.RepeatedSlashes != 0 || b.Event.Tag.RepeatedSlashes != 0 || ar.Status == renderer.Conditional || br.Status == renderer.Conditional {
+	if !ar.Closed || !br.Closed || a.Event.Tag.RepeatedSlashes != 0 || b.Event.Tag.RepeatedSlashes != 0 || false {
 		dispatch = CompatibilityUnresolved
 	} else if ar.Name != br.Name || ar.Status != br.Status {
 		dispatch = CompatibilityDivergent

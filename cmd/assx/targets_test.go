@@ -20,14 +20,12 @@ func TestRendererTargetCLI(t *testing.T) {
 		{"explicit primary", []string{"--renderer=libass"}, []string{"libass"}},
 		{"single dash primary", []string{"-renderer", "libass"}, []string{"libass"}},
 		{"single dash empty compat", []string{"-compat="}, []string{"libass"}},
-		{"single dash Mod", []string{"-renderer=vsfiltermod", "-mod-build", "enabled"}, []string{"VSFilterMod"}},
+		{"single dash Mod", []string{"-renderer=vsfiltermod"}, []string{"VSFilterMod"}},
 		{"explicit empty compat", []string{"--compat="}, []string{"libass"}},
 		{"xy primary", []string{"--renderer", "xy-vsfilter"}, []string{"xy-VSFilter"}},
 		{"normalized union", []string{"--renderer=xy-vsfilter", "--compat=xy-vsfilter,libass,libass"}, []string{"libass", "xy-VSFilter"}},
-		{"Mod unknown", []string{"--renderer=vsfiltermod"}, nil},
-		{"Mod known", []string{"--renderer=vsfiltermod", "--mod-build=enabled"}, []string{"VSFilterMod"}},
-		{"Mod compatibility unknown", []string{"--compat=vsfiltermod"}, nil},
-		{"Mod compatibility known", []string{"--compat=vsfiltermod", "--mod-build=enabled"}, []string{"libass", "VSFilterMod"}},
+		{"Mod primary", []string{"--renderer=vsfiltermod"}, []string{"VSFilterMod"}},
+		{"Mod compatibility", []string{"--compat=vsfiltermod"}, []string{"libass", "VSFilterMod"}},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			path := writeRendererFixture(t, `{\fs10\fs21}x`)
@@ -49,25 +47,6 @@ func TestRendererTargetCLI(t *testing.T) {
 					t.Errorf("missing scope for %s", d.ID)
 				}
 			}
-			if tc.want == nil {
-				if proof != nil {
-					t.Fatal("uncertain Mod scope authorized a fix")
-				}
-				before, err := os.ReadFile(path)
-				if err != nil {
-					t.Fatal(err)
-				}
-				out.Reset()
-				errOut.Reset()
-				if code := run(append(append([]string{"--format=json", "--fix"}, tc.args...), path), &out, &errOut); code != 0 {
-					t.Fatalf("uncertain fix exit %d: %s", code, errOut.String())
-				}
-				after, err := os.ReadFile(path)
-				if err != nil || string(after) != string(before) {
-					t.Fatal("uncertain requested target changed file bytes")
-				}
-				return
-			}
 			if proof == nil {
 				t.Fatalf("missing proof: %s", errOut.String())
 			}
@@ -78,9 +57,6 @@ func TestRendererTargetCLI(t *testing.T) {
 				if proof.Targets[i].Renderer != name {
 					t.Fatalf("target %d = %s", i, proof.Targets[i].Renderer)
 				}
-			}
-			if tc.name == "Mod known" && (proof.Targets[0].Capabilities.VSFilterMod != "enabled") {
-				t.Fatalf("capabilities = %v", proof.Targets[0].Capabilities)
 			}
 			out.Reset()
 			errOut.Reset()
@@ -101,10 +77,8 @@ func TestRendererTargetCLI(t *testing.T) {
 func TestRendererCLIUsageErrors(t *testing.T) {
 	for _, args := range [][]string{
 		{"--renderer=other"}, {"--compat=libass,,xy-vsfilter"}, {"--compat=other"},
-		{"--mod-build=enabled"},
-		{"--renderer=vsfiltermod", "--mod-build=bad"},
-		{"--renderer=vsfiltermod", "--mod-build=disabled"},
-		{"-renderer", "invalid"}, {"-compat=invalid"}, {"-mod-build=enabled"},
+		{"--mod-build=enabled"}, {"-mod-build=enabled"},
+		{"-renderer", "invalid"}, {"-compat=invalid"},
 		{"--lua-build=disabled"}, {"-lua-build=disabled"}, {},
 	} {
 		t.Run(strings.Join(args, " "), func(t *testing.T) {
@@ -118,7 +92,7 @@ func TestRendererCLIUsageErrors(t *testing.T) {
 	if code := run([]string{"--help"}, &out, &errOut); code != 0 {
 		t.Fatalf("help exit %d", code)
 	}
-	for _, flag := range []string{"--renderer", "--compat", "--mod-build"} {
+	for _, flag := range []string{"--renderer", "--compat"} {
 		if !strings.Contains(errOut.String(), flag) {
 			t.Errorf("help omits %s", flag)
 		}
@@ -132,7 +106,7 @@ func TestPrimaryValidityAndCompatibilityScopes(t *testing.T) {
 		wantError bool
 	}{
 		{nil, true}, {[]string{"--renderer=libass", "--compat=vsfiltermod"}, true},
-		{[]string{"--renderer=vsfiltermod", "--compat=libass", "--mod-build=enabled"}, false},
+		{[]string{"--renderer=vsfiltermod", "--compat=libass"}, false},
 	} {
 		var out, errOut strings.Builder
 		code := run(append(append([]string{"--format=json"}, tc.args...), path), &out, &errOut)
@@ -147,15 +121,6 @@ func TestPrimaryValidityAndCompatibilityScopes(t *testing.T) {
 			if d.Severity == lint.Error && strings.Contains(d.Renderer, " / ") {
 				t.Fatalf("compatibility promoted to primary error: %s", d.ID)
 			}
-		}
-	}
-	for _, format := range []string{"plain", "pretty"} {
-		var out, errOut strings.Builder
-		if code := run([]string{"--format", format, "--renderer=vsfiltermod", path}, &out, &errOut); code == 2 {
-			t.Fatal(errOut.String())
-		}
-		if !strings.Contains(out.String(), "VSFilterMod@") || !strings.Contains(out.String(), "_VSMOD=unknown") {
-			t.Fatalf("%s omits build scope", format)
 		}
 	}
 }

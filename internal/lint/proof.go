@@ -22,6 +22,8 @@ type FixEditProof struct {
 	Edit TextEdit `json:"edit"`
 }
 
+// ProofCapabilities records the pinned build fact in the proof identity
+// bytes. The historical regression baseline fixes this field, so it stays.
 type ProofCapabilities struct {
 	VSFilterMod string `json:"vsfiltermod"`
 }
@@ -77,33 +79,22 @@ func buildFixProofBatch(batch *proofBatch, edits []FixEditProof, validEdits map[
 	return batch.build(edits, validEdits)
 }
 
+func proofCapabilities(kind renderer.Kind) ProofCapabilities {
+	if kind != renderer.VSFilterMod {
+		return ProofCapabilities{VSFilterMod: "not-applicable"}
+	}
+	return ProofCapabilities{VSFilterMod: "enabled"}
+}
+
 func fixTargets(profiles []renderer.Profile) []FixTarget {
 	targets := make([]FixTarget, 0, len(profiles))
 	for _, profile := range profiles {
 		targets = append(targets, FixTarget{
 			Renderer: profile.Kind().String(), Version: profile.Version(),
-			Capabilities: proofCapabilities(profile.Kind(), profile.Build()),
+			Capabilities: proofCapabilities(profile.Kind()),
 		})
 	}
 	return targets
-}
-
-func proofCapabilities(kind renderer.Kind, build renderer.Build) ProofCapabilities {
-	if kind != renderer.VSFilterMod {
-		return ProofCapabilities{VSFilterMod: "not-applicable"}
-	}
-	return ProofCapabilities{VSFilterMod: featureName(build.Mod)}
-}
-
-func featureName(feature renderer.Feature) string {
-	switch feature {
-	case renderer.FeatureDisabled:
-		return "disabled"
-	case renderer.FeatureEnabled:
-		return "enabled"
-	default:
-		return "unknown"
-	}
 }
 
 func proveSafeFixes(doc ass.Document, diagnostics []Diagnostic, profiles []renderer.Profile) []Diagnostic {
@@ -586,11 +577,14 @@ func profilesFromProof(targets []FixTarget) ([]renderer.Profile, error) {
 		default:
 			return nil, fmt.Errorf("unknown renderer in SafeFix proof: %s", target.Renderer)
 		}
-		build, err := parseProofCapabilities(kind, target.Capabilities)
-		if err != nil {
-			return nil, fmt.Errorf("renderer %s capabilities: %w", target.Renderer, err)
+		if kind != renderer.VSFilterMod {
+			if target.Capabilities != (ProofCapabilities{VSFilterMod: "not-applicable"}) {
+				return nil, fmt.Errorf("features do not apply to %s", target.Renderer)
+			}
+		} else if target.Capabilities != (ProofCapabilities{VSFilterMod: "enabled"}) {
+			return nil, fmt.Errorf("renderer %s has an unsupported build capability", target.Renderer)
 		}
-		profile, err := renderer.New(kind, build)
+		profile, err := renderer.New(kind)
 		if err != nil {
 			return nil, err
 		}
@@ -600,33 +594,6 @@ func profilesFromProof(targets []FixTarget) ([]renderer.Profile, error) {
 		profiles = append(profiles, profile)
 	}
 	return profiles, nil
-}
-
-func parseProofCapabilities(kind renderer.Kind, capabilities ProofCapabilities) (renderer.Build, error) {
-	if kind != renderer.VSFilterMod {
-		if capabilities != (ProofCapabilities{VSFilterMod: "not-applicable"}) {
-			return renderer.Build{}, fmt.Errorf("features do not apply to this renderer")
-		}
-		return renderer.Build{}, nil
-	}
-	mod, err := parseFeatureName(capabilities.VSFilterMod)
-	if err != nil {
-		return renderer.Build{}, err
-	}
-	return renderer.Build{Mod: mod}, nil
-}
-
-func parseFeatureName(name string) (renderer.Feature, error) {
-	switch name {
-	case "unknown":
-		return renderer.FeatureUnknown, nil
-	case "disabled":
-		return renderer.FeatureDisabled, nil
-	case "enabled":
-		return renderer.FeatureEnabled, nil
-	default:
-		return renderer.FeatureUnknown, fmt.Errorf("invalid feature state %q", name)
-	}
 }
 
 func sameFixEditSet(a, b []FixEditProof) bool {

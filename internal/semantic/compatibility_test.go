@@ -11,7 +11,7 @@ import (
 
 func compatibilityProfiles(t *testing.T) []renderer.Profile {
 	t.Helper()
-	return []renderer.Profile{mustProfile(t, renderer.Libass), mustProfile(t, renderer.XYVSFilter), mustMod(t, renderer.FeatureEnabled)}
+	return []renderer.Profile{mustProfile(t, renderer.Libass), mustProfile(t, renderer.XYVSFilter), mustMod(t)}
 }
 
 func TestCompatibilityIndependentInterpretations(t *testing.T) {
@@ -80,14 +80,14 @@ func TestCompatibilityEvidenceNeverInventsEquivalence(t *testing.T) {
 			}
 		}
 	}
-	unknown := mustMod(t, renderer.FeatureUnknown)
-	findings := CompareDialogue(ass.ParseConcreteDialogue(`{\fsvp6\pos(1,2,3)}A`), []renderer.Profile{mustProfile(t, renderer.Libass), unknown}, EvaluationOptions{})
+	mod := mustMod(t)
+	findings := CompareDialogue(ass.ParseConcreteDialogue(`{\fsvp6\pos(1,2,3)}A`), []renderer.Profile{mustProfile(t, renderer.Libass), mod}, EvaluationOptions{})
 	for _, f := range findings {
-		if f.Dimension == "dispatch" && f.Left.Resolution.Head == "fsvp6" && f.Status != CompatibilityUnresolved {
-			t.Fatalf("unknown build acquired a proof: %#v", f)
+		if f.Dimension == "dispatch" && f.Left.Resolution.Head == "fsvp6" && f.Status != CompatibilityDivergent {
+			t.Fatalf("dispatch difference lost its proof: %#v", f)
 		}
 		if f.Dimension == "state" && f.Status == CompatibilityEquivalent {
-			t.Fatalf("unknown build invented state equivalence: %#v", f)
+			t.Fatalf("divergent dispatch invented state equivalence: %#v", f)
 		}
 	}
 }

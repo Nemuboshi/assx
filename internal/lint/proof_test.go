@@ -215,9 +215,7 @@ func TestSafeFixRejectsModifiedProofEvidence(t *testing.T) {
 
 func TestSafeFixCannotUseAModOnlyPrefixProofInDefaultMode(t *testing.T) {
 	source := `{\fsvp6}A`
-	mod, err := renderer.New(renderer.VSFilterMod, renderer.Build{
-		Mod: renderer.FeatureEnabled,
-	})
+	mod, err := renderer.New(renderer.VSFilterMod)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -238,9 +236,7 @@ func TestSafeFixCannotUseAModOnlyPrefixProofInDefaultMode(t *testing.T) {
 
 func TestDefaultFixApplicationRejectsModOnlyProof(t *testing.T) {
 	source := `{\fs20\fs20}A`
-	mod, err := renderer.New(renderer.VSFilterMod, renderer.Build{
-		Mod: renderer.FeatureEnabled,
-	})
+	mod, err := renderer.New(renderer.VSFilterMod)
 	if err != nil {
 		t.Fatal(err)
 	}

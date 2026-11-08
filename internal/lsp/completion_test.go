@@ -26,7 +26,7 @@ func TestCompletionUsesRendererEligibilityAndUTF16Edit(t *testing.T) {
 			t.Fatalf("default renderer certified Mod command: %+v", item)
 		}
 	}
-	configured, err := parseSettings([]byte(`{"assx":{"primaryRenderer":"vsfiltermod","compatibilityRenderers":[],"vsfilterMod":{"mod":"enabled"}}}`))
+	configured, err := parseSettings([]byte(`{"assx":{"primaryRenderer":"vsfiltermod","compatibilityRenderers":[]}}`))
 	if err != nil {
 		t.Fatal(err)
 	}

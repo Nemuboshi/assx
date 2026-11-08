@@ -75,7 +75,7 @@ func TestCompatibilityNormalizedRectangleBehavior(t *testing.T) {
 }
 
 func TestCompatibilityCoordinateConversionDomain(t *testing.T) {
-	profiles := []renderer.Profile{mustProfile(t, renderer.Libass), mustMod(t, renderer.FeatureEnabled)}
+	profiles := []renderer.Profile{mustProfile(t, renderer.Libass), mustMod(t)}
 	for _, source := range []string{`{\clip(1.5,1e2,10,10)}A`, `{\iclip(1.5,0,1e300,10)}A`} {
 		found := false
 		for _, f := range CompareDialogue(ass.ParseConcreteDialogue(source), profiles, EvaluationOptions{}) {
@@ -157,7 +157,7 @@ func TestCompatibilityUnicodeWhitespaceKeepsRendererOwnershipSeparate(t *testing
 }
 
 func TestCompatibilityRepeatBehaviorRequiresProvenLatchOwner(t *testing.T) {
-	profiles := []renderer.Profile{mustMod(t, renderer.FeatureEnabled), mustProfile(t, renderer.Libass)}
+	profiles := []renderer.Profile{mustMod(t), mustProfile(t, renderer.Libass)}
 	seenOwnership := false
 	for _, f := range CompareDialogue(ass.ParseConcreteDialogue(`{\pos(1,2,3)\pos(4,5)}A`), profiles, EvaluationOptions{}) {
 		if f.Source.Start != 12 {

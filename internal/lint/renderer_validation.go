@@ -251,9 +251,6 @@ func (a *dialogueAnalyzer) consumeResolved(tag ass.Tag, result renderer.Result, 
 		}
 		a.add(IssueUnknownTag, tag, detail)
 		return
-	case renderer.Conditional:
-		a.add(IssueRendererUnresolved, tag, "Command dispatch depends on unselected renderer build capabilities; validity cannot be established.")
-		return
 	case renderer.Disabled:
 		a.add(IssueRendererUnresolved, tag, "Command is disabled by the selected renderer build.")
 		return
@@ -308,7 +305,7 @@ func (a *dialogueAnalyzer) consumeResolved(tag ass.Tag, result renderer.Result, 
 func verifiedCounts(profile renderer.Profile, name string) string {
 	var counts []int
 	for _, s := range profile.Signatures(name) {
-		if s.Availability != renderer.SignatureAvailable || s.Evidence != renderer.SignatureVerified {
+		if s.Evidence != renderer.SignatureVerified {
 			continue
 		}
 		found := false

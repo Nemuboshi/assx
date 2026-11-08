@@ -146,16 +146,12 @@ func TestFontsCommandRendererScope(t *testing.T) {
 	} {
 		var out, stderr bytes.Buffer
 		args := []string{"fonts", "check", "--format=json", "--font-dir", fonts, "--renderer", tc.flag}
-		if tc.flag == "vsfiltermod" {
-			args = append(args, "--mod-build=enabled")
-		}
 		if code := run(append(args, path), &out, &stderr); code != 0 {
 			t.Fatalf("%s: exit %d: %s", tc.flag, code, &stderr)
 		}
 		var result struct {
 			Renderer struct {
 				Name, Revision string
-				Mod            string `json:"mod_build"`
 			}
 		}
 		if err := json.Unmarshal(out.Bytes(), &result); err != nil {
@@ -163,9 +159,6 @@ func TestFontsCommandRendererScope(t *testing.T) {
 		}
 		if result.Renderer.Name != tc.name || result.Renderer.Revision != tc.revision {
 			t.Fatalf("wrong scope: %#v", result)
-		}
-		if tc.flag == "vsfiltermod" && result.Renderer.Mod != "enabled" {
-			t.Fatalf("wrong build: %#v", result)
 		}
 	}
 }

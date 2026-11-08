@@ -12,7 +12,7 @@ import (
 func TestSafeFixRequestedTargetScope(t *testing.T) {
 	libass, _ := renderer.Standard(renderer.Libass)
 	xy, _ := renderer.Standard(renderer.XYVSFilter)
-	mod, _ := renderer.New(renderer.VSFilterMod, renderer.Build{Mod: renderer.FeatureEnabled})
+	mod, _ := renderer.New(renderer.VSFilterMod)
 	doc := parseFontOverrideText(`{\fs21\fs21}A`)
 	cases := []AnalysisTargets{
 		{Primary: libass}, {Primary: xy}, {Primary: mod},
@@ -53,10 +53,10 @@ func TestSafeFixRejectsRehashedScopeTampering(t *testing.T) {
 		change func(*FixProof)
 	}{
 		{"version", func(p *FixProof) { p.Targets[0].Version = "stale" }},
-		{"capability", func(p *FixProof) { p.Targets[0].Capabilities.VSFilterMod = "disabled" }},
 		{"target subset", func(p *FixProof) { p.Targets = p.Targets[:1] }},
 		{"edited hash", func(p *FixProof) { p.EditedSHA256 = hashSource("other") }},
 		{"interpretations", func(p *FixProof) { p.Interpretations = nil }},
+		{"capability", func(p *FixProof) { p.Targets[0].Capabilities.VSFilterMod = "enabled" }},
 	} {
 		t.Run(mutation.name, func(t *testing.T) {
 			ds := AnalyzeDocumentForTargets(doc, targets)
@@ -89,43 +89,34 @@ func TestSafeFixRejectsRehashedScopeTampering(t *testing.T) {
 	}
 }
 
-func TestSafeFixModCapabilityMismatchAndUncertainty(t *testing.T) {
-	known, _ := renderer.New(renderer.VSFilterMod, renderer.Build{Mod: renderer.FeatureEnabled})
+func TestSafeFixRejectsForeignProfile(t *testing.T) {
+	known, _ := renderer.New(renderer.VSFilterMod)
 	doc := parseFontOverrideText(`{\fs21\fs21}A`)
 	ds := AnalyzeDocumentForTargets(doc, AnalysisTargets{Primary: known})
-	for _, build := range []renderer.Build{
-		{}, {Mod: renderer.FeatureDisabled},
-	} {
-		mod, err := renderer.New(renderer.VSFilterMod, build)
-		if err != nil {
-			t.Fatal(err)
-		}
-		targets := AnalysisTargets{Primary: mod}
-		if _, _, err := ApplyFixesForTargets(doc.Text, ds, false, targets); err == nil {
-			t.Fatalf("proof accepted different capability %v", build)
-		}
-		current := AnalyzeDocumentForTargets(doc, targets)
-		if build.Mod == renderer.FeatureUnknown {
-			safe, _, _ := CountFixes(current)
-			if safe != 0 {
-				t.Fatalf("uncertain build granted %d fixes", safe)
-			}
-			fixed, count, err := ApplyFixesForTargets(doc.Text, current, false, targets)
-			if err != nil || count != 0 || fixed != doc.Text {
-				t.Fatal("uncertain build changed source")
-			}
-		}
+	other, err := renderer.New(renderer.VSFilterMod)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if other != known {
+		t.Fatal("pinned VSFilterMod profile is not comparable")
+	}
+	targets := AnalysisTargets{Primary: other}
+	if _, _, err := ApplyFixesForTargets(doc.Text, ds, false, targets); err != nil {
+		t.Fatalf("proof rejected the pinned profile: %v", err)
+	}
+	safe, _, _ := CountFixes(AnalyzeDocumentForTargets(doc, targets))
+	if safe == 0 {
+		t.Fatal("pinned VSFilterMod profile granted no fixes")
 	}
 }
 
 func TestTargetNormalizationIsDeterministic(t *testing.T) {
 	base := DefaultAnalysisTargets()
-	modUnknown, _ := renderer.Standard(renderer.VSFilterMod)
-	modKnown, _ := renderer.New(renderer.VSFilterMod, renderer.Build{Mod: renderer.FeatureEnabled})
-	a := AnalysisTargets{Primary: base.Primary, Compatibility: []renderer.Profile{modKnown, base.Primary, modUnknown, base.Compatibility[0], modKnown}}
-	b := AnalysisTargets{Primary: base.Primary, Compatibility: []renderer.Profile{base.Compatibility[0], modUnknown, modKnown}}
-	if !slices.Equal(a.Profiles(), b.Profiles()) || len(a.Profiles()) != 4 {
-		t.Fatalf("normalization merged capabilities or retained duplicates: %v", a.Profiles())
+	mod, _ := renderer.Standard(renderer.VSFilterMod)
+	a := AnalysisTargets{Primary: base.Primary, Compatibility: []renderer.Profile{mod, base.Primary, base.Compatibility[0], mod}}
+	b := AnalysisTargets{Primary: base.Primary, Compatibility: []renderer.Profile{base.Compatibility[0], mod}}
+	if !slices.Equal(a.Profiles(), b.Profiles()) || len(a.Profiles()) != 3 {
+		t.Fatalf("normalization retained duplicates: %v", a.Profiles())
 	}
 }
 

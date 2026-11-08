@@ -120,7 +120,7 @@ func (server *Server) tagCompletions(doc document, prefix string, start, end int
 		item := completionItem{Label: "\\" + name, Kind: 3, Detail: detail, TextEdit: lspTextEdit{Range: rangeValue, NewText: name}}
 		if server.snippetSupport && (end >= len(doc.text) || doc.text[end] != '(') {
 			for _, signature := range profile.Signatures(name) {
-				if signature.Form == renderer.Bare || signature.Availability != renderer.SignatureAvailable || signature.Evidence != renderer.SignatureVerified || signature.Count == 0 {
+				if signature.Form == renderer.Bare || signature.Evidence != renderer.SignatureVerified || signature.Count == 0 {
 					continue
 				}
 				args := make([]string, signature.Count)

@@ -20,7 +20,7 @@ func TestStyleBorderCompatibilityRules(t *testing.T) {
 	libass, _ := renderer.Standard(renderer.Libass)
 	xy, _ := renderer.Standard(renderer.XYVSFilter)
 	mod, _ := renderer.Standard(renderer.VSFilterMod)
-	disabledMod, _ := renderer.New(renderer.VSFilterMod, renderer.Build{Mod: renderer.FeatureDisabled})
+	disabledMod, _ := renderer.New(renderer.VSFilterMod)
 	cases := []struct {
 		name, border, x, y, outline string
 		profiles                    []renderer.Profile

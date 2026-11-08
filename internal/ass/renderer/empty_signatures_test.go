@@ -18,16 +18,7 @@ var auditedBareEmptyTags = strings.Fields(
 )
 
 func TestPinnedBareEmptyFormsHaveExplicitEvidence(t *testing.T) {
-	p := profiles(t)
-	buildDisabled, err := New(VSFilterMod, Build{Mod: FeatureDisabled})
-	if err != nil {
-		t.Fatal(err)
-	}
-	buildUnknown, err := Standard(VSFilterMod)
-	if err != nil {
-		t.Fatal(err)
-	}
-	choices := []Profile{p[0], p[1], p[2], buildDisabled, buildUnknown}
+	choices := profiles(t)
 
 	for _, name := range auditedBareEmptyTags {
 		t.Run(name, func(t *testing.T) {
@@ -57,21 +48,20 @@ func TestPinnedBareEmptyFormsHaveExplicitEvidence(t *testing.T) {
 				var want SignatureStatus
 				found := false
 				for _, sig := range profile.Signatures(name) {
-					if sig.Count != 0 || sig.Form != Bare ||
-						sig.Availability != SignatureAvailable {
+					if sig.Count != 0 || sig.Form != Bare {
 						continue
 					}
 					found = true
 					want = sig.Evidence
 				}
 				if !found {
-					t.Errorf("%s mod=%v name=%q has no build-applicable bare zero-argument signature",
-						profile.Kind(), profile.Build().Mod, name)
+					t.Errorf("%s name=%q has no bare zero-argument signature",
+						profile.Kind(), name)
 					continue
 				}
 				if got.Signature != want || got.Citation == "" {
-					t.Errorf("%s mod=%v bare %q: signature=%v, citation=%q, want=%v",
-						profile.Kind(), profile.Build().Mod, name, got.Signature, got.Citation, want)
+					t.Errorf("%s bare %q: signature=%v, citation=%q, want=%v",
+						profile.Kind(), name, got.Signature, got.Citation, want)
 				}
 			}
 			if matchedProfiles == 0 {
@@ -89,23 +79,12 @@ func TestTrulyRequiredBareArgumentsStillReject(t *testing.T) {
 			t.Errorf("%s: bare position must remain rejected: %+v", profile.Kind(), got)
 		}
 	}
-	for _, mod := range []struct {
-		capability Feature
-		expected   SignatureStatus
-	}{
-		{FeatureUnknown, SignatureUnknown},
-		{FeatureDisabled, SignatureRejected},
-		{FeatureEnabled, SignatureRejected},
-	} {
-		profile, err := New(VSFilterMod, Build{Mod: mod.capability})
-		if err != nil {
-			t.Fatal(err)
-		}
-		got := profile.Resolve(expr, source)
-		if got.Signature != mod.expected {
-			t.Errorf("VSFilterMod feature=%v: bare position signature=%v want=%v",
-				mod.capability, got.Signature, mod.expected)
-		}
+	mod, err := New(VSFilterMod)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := mod.Resolve(expr, source); got.Signature != SignatureRejected {
+		t.Errorf("VSFilterMod bare position signature=%v want=%v", got.Signature, SignatureRejected)
 	}
 }
 

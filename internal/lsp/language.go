@@ -108,8 +108,6 @@ func signatureStatus(result renderer.Result) string {
 	switch result.Status {
 	case renderer.UnknownName:
 		return "unknown name"
-	case renderer.Conditional:
-		return "conditional build feature"
 	case renderer.Disabled:
 		return "disabled"
 	case renderer.Ignored:
@@ -234,7 +232,7 @@ func (server *Server) signatureHelp(ctx context.Context, raw jsontext.Value) (*s
 	}
 	result := &signatureHelpResult{Signatures: []signatureInformation{}}
 	for _, signature := range primary.Signatures(resolved.Name) {
-		if signature.Form == renderer.Bare || signature.Availability == renderer.SignatureUnavailable {
+		if signature.Form == renderer.Bare {
 			continue
 		}
 		parts := make([]string, signature.Count)
@@ -246,16 +244,11 @@ func (server *Server) signatureHelp(ctx context.Context, raw jsontext.Value) (*s
 			info.Parameters[i].Label = parts[i]
 		}
 		info.Label = "\\" + resolved.Name + "(" + strings.Join(parts, ", ") + ")"
-		switch signature.Availability {
-		case renderer.SignatureConditional:
-			info.Documentation = "Conditional build feature; not verified."
-		default:
-			info.Documentation = signatureEvidence(signature.Evidence)
-		}
+		info.Documentation = signatureEvidence(signature.Evidence)
 		if signature.Citation != "" {
 			info.Documentation += " Evidence: " + signature.Citation
 		}
-		if signature.Count == len(resolved.Args) && signature.Availability == renderer.SignatureAvailable {
+		if signature.Count == len(resolved.Args) {
 			result.ActiveSignature = len(result.Signatures)
 		}
 		result.Signatures = append(result.Signatures, info)

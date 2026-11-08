@@ -15,7 +15,6 @@ import (
 type Renderer struct {
 	Name     string `json:"name"`
 	Revision string `json:"revision"`
-	Mod      string `json:"mod_build"`
 }
 
 type Catalog struct {
@@ -46,7 +45,7 @@ type Result struct {
 
 func Build(path string, profile renderer.Profile, source fontcheck.Source, findings []fontcheck.Finding, usages []fontcheck.Usage) Result {
 	r := Result{Domain: "font", Version: 1, File: path,
-		Renderer: Renderer{Name: profile.Kind().String(), Revision: profile.Version(), Mod: feature(profile.Build().Mod)},
+		Renderer: Renderer{Name: profile.Kind().String(), Revision: profile.Version()},
 		Catalog:  Catalog{Mode: "system", Directory: source.Directory},
 		Findings: []Diagnostic{}, Unchecked: []fontcheck.Usage{},
 		Limit: "Glyph lookup does not test renderer fallback or shaping.",
@@ -72,23 +71,12 @@ func Build(path string, profile renderer.Profile, source fontcheck.Source, findi
 	return r
 }
 
-func feature(f renderer.Feature) string {
-	switch f {
-	case renderer.FeatureEnabled:
-		return "enabled"
-	case renderer.FeatureDisabled:
-		return "disabled"
-	default:
-		return "unknown"
-	}
-}
-
 func (r Result) notes() []string {
 	catalog := "Font catalog: system directories."
 	if r.Catalog.Mode == "directory" {
 		catalog = fmt.Sprintf("Font catalog: exclusive directory %q.", r.Catalog.Directory)
 	}
-	return []string{catalog, "Renderer: " + r.Renderer.Name + "@" + r.Renderer.Revision + " (_VSMOD=" + r.Renderer.Mod + ")",
+	return []string{catalog, "Renderer: " + r.Renderer.Name + "@" + r.Renderer.Revision,
 		fmt.Sprintf("Unchecked text runs: %d (unknown semantic state).", len(r.Unchecked)), r.Limit}
 }
 

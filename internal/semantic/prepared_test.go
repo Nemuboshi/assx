@@ -19,7 +19,7 @@ func allStandardProfiles(t *testing.T) []renderer.Profile {
 		}
 		profiles = append(profiles, standard)
 	}
-	mod, err := renderer.New(renderer.VSFilterMod, renderer.Build{Mod: renderer.FeatureEnabled})
+	mod, err := renderer.New(renderer.VSFilterMod)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -219,7 +219,7 @@ func TestCompareDocumentInModeMatchesFullMinusEquivalents(t *testing.T) {
 	source := "[Script Info]\rScriptType: v4.00+\r[V4+ Styles]\rFormat: Name, Fontname, Fontsize\rStyle: Default,Arial,20\r[Events]\rFormat: Layer, Start, End, Text\rDialogue: 0,0:00:01.00,0:00:02.00,{\\fs20\\an5\\pos(1,2)}A\r"
 	tree := ass.ParseConcreteDocument(source)
 	xy, _ := renderer.Standard(renderer.XYVSFilter)
-	vsm, _ := renderer.New(renderer.VSFilterMod, renderer.Build{Mod: renderer.FeatureEnabled})
+	vsm, _ := renderer.New(renderer.VSFilterMod)
 	profiles := []renderer.Profile{xy, vsm}
 	full := CompareDocument(tree, profiles)
 	mode := ComparisonMode{LintOnly: true}

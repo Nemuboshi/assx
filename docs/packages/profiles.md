@@ -16,8 +16,7 @@ copies of mutable TagSpec slice fields are made before returning them.
 
 The caller can inspect independently:
 
-- Name matching: unknown, recognized, ignored by a no-op normalization arm,
-  conditional on an unknown build, or disabled in a known build.
+- Name matching: unknown, recognized, or ignored by a no-op normalization arm.
 - A selected command and consumed head suffix, and a longer, competing
   documented command that was shadowed by a prefix.
 - Whether a signature has source-verified evidence, only inferred evidence,
@@ -26,14 +25,11 @@ The caller can inspect independently:
 
 An XML signature records applicability separately from per-renderer
 verification **and per-signature compile-time requirements**. In VSFilterMod,
-the three-coordinate pos and argument-bearing fsc variants require _VSMOD;
-their core two-coordinate / zero-argument variants remain available without
-it. The gated-only blend, frs and fsvp signatures carry the same requirement.
-Profile.Signatures reports each variant's Availability and Requires along with
-evidence scoped to the actual build; an unknown or unavailable guard cannot
-yield SignatureVerified. An unknown optional branch prevents proving that the
-available signatures exhaust all arities; a known-disabled branch is excluded
-from that set. Empty bare values are not the same as invalid arguments:
+the three-coordinate pos and argument-bearing fsc variants require `_VSMOD`, and
+the gated-only blend, frs and fsvp signatures carry the same requirement. The
+pinned build defines that gate, so all listed variants are available.
+Profile.Signatures reports each variant's evidence, scoped to the pinned
+build. Empty bare values are not the same as invalid arguments:
 the pinned scalar handlers often restore a style property or apply a
 renderer-defined default. The evidence matrix therefore records explicit
 zero-argument bare signatures for 47 additional scalar names, as well as
@@ -50,7 +46,7 @@ proof that every accepted arity has been enumerated: scalar handlers can
 consume only their first value or default a missing one. The generated matrix
 therefore contains a separate, renderer-scoped **exhaustive** declaration with
 independent pinned-source citations. pos, move, clip and iclip claim this proof
-for all three renderers. Three-coordinate pos remains gated on _VSMOD. move
+for all three renderers. Three-coordinate pos is gated on `_VSMOD`. move
 accepts only four or six non-empty arguments; eight arguments are rejected.
 clip and iclip accept 0, 1, 2 or 4 arguments; three or five arguments are
 rejected. Every pinned clip handler falls through those arities without touching
@@ -76,11 +72,8 @@ The command fad is handled by an exact apply branch without a normalization
 arm. The fallback counter does not stop the exact apply chain.
 A bogus inline fad suffix must not be accepted as an alternate form.
 
-VSFilterMod extensions gated by _VSMOD require an explicit enabled capability.
+VSFilterMod extensions gated by `_VSMOD` are available in the pinned build.
 The explicit lua command is a Mod name with an unmodeled effect.
-The default Build is unknown, even for a VSFilterMod profile.
-An unknown optional branch records the candidate and its disabled-build
-fallback instead of pretending to know which parser was compiled.
 See [build capabilities](#vsfiltermod-build-capabilities).
 
 The normalized command is distinguished from the original raw lexeme:
@@ -98,16 +91,15 @@ See [usage](../../README.md) and [the evidence contract](../rules/verification.m
 
 ## VSFilterMod build capabilities
 
-`_VSMOD` enables the Mod extensions. assx models only that gate:
+`_VSMOD` enables the Mod extensions. assx models the pinned build, which
+defines the gate in every configuration:
 
 | `_VSMOD` | Dispatch |
 | --- | --- |
-| off | xy-VSFilter |
 | on | Mod extensions |
-| unknown | conditional signatures, blocked proofs |
 
-An unknown gate keeps its signatures conditional and records the disabled-build
-fallback. Known and unknown states never default to enabled.
+A binary built without the gate is outside the model. `--renderer=vsfiltermod`
+and `--compat=vsfiltermod` select the pinned build only.
 See [semantics](semantics.md) and [lint](lint.md).
 
 The pinned project defines `_LUA` in every configuration. A Lua build needs

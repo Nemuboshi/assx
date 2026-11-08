@@ -77,7 +77,7 @@ func evaluatePrepared(prepared *PreparedDialogue, options EvaluationOptions) Eva
 		return Evaluation{}
 	}
 	profile := prepared.profile
-	if profile.Kind() == renderer.VSFilterMod && profile.Build().Mod == renderer.FeatureEnabled {
+	if profile.Kind() == renderer.VSFilterMod {
 		options.Styles = modStyleStates(options.Styles)
 	}
 	return evaluateResolvedCore(prepared.tokens, prepared.operations, profile, options)

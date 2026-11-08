@@ -235,10 +235,10 @@
     <conv renderer="vsm" parse="vsfilter-float" post="clamp0" verified="vsm" cite="vsm:src/subtitles/STS.cpp:1871,1899-1901"/>
     <note>
       Ignored by decision. assx does not check this field. The negative clamp is
-      build-conditional in VSFilterMod. The clamp sits inside #ifndef _VSMOD
-      (patch f002, STS.cpp:1899-1901), so a _VSMOD build keeps a negative
-      spacing. A mod-build-version question cannot be resolved from the pinned
-      source alone, so this field stays unmodeled for VSFilterMod.
+      gated in VSFilterMod. The clamp sits inside #ifndef _VSMOD
+      (patch f002, STS.cpp:1899-1901), so the pinned _VSMOD build keeps a
+      negative spacing. The pinned source does not resolve the clamped value,
+      so this field stays unmodeled for VSFilterMod.
     </note>
   </stylefield>
 

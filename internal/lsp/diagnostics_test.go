@@ -232,7 +232,7 @@ func TestPublishedDiagnosticsUseSelectedPrimaryRenderer(t *testing.T) {
 		want   bool
 	}{
 		{`{"assx":{"primaryRenderer":"libass","compatibilityRenderers":[]}}`, true},
-		{`{"assx":{"primaryRenderer":"vsfiltermod","compatibilityRenderers":[],"vsfilterMod":{"mod":"enabled"}}}`, false},
+		{`{"assx":{"primaryRenderer":"vsfiltermod","compatibilityRenderers":[]}}`, false},
 	} {
 		configured, err := parseSettings(jsontext.Value(tc.config))
 		if err != nil {

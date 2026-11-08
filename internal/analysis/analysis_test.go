@@ -224,31 +224,22 @@ func TestAnalyzeRendererSelections(t *testing.T) {
 		t.Fatalf("primary scope not selected: %q vs %q", firstScope, secondScope)
 	}
 
-	mod := func(build renderer.Build) *Result {
-		profile, err := renderer.New(renderer.VSFilterMod, build)
-		if err != nil {
-			t.Fatal(err)
-		}
-		return analyzeTestResult(t, text, Options{Targets: lint.AnalysisTargets{Primary: profile}})
+	profile, err := renderer.Standard(renderer.VSFilterMod)
+	if err != nil {
+		t.Fatal(err)
 	}
-	unknown := mod(renderer.Build{Mod: renderer.FeatureUnknown})
-	if len(unknown.Findings()) == 0 {
-		t.Fatal("unknown VSFilterMod build lost findings")
+	mod := analyzeTestResult(t, text, Options{Targets: lint.AnalysisTargets{Primary: profile}})
+	if len(mod.Findings()) == 0 {
+		t.Fatal("VSFilterMod build lost findings")
 	}
-	for _, diagnostic := range mustProve(t, unknown) {
-		if diagnostic.FixSafety == lint.SafeFix {
-			t.Fatalf("unknown VSFilterMod build authorized a fix: %#v", diagnostic)
-		}
-	}
-	disabled := mod(renderer.Build{Mod: renderer.FeatureDisabled})
 	proved := 0
-	for _, diagnostic := range mustProve(t, disabled) {
+	for _, diagnostic := range mustProve(t, mod) {
 		if diagnostic.ID == lint.IssueNoEffect && diagnostic.FixSafety == lint.SafeFix {
 			proved++
 		}
 	}
 	if proved == 0 {
-		t.Fatal("known disabled VSFilterMod build proved no fix")
+		t.Fatal("VSFilterMod build proved no fix")
 	}
 }
 

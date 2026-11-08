@@ -21,7 +21,6 @@ func runFonts(args []string, stdout, stderr io.Writer) int {
 	directory := flags.String("font-dir", "", "exclusive font directory (default: system directories)")
 	forceASS := flags.Bool("force-ass", false, "analyze unrecognized ASS input explicitly")
 	primary := flags.String("renderer", "libass", "primary renderer: libass, xy-vsfilter, or vsfiltermod")
-	modName := flags.String("mod-build", "unknown", "VSFilterMod capability: unknown, enabled, or disabled")
 	if err := flags.Parse(args); err != nil {
 		if err == flag.ErrHelp {
 			return 0
@@ -35,13 +34,10 @@ func runFonts(args []string, stdout, stderr io.Writer) int {
 	if *format != "pretty" && *format != "plain" && *format != "json" {
 		return fail(fmt.Errorf("unknown output format %q", *format))
 	}
-	explicitDirectory, explicitBuild := false, false
+	explicitDirectory := false
 	flags.Visit(func(f *flag.Flag) {
 		if f.Name == "font-dir" {
 			explicitDirectory = true
-		}
-		if f.Name == "mod-build" {
-			explicitBuild = true
 		}
 	})
 	if explicitDirectory && strings.TrimSpace(*directory) == "" {
@@ -51,17 +47,7 @@ func runFonts(args []string, stdout, stderr io.Writer) int {
 	if err != nil {
 		return fail(err)
 	}
-	mod, err := parseFeature(*modName)
-	if err != nil {
-		return fail(err)
-	}
-	build := renderer.Build{}
-	if kind == renderer.VSFilterMod {
-		build = renderer.Build{Mod: mod}
-	} else if explicitBuild {
-		return fail(fmt.Errorf("--mod-build requires --renderer=vsfiltermod"))
-	}
-	profile, err := renderer.New(kind, build)
+	profile, err := renderer.New(kind)
 	if err != nil {
 		return fail(err)
 	}

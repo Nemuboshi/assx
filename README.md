@@ -3,7 +3,7 @@ assx checks ASS subtitle files for lint issues.
 ## Usage
 
 ```text
-assx [lint] [--renderer=libass|xy-vsfilter|vsfiltermod] [--compat=RENDERERS] [--mod-build=unknown|enabled|disabled] [--format pretty|plain|json] [--explain] [--fix] [--unsafe-fix] [--force-ass] file.ass
+assx [lint] [--renderer=libass|xy-vsfilter|vsfiltermod] [--compat=RENDERERS] [--format pretty|plain|json] [--explain] [--fix] [--unsafe-fix] [--force-ass] file.ass
 ```
 
 - `file.ass`: the ASS file to check.
@@ -11,8 +11,7 @@ assx [lint] [--renderer=libass|xy-vsfilter|vsfiltermod] [--compat=RENDERERS] [--
 - `--compat`: add comma-separated profiles for compatibility and SafeFix checks. Use an empty value to select only the primary.
 - Without either flag, assx selects libass as primary and xy-VSFilter for compatibility.
 - An explicit `--renderer` without `--compat` selects only that primary. Compatibility warnings never become primary validity errors.
-- `--mod-build`: declare the VSFilterMod `_VSMOD` capability. It defaults to `unknown`; assx never infers it. The flag requires VSFilterMod as primary or in `--compat`. A known Mod capability is required for Mod SafeFix proofs.
-- assx does not model the VSFilterMod `_LUA` gate. The pinned source compiles Lua code but loads no script. See [build capabilities](docs/packages/profiles.md#vsfiltermod-build-capabilities).
+- assx models the pinned VSFilterMod build, which defines `_VSMOD` in every configuration. It does not model the `_LUA` gate: the pinned source compiles Lua code but loads no script. See [build capabilities](docs/packages/profiles.md#vsfiltermod-build-capabilities).
 - Both `--flag` and `-flag` forms work, with separate values or `=value`.
 - Exit status: 0 for no primary errors, 1 for primary errors, 2 for usage, input/output, or fix-application failures.
 - `--format pretty|plain|json`: choose output format; defaults to `pretty`. Pretty output shows a compact diagnostic report with source frames; color is used only on an interactive terminal. A scan spinner appears only when stderr is interactive. `plain` preserves the text-oriented output; `json` emits machine-readable diagnostics.

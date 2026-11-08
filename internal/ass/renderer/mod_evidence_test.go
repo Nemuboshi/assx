@@ -2,27 +2,17 @@ package renderer
 
 import "testing"
 
-func TestModSimpleSignaturesAndBuildScope(t *testing.T) {
+func TestModSimpleSignatures(t *testing.T) {
+	profile, err := New(VSFilterMod)
+	if err != nil {
+		t.Fatal(err)
+	}
 	for _, tag := range []string{"z", "frs", "fsvp", "fshp", "ortho"} {
 		for _, raw := range []string{"\\" + tag, "\\" + tag + "1", "\\" + tag + "(1)"} {
-			for _, feature := range []Feature{FeatureEnabled, FeatureDisabled, FeatureUnknown} {
-				profile, err := New(VSFilterMod, Build{Mod: feature})
-				if err != nil {
-					t.Fatal(err)
-				}
-				expr, source := first(t, raw)
-				result := profile.Resolve(expr, source)
-				if feature == FeatureEnabled {
-					if result.Name != tag || result.Status != Matched || result.Signature != SignatureVerified || result.Citation == "" {
-						t.Errorf("%s: %+v", raw, result)
-					}
-				} else if feature == FeatureUnknown {
-					if result.Status != Conditional || result.Signature == SignatureVerified {
-						t.Errorf("conditional %s: %+v", raw, result)
-					}
-				} else if result.Name == tag && result.Status == Matched {
-					t.Errorf("disabled %s matched: %+v", raw, result)
-				}
+			expr, source := first(t, raw)
+			result := profile.Resolve(expr, source)
+			if result.Name != tag || result.Status != Matched || result.Signature != SignatureVerified || result.Citation == "" {
+				t.Errorf("%s: %+v", raw, result)
 			}
 		}
 	}

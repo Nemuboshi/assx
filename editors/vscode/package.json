@@ -19,9 +19,7 @@
       "properties": {
         "assx.serverPath": { "type": "string", "default": "assx", "description": "Path to the assx executable on PATH or an absolute path." },
         "assx.primaryRenderer": { "type": "string", "enum": ["libass", "xy-vsfilter", "vsfiltermod"], "default": "libass" },
-        "assx.compatibilityRenderers": { "type": "array", "items": { "type": "string", "enum": ["libass", "xy-vsfilter", "vsfiltermod"] }, "default": ["xy-vsfilter"] },
-        "assx.vsfilterMod.mod": { "type": "string", "enum": ["unknown", "disabled", "enabled"], "default": "unknown" },
-        "assx.vsfilterMod.lua": { "type": "string", "enum": ["unknown", "disabled", "enabled"], "default": "unknown" }
+        "assx.compatibilityRenderers": { "type": "array", "items": { "type": "string", "enum": ["libass", "xy-vsfilter", "vsfiltermod"] }, "default": ["xy-vsfilter"] }
       }
     }
   },

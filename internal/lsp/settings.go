@@ -26,10 +26,7 @@ func parseSettings(raw jsontext.Value) (settings, error) {
 		Assx *struct {
 			PrimaryRenderer        string   `json:"primaryRenderer"`
 			CompatibilityRenderers []string `json:"compatibilityRenderers"`
-			VSFilterMod            struct {
-				Mod string `json:"mod"`
-			} `json:"vsfilterMod"`
-			Rules map[string]struct {
+			Rules                  map[string]struct {
 				Disabled bool          `json:"disabled"`
 				Severity lint.Severity `json:"severity"`
 			} `json:"rules"`
@@ -43,13 +40,9 @@ func parseSettings(raw jsontext.Value) (settings, error) {
 		return result, nil
 	}
 	config := envelope.Assx
-	mod, err := parseFeature(config.VSFilterMod.Mod)
-	if err != nil {
-		return settings{}, err
-	}
-	build := renderer.Build{Mod: mod}
 	if config.PrimaryRenderer != "" {
-		result.Options.Targets.Primary, err = configuredProfile(config.PrimaryRenderer, build)
+		profile, err := configuredProfile(config.PrimaryRenderer)
+		result.Options.Targets.Primary = profile
 		if err != nil {
 			return settings{}, err
 		}
@@ -58,7 +51,7 @@ func parseSettings(raw jsontext.Value) (settings, error) {
 	if config.CompatibilityRenderers != nil {
 		result.Options.Targets.Compatibility = make([]renderer.Profile, 0, len(config.CompatibilityRenderers))
 		for _, name := range config.CompatibilityRenderers {
-			profile, err := configuredProfile(name, build)
+			profile, err := configuredProfile(name)
 			if err != nil {
 				return settings{}, err
 			}
@@ -79,28 +72,15 @@ func parseSettings(raw jsontext.Value) (settings, error) {
 	return result, nil
 }
 
-func configuredProfile(name string, build renderer.Build) (renderer.Profile, error) {
+func configuredProfile(name string) (renderer.Profile, error) {
 	switch name {
 	case "libass":
 		return renderer.Standard(renderer.Libass)
 	case "xy-vsfilter":
 		return renderer.Standard(renderer.XYVSFilter)
 	case "vsfiltermod":
-		return renderer.New(renderer.VSFilterMod, build)
+		return renderer.Standard(renderer.VSFilterMod)
 	default:
 		return renderer.Profile{}, fmt.Errorf("unknown renderer %q", name)
-	}
-}
-
-func parseFeature(value string) (renderer.Feature, error) {
-	switch value {
-	case "", "unknown":
-		return renderer.FeatureUnknown, nil
-	case "disabled":
-		return renderer.FeatureDisabled, nil
-	case "enabled":
-		return renderer.FeatureEnabled, nil
-	default:
-		return renderer.FeatureUnknown, fmt.Errorf("unknown VSFilterMod feature %q", value)
 	}
 }

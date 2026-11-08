@@ -135,9 +135,7 @@ func mustProofProfile(t *testing.T, kind renderer.Kind) renderer.Profile {
 
 func mustProofMod(t *testing.T) renderer.Profile {
 	t.Helper()
-	profile, err := renderer.New(renderer.VSFilterMod, renderer.Build{
-		Mod: renderer.FeatureEnabled,
-	})
+	profile, err := renderer.New(renderer.VSFilterMod)
 	if err != nil {
 		t.Fatal(err)
 	}

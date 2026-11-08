@@ -22,7 +22,7 @@ golden update with the behavior change and a pinned-source citation.
 ## SafeFix proof scope
 
 For each fix marked `safe`, assx records every target renderer ID, pinned
-version, build capability, source edit range, source hash, edited hash, and
+version, source edit range, source hash, edited hash, and
 interpretation trace hash. It stores one full proof for an edit group and links
 each remaining diagnostic with `fix_proof_ref`. The interpretations stay next to
 the edits, including dispatch, signature citation, state, and source provenance.
@@ -30,12 +30,12 @@ The proof ID hashes every proof field, including that audit metadata.
 
 `--fix` checks the submitted ID and edited-source hash, then rebuilds the
 evidence from the current source and the complete edit group. It does not trust
-diagnostic scope labels. A subset, revision, capability, source, edited-hash, or
+diagnostic scope labels. A subset, revision, source, edited-hash, or
 interpretation mismatch rejects the request. Separate proof groups also require
 combined edit verification before application.
 
-Keep a fix unavailable when a selected renderer, signature, build capability, or
-semantic operation is unresolved. Keep `\\t()` unavailable because the pinned
+Keep a fix unavailable when a selected renderer, signature, or semantic
+operation is unresolved. Keep `\\t()` unavailable because the pinned
 matrix verifies only one-to-four-argument transform forms and records layout
 changes for the empty form. Keep parenthesized empty `\\b` and `\\i` forms
 unavailable until their signatures are verified for that exact form. Keep an

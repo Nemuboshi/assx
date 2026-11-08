@@ -60,7 +60,7 @@ Match status, verified argument shapes, and modeled state are separate:
   state transitions. Name-unknown or explicitly ignored commands remain
   distinguishable in TagEvent resolution metadata.
 - VSFilterMod `\z`, `\frs`, `\fsvp`, `\fshp`, and `\ortho` have modeled
-  state for verified signatures when `_VSMOD` is enabled.
+  state for verified signatures.
   Bare forms restore the original Dialogue Style, not the active named reset Style.
   `\frs` truncates its value after multiplying by 10.
   The spacing tags multiply by 8. Depth `\z` multiplies by 80.
@@ -78,9 +78,9 @@ Match status, verified argument shapes, and modeled state are separate:
   separately. NoEffect proof revocation is retroactive.
 
 For example, with `{\pos(1,2,3)\pos(4,5)}`, libass and xy-VSFilter
-reject the first form and can apply the second. VSFilterMod with `_VSMOD`
-enabled can apply the first and ignore the second. A build with unknown
-capabilities cannot prove which command owns the position slot.
+reject the first form and can apply the second. The pinned VSFilterMod build
+can apply the first and ignore the second, so the two profiles disagree about
+the position owner.
 
 ## Current VSFilterMod scope
 
@@ -132,7 +132,7 @@ for validity diagnostics, [compatibility](compatibility.md) for renderer
 comparison, and [contracts](../rules/verification.md) for SafeFix proof scope.
 An unmodeled extension remains a proof barrier.
 
-The CLI exposes `--renderer`, `--compat`, and explicit Mod build capabilities.
+The CLI exposes `--renderer` and `--compat`.
 JSON and both text presenters identify the pinned scope.
 See [usage](../../README.md) and [reports](../usage/diagnostic-reports.md).
 
@@ -175,7 +175,7 @@ go test ./internal/lint -run '^TestRendererScoped' -count=1
 go test ./internal/semantic -run '^$' -bench '^BenchmarkEvaluate(Resolved|Dialogue)' -benchmem
 ```
 
-The tests cover first-wins divergence, build capability uncertainty,
+The tests cover first-wins divergence,
 prefix shadowing, nested transform resolution, clip provenance, style
 resets, font consumers, and the absence of single-profile SafeFix edits.
 

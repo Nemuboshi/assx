@@ -1,6 +1,6 @@
 # Diagnostic reports
 
-`internal/lintreport` converts final lint diagnostics into the `internal/report` presentation model. It derives fix badges only from concrete edits plus validated `FixSafety` metadata. The `plain` and `pretty` presenters display pinned renderer scope and build capabilities.
+`internal/lintreport` converts final lint diagnostics into the `internal/report` presentation model. It derives fix badges only from concrete edits plus validated `FixSafety` metadata. The `plain` and `pretty` presenters display the pinned renderer scope.
 `pretty` renders source frames and optional evidence. JSON encodes `lint.Diagnostic` directly, including its `renderer` scope.
 
 Pretty output uses Lip Gloss v2 and `github.com/charmbracelet/x/ansi` for terminal cell width and grapheme-safe cropping. `github.com/rivo/uniseg` expands tabs at grapheme boundaries. Versions are pinned in `go.mod`.

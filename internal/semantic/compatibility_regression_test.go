@@ -7,25 +7,19 @@ import (
 )
 
 func TestCompatibilityCoreBehaviorBuildGuards(t *testing.T) {
-	for _, feature := range []renderer.Feature{renderer.FeatureEnabled, renderer.FeatureDisabled, renderer.FeatureUnknown} {
-		profiles := []renderer.Profile{mustProfile(t, renderer.Libass), mustMod(t, feature)}
-		findings := CompareDialogue(ass.ParseConcreteDialogue(`{\fsc(100)}A`), profiles, EvaluationOptions{})
-		found := false
-		for _, finding := range findings {
-			if finding.Dimension == "behavior/arg-form" {
-				found = true
-				want := CompatibilityUnresolved
-				if feature == renderer.FeatureEnabled {
-					want = CompatibilityDivergent
-				}
-				if finding.Status != want {
-					t.Fatalf("feature %d: got %s, want %s", feature, finding.Status, want)
-				}
+	profiles := []renderer.Profile{mustProfile(t, renderer.Libass), mustMod(t)}
+	findings := CompareDialogue(ass.ParseConcreteDialogue(`{\fsc(100)}A`), profiles, EvaluationOptions{})
+	found := false
+	for _, finding := range findings {
+		if finding.Dimension == "behavior/arg-form" {
+			found = true
+			if finding.Status != CompatibilityDivergent {
+				t.Fatalf("got %s, want %s", finding.Status, CompatibilityDivergent)
 			}
 		}
-		if !found {
-			t.Fatalf("feature %d: missing guarded behavior", feature)
-		}
+	}
+	if !found {
+		t.Fatal("missing guarded behavior")
 	}
 }
 

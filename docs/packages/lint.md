@@ -33,8 +33,7 @@ list to legalize VSFilterMod-only shapes.
 - Target-configured analysis supplies fixes only after it proves every requested
   profile. Application recomputes the authorized edits under the same primary and
   compatibility policy.
-- The `renderer` JSON field identifies the pinned profile, including Mod
-  capabilities.
+- The `renderer` JSON field identifies the pinned profile.
 - Compatibility findings identify both profiles and use physical-line columns.
   Primary tag findings use dialogue-relative columns. Findings keep stable source
   ordering.
@@ -51,7 +50,7 @@ differential results: [compatibility](compatibility.md).
 ## Regression and performance
 
 `renderer_validation_test.go` exercises independently resolved positions,
-prefix collisions, unknown build flags, nested transforms, malformed clips,
+prefix collisions, nested transforms, malformed clips,
 first-wins outcomes, Style references, karaoke, drawing, source locations,
 deterministic ordering, JSON compatibility, and the single-profile SafeFix
 barrier. The default CLI golden contracts remain authoritative; do not update

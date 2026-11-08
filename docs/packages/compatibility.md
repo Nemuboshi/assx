@@ -7,16 +7,16 @@
 observations. `lint.AnalyzeCompatibility(dialogue, profiles)` and
 `lint.AnalyzeDocumentCompatibility(document, profiles)` turn findings into
 separate diagnostics. An empty target list selects libass + xy-VSFilter;
-VSFilterMod is explicit and retains its `_VSMOD` build capability.
+VSFilterMod is explicit and uses its pinned `_VSMOD` build.
 Duplicate profiles are removed without changing caller order.
 
 The default CLI selects libass primary and xy-VSFilter compatibility.
 An explicit `--renderer` without `--compat` selects only that primary.
 An explicit empty compatibility value also selects only the primary.
-Target-configured analysis normalizes and sorts profiles by renderer, revision, and build capabilities.
+Target-configured analysis normalizes and sorts profiles by renderer and revision.
 Compatibility diagnostics never become primary validity errors.
 Compatibility APIs provide no edits or safety classification.
-SafeFix requires proof for every caller-requested profile and build.
+SafeFix requires proof for every caller-requested profile.
 See [the evidence contract](../rules/verification.md) for application authorization.
 
 Syntax stays in `internal/ass`; source partitioning and renderer evidence stay
@@ -35,7 +35,7 @@ interpretations, explanation, and available citations. Statuses are:
 | `equivalent` | Verified observations agree for this dimension only. |
 | `divergent` | Independently interpreted, source-backed observations differ. |
 | `ignored-or-unsupported` | Both profiles ignore or do not support the construct; this does not prove useful rendering. |
-| `unresolved` | A missing model, inferred evidence, malformed expression, or unknown build prevents a conclusion. |
+| `unresolved` | A missing model, inferred evidence, or malformed expression prevents a conclusion. |
 
 Dimensions distinguish dispatch, arguments, accepted/rejected signatures,
 application, first-wins ownership, explicit behavior scenarios, tracked state,
@@ -43,7 +43,7 @@ and document record layouts. Multiple failures at one span survive diagnostic
 deduplication. Findings are deterministic in source and requested target order.
 `ASS003` reports proven differences; `ASS031` reports unresolved or ignored
 compatibility observations. The diagnostic `field` identifies the dimension
-and `renderer` identifies both pinned profiles and their build capabilities.
+and `renderer` identifies both pinned profiles.
 These findings are separate from renderer-local validity diagnostics.
 
 Each profile resolves and evaluates the same neutral source independently.
@@ -69,9 +69,9 @@ pixel-identical rendering; no `equivalent` dimension does.
 `docs/reference/ass-tags.xml` explicitly scopes verified scenario cells. The generated
 matrix now retains those rows alongside signatures. Missing rows do not inherit
 editorial scenario defaults, `status="S"` and unverified renderer cells cannot
-prove equivalence, and unknown builds cannot borrow an enabled branch's proof.
-Scenario `requires` metadata guards the VSFilterMod outcome even when the
-command itself is core, such as the optional argument-consuming `fsc` handler.
+prove equivalence. Scenario `requires` metadata guards the VSFilterMod outcome
+even when the command itself is core, such as the optional argument-consuming
+`fsc` handler.
 Disabled branches stay unresolved unless separately verified.
 Scenario candidates come from both interpretations. Each candidate's domain is
 checked independently on each side before its pinned outcomes are compared;
@@ -91,8 +91,8 @@ comparison requires exact fractional input.
   inferred signature and unmodeled effects remain unresolved.
 - `\frs10` similarly selects traditional `\fr` versus Mod's `\frs`.
 - `\pos(1,2,3)` is source-verified rejected by traditional profiles and
-  accepted by Mod with `_VSMOD` enabled. With a later `\pos(4,5)`, ownership
-  and known position state differ. An unknown Mod build stays unresolved.
+  accepted by the pinned Mod build. With a later `\pos(4,5)`, ownership and
+  known position state differ.
 - `\pos(1,,2)` discards the empty component in all three pinned parsers.
   Each consumes two arguments and can claim the position latch; a subsequent
   valid position has the same source-aligned first owner. The shared resolver
@@ -185,9 +185,9 @@ The matrix records these limits as deliberate decisions:
   Both use the resolved BorderStyle field span and selected profile pair.
   Neither rule supplies edits or applies to single-profile validation.
   Matching modes do not prove frame equivalence.
-- The VSFilterMod `Spacing` clamp is build-conditional (`_VSMOD`, patch f002).
-  A mod-build-version question cannot be resolved from the pinned source alone,
-  so this field is ignored and documented, not checked.
+- The VSFilterMod `Spacing` clamp is `_VSMOD`-gated (patch f002). The pinned
+  source does not resolve the clamped value, so this field is ignored and
+  documented, not checked.
 - `Justify` is not read from ASS Style rows by the pinned loaders. The earlier
   libass citation was from its host override API. libass reads that API value
   during line layout. The matrix records this distinction. The field remains
@@ -207,7 +207,7 @@ go test ./internal/semantic -run '^$' -bench '^BenchmarkCompareDialogue$' -bench
 
 Regression tests cover independent prefix dispatch, signature acceptance,
 first-wins ownership and state, empty-component consumption, verified and
-unverified scenarios, unknown builds, nested transforms, malformed clips,
+unverified scenarios, nested transforms, malformed clips,
 resets, drawing, karaoke, detached observations, source spans, deduplication,
 custom document layouts, physical lines, and the absence of compatibility
 fixes. All three pinned parsers' empty-component removal and the first-wins

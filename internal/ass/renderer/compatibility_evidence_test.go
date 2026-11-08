@@ -7,10 +7,7 @@ import (
 
 func TestParenthesizedEmptyComponentConsumption(t *testing.T) {
 	for _, kind := range []Kind{Libass, XYVSFilter, VSFilterMod} {
-		p, _ := New(kind, Build{})
-		if kind == VSFilterMod {
-			p, _ = New(kind, Build{Mod: FeatureEnabled})
-		}
+		p, _ := New(kind)
 		source := `{\pos(1,,2)}`
 		var result Result
 		p.WalkDialogue(ass.ParseConcreteDialogue(source), func(r Result, _ bool) bool { result = r; return true })
@@ -28,18 +25,15 @@ func TestParenthesizedEmptyComponentConsumption(t *testing.T) {
 func TestBehaviorEvidenceExplicitVerification(t *testing.T) {
 	libass, _ := Standard(Libass)
 	xy, _ := Standard(XYVSFilter)
-	mod, _ := New(VSFilterMod, Build{Mod: FeatureEnabled})
+	mod, _ := Standard(VSFilterMod)
 	if libass.Behavior("blur", "out-of-range").Outcome != "clamp-high" || !xy.Behavior("blur", "out-of-range").Verified {
 		t.Fatal("lost verified scenario")
 	}
 	if xy.Behavior("be", "out-of-range").Verified || mod.Behavior("fsp", "empty-arg").Verified {
 		t.Fatal("inferred renderer cell became verified")
 	}
-	for _, feature := range []Feature{FeatureDisabled, FeatureUnknown} {
-		profile, _ := New(VSFilterMod, Build{Mod: feature})
-		if profile.Behavior("fsc", "arg-form").Verified {
-			t.Fatalf("feature %d borrowed enabled behavior", feature)
-		}
+	if !mod.Behavior("fsc", "arg-form").Verified {
+		t.Fatal("single pinned build lost verified behavior")
 	}
 	if !mod.Behavior("fsc", "arg-form").Verified {
 		t.Fatal("enabled behavior lost verification")

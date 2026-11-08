@@ -14,7 +14,7 @@ func TestResolvedResetRetainsOriginalStyleAndFirstArgument(t *testing.T) {
 	}
 	libass, _ := renderer.Standard(renderer.Libass)
 	xy, _ := renderer.Standard(renderer.XYVSFilter)
-	mod, _ := renderer.New(renderer.VSFilterMod, renderer.Build{Mod: renderer.FeatureEnabled})
+	mod, _ := renderer.New(renderer.VSFilterMod)
 	for _, profile := range []renderer.Profile{libass, xy, mod} {
 		t.Run(profile.Kind().String(), func(t *testing.T) {
 			var names []string
