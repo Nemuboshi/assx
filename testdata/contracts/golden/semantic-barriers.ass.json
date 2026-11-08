@@ -1832,47 +1832,7 @@
             "start": 1,
             "end": 32,
             "column": 3,
-            "paren": true,
-            "children": [
-              {
-                "name": "fs",
-                "raw": "\\fs30",
-                "args": [
-                  "30"
-                ],
-                "start": 10,
-                "end": 15,
-                "column": 12,
-                "transition": true
-              },
-              {
-                "name": "t",
-                "raw": "\\t(0,100,\\frz20)",
-                "args": [
-                  "0",
-                  "100",
-                  "\\frz20"
-                ],
-                "start": 15,
-                "end": 31,
-                "column": 17,
-                "paren": true,
-                "transition": true,
-                "children": [
-                  {
-                    "name": "frz",
-                    "raw": "\\frz20",
-                    "args": [
-                      "20"
-                    ],
-                    "start": 24,
-                    "end": 30,
-                    "column": 26,
-                    "transition": true
-                  }
-                ]
-              }
-            ]
+            "paren": true
           },
           "index": 0,
           "policy": 3,
@@ -2079,20 +2039,7 @@
             "end": 31,
             "column": 17,
             "paren": true,
-            "transition": true,
-            "children": [
-              {
-                "name": "frz",
-                "raw": "\\frz20",
-                "args": [
-                  "20"
-                ],
-                "start": 24,
-                "end": 30,
-                "column": 26,
-                "transition": true
-              }
-            ]
+            "transition": true
           },
           "index": 2,
           "policy": 0,

@@ -13,10 +13,11 @@ import (
 // projected text, Style layouts, and edited sources each need their own
 // prepared dialogue.
 type PreparedDialogue struct {
-	tree    ass.ConcreteDialogue
-	profile renderer.Profile
-	program *program
-	entries []resolvedEntry
+	tree       ass.ConcreteDialogue
+	profile    renderer.Profile
+	program    *program
+	operations map[int]resolvedOperation
+	entries    []resolvedEntry
 }
 
 // PrepareDialogue resolves every expression in the tree under the profile.
@@ -25,8 +26,12 @@ func PrepareDialogue(ctx context.Context, tree ass.ConcreteDialogue, profile ren
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	built, entries := operationsFromTokens(tree, profile, true)
-	return &PreparedDialogue{tree: tree, profile: profile, program: built, entries: entries}, nil
+	return prepareDialogue(tree, profile, buildProgram(tree)), nil
+}
+
+func prepareDialogue(tree ass.ConcreteDialogue, profile renderer.Profile, program *program) *PreparedDialogue {
+	operations, entries := resolveOperations(tree, profile, true)
+	return &PreparedDialogue{tree: tree, profile: profile, program: program, operations: operations, entries: entries}
 }
 
 // Evaluate runs the state engine over the prepared operations under the
@@ -73,7 +78,7 @@ func evaluatePrepared(prepared *PreparedDialogue, options EvaluationOptions) Eva
 	if profile.ModStyleTransform() {
 		options.Styles = modStyleStates(options.Styles)
 	}
-	return evaluateResolvedCore(prepared.program, profile, options)
+	return evaluateProgram(prepared.program, profile, prepared.operations, options)
 }
 
 // DialoguePreparations caches prepared dialogue operations for one analysis
@@ -82,10 +87,14 @@ func evaluatePrepared(prepared *PreparedDialogue, options EvaluationOptions) Eva
 // A nil cache is valid and resolves every request independently.
 type DialoguePreparations struct {
 	byProfile map[renderer.Profile]map[string]*PreparedDialogue
+	programs  map[string]*program
 }
 
 func NewDialoguePreparations() *DialoguePreparations {
-	return &DialoguePreparations{byProfile: make(map[renderer.Profile]map[string]*PreparedDialogue)}
+	return &DialoguePreparations{
+		byProfile: make(map[renderer.Profile]map[string]*PreparedDialogue),
+		programs:  make(map[string]*program),
+	}
 }
 
 // Prepare returns operations resolved from the given tree under the profile,
@@ -94,7 +103,7 @@ func (d *DialoguePreparations) Prepare(profile renderer.Profile, tree ass.Concre
 	if prepared := d.lookup(profile, tree.Source); prepared != nil {
 		return prepared
 	}
-	prepared, _ := PrepareDialogue(context.Background(), tree, profile)
+	prepared := prepareDialogue(tree, profile, d.programFor(tree.Source, tree))
 	d.store(profile, tree.Source, prepared)
 	return prepared
 }
@@ -105,7 +114,8 @@ func (d *DialoguePreparations) PrepareText(profile renderer.Profile, text string
 	if prepared := d.lookup(profile, text); prepared != nil {
 		return prepared
 	}
-	prepared, _ := PrepareDialogue(context.Background(), ass.ParseConcreteDialogue(text), profile)
+	tree := ass.ParseConcreteDialogue(text)
+	prepared := prepareDialogue(tree, profile, d.programFor(text, tree))
 	d.store(profile, text, prepared)
 	return prepared
 }
@@ -115,6 +125,20 @@ func (d *DialoguePreparations) lookup(profile renderer.Profile, text string) *Pr
 		return nil
 	}
 	return d.byProfile[profile][text]
+}
+
+// programFor returns the shared neutral program for one dialogue text. Every
+// profile that prepares the same text walks the same token sequence.
+func (d *DialoguePreparations) programFor(text string, tree ass.ConcreteDialogue) *program {
+	if d == nil {
+		return buildProgram(tree)
+	}
+	if built := d.programs[text]; built != nil {
+		return built
+	}
+	built := buildProgram(tree)
+	d.programs[text] = built
+	return built
 }
 
 func (d *DialoguePreparations) store(profile renderer.Profile, text string, prepared *PreparedDialogue) {
@@ -127,4 +151,27 @@ func (d *DialoguePreparations) store(profile renderer.Profile, text string, prep
 		d.byProfile[profile] = byText
 	}
 	byText[text] = prepared
+}
+
+// EvaluatePreparedSet folds one neutral program once with one state per
+// prepared dialogue. The result reports false when the entries do not share a
+// program, for example after a projected text rewrite; the caller then keeps
+// separate evaluations.
+func EvaluatePreparedSet(prepared []*PreparedDialogue, options []EvaluationOptions) ([]Evaluation, bool) {
+	if len(prepared) == 0 || len(options) != len(prepared) {
+		return nil, false
+	}
+	for _, entry := range prepared[1:] {
+		if entry.program != prepared[0].program {
+			return nil, false
+		}
+	}
+	if options[0].Observer.Text == nil && !prepared[0].tree.HasCandidates() {
+		return make([]Evaluation, len(prepared)), true
+	}
+	states := make([]evaluationState, len(prepared))
+	for i := range prepared {
+		states[i] = evaluationState{profile: prepared[i].profile, operations: prepared[i].operations, options: options[i]}
+	}
+	return evaluateProgramSet(prepared[0].program, states), true
 }

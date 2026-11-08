@@ -158,48 +158,70 @@ func EvaluateResolved(tree ass.ConcreteDialogue, profile renderer.Profile, optio
 	if options.Observer.Text == nil && !tree.HasCandidates() {
 		return Evaluation{}
 	}
-	if profile.ModStyleTransform() {
-		options.Styles = modStyleStates(options.Styles)
-	}
-	return evaluateResolvedCore(resolveTokens(tree, profile), profile, options)
+	operations, _ := resolveOperations(tree, profile, false)
+	return evaluateProgram(buildProgram(tree), profile, operations, options)
 }
 
-// evaluateResolvedCore runs the state engine over prepared resolution output.
-func evaluateResolvedCore(built *program, profile renderer.Profile, options EvaluationOptions) Evaluation {
-	name := DialogueStyleLookupName(options.DialogueStyle)
-	m := evaluator{
-		options:       options,
-		profile:       profile,
-		live:          make(map[int]bool),
-		candidates:    make(map[int]noEffectCandidate),
-		originalStyle: name,
-		activeStyle:   name,
-		baseValid:     true,
+// evaluationState is one renderer's state over the shared neutral program.
+type evaluationState struct {
+	profile    renderer.Profile
+	operations map[int]resolvedOperation
+	options    EvaluationOptions
+	evaluator  *evaluator
+}
+
+// evaluateProgram folds the neutral program with one state.
+func evaluateProgram(built *program, profile renderer.Profile, operations map[int]resolvedOperation, options EvaluationOptions) Evaluation {
+	return evaluateProgramSet(built, []evaluationState{{profile: profile, operations: operations, options: options}})[0]
+}
+
+// evaluateProgramSet folds the neutral program once with one state per
+// selected renderer. The token sequence, text boundaries, and scope stack are
+// shared; each state keeps its own store, owners, and candidates.
+func evaluateProgramSet(built *program, states []evaluationState) []Evaluation {
+	for i := range states {
+		options := states[i].options
+		if states[i].profile.ModStyleTransform() {
+			options.Styles = modStyleStates(options.Styles)
+		}
+		states[i].options = options
+		name := DialogueStyleLookupName(options.DialogueStyle)
+		m := &evaluator{
+			options: options, profile: states[i].profile,
+			live: make(map[int]bool), candidates: make(map[int]noEffectCandidate),
+			originalStyle: name, activeStyle: name, baseValid: true,
+			operations: states[i].operations, children: built.children,
+		}
+		m.store.init()
+		if options.SkipNoEffectProofs {
+			m.proofsDisabled = true
+		}
+		states[i].evaluator = m
 	}
-	m.store.init()
-	if options.SkipNoEffectProofs {
-		m.proofsDisabled = true
-	}
-	// Style values are read through the active base on demand. Copying every
-	// Style slot into each Dialogue would dominate allocations for large files.
-	visit := func(token semanticToken) {
-		if token.hasTag {
-			event := m.consumeTag(token.tag)
-			if options.Observer.Tag != nil {
-				options.Observer.Tag(event, m.view())
+	for _, token := range built.tokens {
+		for i := range states {
+			m := states[i].evaluator
+			if token.hasTag {
+				event := m.consumeTag(m.operations[token.tag.Start].tag)
+				if m.options.Observer.Tag != nil {
+					m.options.Observer.Tag(event, m.view())
+				}
+				continue
 			}
-		} else {
 			m.consumeText(token.text)
-			if options.Observer.Text != nil {
-				options.Observer.Text(token.text, token.start, m.view())
+			if m.options.Observer.Text != nil {
+				m.options.Observer.Text(token.text, token.start, m.view())
 			}
 		}
 	}
-	m.operations = built.operations
-	m.children = built.children
-	for _, token := range built.tokens {
-		visit(token)
+	out := make([]Evaluation, len(states))
+	for i := range states {
+		out[i] = states[i].evaluator.result()
 	}
+	return out
+}
+
+func (m *evaluator) result() Evaluation {
 	out := make([]NoEffect, 0, len(m.candidates))
 	for index := range m.allTags {
 		candidate, ok := m.candidates[index]

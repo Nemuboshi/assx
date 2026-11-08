@@ -1,7 +1,6 @@
 package semantic
 
 import (
-	"slices"
 	"strings"
 
 	"assx/internal/ass"
@@ -24,11 +23,22 @@ type resolvedOperation struct {
 	unclosed bool
 }
 
+// semanticToken is one step of the neutral dialogue program. A tag token
+// carries only its source offsets; each profile resolves it through its own
+// operation map. No renderer decision is stored here.
 type semanticToken struct {
 	text   string
 	start  int
 	tag    ass.Tag
 	hasTag bool
+}
+
+// program is one dialogue flattened once per concrete tree. Transform nesting
+// is a child-index map, not a recursive tree. The token stream is neutral:
+// every selected renderer walks the same sequence.
+type program struct {
+	tokens   []semanticToken
+	children map[int][]int // parent tag start -> child tag starts, in source order
 }
 
 func (m *evaluator) operationFor(tag ass.Tag) resolvedOperation {
@@ -40,22 +50,64 @@ func (m *evaluator) policyFor(tag ass.Tag) (spec.TagSpec, bool) {
 	return op.policy, op.known
 }
 
-// resolveTokens retains visible text boundaries and the renderer's independent
-// matching decisions. Children of a transform are resolved before evaluation,
-// so parent no-effect checks cannot accidentally consult the global name table.
-// A flat explicit stack avoids recursive parsing on adversarial nesting.
-func resolveTokens(tree ass.ConcreteDialogue, profile renderer.Profile) *program {
-	built, _ := operationsFromTokens(tree, profile, false)
+// buildProgram flattens the CST once. Transform children are found from the
+// syntax tree, not from a renderer result, so every profile receives the same
+// token sequence.
+func buildProgram(tree ass.ConcreteDialogue) *program {
+	source := tree.Source
+	built := &program{}
+	type pending struct {
+		expr      ass.ConcreteExpression
+		parent    int
+		nested    bool
+		hasParent bool
+	}
+	for _, node := range tree.Nodes {
+		if node.Block == nil {
+			if node.Raw != "" {
+				built.tokens = append(built.tokens, semanticToken{text: node.Raw, start: node.Span.Start})
+			}
+			continue
+		}
+		for _, item := range node.Block.Items {
+			if item.Expression == nil {
+				continue
+			}
+			stack := []pending{{expr: *item.Expression, parent: -1, nested: false}}
+			for len(stack) != 0 {
+				last := len(stack) - 1
+				current := stack[last]
+				stack = stack[:last]
+				tag := ass.Tag{
+					Start: current.expr.Span.Start, End: current.expr.Span.End,
+					Column: current.expr.HeadSpan.Start + 1,
+					Paren:  current.expr.Parenthesized, InTransition: current.nested,
+				}
+				if length := current.expr.SlashSpan.End - current.expr.SlashSpan.Start; length > 1 {
+					tag.RepeatedSlashes = length - 1
+				}
+				built.tokens = append(built.tokens, semanticToken{tag: tag, hasTag: true})
+				if current.hasParent {
+					if built.children == nil {
+						built.children = make(map[int][]int)
+					}
+					built.children[current.parent] = append(built.children[current.parent], tag.Start)
+				}
+				if strings.TrimSpace(current.expr.Head) != "t" || !current.expr.Parenthesized {
+					continue
+				}
+				components := current.expr.Components(source)
+				for i := len(components) - 1; i >= 0; i-- {
+					for j := len(components[i].Items) - 1; j >= 0; j-- {
+						if child := components[i].Items[j].Expression; child != nil {
+							stack = append(stack, pending{expr: *child, parent: tag.Start, nested: true, hasParent: true})
+						}
+					}
+				}
+			}
+		}
+	}
 	return built
-}
-
-// program is one dialogue flattened once per renderer. Transform nesting is a
-// child-index map, not a recursive tree: evaluation walks the token stream and
-// looks up a parent's children by source offset.
-type program struct {
-	tokens     []semanticToken
-	operations map[int]resolvedOperation
-	children   map[int][]int // parent tag start -> child tag starts, in source order
 }
 
 // resolvedEntry is one operation in renderer.Profile.WalkDialogue emission
@@ -67,40 +119,29 @@ type resolvedEntry struct {
 	nested bool
 }
 
-// operationsFromTokens is the single resolution walk. The token/operation
-// outputs feed the evaluator. With collectEntries set, the third result
-// replays renderer.Profile.WalkDialogue emission order. One-shot callers pass
-// false, which keeps the walk allocation shape of a plain evaluation.
-func operationsFromTokens(tree ass.ConcreteDialogue, profile renderer.Profile, collectEntries bool) (*program, []resolvedEntry) {
+// resolveOperations resolves every expression in the neutral program under one
+// profile. With collectEntries set, the second result replays
+// renderer.Profile.WalkDialogue emission order.
+func resolveOperations(tree ass.ConcreteDialogue, profile renderer.Profile, collectEntries bool) (map[int]resolvedOperation, []resolvedEntry) {
 	source := tree.Source
-	type entry struct {
-		op     resolvedOperation
-		parent int
-	}
-	type pending struct {
-		expr   ass.ConcreteExpression
-		parent int
-		nested bool
-	}
-	var tokens []semanticToken
-	var entries []entry
+	operations := make(map[int]resolvedOperation)
 	var out []resolvedEntry
 	if collectEntries {
 		out = []resolvedEntry{}
 	}
-
+	type pending struct {
+		expr   ass.ConcreteExpression
+		nested bool
+	}
 	for _, node := range tree.Nodes {
 		if node.Block == nil {
-			if node.Raw != "" {
-				tokens = append(tokens, semanticToken{text: node.Raw, start: node.Span.Start})
-			}
 			continue
 		}
 		for _, item := range node.Block.Items {
 			if item.Expression == nil {
 				continue
 			}
-			stack := []pending{{expr: *item.Expression, parent: -1}}
+			stack := []pending{{expr: *item.Expression}}
 			for len(stack) != 0 {
 				last := len(stack) - 1
 				current := stack[last]
@@ -122,58 +163,28 @@ func operationsFromTokens(tree ass.ConcreteDialogue, profile renderer.Profile, c
 				for _, arg := range result.Args {
 					tag.Args = append(tag.Args, strings.TrimSpace(arg.Raw))
 				}
-				index := len(entries)
-				entries = append(entries, entry{
-					op: resolvedOperation{
-						tag: tag, policy: result.Policy, known: result.HasPolicy,
-						match: result.Status, signature: result.Signature,
-						shadowed: result.Shadowed, citation: result.Citation,
-						unclosed: current.expr.Parenthesized && !current.expr.Closed(),
-					},
-					parent: current.parent,
-				})
+				operations[tag.Start] = resolvedOperation{
+					tag: tag, policy: result.Policy, known: result.HasPolicy,
+					match: result.Status, signature: result.Signature,
+					shadowed: result.Shadowed, citation: result.Citation,
+					unclosed: current.expr.Parenthesized && !current.expr.Closed(),
+				}
 				if collectEntries {
 					out = append(out, resolvedEntry{result: result, nested: current.nested})
 				}
-				tokens = append(tokens, semanticToken{tag: tag, hasTag: true})
-				if result.Status != renderer.Matched || result.Name != "t" || !current.expr.Parenthesized {
+				if strings.TrimSpace(current.expr.Head) != "t" || !current.expr.Parenthesized {
 					continue
 				}
 				components := current.expr.Components(source)
 				for i := len(components) - 1; i >= 0; i-- {
 					for j := len(components[i].Items) - 1; j >= 0; j-- {
 						if child := components[i].Items[j].Expression; child != nil {
-							stack = append(stack, pending{expr: *child, parent: index, nested: true})
+							stack = append(stack, pending{expr: *child, nested: true})
 						}
 					}
 				}
 			}
 		}
 	}
-	// Keep the borrowed child views for observers, and build the flat
-	// child-index map the evaluator walks instead of recursing.
-	for i := len(entries) - 1; i >= 0; i-- {
-		if parent := entries[i].parent; parent >= 0 {
-			entries[parent].op.tag.Children = append(entries[parent].op.tag.Children, entries[i].op.tag)
-		}
-	}
-	var children map[int][]int
-	operations := make(map[int]resolvedOperation, len(entries))
-	for i := range entries {
-		slices.Reverse(entries[i].op.tag.Children)
-		operations[entries[i].op.tag.Start] = entries[i].op
-		if parent := entries[i].parent; parent >= 0 {
-			if children == nil {
-				children = make(map[int][]int)
-			}
-			parentStart := entries[parent].op.tag.Start
-			children[parentStart] = append(children[parentStart], entries[i].op.tag.Start)
-		}
-	}
-	for i := range tokens {
-		if tokens[i].hasTag {
-			tokens[i].tag = operations[tokens[i].tag.Start].tag
-		}
-	}
-	return &program{tokens: tokens, operations: operations, children: children}, out
+	return operations, out
 }
