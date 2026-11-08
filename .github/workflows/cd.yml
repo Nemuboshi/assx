@@ -1,0 +1,60 @@
+name: CD
+
+# Manual packaging only. No tests, no lint, no automatic trigger.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - goos: windows
+            goarch: amd64
+            suffix: .exe
+          - goos: linux
+            goarch: amd64
+            suffix: ""
+          - goos: darwin
+            goarch: arm64
+            suffix: ""
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version: stable
+          check-latest: true
+      - name: Build
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: "0"
+        run: |
+          mkdir -p dist out
+          go build -trimpath -o dist/assx${{ matrix.suffix }} ./cmd/assx
+      - name: Package
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          SUFFIX: ${{ matrix.suffix }}
+        run: |
+          mkdir -p out/assx-$GOOS-$GOARCH
+          cp dist/assx$SUFFIX out/assx-$GOOS-$GOARCH/assx$SUFFIX
+          cp LICENSE README.md out/assx-$GOOS-$GOARCH/
+          if [ "$GOOS" = "windows" ]; then
+            (cd out && zip -qr assx-$GOOS-$GOARCH.zip assx-$GOOS-$GOARCH)
+          else
+            tar -C out -czf out/assx-$GOOS-$GOARCH.tar.gz assx-$GOOS-$GOARCH
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: assx-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: |
+            out/*.zip
+            out/*.tar.gz
+          if-no-files-found: error
