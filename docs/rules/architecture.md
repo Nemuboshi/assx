@@ -1,6 +1,6 @@
 # Architecture rules
 
-The package graph and the request paths are in [the lint pipeline](../architecture/lint-pipeline.md). Read them before you add a package or an import. The ownership and placement rules are in [compatibility](../packages/compatibility.md).
+The package graph and the request paths are in [the lint pipeline](../architecture/lint-pipeline.md). Read them before you add a package or an import. The ownership and placement rules are in [compatibility](../packages/compatibility.md). Planned evaluator work is in [the evaluation model](../architecture/evaluation-model.md).
 
 ## Implementation quality
 
