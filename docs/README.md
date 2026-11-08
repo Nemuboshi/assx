@@ -6,6 +6,7 @@ This page is the index. Start with the document for the affected subject.
 | --- | --- | --- |
 | Command usage, flags, exit status | `cmd/assx` | [README](../README.md) |
 | Package boundaries and dependency rules | All packages | [Architecture](architecture/overview.md) |
+| Lint flow, proof, and request paths | `internal/lint`, `internal/analysis` | [Lint pipeline](architecture/lint-pipeline.md) |
 | Snapshot analysis and deferred proof | `internal/analysis` | [Analysis](packages/analysis.md) |
 | Syntax and source spans | `internal/ass` | [Syntax](packages/syntax.md) |
 | Tag signatures and dispatch | `internal/ass/spec`, `internal/ass/renderer` | [Profiles](packages/profiles.md), [tag matrix](ass-rules/ass-tags.xml) |

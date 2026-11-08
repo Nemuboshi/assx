@@ -1,5 +1,7 @@
 # Renderer-scoped lint validation
 
+The run order and the proof boundary are in [the lint pipeline](../architecture/lint-pipeline.md).
+
 ## Current API boundary
 
 `lint.AnalyzeForRenderer(dialogue, profile)` and

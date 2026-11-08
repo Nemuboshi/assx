@@ -1,5 +1,7 @@
 # Snapshot analysis
 
+The run order and the proof boundary are in [the lint pipeline](../architecture/lint-pipeline.md).
+
 `internal/analysis` owns one analysis request. It keeps the snapshot, the
 selected targets and rule policy, and the `internal/lint` session. Font
 discovery, source decoding, encoding, reports, and flags stay with their
