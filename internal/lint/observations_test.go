@@ -103,3 +103,32 @@ func TestComparedValueFindingKeepsEveryObservation(t *testing.T) {
 	}
 	t.Fatal("value finding missing")
 }
+
+// A compared renderer evaluates karaoke and drawing state only for dialogues
+// that use them; the observation merges with the primary finding.
+func TestComparedKaraokeAddsObservation(t *testing.T) {
+	const source = "[Script Info]\nPlayResX: 640\nPlayResY: 360\nLayoutResX: 640\nLayoutResY: 360\nYCbCr Matrix: None\n" +
+		"[V4+ Styles]\nFormat: Name, Fontname, Fontsize\nStyle: Default, Arial, 20\n" +
+		"[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n" +
+		"Dialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{\\k9999}Hi\n"
+	doc := ass.Parse(source)
+	libass, err := renderer.Standard(renderer.Libass)
+	if err != nil {
+		t.Fatal(err)
+	}
+	vsfilter, err := renderer.Standard(renderer.XYVSFilter)
+	if err != nil {
+		t.Fatal(err)
+	}
+	findings := analyzeDocumentForTargetsUnproved(doc, AnalysisTargets{Primary: libass, Compatibility: []renderer.Profile{vsfilter}}, nil)
+	for _, finding := range findings {
+		if finding.Condition != IssueKaraoke {
+			continue
+		}
+		if len(finding.Renderers) != 2 || finding.Renderers[1].Status != StatusRejected {
+			t.Fatalf("karaoke finding lost the compared observation: %#v", finding)
+		}
+		return
+	}
+	t.Fatal("karaoke finding missing")
+}

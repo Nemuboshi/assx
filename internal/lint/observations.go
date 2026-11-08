@@ -130,6 +130,7 @@ func applyResolutions(ctx context.Context, doc ass.Document, targets AnalysisTar
 				view = preparedView
 			}
 		}
+		styles := semantic.StyleStatesByName(view.StyleFields)
 		for _, dialogue := range view.Dialogues {
 			if err := ctx.Err(); err != nil {
 				return findings
@@ -144,7 +145,11 @@ func applyResolutions(ctx context.Context, doc ass.Document, targets AnalysisTar
 				continue
 			}
 			start := dialogue.TextStart
+			needsEvaluation := false
 			prepared.EachOperation(func(result renderer.Result, nested bool) bool {
+				if result.Status == renderer.Matched && evaluatedTag(result.Name) {
+					needsEvaluation = true
+				}
 				span := result.Source.AtDocumentOffset(start)
 				key := resolutionKey{span.Start, span.End}
 				status := observationStatus(result)
@@ -208,7 +213,46 @@ func applyResolutions(ctx context.Context, doc ass.Document, targets AnalysisTar
 				})
 				return true
 			})
+			if needsEvaluation {
+				findings = append(findings, comparedEvaluation(dialogue, profile, styles, prepared)...)
+				continue
+			}
 		}
 	}
 	return append(findings, added...)
+}
+
+// evaluatedTag reports whether a tag can change karaoke or drawing state.
+func evaluatedTag(name string) bool {
+	switch name {
+	case "k", "K", "kf", "ko", "kt", "p":
+		return true
+	}
+	return false
+}
+
+// comparedEvaluation collects the observations that only the state engine
+// decides: karaoke cursor and drawing fragments. It runs for a compared
+// renderer only when the dialogue uses a tag that can change those states.
+func comparedEvaluation(dialogue ass.Dialogue, profile renderer.Profile, styles map[string]semantic.StyleState, prepared *semantic.PreparedDialogue) []Diagnostic {
+	drawing := resolvedDrawingCollector{dialogue: dialogue}
+	var karaoke resolvedKaraokeCursor
+	prepared.Evaluate(semantic.EvaluationOptions{
+		Styles: styles, DialogueStyle: dialogue.Style,
+		Observer: semantic.Observer{
+			Tag: func(event semantic.TagEvent, state semantic.StateView) {
+				karaoke.onTag(event, state)
+			},
+			Text: func(text string, start int, state semantic.StateView) {
+				karaoke.onText(text, start, state)
+				drawing.onText(text, start, state)
+			},
+		},
+	})
+	findings := drawing.diagnostics()
+	if !dialogue.MissingFields {
+		findings = append(findings, analyzeKaraokeWithCursor(dialogue, karaoke.duration)...)
+	}
+	stampPass(findings, profile, RoleCompared)
+	return findings
 }
