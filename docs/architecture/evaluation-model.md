@@ -1,8 +1,9 @@
 # Evaluation model
 
-Status: Phase 0 and Phase 1 are implemented. Later phases are design. Current
-behavior is in [the lint pipeline](lint-pipeline.md) and
-[compatibility](../packages/compatibility.md).
+Status: Phase 0 to Phase 3 are implemented. Phase 4 implements compared state
+observations. The multi-state fold is not implemented; the flat program runs
+once per profile. Current behavior is in [the lint pipeline](lint-pipeline.md)
+and [compatibility](../packages/compatibility.md).
 
 ## Purpose
 
@@ -223,17 +224,16 @@ the profile. Lint maps a compared `NoEffect` or karaoke observation to an
 
 Each renderer branch becomes a spec field.
 
-| Site | Current rule | Planned field |
+| Site | Rule | State |
 | --- | --- | --- |
-| `semantic/effective.go:160` | Mod transforms Style values before evaluation | `spec@style-transform` |
-| `semantic/prepared.go:80` | Same transform on the prepared path | same field |
-| `semantic/effective.go:332` | `\pos` with three arguments sets Mod depth | `spec@args.pos3` |
-| `semantic/effective.go:342` | Mod applies effect handlers inside transforms | `spec@transform-effects` |
-| `semantic/handlers.go:17` | Mod transform children invalidate all slots | `transform-children=recursive` |
-| `semantic/handlers.go:158` | Mod-only tag with empty arguments resets from the original Style | `spec@empty-args` |
-| `semantic/handlers.go:159` | `\ortho` zero/one argument semantics | tag-specific `spec@value-map` |
-| `lint/portability.go:12` | Mod-only tag warns under another primary | tag scope mask |
-| `semantic/compatibility_styles.go:88` | Style layout differs per renderer | Style spec row |
+| `semantic/effective.go` | Mod Style transform | `behavior@style-transform` |
+| `semantic/effective.go` | `\pos` with three arguments sets Mod depth | `spec@position-depth` |
+| `semantic/effective.go` | Mod applies effect handlers inside transforms | `behavior@effect-in-transform` |
+| `semantic/handlers.go` | Mod transform children invalidate all slots | `behavior@transform-children` |
+| `semantic/handlers.go` | Mod-only tag with empty arguments resets the Style | tag scope |
+| `semantic/handlers.go` | `\ortho` zero/one argument semantics | tag scope |
+| `lint/portability.go` | Mod-only tag warns under another primary | unchanged: target policy, not evaluation |
+| `semantic/compatibility_styles.go` | Style layout differs per renderer | unchanged: comparison reporting |
 
 ## Invariants
 
@@ -289,8 +289,12 @@ Exit criteria:
 
 ### Phase 2: linear program
 
-Build the program and fold one profile. Keep the observable output identical
-to the current evaluator.
+Implemented in `internal/semantic/operation.go`.
+
+`operationsFromTokens` returns one `program`: the token stream, the operation
+map, and a child-index map. Evaluation reads `children[tag.Start]` instead of
+recursing through `tag.Children`. The borrowed child views stay on the tag for
+observers, so the compact trace and the contract goldens do not change.
 
 Exit criteria:
 
@@ -301,8 +305,16 @@ Exit criteria:
 
 ### Phase 3: branch removal
 
-Move the fields in the branch inventory to `<spec>` one site at a time. Delete
-each `Kind()` branch with the test that covers it.
+Implemented for the evaluator.
+
+- `<meta><behavior renderer="...">` carries `transform-children`,
+  `effect-in-transform`, and `style-transform`.
+- `<tag><spec renderer="...">` carries `position-depth` for `pos`.
+- The Mod-only empty-argument reset and the `ortho` check no longer test
+  `Kind()`, because tag scope already decides them.
+
+`Kind()` remains in comparison reporting, the portability heuristic, and one
+lint evidence gate. Those answer different questions and stay.
 
 Exit criteria:
 
@@ -311,10 +323,21 @@ Exit criteria:
 - One regression test per removed branch.
 - Performance stays within 2%.
 
-### Phase 4: multi-state fold
+### Phase 4: compared state observations
 
-Run one program with one state per selected renderer. Emit compared karaoke
-and drawing observations.
+Implemented for karaoke and drawing.
+
+A compared renderer evaluates a dialogue only when it uses `\k`, `\K`, `\kf`,
+`\ko`, `\kt`, or `\p`. The existing cursor and drawing collectors convert the
+result, and assembly merges the observation with the primary finding.
+
+Not implemented:
+
+- The multi-state fold. The flat program runs once per profile. The state
+  object is large, and the measured compared-evaluation share is about 2% of
+  SessionDiscovery, within the Phase 4 gate.
+- Replacement of the per-finding value check. No verified per-renderer range
+  difference exists, so the check keeps its current shape.
 
 Exit criteria:
 
