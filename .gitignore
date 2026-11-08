@@ -2,8 +2,7 @@ ref/
 .pi/
 /.codegraph/
 /.gitnexus/
-/assx
-/assx.exe
+/dist/
 /.ci/
 /tools/rendercheck/target/
 /docs/ass-rules/ass-tags.html

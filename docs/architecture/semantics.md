@@ -168,7 +168,7 @@ without independent source evidence.
 go test ./... -count=1
 go test -race ./internal/semantic ./internal/lint -count=1
 go vet ./...
-go build ./cmd/assx
+go build -o dist/assx ./cmd/assx
 go test ./cmd/assx -run '^TestRendererBaselineContracts$' -count=1
 go test ./internal/semantic -run '^TestRendererScoped' -count=1
 go test ./internal/lint -run '^TestRendererScoped' -count=1

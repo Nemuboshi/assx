@@ -199,7 +199,7 @@ The matrix records these limits as deliberate decisions:
 go test ./... -count=1
 go test -race ./internal/semantic ./internal/lint ./internal/ass/renderer -count=1
 go vet ./...
-go build ./cmd/assx
+go build -o dist/assx ./cmd/assx
 (cd internal/ass/renderer && go run ./cmd/genmatrix -check)
 (cd internal/ass/renderer && go run ./cmd/genstylematrix -check)
 go test ./internal/semantic -run '^$' -bench '^BenchmarkCompareDialogue$' -benchmem

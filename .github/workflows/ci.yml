@@ -67,7 +67,7 @@ jobs:
       - name: Benchmark smoke test
         run: go test ./internal/ass ./internal/semantic ./internal/lint -run '^$' -bench 'Benchmark(ASSDocumentParse|ParseConcreteDialogueFixtures|EvaluateDialogue|AnalyzeDocumentFixtures|ParseAndAnalyzeDocumentFixtures|CompareDialogue)$' -benchtime=1x
       - name: Build
-        run: go build ./cmd/assx
+        run: go build -o dist/assx ./cmd/assx
 
   render-equivalence:
     runs-on: ubuntu-latest

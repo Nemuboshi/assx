@@ -178,7 +178,7 @@ From the repository root:
 ```sh
 go test ./...
 go vet ./...
-go build ./cmd/assx
+go build -o dist/assx ./cmd/assx
 go test ./cmd/assx -run '^TestRendererBaselineContracts$' -count=1 -v
 go test ./internal/ass/spec -run '^TestMatrix' -count=1 -v
 ```

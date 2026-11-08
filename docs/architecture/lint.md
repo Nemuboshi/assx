@@ -94,7 +94,7 @@ them without independently verified renderer evidence.
 
 Run `go test ./... -count=1`, the pinned CLI contract test,
 `go test -race ./internal/lint ./internal/semantic`, `go vet ./...`, and
-`go build ./cmd/assx`. Compare
+`go build -o dist/assx ./cmd/assx`. Compare
 `go test ./internal/lint -run '^$' -bench '^BenchmarkAnalyzeDocumentRenderer$' -benchmem`
 on the same environment, noting that scoped resolution intentionally
 requires additional source and signature processing.

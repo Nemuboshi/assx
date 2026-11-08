@@ -8,7 +8,7 @@ The [VS Code adapter](../../editors/vscode) starts the configured `assx lsp` exe
 
 Copy the [Neovim example](../../editors/neovim/init.lua) into Neovim 0.11+ configuration or the [Helix example](../../editors/helix/languages.toml) into Helix language configuration. Both require `assx` on `PATH`. The examples configure diagnostics and basic language features. They do not certify Quick Fix versioned-edit support in those clients. Refer to the [Neovim LSP configuration](https://neovim.io/doc/user/lsp/) and [Helix language configuration](https://docs.helix-editor.com/languages.html) for client settings.
 
-The VS Code adapter has its own `0.x` version. It requires the assx LSP 3.17 behavior documented here. Build the server with `go build ./cmd/assx`. Build and check the adapter with `pnpm install --frozen-lockfile`, `pnpm check`, and `pnpm test` in `editors/vscode`. Before a release, run both check suites, test a valid ASS file in the target editor, verify a proven Quick Fix and renderer refresh, and package the server binary separately from the adapter. Marketplace publication is a separate decision.
+The VS Code adapter has its own `0.x` version. It requires the assx LSP 3.17 behavior documented here. Build the server with `go build -o dist/assx ./cmd/assx`. Build and check the adapter with `pnpm install --frozen-lockfile`, `pnpm check`, and `pnpm test` in `editors/vscode`. Before a release, run both check suites, test a valid ASS file in the target editor, verify a proven Quick Fix and renderer refresh, and package the server binary separately from the adapter. Marketplace publication is a separate decision.
 
 ## Current capabilities
 

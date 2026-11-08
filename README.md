@@ -54,7 +54,7 @@ Requires Go 1.27.0 or later. From the repository root:
 ```sh
 go test ./...
 go vet ./...
-go build ./cmd/assx
+go build -o dist/assx ./cmd/assx
 ```
 
 ### Static analysis
