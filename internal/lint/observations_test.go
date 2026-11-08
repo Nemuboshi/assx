@@ -5,13 +5,10 @@ import (
 
 	"assx/internal/ass"
 	"assx/internal/ass/renderer"
+	"assx/internal/ass/spec"
 )
 
-func TestConditionFromResult(t *testing.T) {
-	libass, err := renderer.Standard(renderer.Libass)
-	if err != nil {
-		t.Fatal(err)
-	}
+func TestObservationStatusAndCondition(t *testing.T) {
 	for _, test := range []struct {
 		name      string
 		result    renderer.Result
@@ -27,9 +24,12 @@ func TestConditionFromResult(t *testing.T) {
 		{"no policy", renderer.Result{Closed: true, Status: renderer.Matched}, IssueRendererUnresolved, StatusUnmodeled},
 		{"accepted", renderer.Result{Closed: true, Status: renderer.Matched, HasPolicy: true, Signature: renderer.SignatureVerified}, "", StatusAccepted},
 	} {
-		condition, status, _ := conditionFromResult(test.result, libass, "pos")
-		if condition != test.condition || status != test.status {
-			t.Errorf("%s: got (%q, %q), want (%q, %q)", test.name, condition, status, test.condition, test.status)
+		status := observationStatus(test.result)
+		if status != test.status {
+			t.Errorf("%s: status = %q, want %q", test.name, status, test.status)
+		}
+		if condition := observationCondition(test.result); condition != test.condition {
+			t.Errorf("%s: condition = %q, want %q", test.name, condition, test.condition)
 		}
 	}
 }
@@ -131,4 +131,29 @@ func TestComparedKaraokeAddsObservation(t *testing.T) {
 		return
 	}
 	t.Fatal("karaoke finding missing")
+}
+
+func TestSameResolution(t *testing.T) {
+	base := renderer.Result{
+		Closed: true, Status: renderer.Matched, Signature: renderer.SignatureVerified, HasPolicy: true,
+		Name: "q", Form: renderer.Bare, Policy: spec.TagSpec{Value: spec.IntegerValue, Min: 0, Max: 3},
+		Args: []renderer.Argument{{Raw: "2"}},
+	}
+	if !sameResolution(base, base) {
+		t.Fatal("equal resolutions differ")
+	}
+	for _, changed := range []renderer.Result{
+		{Closed: true, Status: renderer.Matched, Signature: renderer.SignatureVerified, HasPolicy: true,
+			Name: "q", Form: renderer.Bare, Policy: spec.TagSpec{Value: spec.IntegerValue, Min: 0, Max: 5},
+			Args: []renderer.Argument{{Raw: "2"}}},
+		{Closed: true, Status: renderer.Matched, Signature: renderer.SignatureVerified, HasPolicy: true,
+			Name: "q", Form: renderer.Bare, Policy: spec.TagSpec{Value: spec.IntegerValue, Min: 0, Max: 3},
+			Args: []renderer.Argument{{Raw: "3"}}},
+		{Closed: true, Status: renderer.UnknownName, HasPolicy: true, Name: "q", Form: renderer.Bare,
+			Policy: spec.TagSpec{Value: spec.IntegerValue, Min: 0, Max: 3}, Args: []renderer.Argument{{Raw: "2"}}},
+	} {
+		if sameResolution(base, changed) {
+			t.Fatalf("different resolution reported equal: %#v", changed)
+		}
+	}
 }
