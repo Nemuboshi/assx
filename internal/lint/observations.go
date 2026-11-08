@@ -19,12 +19,14 @@ func observationStatus(result renderer.Result) Status {
 	switch {
 	case !result.Closed, result.Status == renderer.UnknownName:
 		return StatusUnknown
-	case result.Status == renderer.Disabled, !result.HasPolicy:
+	case result.Status == renderer.Disabled:
 		return StatusUnmodeled
 	case result.Status == renderer.Ignored:
 		return StatusIgnored
 	case result.Signature == renderer.SignatureRejected:
 		return StatusRejected
+	case !result.HasPolicy:
+		return StatusUnmodeled
 	case result.Signature == renderer.SignatureInferred:
 		return StatusInferred
 	}
