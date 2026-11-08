@@ -56,7 +56,6 @@ func TestSafeFixRejectsRehashedScopeTampering(t *testing.T) {
 		{"target subset", func(p *FixProof) { p.Targets = p.Targets[:1] }},
 		{"edited hash", func(p *FixProof) { p.EditedSHA256 = hashSource("other") }},
 		{"interpretations", func(p *FixProof) { p.Interpretations = nil }},
-		{"capability", func(p *FixProof) { p.Targets[0].Capabilities.VSFilterMod = "enabled" }},
 	} {
 		t.Run(mutation.name, func(t *testing.T) {
 			ds := AnalyzeDocumentForTargets(doc, targets)

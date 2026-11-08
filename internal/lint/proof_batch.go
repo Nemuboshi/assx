@@ -238,7 +238,6 @@ func (b *proofBatch) build(edits []FixEditProof, validEdits map[FixEditProof]str
 		}
 		target := FixTargetProof{Target: FixTarget{
 			Renderer: profile.Kind().String(), Version: profile.Version(),
-			Capabilities: proofCapabilities(profile.Kind()),
 		}}
 		for _, dialogueIndex := range affected {
 			baseDialogue := b.beforeDoc.Dialogues[dialogueIndex]

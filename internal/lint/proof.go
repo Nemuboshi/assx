@@ -22,22 +22,15 @@ type FixEditProof struct {
 	Edit TextEdit `json:"edit"`
 }
 
-// ProofCapabilities records the pinned build fact in the proof identity
-// bytes. The historical regression baseline fixes this field, so it stays.
-type ProofCapabilities struct {
-	VSFilterMod string `json:"vsfiltermod"`
-}
-
 type FixTarget struct {
-	Renderer     string            `json:"renderer"`
-	Version      string            `json:"version"`
-	Capabilities ProofCapabilities `json:"capabilities"`
+	Renderer string `json:"renderer"`
+	Version  string `json:"version"`
 }
 
 type ProofDialogue struct {
 	Line              int                  `json:"line"`
-	BeforeTraceSHA256 string               `json:"before_trace_sha256"`
-	AfterTraceSHA256  string               `json:"after_trace_sha256"`
+	BeforeTraceSHA256 string               `json:"before_trace_sha256,omitempty"`
+	AfterTraceSHA256  string               `json:"after_trace_sha256,omitempty"`
 	Before            []semantic.ProofStep `json:"before_interpretations"`
 	After             []semantic.ProofStep `json:"after_interpretations"`
 }
@@ -58,7 +51,7 @@ type FixTargetProof struct {
 }
 
 type FixProof struct {
-	ID                string           `json:"id"`
+	ID                string           `json:"id,omitempty"`
 	SourceSHA256      string           `json:"source_sha256"`
 	EditedSHA256      string           `json:"edited_sha256"`
 	SourceEdits       []FixEditProof   `json:"source_edits"`
@@ -79,19 +72,11 @@ func buildFixProofBatch(batch *proofBatch, edits []FixEditProof, validEdits map[
 	return batch.build(edits, validEdits)
 }
 
-func proofCapabilities(kind renderer.Kind) ProofCapabilities {
-	if kind != renderer.VSFilterMod {
-		return ProofCapabilities{VSFilterMod: "not-applicable"}
-	}
-	return ProofCapabilities{VSFilterMod: "enabled"}
-}
-
 func fixTargets(profiles []renderer.Profile) []FixTarget {
 	targets := make([]FixTarget, 0, len(profiles))
 	for _, profile := range profiles {
 		targets = append(targets, FixTarget{
 			Renderer: profile.Kind().String(), Version: profile.Version(),
-			Capabilities: proofCapabilities(profile.Kind()),
 		})
 	}
 	return targets
@@ -576,13 +561,6 @@ func profilesFromProof(targets []FixTarget) ([]renderer.Profile, error) {
 			kind = renderer.VSFilterMod
 		default:
 			return nil, fmt.Errorf("unknown renderer in SafeFix proof: %s", target.Renderer)
-		}
-		if kind != renderer.VSFilterMod {
-			if target.Capabilities != (ProofCapabilities{VSFilterMod: "not-applicable"}) {
-				return nil, fmt.Errorf("features do not apply to %s", target.Renderer)
-			}
-		} else if target.Capabilities != (ProofCapabilities{VSFilterMod: "enabled"}) {
-			return nil, fmt.Errorf("renderer %s has an unsupported build capability", target.Renderer)
 		}
 		profile, err := renderer.New(kind)
 		if err != nil {

@@ -17,7 +17,8 @@ import (
 )
 
 // These are observations from main@6ba745336615f102d5de39f76550f0a45da7bbb6.
-// Update only under the review procedure in docs/rules/verification.md.
+// Regenerate only under the review procedure in docs/rules/verification.md:
+// ASSX_CONTRACT_REVIEW=<cause> plus -review-contracts or -update-contracts.
 // The snapshots are not specifications for actual renderer behavior.
 const baselineCommit = "6ba745336615f102d5de39f76550f0a45da7bbb6"
 
@@ -231,9 +232,44 @@ type baselineRecord struct {
 	CLIUnsafeFix baselineCLI        `json:"cli_unsafe_fix"`
 }
 
+// stripDerivedDigests removes digests that only repeat content recorded beside
+// them. The proof ID hashes the proof body, the trace digests hash the
+// interpretation lists, and fix_proof_ref repeats the ID. A recorded body change
+// still fails the comparison; a proof-shape change no longer rewrites every
+// snapshot.
+func stripDerivedDigests(record *baselineRecord) {
+	for _, cli := range []*baselineCLI{&record.CLI, &record.CLIFonts, &record.CLISafeFix, &record.CLIUnsafeFix} {
+		for i := range cli.Diagnostics {
+			diagnostic := &cli.Diagnostics[i]
+			diagnostic.FixProofRef = ""
+			if diagnostic.FixProof == nil {
+				continue
+			}
+			diagnostic.FixProof.ID = ""
+			for j := range diagnostic.FixProof.Interpretations {
+				for k := range diagnostic.FixProof.Interpretations[j].Dialogues {
+					dialogue := &diagnostic.FixProof.Interpretations[j].Dialogues[k]
+					dialogue.BeforeTraceSHA256 = ""
+					dialogue.AfterTraceSHA256 = ""
+				}
+			}
+		}
+	}
+}
+
 func TestRendererBaselineContracts(t *testing.T) {
+	reason := strings.TrimSpace(os.Getenv("ASSX_CONTRACT_REVIEW"))
 	if *updateContracts || *reviewContracts {
-		t.Fatal("The post-cutover harness cannot rewrite the historical baseline. Use separate font contracts.")
+		if os.Getenv("CI") != "" {
+			t.Fatal("contract snapshots cannot be regenerated in CI")
+		}
+		if reason == "" {
+			t.Fatal("a contract snapshot changes only after review: set ASSX_CONTRACT_REVIEW to the reviewed cause, for example ASSX_CONTRACT_REVIEW=\"remove unused proof capabilities\"")
+		}
+		if *updateContracts && *reviewContracts {
+			t.Fatal("choose -review-contracts or -update-contracts, not both")
+		}
+		t.Logf("contract snapshot mode: review=%t update=%t cause=%q", *reviewContracts, *updateContracts, reason)
 	}
 	for _, filename := range []string{
 		"ordinary.ass", "renderer-collisions.ass", "semantic-barriers.ass",
@@ -265,23 +301,52 @@ func TestRendererBaselineContracts(t *testing.T) {
 			record.CLI = snapshotCLI(t, filename, raw, "")
 			record.CLISafeFix = snapshotCLI(t, filename, raw, "--fix")
 			record.CLIUnsafeFix = snapshotCLI(t, filename, raw, "--unsafe-fix")
+			stripDerivedDigests(&record)
+			golden := filepath.Join("..", "..", "testdata", "contracts", "golden", filename+".json")
+			// cli_fonts records the removed pre-cutover --check-fonts command.
+			// Keep those historical bytes across a regeneration.
+			if *updateContracts {
+				if want, err := os.ReadFile(golden); err == nil {
+					var historical baselineRecord
+					if err := json.Unmarshal(want, &historical); err != nil {
+						t.Fatal(err)
+					}
+					record.CLIFonts = historical.CLIFonts
+				}
+			}
 			actual, err := json.MarshalIndent(record, "", "  ")
 			if err != nil {
 				t.Fatal(err)
 			}
 			actual = append(actual, '\n')
-			golden := filepath.Join("..", "..", "testdata", "contracts", "golden", filename+".json")
+			if *reviewContracts {
+				candidate := filepath.Join("..", "..", ".pi", "contracts-review", filename+".json")
+				if err := os.MkdirAll(filepath.Dir(candidate), 0o755); err != nil {
+					t.Fatal(err)
+				}
+				if err := os.WriteFile(candidate, actual, 0o644); err != nil {
+					t.Fatal(err)
+				}
+				return
+			}
+			if *updateContracts {
+				if err := os.WriteFile(golden, actual, 0o644); err != nil {
+					t.Fatal(err)
+				}
+				return
+			}
 			want, err := os.ReadFile(golden)
 			if err != nil {
 				t.Fatalf("read historical golden %s: %v; restore the original evidence file", golden, err)
 			}
-			// cli_fonts records the removed pre-cutover command. Keep the file
-			// immutable and compare every other contract field as before.
+			// cli_fonts records the removed pre-cutover command. Compare every
+			// other contract field; regeneration preserves those bytes.
 			var historical baselineRecord
 			if err := json.Unmarshal(want, &historical); err != nil {
 				t.Fatal(err)
 			}
 			historical.CLIFonts = baselineCLI{}
+			stripDerivedDigests(&historical)
 			want, err = json.MarshalIndent(historical, "", "  ")
 			if err != nil {
 				t.Fatal(err)
@@ -291,6 +356,9 @@ func TestRendererBaselineContracts(t *testing.T) {
 				t.Errorf("baseline drift in %s: inspect golden diff; do not update without verified evidence and a documented correction (want %s, got %s)", filename, sha(want), sha(actual))
 			}
 		})
+	}
+	if *reviewContracts {
+		t.Fatalf("candidates written to .pi/contracts-review; review the diff, then rerun with -update-contracts and the same ASSX_CONTRACT_REVIEW")
 	}
 }
 

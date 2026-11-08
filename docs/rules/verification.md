@@ -15,9 +15,25 @@ Snapshots are compared byte-for-byte, so diagnostic order and the public JSON
 shape are covered as well as their values. No golden contains elapsed wall-clock
 time or a machine-local temporary path.
 
-Do not run `-update-contracts` as a response to a failing test. A golden
-mismatch is evidence that needs review, not a request to regenerate. Commit a
-golden update with the behavior change and a pinned-source citation.
+A snapshot does not record a digest that only repeats content recorded beside
+it: the proof ID, the per-dialogue trace digests, and the proof reference. Those
+values are checked at run time, so the snapshot records the content they digest,
+not the digest.
+
+Do not regenerate a snapshot as a response to a failing test. A mismatch is
+evidence that needs review. Regeneration has two keys and one rule:
+
+1. Name the reviewed cause:
+   `ASSX_CONTRACT_REVIEW="remove unused proof capabilities"`.
+2. Write candidates first: add `-review-contracts`. They land in
+   `.pi/contracts-review/`. Compare them with `git diff --no-index`.
+3. Write the baseline only after that review: run the same command with
+   `-update-contracts`. Commit the golden diff with the behavior change and a
+   pinned-source citation.
+
+The harness refuses either flag in CI, and it refuses them without a non-empty
+`ASSX_CONTRACT_REVIEW`. The historical `cli_fonts` block is kept byte for byte
+across a regeneration.
 
 ## SafeFix proof scope
 
@@ -81,9 +97,12 @@ go test ./cmd/assx -run '^TestRendererBaselineContracts$' -count=1 -v
 go test ./internal/ass/spec -run '^TestMatrix' -count=1 -v
 ```
 
-For the deliberate baseline refresh only:
+For a reviewed baseline refresh only:
 
 ```sh
+export ASSX_CONTRACT_REVIEW="<reviewed cause>"
+go test ./cmd/assx -run '^TestRendererBaselineContracts$' -review-contracts -count=1
+git diff --no-index -- .pi/contracts-review testdata/contracts/golden
 go test ./cmd/assx -run '^TestRendererBaselineContracts$' -update-contracts -count=1
 git diff -- testdata/contracts/golden
 ```

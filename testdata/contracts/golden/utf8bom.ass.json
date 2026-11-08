@@ -543,7 +543,6 @@
         "suggested_fix": "Remove it or move it to the intended text boundary.",
         "fix_safety": "safe",
         "fix_proof": {
-          "id": "dfe2e9adbadf0e43e7aee3d3d6c6241af8ad796f2bcdb27f8a3388d38f956064",
           "source_sha256": "f35243ebda94f944297a63274bd2e46cf05cf1bd1369a7b69fe82dce713fcfa2",
           "edited_sha256": "06baed46a8bf0932cf2d8af1a352d139d72bcb24b21f558ba4c120486cd4850a",
           "source_edits": [
@@ -559,33 +558,22 @@
           "targets": [
             {
               "renderer": "libass",
-              "version": "f61db567e6593df3470e91594bcd4ad2d0473aff",
-              "capabilities": {
-                "vsfiltermod": "not-applicable"
-              }
+              "version": "f61db567e6593df3470e91594bcd4ad2d0473aff"
             },
             {
               "renderer": "xy-VSFilter",
-              "version": "135a30153a38fa846cb5c39df0f258403e92096e",
-              "capabilities": {
-                "vsfiltermod": "not-applicable"
-              }
+              "version": "135a30153a38fa846cb5c39df0f258403e92096e"
             }
           ],
           "interpretations": [
             {
               "target": {
                 "renderer": "libass",
-                "version": "f61db567e6593df3470e91594bcd4ad2d0473aff",
-                "capabilities": {
-                  "vsfiltermod": "not-applicable"
-                }
+                "version": "f61db567e6593df3470e91594bcd4ad2d0473aff"
               },
               "dialogues": [
                 {
                   "line": 15,
-                  "before_trace_sha256": "08a33364ea30728176b877065765e0c2d8cbb4b7556c0217571f8e8d2185c840",
-                  "after_trace_sha256": "dd92579d5b2424caf86c1beb03597be9e41303c8010b676fca33f92e649cdd93",
                   "before_interpretations": [
                     {
                       "kind": "tag",
@@ -755,16 +743,11 @@
             {
               "target": {
                 "renderer": "xy-VSFilter",
-                "version": "135a30153a38fa846cb5c39df0f258403e92096e",
-                "capabilities": {
-                  "vsfiltermod": "not-applicable"
-                }
+                "version": "135a30153a38fa846cb5c39df0f258403e92096e"
               },
               "dialogues": [
                 {
                   "line": 15,
-                  "before_trace_sha256": "596b21c7b3f5bf2a981cb32c1d411043f5b1ab8c1d68d3d78494681474b002e9",
-                  "after_trace_sha256": "6a09cc2301db85024b137655a8b0187b8bd5b5e66e205801c03faba9b91ffbe0",
                   "before_interpretations": [
                     {
                       "kind": "tag",
@@ -1038,27 +1021,18 @@
           "targets": [
             {
               "renderer": "libass",
-              "version": "f61db567e6593df3470e91594bcd4ad2d0473aff",
-              "capabilities": {
-                "vsfiltermod": "not-applicable"
-              }
+              "version": "f61db567e6593df3470e91594bcd4ad2d0473aff"
             },
             {
               "renderer": "xy-VSFilter",
-              "version": "135a30153a38fa846cb5c39df0f258403e92096e",
-              "capabilities": {
-                "vsfiltermod": "not-applicable"
-              }
+              "version": "135a30153a38fa846cb5c39df0f258403e92096e"
             }
           ],
           "interpretations": [
             {
               "target": {
                 "renderer": "libass",
-                "version": "f61db567e6593df3470e91594bcd4ad2d0473aff",
-                "capabilities": {
-                  "vsfiltermod": "not-applicable"
-                }
+                "version": "f61db567e6593df3470e91594bcd4ad2d0473aff"
               },
               "dialogues": [
                 {
@@ -1234,10 +1208,7 @@
             {
               "target": {
                 "renderer": "xy-VSFilter",
-                "version": "135a30153a38fa846cb5c39df0f258403e92096e",
-                "capabilities": {
-                  "vsfiltermod": "not-applicable"
-                }
+                "version": "135a30153a38fa846cb5c39df0f258403e92096e"
               },
               "dialogues": [
                 {

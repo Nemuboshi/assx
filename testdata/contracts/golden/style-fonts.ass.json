@@ -1931,7 +1931,6 @@
         "suggested_fix": "Remove the redundant override tags.",
         "fix_safety": "safe",
         "fix_proof": {
-          "id": "145b89a5cc6cbf2826354f6b913918d20799cf749477db917ef5cc4a0dc917f3",
           "source_sha256": "7c5425d6cf69b7215c1b6e258ee742a0d9d2a04b735613d6feb14b3356607dfa",
           "edited_sha256": "0b9cfc6ed431341aba4ed5db0bedef5bda80ba12af1bc0bcc827e57845fd7805",
           "source_edits": [
@@ -1955,33 +1954,22 @@
           "targets": [
             {
               "renderer": "libass",
-              "version": "f61db567e6593df3470e91594bcd4ad2d0473aff",
-              "capabilities": {
-                "vsfiltermod": "not-applicable"
-              }
+              "version": "f61db567e6593df3470e91594bcd4ad2d0473aff"
             },
             {
               "renderer": "xy-VSFilter",
-              "version": "135a30153a38fa846cb5c39df0f258403e92096e",
-              "capabilities": {
-                "vsfiltermod": "not-applicable"
-              }
+              "version": "135a30153a38fa846cb5c39df0f258403e92096e"
             }
           ],
           "interpretations": [
             {
               "target": {
                 "renderer": "libass",
-                "version": "f61db567e6593df3470e91594bcd4ad2d0473aff",
-                "capabilities": {
-                  "vsfiltermod": "not-applicable"
-                }
+                "version": "f61db567e6593df3470e91594bcd4ad2d0473aff"
               },
               "dialogues": [
                 {
                   "line": 15,
-                  "before_trace_sha256": "93c59b5cd0ffba3ad2a0f6067e699f4b496f018c65d0b986d9507043403bdcdb",
-                  "after_trace_sha256": "1906a9ede6ab1f2e888807c7a5a9f3ee078ccc3d44997e7c38416b45fd66a38d",
                   "before_interpretations": [
                     {
                       "kind": "tag",
@@ -2115,8 +2103,6 @@
                 },
                 {
                   "line": 18,
-                  "before_trace_sha256": "44ea343bc1be286464b34ca0bd7eb1ff48e901786f76411fa6a6e6eb714a4eec",
-                  "after_trace_sha256": "ade439926f50de19e9b64c392e3e55b750f96b600defafcee1bda2316a9cba65",
                   "before_interpretations": [
                     {
                       "kind": "tag",
@@ -2282,16 +2268,11 @@
             {
               "target": {
                 "renderer": "xy-VSFilter",
-                "version": "135a30153a38fa846cb5c39df0f258403e92096e",
-                "capabilities": {
-                  "vsfiltermod": "not-applicable"
-                }
+                "version": "135a30153a38fa846cb5c39df0f258403e92096e"
               },
               "dialogues": [
                 {
                   "line": 15,
-                  "before_trace_sha256": "a02377236a867fb132925cd27b2579e7dccdb44340a88dd836793da80a29e25c",
-                  "after_trace_sha256": "0a9e3b63b564ae10ba015cd55802747e79f9f1719dd4c20335a592a3d4ed5e28",
                   "before_interpretations": [
                     {
                       "kind": "tag",
@@ -2425,8 +2406,6 @@
                 },
                 {
                   "line": 18,
-                  "before_trace_sha256": "8fb59bbf1e05a564815e8e9a29281dfe2b2a58025ce9debb101e22e5f05a8bb3",
-                  "after_trace_sha256": "bad78a3135f5f72d71853d3fea193639120111da5787217cbd48c8530fa5c4a6",
                   "before_interpretations": [
                     {
                       "kind": "tag",
@@ -2690,7 +2669,6 @@
         "description": "An override is replaced, reset, or ignored before it affects dialogue text, or repeats the value already active in every affected state slot.",
         "suggested_fix": "Remove it or move it to the intended text boundary.",
         "fix_safety": "safe",
-        "fix_proof_ref": "145b89a5cc6cbf2826354f6b913918d20799cf749477db917ef5cc4a0dc917f3",
         "edits": [
           {
             "start": 682,
@@ -2795,27 +2773,18 @@
           "targets": [
             {
               "renderer": "libass",
-              "version": "f61db567e6593df3470e91594bcd4ad2d0473aff",
-              "capabilities": {
-                "vsfiltermod": "not-applicable"
-              }
+              "version": "f61db567e6593df3470e91594bcd4ad2d0473aff"
             },
             {
               "renderer": "xy-VSFilter",
-              "version": "135a30153a38fa846cb5c39df0f258403e92096e",
-              "capabilities": {
-                "vsfiltermod": "not-applicable"
-              }
+              "version": "135a30153a38fa846cb5c39df0f258403e92096e"
             }
           ],
           "interpretations": [
             {
               "target": {
                 "renderer": "libass",
-                "version": "f61db567e6593df3470e91594bcd4ad2d0473aff",
-                "capabilities": {
-                  "vsfiltermod": "not-applicable"
-                }
+                "version": "f61db567e6593df3470e91594bcd4ad2d0473aff"
               },
               "dialogues": [
                 {
@@ -3122,10 +3091,7 @@
             {
               "target": {
                 "renderer": "xy-VSFilter",
-                "version": "135a30153a38fa846cb5c39df0f258403e92096e",
-                "capabilities": {
-                  "vsfiltermod": "not-applicable"
-                }
+                "version": "135a30153a38fa846cb5c39df0f258403e92096e"
               },
               "dialogues": [
                 {
