@@ -1,6 +1,5 @@
 default_install_hook_types:
   - pre-commit
-  - commit-msg
 
 repos:
   - repo: local
@@ -35,8 +34,3 @@ repos:
         stages: [pre-commit]
       - id: golangci-lint-config-verify
         stages: [pre-commit]
-
-  - repo: https://github.com/commitizen-tools/commitizen
-    rev: v4.19.1
-    hooks:
-      - id: commitizen
