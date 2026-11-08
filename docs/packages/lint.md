@@ -32,9 +32,11 @@ that decided it, primary first, with the status that renderer produced.
 `scenario` refines conditions that have several causes.
 
 The primary renderer runs the dialogue rules and its observation is always
-present. A compared renderer reports only resolution-level conditions: `arity`,
-`unknown-tag`, and `unresolved`. Lint-side value checks, karaoke, layout, and
-drawing stay primary-only, because a compared resolution does not decide them.
+present. A compared renderer reports `arity`, `unknown-tag`, and `unresolved`
+from its resolution. It also reports `value` and `font-comma` for a span that
+already carries that finding, because those lint-side checks run for that span
+only. Karaoke, layout, drawing, and no-effect stay primary-only, because a
+compared resolution does not decide them.
 
 `severity` is derived from the observations, not stored per rule: an error-class
 condition is an error only when the primary observation is `rejected`; otherwise
@@ -50,7 +52,8 @@ replaces the derived severity and can disable the condition entirely.
   profile. Application recomputes the authorized edits under the same primary and
   compatibility policy.
 - A finding lists the observations that decided it, primary first. A compared
-  observation appears only for a resolution-level condition.
+  observation appears for resolution-level conditions and for the value checks
+  that run per finding.
 - Compatibility observations name every compared renderer. Primary tag findings
   use dialogue-relative columns; document findings use physical-line columns.
   Findings keep stable source ordering.

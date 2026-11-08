@@ -70,9 +70,11 @@ share one projected view and one resolved expression per profile.
 The primary renderer runs the dialogue rules. A compared renderer does not run
 them again: its resolved operations become observations, and assembly fills the
 primary observation. Compared observations cover conditions that resolution
-decides: `arity`, `unknown-tag`, and `unresolved`. A lint-side value check,
-karaoke, layout, or drawing check stays primary-only, because a compared
-resolution says nothing about it.
+decides: `arity`, `unknown-tag`, and `unresolved`. The `value` and `font-comma`
+checks also run under the compared renderer, but only at a span that already
+carries that finding, so their cost follows findings rather than tags. Karaoke,
+layout, drawing, and no-effect stay primary-only, because a compared resolution
+says nothing about them.
 
 ## State and ownership
 
