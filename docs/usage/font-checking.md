@@ -13,7 +13,7 @@ assx fonts check --renderer vsfiltermod file.ass
 ```
 
 The default primary renderer is libass. The report names it.
-Font checks use one primary renderer. They do not accept `--compat`, `--fix`, or `--unsafe-fix`.
+Font checks use one renderer. They do not accept a renderer list, `--fix`, or `--unsafe-fix`.
 The command does not change the ASS file or font files. Catalog scans can update the metadata cache.
 
 ## Results

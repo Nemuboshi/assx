@@ -17,12 +17,13 @@ func TestRendererTargetCLI(t *testing.T) {
 		want []string
 	}{
 		{"default", nil, []string{"libass", "xy-VSFilter"}},
-		{"explicit primary", []string{"--renderer=libass"}, []string{"libass"}},
-		{"explicit empty compat", []string{"--compat="}, []string{"libass"}},
-		{"xy primary", []string{"--renderer", "xy-vsfilter"}, []string{"xy-VSFilter"}},
-		{"normalized union", []string{"--renderer=xy-vsfilter", "--compat=xy-vsfilter,libass,libass"}, []string{"libass", "xy-VSFilter"}},
-		{"Mod primary", []string{"--renderer=vsfiltermod"}, []string{"VSFilterMod"}},
-		{"Mod compatibility", []string{"--compat=vsfiltermod"}, []string{"libass", "VSFilterMod"}},
+		{"primary only", []string{"--renderer=libass"}, []string{"libass"}},
+		{"xy primary only", []string{"--renderer", "xy-vsfilter"}, []string{"xy-VSFilter"}},
+		{"Mod primary only", []string{"--renderer=vsfiltermod"}, []string{"VSFilterMod"}},
+		{"primary and comparison", []string{"--renderer=libass,vsfiltermod"}, []string{"libass", "VSFilterMod"}},
+		{"comparison first", []string{"--renderer=vsfiltermod,libass"}, []string{"libass", "VSFilterMod"}},
+		{"duplicates removed", []string{"--renderer=xy-vsfilter,libass,libass"}, []string{"libass", "xy-VSFilter"}},
+		{"whitespace trimmed", []string{"--renderer=libass, xy-vsfilter"}, []string{"libass", "xy-VSFilter"}},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			path := writeRendererFixture(t, `{\fs10\fs21}x`)
@@ -73,9 +74,10 @@ func TestRendererTargetCLI(t *testing.T) {
 
 func TestRendererCLIUsageErrors(t *testing.T) {
 	for _, args := range [][]string{
-		{"--renderer=other"}, {"--compat=libass,,xy-vsfilter"}, {"--compat=other"},
+		{"--renderer=other"}, {"--renderer=libass,,xy-vsfilter"}, {"--renderer="},
+		{"--renderer=libass,"}, {"--compat=libass"},
 		{"--mod-build=enabled"},
-		{"--renderer", "invalid"}, {"--compat=invalid"},
+		{"--renderer", "invalid"},
 		{"--lua-build=disabled"}, {},
 	} {
 		t.Run(strings.Join(args, " "), func(t *testing.T) {
@@ -89,7 +91,7 @@ func TestRendererCLIUsageErrors(t *testing.T) {
 	if code := run([]string{"--help"}, &out, &errOut); code != 0 {
 		t.Fatalf("help exit %d", code)
 	}
-	for _, flag := range []string{"--renderer", "--compat"} {
+	for _, flag := range []string{"--renderer"} {
 		if !strings.Contains(errOut.String(), flag) {
 			t.Errorf("help omits %s", flag)
 		}
@@ -102,8 +104,8 @@ func TestPrimaryValidityAndCompatibilityScopes(t *testing.T) {
 		args      []string
 		wantError bool
 	}{
-		{nil, true}, {[]string{"--renderer=libass", "--compat=vsfiltermod"}, true},
-		{[]string{"--renderer=vsfiltermod", "--compat=libass"}, false},
+		{nil, true}, {[]string{"--renderer=libass,vsfiltermod"}, true},
+		{[]string{"--renderer=vsfiltermod,libass"}, false},
 	} {
 		var out, errOut strings.Builder
 		code := run(append(append([]string{"--format=json"}, tc.args...), path), &out, &errOut)

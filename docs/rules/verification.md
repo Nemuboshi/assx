@@ -56,10 +56,9 @@ integer Style edit unavailable when the semantic Style model cannot establish
 the same modeled value before and after the edit.
 
 A custom layout cannot borrow the primary renderer's integer field proof. A proof
-for VSFilterMod alone cannot authorize a default fix. `--renderer` selects
-primary validity. `--compat` extends compatibility and proof targets. An explicit
-renderer without compatibility selects only that primary. Profiles are normalized
-by renderer.
+for VSFilterMod alone cannot authorize a default fix. `--renderer` lists
+renderers in priority order: the first selects primary validity, the rest extend
+comparison and proof targets. Profiles are normalized by renderer.
 Compatibility validity never becomes a primary error.
 
 The proof compares each renderer's interpretation before and after the edit. It

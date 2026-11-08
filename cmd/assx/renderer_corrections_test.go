@@ -33,7 +33,7 @@ func TestDefaultProfilePrefixCorrections(t *testing.T) {
 
 func TestDefaultCompatibilityAddsScopedObservations(t *testing.T) {
 	path := writeRendererFixture(t, `{\pos(1,2)}x`)
-	for _, args := range [][]string{nil, {"--compat="}} {
+	for _, args := range [][]string{nil, {"--renderer=libass"}} {
 		var out, errOut strings.Builder
 		if code := run(append(append([]string{"--format=json"}, args...), path), &out, &errOut); code != 0 {
 			t.Fatalf("compatibility changed primary success: %d %s", code, errOut.String())

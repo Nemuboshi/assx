@@ -11,7 +11,7 @@ VSFilterMod is explicit and uses its pinned `_VSMOD` build.
 Duplicate profiles are removed without changing caller order.
 
 The default CLI selects libass primary and xy-VSFilter compatibility.
-An explicit `--renderer` without `--compat` selects only that primary.
+A single `--renderer` name selects only that primary and reports no comparisons.
 An explicit empty compatibility value also selects only the primary.
 Target-configured analysis normalizes and sorts profiles by renderer.
 Compatibility diagnostics never become primary validity errors.

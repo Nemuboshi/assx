@@ -171,7 +171,7 @@ func TestRunJSONStaysValidAndReportsUnknownTagsAsSuggestion(t *testing.T) {
 		t.Fatal(err)
 	}
 	var stdout, stderr strings.Builder
-	if code := run([]string{"--format", "json", "--compat=", path}, &stdout, &stderr); code != 0 {
+	if code := run([]string{"--format", "json", "--renderer=libass", path}, &stdout, &stderr); code != 0 {
 		t.Fatalf("run returned %d: %s", code, stderr.String())
 	}
 	var diagnostics []map[string]any
@@ -186,7 +186,7 @@ func TestRunJSONStaysValidAndReportsUnknownTagsAsSuggestion(t *testing.T) {
 	}
 	stdout.Reset()
 	stderr.Reset()
-	if code := run([]string{"--format", "plain", "--compat=", path}, &stdout, &stderr); code != 0 {
+	if code := run([]string{"--format", "plain", "--renderer=libass", path}, &stdout, &stderr); code != 0 {
 		t.Fatalf("plain run returned %d: %s", code, stderr.String())
 	}
 	if !strings.Contains(stdout.String(), "SUGGESTION[ASS007]") || !strings.Contains(stdout.String(), "1 suggestions") {

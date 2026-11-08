@@ -85,7 +85,7 @@ The normalized command is distinguished from the original raw lexeme:
 | \blend(add) | b (shadow) | b (shadow) | blend |
 | \pos(1,2,3) | pos, arity rejected | pos, arity rejected | pos, arity verified |
 
-The CLI selects profiles with `--renderer` and `--compat`.
+The CLI selects profiles with one `--renderer` list, in priority order.
 Mod capabilities remain unknown unless explicitly selected.
 See [usage](../../README.md) and [the evidence contract](../rules/verification.md).
 
@@ -99,7 +99,7 @@ defines the gate in every configuration:
 | on | Mod extensions |
 
 A binary built without the gate is outside the model. `--renderer=vsfiltermod`
-and `--compat=vsfiltermod` select the pinned build only.
+and a `vsfiltermod` entry select the pinned build only.
 See [semantics](semantics.md) and [lint](lint.md).
 
 The pinned project defines `_LUA` in every configuration. A Lua build needs

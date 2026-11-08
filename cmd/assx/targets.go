@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"strings"
 
@@ -9,51 +8,37 @@ import (
 	"assx/internal/lint"
 )
 
-func parseAnalysisTargets(flags *flag.FlagSet, primaryName, compatNames string) (lint.AnalysisTargets, error) {
-	kind, err := parseRenderer(primaryName)
-	if err != nil {
-		return lint.AnalysisTargets{}, err
-	}
-
-	explicitRenderer, explicitCompat := false, false
-	flags.Visit(func(f *flag.Flag) {
-		switch f.Name {
-		case "renderer":
-			explicitRenderer = true
-		case "compat":
-			explicitCompat = true
+func parseAnalysisTargets(rendererNames string) (lint.AnalysisTargets, error) {
+	kinds := make([]renderer.Kind, 0, 3)
+	seen := make(map[renderer.Kind]bool, 3)
+	for _, name := range strings.Split(rendererNames, ",") {
+		name = strings.TrimSpace(name)
+		if name == "" {
+			return lint.AnalysisTargets{}, fmt.Errorf("invalid --renderer list: renderer names cannot be empty")
 		}
-	})
-	if compatNames == "" && !explicitRenderer && !explicitCompat {
-		compatNames = "xy-vsfilter"
-	}
-	var compatKinds []renderer.Kind
-	if compatNames != "" {
-		for _, name := range strings.Split(compatNames, ",") {
-			name = strings.TrimSpace(name)
-			if name == "" {
-				return lint.AnalysisTargets{}, fmt.Errorf("invalid --compat list: renderer names cannot be empty")
-			}
-			target, err := parseRenderer(name)
-			if err != nil {
-				return lint.AnalysisTargets{}, err
-			}
-			compatKinds = append(compatKinds, target)
+		kind, err := parseRenderer(name)
+		if err != nil {
+			return lint.AnalysisTargets{}, err
 		}
+		if seen[kind] {
+			continue
+		}
+		seen[kind] = true
+		kinds = append(kinds, kind)
 	}
-	primary, err := renderer.New(kind)
+	primary, err := renderer.New(kinds[0])
 	if err != nil {
 		return lint.AnalysisTargets{}, err
 	}
 	targets := lint.AnalysisTargets{Primary: primary}
-	for _, target := range compatKinds {
-		profile, err := renderer.Standard(target)
+	for _, kind := range kinds[1:] {
+		profile, err := renderer.Standard(kind)
 		if err != nil {
 			return lint.AnalysisTargets{}, err
 		}
 		targets.Compatibility = append(targets.Compatibility, profile)
 	}
-	// Normalize compatibility order and remove the primary from the extra set.
+	// Sort the comparison set and drop the primary from it.
 	profiles := targets.Profiles()
 	targets.Compatibility = nil
 	for _, profile := range profiles {

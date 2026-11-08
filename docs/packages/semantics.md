@@ -132,7 +132,7 @@ for validity diagnostics, [compatibility](compatibility.md) for renderer
 comparison, and [contracts](../rules/verification.md) for SafeFix proof scope.
 An unmodeled extension remains a proof barrier.
 
-The CLI exposes `--renderer` and `--compat`.
+The CLI exposes one `--renderer` list. The first name is primary; the rest extend comparison and proof scope.
 JSON and both text presenters name the renderer.
 See [usage](../../README.md) and [reports](../usage/diagnostic-reports.md).
 
