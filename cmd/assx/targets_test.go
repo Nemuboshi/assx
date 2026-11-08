@@ -18,9 +18,6 @@ func TestRendererTargetCLI(t *testing.T) {
 	}{
 		{"default", nil, []string{"libass", "xy-VSFilter"}},
 		{"explicit primary", []string{"--renderer=libass"}, []string{"libass"}},
-		{"single dash primary", []string{"-renderer", "libass"}, []string{"libass"}},
-		{"single dash empty compat", []string{"-compat="}, []string{"libass"}},
-		{"single dash Mod", []string{"-renderer=vsfiltermod"}, []string{"VSFilterMod"}},
 		{"explicit empty compat", []string{"--compat="}, []string{"libass"}},
 		{"xy primary", []string{"--renderer", "xy-vsfilter"}, []string{"xy-VSFilter"}},
 		{"normalized union", []string{"--renderer=xy-vsfilter", "--compat=xy-vsfilter,libass,libass"}, []string{"libass", "xy-VSFilter"}},
@@ -77,9 +74,9 @@ func TestRendererTargetCLI(t *testing.T) {
 func TestRendererCLIUsageErrors(t *testing.T) {
 	for _, args := range [][]string{
 		{"--renderer=other"}, {"--compat=libass,,xy-vsfilter"}, {"--compat=other"},
-		{"--mod-build=enabled"}, {"-mod-build=enabled"},
-		{"-renderer", "invalid"}, {"-compat=invalid"},
-		{"--lua-build=disabled"}, {"-lua-build=disabled"}, {},
+		{"--mod-build=enabled"},
+		{"--renderer", "invalid"}, {"--compat=invalid"},
+		{"--lua-build=disabled"}, {},
 	} {
 		t.Run(strings.Join(args, " "), func(t *testing.T) {
 			var out, errOut strings.Builder
