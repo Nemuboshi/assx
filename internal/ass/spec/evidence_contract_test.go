@@ -11,7 +11,7 @@ import (
 )
 
 // The pin is a source revision, NOT a claim that any particular binary or
-// optional feature was built. See docs/verification/contract.md for build scopes.
+// optional feature was built. See docs/rules/verification.md for build scopes.
 var evidencePins = map[string]struct {
 	commit string
 	path   string

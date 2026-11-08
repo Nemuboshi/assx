@@ -94,7 +94,7 @@ The normalized command is distinguished from the original raw lexeme:
 
 The CLI selects profiles with `--renderer` and `--compat`.
 Mod capabilities remain unknown unless explicitly selected.
-See [usage](../../README.md) and [the evidence contract](../verification/contract.md).
+See [usage](../../README.md) and [the evidence contract](../rules/verification.md).
 
 ## VSFilterMod build capabilities
 

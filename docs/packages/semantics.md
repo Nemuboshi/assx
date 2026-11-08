@@ -129,7 +129,7 @@ runs. Both read this evaluator. Plain Dialogue lines bypass it.
 
 See [lint](lint.md)
 for validity diagnostics, [compatibility](compatibility.md) for renderer
-comparison, and [contracts](../verification/contract.md) for SafeFix proof scope.
+comparison, and [contracts](../rules/verification.md) for SafeFix proof scope.
 An unmodeled extension remains a proof barrier.
 
 The CLI exposes `--renderer`, `--compat`, and explicit Mod build capabilities.

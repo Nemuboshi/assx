@@ -39,7 +39,7 @@ See [font checking](docs/usage/font-checking.md) for catalog scope, JSON, cache 
 
 All analysis uses the lossless concrete syntax tree and pinned profile engine.
 SafeFix application recomputes authorized edits under the caller's primary and compatibility policy.
-See [the evidence contract](docs/verification/contract.md) for evidence scope and limits.
+See [the evidence contract](docs/rules/verification.md) for evidence scope and limits.
 
 For diagnostic IDs and explanations, see the [rule catalog](docs/ass-rules/catalog.md). For pretty report behavior, see [diagnostic reports](docs/usage/diagnostic-reports.md).
 For reproducible performance benchmarks, profiling, and the pinned baseline, see [performance benchmarks](docs/development/performance.md).

@@ -13,7 +13,7 @@ This page is the index. Start with the document for the affected subject.
 | State, resets, and transforms | `internal/semantic` | [Semantics](packages/semantics.md) |
 | Lint policy and rule IDs | `internal/lint` | [Rule catalog](ass-rules/catalog.md), [lint](packages/lint.md) |
 | Renderer differences | `internal/semantic` | [Compatibility](packages/compatibility.md) |
-| SafeFix and source edits | `internal/semantic`, `internal/lint`, `internal/edit` | [Evidence contract](verification/contract.md) |
+| SafeFix proof and the regression baseline | `internal/semantic`, `internal/lint`, `internal/edit` | [Verification rules](rules/verification.md) |
 | Frame comparison | `tools/rendercheck` | [Rendercheck](../tools/rendercheck/README.md) |
 | Font dependencies | `internal/fontcheck`, `internal/fontreport` | [Font checking](usage/font-checking.md) |
 | CLI reports | `cmd/assx`, `internal/report` | [Reports](usage/diagnostic-reports.md) |
@@ -21,7 +21,7 @@ This page is the index. Start with the document for the affected subject.
 | Performance | The affected package | [Performance](development/performance.md) |
 
 The tag matrix and the Style field matrix own renderer signatures and evidence.
-The evidence contract owns proof scope. The rule catalog owns diagnostic
+The verification rules own proof scope. The rule catalog owns diagnostic
 policy. Tests record behavior.
 
 ## Folder layout
@@ -31,7 +31,6 @@ policy. Tests record behavior.
 - `usage/` states what a user sees: commands, reports, fonts, and editors.
 - `packages/` states the API contract of each package.
 - `architecture/` states the package graph, the lint flow, and the request paths.
-- `verification/` states the evidence and regression contract.
 - `development/` holds the benchmark harness and its baseline.
 
 Read [AGENTS.md](../AGENTS.md) to find the development rules.

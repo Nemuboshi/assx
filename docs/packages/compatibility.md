@@ -17,7 +17,7 @@ Target-configured analysis normalizes and sorts profiles by renderer, revision, 
 Compatibility diagnostics never become primary validity errors.
 Compatibility APIs provide no edits or safety classification.
 SafeFix requires proof for every caller-requested profile and build.
-See [the evidence contract](../verification/contract.md) for application authorization.
+See [the evidence contract](../rules/verification.md) for application authorization.
 
 Syntax stays in `internal/ass`; source partitioning and renderer evidence stay
 in `internal/ass/renderer`; comparison of effective operations and scenario
