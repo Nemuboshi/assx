@@ -1,6 +1,6 @@
 # Architecture rules
 
-The package boundaries and dependency rules are in [the package architecture](../architecture/overview.md). Read them before you change packages or APIs.
+The package graph and the request paths are in [the lint pipeline](../architecture/lint-pipeline.md). Read them before you add a package or an import. The ownership and placement rules are in [compatibility](../packages/compatibility.md).
 
 ## Implementation quality
 

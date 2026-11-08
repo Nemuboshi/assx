@@ -5,8 +5,7 @@ This page is the index. Start with the document for the affected subject.
 | Subject | Owner | Start here |
 | --- | --- | --- |
 | Command usage, flags, exit status | `cmd/assx` | [README](../README.md) |
-| Package boundaries and dependency rules | All packages | [Architecture](architecture/overview.md) |
-| Lint flow, proof, and request paths | `internal/lint`, `internal/analysis` | [Lint pipeline](architecture/lint-pipeline.md) |
+| Package structure, lint flow, proof, and request paths | `internal/lint`, `internal/analysis` | [Lint pipeline](architecture/lint-pipeline.md) |
 | Snapshot analysis and deferred proof | `internal/analysis` | [Analysis](packages/analysis.md) |
 | Syntax and source spans | `internal/ass` | [Syntax](packages/syntax.md) |
 | Tag signatures and dispatch | `internal/ass/spec`, `internal/ass/renderer` | [Profiles](packages/profiles.md), [tag matrix](ass-rules/ass-tags.xml) |
@@ -31,7 +30,7 @@ policy. Tests record behavior.
 - `ass-rules/` holds the ASS rule catalog and the code-generated evidence matrices.
 - `usage/` states what a user sees: commands, reports, fonts, and editors.
 - `packages/` states the API contract of each package.
-- `architecture/` states the package boundaries and dependency rules.
+- `architecture/` states the package graph, the lint flow, and the request paths.
 - `verification/` states the evidence and regression contract.
 - `development/` holds the benchmark harness and its baseline.
 
