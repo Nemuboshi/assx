@@ -4,7 +4,8 @@
 
 - Use the CodeGraph MCP tool `codegraph_explore`, or the `codegraph` CLI, for symbols, callers, and call paths. The main index excludes `ref/`. Use a separate index for a reference project.
 - Use the gopls MCP tools for Go symbols, types, references, and diagnostics. Start with `go_workspace`.
-- Use `ast-grep` for exact syntax node shape and count. Use `rg` for plain text, comments, and XML. `rg` skips `ref/` from the repository root because `ref/` is gitignored. Name `ref/` as a path or add `--no-ignore` to include the reference checkouts.
+- Use `ast-grep` for exact syntax node shape and count. Use `rg` for plain text, comments, and XML, including matches only, counts, and context lines. `rg` skips `ref/` from the repository root because `ref/` is gitignored. Name `ref/` as a path or add `--no-ignore` to include the reference checkouts.
+- Do not use `grep`. If `rg` cannot express a query, state the missing feature in the report.
 - Read only the necessary files and code sections. Start with at most five files.
 - A graph result locates source. It does not prove renderer behavior.
 - Do not do the same work again without a reason.
