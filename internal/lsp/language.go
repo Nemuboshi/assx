@@ -60,7 +60,7 @@ func (server *Server) commandAt(raw jsontext.Value) (document, commandLocation, 
 	if err != nil {
 		return document{}, commandLocation{}, false, err
 	}
-	for _, dialogue := range doc.parsed.Dialogues {
+	for _, dialogue := range doc.view.Dialogues {
 		if offset < dialogue.TextStart || offset >= dialogue.TextStart+len(dialogue.Text) {
 			continue
 		}
@@ -195,7 +195,7 @@ func (server *Server) fieldHover(ctx context.Context, doc document, raw jsontext
 			continue
 		}
 		key := strings.ToLower(strings.TrimSpace(line.Record.Key))
-		if _, known := doc.parsed.Headers[key]; known {
+		if _, known := doc.view.Headers[key]; known {
 			return plainHover(doc, line.Record.KeySpan, "Script field: "+line.Record.Key)
 		}
 	}

@@ -1,6 +1,7 @@
 package lint
 
 import (
+	"assx/internal/ass/renderer"
 	"fmt"
 	"strings"
 
@@ -23,7 +24,7 @@ var canonicalKeywords = map[string][]string{
 	"events":     {"Format:", "Dialogue:", "Comment:"},
 }
 
-func AnalyzeKeywords(doc ass.Document) []Diagnostic {
+func AnalyzeKeywords(doc renderer.Document) []Diagnostic {
 	var diagnostics []Diagnostic
 	for _, raw := range doc.Lines {
 		keywords, sectionKnown := canonicalKeywords[raw.Section]

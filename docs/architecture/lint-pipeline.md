@@ -30,6 +30,7 @@ graph LR
   ASS --> SPEC
   LR --> LINT
   LR --> ASS
+  LR --> REN
 ```
 
 Additional edges: `internal/sourcepos` imports `internal/edit`;

@@ -1,9 +1,8 @@
 package lint
 
 import (
+	"assx/internal/ass/renderer"
 	"testing"
-
-	"assx/internal/ass"
 )
 
 func TestFractionalRectClipRendererDifference(t *testing.T) {
@@ -17,7 +16,7 @@ func TestFractionalRectClipRendererDifference(t *testing.T) {
 		{text: `{\clip(1,0,100,100)}A`, want: false},
 	}
 	for _, test := range cases {
-		dialogue := ass.Dialogue{Text: test.text, Line: 1}
+		dialogue := renderer.Dialogue{Text: test.text, Line: 1}
 		found := false
 		for _, diagnostic := range Analyze(dialogue) {
 			if isBehaviorCondition(diagnostic.Condition) && (diagnostic.Tag == "clip" || diagnostic.Tag == "iclip") {

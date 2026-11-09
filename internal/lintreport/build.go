@@ -1,6 +1,7 @@
 package lintreport
 
 import (
+	"assx/internal/ass/renderer"
 	"assx/internal/report"
 	"strings"
 
@@ -10,7 +11,7 @@ import (
 
 // Build assembles the presenter view from final diagnostics. It preserves the
 // public diagnostic order and normalizes positions with document byte spans.
-func Build(path string, diagnostics []lint.Diagnostic, document ass.Document) report.Summary {
+func Build(path string, diagnostics []lint.Diagnostic, document renderer.Document) report.Summary {
 	var summary report.Summary
 	summary.Total = len(diagnostics)
 	group := report.Group{File: path}

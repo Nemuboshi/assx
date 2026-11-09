@@ -7,7 +7,7 @@ import (
 
 // portabilityDiagnostics keeps ASS005 for Mod-only names in the strict scope.
 // Name recognition does not authorize a Mod signature or an automatic edit.
-func portabilityDiagnostics(dialogue ass.Dialogue, targets AnalysisTargets) []Diagnostic {
+func portabilityDiagnostics(dialogue renderer.Dialogue, targets AnalysisTargets) []Diagnostic {
 	for _, profile := range targets.Profiles() {
 		if profile.Kind() == renderer.VSFilterMod {
 			return nil

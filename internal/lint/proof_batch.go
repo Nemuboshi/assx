@@ -56,7 +56,7 @@ func resetProofBatchCounters() {
 // shape, and profile set match exactly, and it never crosses requests.
 type proofBatch struct {
 	source    string
-	beforeDoc ass.Document
+	beforeDoc renderer.Document
 	profiles  []renderer.Profile
 	rawStyles map[string]semantic.StyleState
 	seeded    map[renderer.Profile]renderer.View
@@ -67,7 +67,7 @@ type proofBatch struct {
 	sourceHash string
 }
 
-func newProofBatch(source string, beforeDoc ass.Document, profiles []renderer.Profile) *proofBatch {
+func newProofBatch(source string, beforeDoc renderer.Document, profiles []renderer.Profile) *proofBatch {
 	return &proofBatch{
 		source: source, beforeDoc: beforeDoc, profiles: profiles,
 		preps: make(map[renderer.Profile]*proofProfilePrep, len(profiles)),
@@ -76,8 +76,8 @@ func newProofBatch(source string, beforeDoc ass.Document, profiles []renderer.Pr
 
 // newSessionProofBatch builds the batch a Discover call attaches to its
 // session, seeded with the views discovery already prepared for the source.
-func newSessionProofBatch(source ass.Parsed, profiles []renderer.Profile, views map[renderer.Profile]renderer.View) *proofBatch {
-	batch := newProofBatch(source.Text, source.Document, profiles)
+func newSessionProofBatch(source ass.Parsed, defaultDoc renderer.Document, profiles []renderer.Profile, views map[renderer.Profile]renderer.View) *proofBatch {
+	batch := newProofBatch(source.Text, defaultDoc, profiles)
 	batch.seedViews(views)
 	return batch
 }
@@ -93,7 +93,7 @@ func (b *proofBatch) seedViews(views map[renderer.Profile]renderer.View) {
 // usable reports whether this batch was built for exactly this source,
 // document shape, and profile set. A mismatch gives the caller a fresh
 // batch; no work is shared across sources.
-func (b *proofBatch) usable(source string, beforeDoc ass.Document, profiles []renderer.Profile) bool {
+func (b *proofBatch) usable(source string, beforeDoc renderer.Document, profiles []renderer.Profile) bool {
 	if b == nil || b.source != source || b.beforeDoc.Text != beforeDoc.Text || !slices.Equal(b.profiles, profiles) {
 		return false
 	}
@@ -106,7 +106,7 @@ func (b *proofBatch) usable(source string, beforeDoc ass.Document, profiles []re
 type proofProfilePrep struct {
 	view   renderer.View
 	styles map[string]semantic.StyleState
-	byLine map[int]ass.Dialogue
+	byLine map[int]renderer.Dialogue
 	before map[int]*proofBeforeDialogue
 	trees  map[string]ass.ConcreteDialogue
 }
@@ -114,7 +114,7 @@ type proofProfilePrep struct {
 // proofBeforeDialogue is one verified before dialogue: its view row and its
 // parsed tree.
 type proofBeforeDialogue struct {
-	dialogue ass.Dialogue
+	dialogue renderer.Dialogue
 	tree     ass.ConcreteDialogue
 }
 
@@ -155,7 +155,7 @@ func (b *proofBatch) build(edits []FixEditProof, validEdits map[FixEditProof]str
 	if err != nil {
 		return nil, err
 	}
-	var afterDoc ass.Document
+	var afterDoc renderer.Document
 	if hasStyleFieldEdits(edits) {
 		afterDoc = proofDocument(changed, edits)
 		if len(b.beforeDoc.Dialogues) != len(afterDoc.Dialogues) || !reflect.DeepEqual(b.beforeDoc.EventFormat, afterDoc.EventFormat) {
@@ -238,7 +238,7 @@ func (b *proofBatch) build(edits []FixEditProof, validEdits map[FixEditProof]str
 		if len(profileStyleEvidence) != len(styleEvidence) {
 			return nil, fmt.Errorf("%s cannot verify every edited Style field", profile.Kind())
 		}
-		byLineAfter := make(map[int]ass.Dialogue, len(profileAfter.Dialogues))
+		byLineAfter := make(map[int]renderer.Dialogue, len(profileAfter.Dialogues))
 		for _, dialogue := range profileAfter.Dialogues {
 			byLineAfter[dialogue.Line] = dialogue
 		}
@@ -322,7 +322,7 @@ func (b *proofBatch) prep(profile renderer.Profile) *proofProfilePrep {
 	prep := &proofProfilePrep{
 		view:   view,
 		styles: semantic.StyleStatesByName(view.StyleFields),
-		byLine: make(map[int]ass.Dialogue, len(view.Dialogues)),
+		byLine: make(map[int]renderer.Dialogue, len(view.Dialogues)),
 		before: make(map[int]*proofBeforeDialogue),
 		trees:  make(map[string]ass.ConcreteDialogue),
 	}

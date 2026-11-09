@@ -1,6 +1,7 @@
 package lint
 
 import (
+	"assx/internal/ass/renderer"
 	"encoding/json"
 	"fmt"
 	"strconv"
@@ -66,7 +67,7 @@ type Diagnostic struct {
 	spanJSON    bool
 }
 
-func analyzeUnterminatedBlocks(dialogue ass.Dialogue) []Diagnostic {
+func analyzeUnterminatedBlocks(dialogue renderer.Dialogue) []Diagnostic {
 	text := dialogue.Text
 	var diagnostics []Diagnostic
 	for offset := 0; offset < len(text); {
@@ -125,7 +126,7 @@ func (d *Diagnostic) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func Analyze(dialogue ass.Dialogue) []Diagnostic {
+func Analyze(dialogue renderer.Dialogue) []Diagnostic {
 	targets := DefaultAnalysisTargets()
 	var findings []Diagnostic
 	for _, profile := range targets.Profiles() {
@@ -151,7 +152,7 @@ func Analyze(dialogue ass.Dialogue) []Diagnostic {
 	if proofDialogue.Line == 0 {
 		proofDialogue.Line = 1
 	}
-	doc := ass.Document{Text: dialogue.Text, Dialogues: []ass.Dialogue{proofDialogue}}
+	doc := renderer.Document{Text: dialogue.Text, Dialogues: []renderer.Dialogue{proofDialogue}}
 	findings = proveSafeFixes(doc, findings, targets.Profiles())
 	if dialogue.TextStart != 0 {
 		return withoutSafeFixes(findings)
@@ -267,7 +268,7 @@ func (a *dialogueAnalyzer) validateIR(tag ass.Tag, ir ass.TagIR, policyArity boo
 	}
 }
 
-func analyzeRepeatedOpenBraces(dialogue ass.Dialogue) []Diagnostic {
+func analyzeRepeatedOpenBraces(dialogue renderer.Dialogue) []Diagnostic {
 	text := dialogue.Text
 	var diagnostics []Diagnostic
 	for offset := 0; offset < len(text); {

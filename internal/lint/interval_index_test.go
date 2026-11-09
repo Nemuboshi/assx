@@ -1,11 +1,11 @@
 package lint
 
 import (
+	"assx/internal/ass/renderer"
 	"fmt"
 	"strings"
 	"testing"
 
-	"assx/internal/ass"
 	"assx/internal/edit"
 )
 
@@ -13,7 +13,7 @@ import (
 // dialogue carries an override block that is wholly Style-redundant (redundant-style)
 // and whose two tags are also first-wins no-effect findings (no-effect) whose
 // edits overlap the redundant block edit.
-func scaledRedundantStyleDoc(dialogues int) ass.Document {
+func scaledRedundantStyleDoc(dialogues int) renderer.Document {
 	var text strings.Builder
 	text.WriteString("[Script Info]\nPlayResX: 1920\nPlayResY: 1080\nYCbCr Matrix: None\n")
 	text.WriteString("[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\n")
@@ -23,7 +23,7 @@ func scaledRedundantStyleDoc(dialogues int) ass.Document {
 		fmt.Fprintf(&text, "Dialogue: 0,0:%02d:%02d.00,0:%02d:%02d.00,Default,,0,0,0,,{\\b0\\b0}plain line %d\n",
 			i/60, i%60, i/60, (i%60)+1, i)
 	}
-	return ass.Parse(text.String())
+	return renderer.Parse(text.String())
 }
 
 // overlapWork runs the redundant-style suppression path for one document under

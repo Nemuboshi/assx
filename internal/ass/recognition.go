@@ -45,7 +45,7 @@ func Recognize(text string) Recognition {
 		}
 		if line.Header != nil {
 			section := strings.ToLower(strings.TrimSpace(line.Header.RawName))
-			if section == "script info" || section == "events" || isStyleSection(section) {
+			if section == "script info" || section == "events" || IsStyleSection(section) {
 				tentative = true
 				id := "section." + section
 				if section == "script info" {
@@ -66,9 +66,9 @@ func Recognize(text string) Recognition {
 			id = "events.dialogue"
 		case section == "events" && key == "format" && meaningfulFormat(line.Record.Body, "start", "end", "text"):
 			id = "events.format"
-		case isStyleSection(section) && key == "style" && strings.TrimSpace(line.Record.Body) != "":
+		case IsStyleSection(section) && key == "style" && strings.TrimSpace(line.Record.Body) != "":
 			id = "styles.style"
-		case isStyleSection(section) && key == "format" && meaningfulFormat(line.Record.Body, "name", "fontname", "fontsize"):
+		case IsStyleSection(section) && key == "format" && meaningfulFormat(line.Record.Body, "name", "fontname", "fontsize"):
 			id = "styles.format"
 		case section == "script info" && scriptHeader(key):
 			id = "script." + key

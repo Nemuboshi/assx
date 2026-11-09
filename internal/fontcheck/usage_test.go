@@ -28,7 +28,7 @@ func TestExtractUsagesRetainsByteSpansAndUnknownState(t *testing.T) {
 	if !usages[0].Known || usages[0].Request.Family != "Go" || !usages[1].Known || usages[1].Request.Family != "Missing" || usages[2].Known {
 		t.Fatalf("request certainty = %#v", usages)
 	}
-	if usages[1].Column != strings.Index(doc.Document.Dialogues[0].Text, "中")+1 {
+	if usages[1].Column != strings.Index(renderer.DefaultDocument(doc).Dialogues[0].Text, "中")+1 {
 		t.Fatalf("column = %d", usages[1].Column)
 	}
 }

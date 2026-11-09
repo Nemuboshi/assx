@@ -74,7 +74,7 @@ func fixTargets(profiles []renderer.Profile) []FixTarget {
 	return targets
 }
 
-func proveSafeFixes(doc ass.Document, diagnostics []Diagnostic, profiles []renderer.Profile) []Diagnostic {
+func proveSafeFixes(doc renderer.Document, diagnostics []Diagnostic, profiles []renderer.Profile) []Diagnostic {
 	proved, err := proveSafeFixesBatchContext(context.Background(), doc, diagnostics, profiles, nil)
 	if err != nil {
 		return diagnostics
@@ -87,7 +87,7 @@ func proveSafeFixes(doc ass.Document, diagnostics []Diagnostic, profiles []rende
 // starts a fresh one, so before work never crosses sources or requests. After
 // a cancellation it returns no diagnostics, so no partial proof output is
 // visible.
-func proveSafeFixesBatchContext(ctx context.Context, doc ass.Document, diagnostics []Diagnostic, profiles []renderer.Profile, batch *proofBatch) ([]Diagnostic, error) {
+func proveSafeFixesBatchContext(ctx context.Context, doc renderer.Document, diagnostics []Diagnostic, profiles []renderer.Profile, batch *proofBatch) ([]Diagnostic, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
@@ -209,11 +209,11 @@ func buildFixProof(source string, edits []FixEditProof, targets AnalysisTargets)
 // buildFixProofWithDocument verifies one edit set against one source with a
 // fresh one-off batch. Apply-time verification re-derives the exact proof, so
 // it shares no before work with any other request.
-func buildFixProofWithDocument(source string, beforeDoc ass.Document, edits []FixEditProof, profiles []renderer.Profile, validEdits map[FixEditProof]struct{}) (*FixProof, error) {
+func buildFixProofWithDocument(source string, beforeDoc renderer.Document, edits []FixEditProof, profiles []renderer.Profile, validEdits map[FixEditProof]struct{}) (*FixProof, error) {
 	return newProofBatch(source, beforeDoc, profiles).build(edits, validEdits)
 }
 
-func isEmptyOverrideEdit(doc ass.Document, edit TextEdit) bool {
+func isEmptyOverrideEdit(doc renderer.Document, edit TextEdit) bool {
 	for _, dialogue := range doc.Dialogues {
 		for _, node := range ass.ParseConcreteDialogue(dialogue.Text).Nodes {
 			if node.Block == nil || strings.TrimSpace(node.Block.Content) != "" {
@@ -237,8 +237,8 @@ func supportedProofRule(id string) bool {
 	}
 }
 
-func proofDocument(source string, edits []FixEditProof) ass.Document {
-	doc := ass.Parse(source)
+func proofDocument(source string, edits []FixEditProof) renderer.Document {
+	doc := renderer.Parse(source)
 	if len(doc.Dialogues) != 0 {
 		return doc
 	}
@@ -246,14 +246,14 @@ func proofDocument(source string, edits []FixEditProof) ass.Document {
 		switch candidate.Condition {
 		case IssueNoEffect, IssueRepeatedSlash, IssueRedundantStyleOverrides,
 			IssueRepeatedOpenBrace, IssueEmptyOverrideBlock:
-			doc.Dialogues = []ass.Dialogue{{Text: source, Line: 1}}
+			doc.Dialogues = []renderer.Dialogue{{Text: source, Line: 1}}
 			return doc
 		}
 	}
 	return doc
 }
 
-func sameDocumentShape(before, after ass.Document, edits []FixEditProof) bool {
+func sameDocumentShape(before, after renderer.Document, edits []FixEditProof) bool {
 	if len(before.StyleFields) != len(after.StyleFields) || len(before.Dialogues) != len(after.Dialogues) {
 		return false
 	}
@@ -284,7 +284,7 @@ func sameDocumentShape(before, after ass.Document, edits []FixEditProof) bool {
 	return true
 }
 
-func verifyStyleIntegerEdits(before, after ass.Document, edits []FixEditProof) ([]ProofStyleField, error) {
+func verifyStyleIntegerEdits(before, after renderer.Document, edits []FixEditProof) ([]ProofStyleField, error) {
 	if len(before.StyleFields) != len(after.StyleFields) {
 		return nil, fmt.Errorf("edit changed interpreted Style fields")
 	}
@@ -311,7 +311,7 @@ func verifyStyleIntegerEdits(before, after ass.Document, edits []FixEditProof) (
 	return out, nil
 }
 
-func styleFieldEdited(field ass.StyleField, edits []FixEditProof, id string) bool {
+func styleFieldEdited(field renderer.StyleField, edits []FixEditProof, id string) bool {
 	for _, candidate := range edits {
 		if candidate.Condition == id && candidate.Edit.Start < field.ValueEnd && field.ValueStart < candidate.Edit.End {
 			return true
@@ -329,14 +329,14 @@ func hasStyleFieldEdits(edits []FixEditProof) bool {
 	return false
 }
 
-func editedDialogueDocument(before ass.Document, changed string, edits []FixEditProof) (ass.Document, error) {
+func editedDialogueDocument(before renderer.Document, changed string, edits []FixEditProof) (renderer.Document, error) {
 	byDialogue := dialogueEditsByIndex(before, edits)
 	var mapped int
 	for _, dialogueEdits := range byDialogue {
 		mapped += len(dialogueEdits)
 	}
 	if mapped != len(edits) {
-		return ass.Document{}, fmt.Errorf("edit is outside a dialogue text field")
+		return renderer.Document{}, fmt.Errorf("edit is outside a dialogue text field")
 	}
 
 	// Text-column edits keep event fields intact; renderer semantics reparse each edited dialogue.
@@ -350,7 +350,7 @@ func editedDialogueDocument(before ass.Document, changed string, edits []FixEdit
 		dialogueEdits := byDialogue[i]
 		if len(dialogueEdits) == 0 {
 			if afterStart < 0 || afterStart+len(original.Text) > len(changed) || changed[afterStart:afterStart+len(original.Text)] != original.Text {
-				return ass.Document{}, fmt.Errorf("unchanged dialogue text does not match the edited source")
+				return renderer.Document{}, fmt.Errorf("unchanged dialogue text does not match the edited source")
 			}
 			continue
 		}
@@ -364,10 +364,10 @@ func editedDialogueDocument(before ass.Document, changed string, edits []FixEdit
 		}
 		fixedText, err := edit.Apply(original.Text, localEdits)
 		if err != nil {
-			return ass.Document{}, err
+			return renderer.Document{}, err
 		}
 		if afterStart < 0 || afterStart+len(fixedText) > len(changed) || changed[afterStart:afterStart+len(fixedText)] != fixedText {
-			return ass.Document{}, fmt.Errorf("edited dialogue text does not match the edited source")
+			return renderer.Document{}, fmt.Errorf("edited dialogue text does not match the edited source")
 		}
 		after.Dialogues[i].Text = fixedText
 		after.Dialogues[i].Fields = slices.Clone(original.Fields)
@@ -381,7 +381,7 @@ func editedDialogueDocument(before ass.Document, changed string, edits []FixEdit
 	return after, nil
 }
 
-func dialogueEditsByIndex(doc ass.Document, edits []FixEditProof) map[int][]FixEditProof {
+func dialogueEditsByIndex(doc renderer.Document, edits []FixEditProof) map[int][]FixEditProof {
 	byDialogue := make(map[int][]FixEditProof)
 	for _, candidate := range edits {
 		index := sort.Search(len(doc.Dialogues), func(i int) bool {
@@ -400,7 +400,7 @@ func dialogueEditsByIndex(doc ass.Document, edits []FixEditProof) map[int][]FixE
 	return byDialogue
 }
 
-func affectedDialogues(doc ass.Document, edits []FixEditProof, byDialogue map[int][]FixEditProof) []int {
+func affectedDialogues(doc renderer.Document, edits []FixEditProof, byDialogue map[int][]FixEditProof) []int {
 	styleChanged := false
 	for _, candidate := range edits {
 		if candidate.Condition != IssueStyleInteger {
@@ -422,7 +422,7 @@ func affectedDialogues(doc ass.Document, edits []FixEditProof, byDialogue map[in
 	return out
 }
 
-func removedRanges(dialogue ass.Dialogue, edits []FixEditProof) []ass.ConcreteSpan {
+func removedRanges(dialogue renderer.Dialogue, edits []FixEditProof) []ass.ConcreteSpan {
 	var out []ass.ConcreteSpan
 	for _, candidate := range edits {
 		if candidate.Condition != IssueNoEffect && candidate.Condition != IssueRedundantStyleOverrides {
@@ -437,7 +437,7 @@ func removedRanges(dialogue ass.Dialogue, edits []FixEditProof) []ass.ConcreteSp
 	return out
 }
 
-func dialogueRanges(dialogue ass.Dialogue, edits []FixEditProof) []ass.ConcreteSpan {
+func dialogueRanges(dialogue renderer.Dialogue, edits []FixEditProof) []ass.ConcreteSpan {
 	var out []ass.ConcreteSpan
 	for _, candidate := range edits {
 		start := candidate.Edit.Start - dialogue.TextStart
@@ -567,7 +567,7 @@ func sameFixEditSet(a, b []FixEditProof) bool {
 	return true
 }
 
-func verifyFixProofs(source string, beforeDoc ass.Document, selected []FixEditProof, proof *FixProof, requested []renderer.Profile, validEdits map[FixEditProof]struct{}) error {
+func verifyFixProofs(source string, beforeDoc renderer.Document, selected []FixEditProof, proof *FixProof, requested []renderer.Profile, validEdits map[FixEditProof]struct{}) error {
 	if proof == nil || proof.SourceSHA256 != hashSource(source) {
 		return fmt.Errorf("SafeFix proof does not match the current source")
 	}

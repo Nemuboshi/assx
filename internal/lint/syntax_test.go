@@ -1,13 +1,12 @@
 package lint
 
 import (
+	"assx/internal/ass/renderer"
 	"testing"
-
-	"assx/internal/ass"
 )
 
 func TestEmptyOverrideBlockAndOverrideJunk(t *testing.T) {
-	doc := ass.Parse("[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{}A{   }B{comment}C{\\fs20 junk \\bord2}D\n")
+	doc := renderer.Parse("[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{}A{   }B{comment}C{\\fs20 junk \\bord2}D\n")
 	diagnostics := AnalyzeDocument(doc)
 
 	var empty, junk int
@@ -40,7 +39,7 @@ func TestEmptyOverrideBlockAndOverrideJunk(t *testing.T) {
 
 func TestCommentBlockIsNotOverrideJunk(t *testing.T) {
 	text := "{a normal comment}text"
-	dialogue := ass.Dialogue{Text: text, Line: 1}
+	dialogue := renderer.Dialogue{Text: text, Line: 1}
 	for _, diagnostic := range Analyze(dialogue) {
 		if diagnostic.Condition == IssueOverrideJunk || diagnostic.Condition == IssueEmptyOverrideBlock {
 			t.Fatalf("comment produced override syntax finding: %#v", diagnostic)

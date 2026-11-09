@@ -1,6 +1,7 @@
 package lint
 
 import (
+	"assx/internal/ass/renderer"
 	"context"
 	"sort"
 	"sync/atomic"
@@ -55,12 +56,12 @@ func (index *intervalIndex) overlapsAny(query editpkg.Interval) bool {
 
 // AnalyzeDocumentForTargets validates only the primary renderer and reports
 // compatibility observations for the full selected profile set separately.
-func AnalyzeDocumentForTargets(doc ass.Document, targets AnalysisTargets) []Diagnostic {
+func AnalyzeDocumentForTargets(doc renderer.Document, targets AnalysisTargets) []Diagnostic {
 	return proveSafeFixes(doc, analyzeDocumentForTargetsUnproved(doc, targets, nil), targets.Profiles())
 }
 
-func analyzeDocumentForTargetsUnproved(doc ass.Document, targets AnalysisTargets, policy RulePolicy) []Diagnostic {
-	findings, _ := analyzeDocumentForTargetsUnprovedSource(context.Background(), ass.ParsedOf(doc), targets, policy, nil)
+func analyzeDocumentForTargetsUnproved(doc renderer.Document, targets AnalysisTargets, policy RulePolicy) []Diagnostic {
+	findings, _ := analyzeDocumentForTargetsUnprovedSource(context.Background(), ass.ParseSource(doc.Text), doc, targets, policy, nil)
 	return findings
 }
 
@@ -68,21 +69,21 @@ func analyzeDocumentForTargetsUnproved(doc ass.Document, targets AnalysisTargets
 // request preparation. A shared analysis supplies the projected views and the
 // dialogue operations, so each profile resolves a given expression once per
 // request instead of once per consumer.
-func analyzeDocumentForTargetsUnprovedContext(ctx context.Context, source ass.Parsed, targets AnalysisTargets, policy RulePolicy, shared *DocumentAnalysis) ([]Diagnostic, error) {
-	return analyzeDocumentForTargetsUnprovedSource(ctx, source, targets, policy, shared)
+func analyzeDocumentForTargetsUnprovedContext(ctx context.Context, source ass.Parsed, defaultDoc renderer.Document, targets AnalysisTargets, policy RulePolicy, shared *DocumentAnalysis) ([]Diagnostic, error) {
+	return analyzeDocumentForTargetsUnprovedSource(ctx, source, defaultDoc, targets, policy, shared)
 }
 
-func analyzeDocumentForTargetsUnprovedSource(ctx context.Context, source ass.Parsed, targets AnalysisTargets, policy RulePolicy, shared *DocumentAnalysis) ([]Diagnostic, error) {
+func analyzeDocumentForTargetsUnprovedSource(ctx context.Context, source ass.Parsed, defaultDoc renderer.Document, targets AnalysisTargets, policy RulePolicy, shared *DocumentAnalysis) ([]Diagnostic, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	findings, err := analyzeDocumentForProfileContext(ctx, source, targets.Primary, policy, shared)
+	findings, err := analyzeDocumentForProfileContext(ctx, source, defaultDoc, targets.Primary, policy, shared)
 	if err != nil {
 		return nil, err
 	}
 	stampPass(findings, targets.Primary, RolePrimary)
 	findings = applyResolutions(ctx, source, targets, shared, findings)
-	for _, dialogue := range source.Document.Dialogues {
+	for _, dialogue := range defaultDoc.Dialogues {
 		if err := ctx.Err(); err != nil {
 			return nil, err
 		}
@@ -94,11 +95,11 @@ func analyzeDocumentForTargetsUnprovedSource(ctx context.Context, source ass.Par
 			tree = sharedTree
 		}
 	}
-	findings = append(findings, analyzeDocumentCompatibility(source.Document, tree, targets.Profiles(), shared.compatibilityMode())...)
+	findings = append(findings, analyzeDocumentCompatibility(defaultDoc, tree, targets.Profiles(), shared.compatibilityMode())...)
 	return policy.apply(assemble(findings, targets.Primary)), nil
 }
 
-func AnalyzeDocument(doc ass.Document) []Diagnostic {
+func AnalyzeDocument(doc renderer.Document) []Diagnostic {
 	return AnalyzeDocumentForTargets(doc, DefaultAnalysisTargets())
 }
 

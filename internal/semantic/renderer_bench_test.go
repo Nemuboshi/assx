@@ -15,7 +15,7 @@ var benchmarkRendererEvaluation Evaluation
 // frozen default view; both use the same state-transition engine.
 func BenchmarkEvaluateResolved(b *testing.B) {
 	for _, fixture := range perftest.Cases(b) {
-		doc := ass.Parse(fixture.Text)
+		doc := renderer.Parse(fixture.Text)
 		trees := make([]ass.ConcreteDialogue, len(doc.Dialogues))
 		var bytes int
 		for i, dialogue := range doc.Dialogues {

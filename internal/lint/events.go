@@ -31,19 +31,19 @@ var eventTimeShape = regexp.MustCompile(`^[+-]?\d+:[+-]?\d+:[+-]?\d+\.[+-]?\d+$`
 
 // AnalyzeEventFields checks the Events Format line and every parsed event
 // field against what libass and VSFilter actually do with it.
-func AnalyzeEventFields(doc ass.Document) []Diagnostic {
+func AnalyzeEventFields(doc renderer.Document) []Diagnostic {
 	return analyzeEventFields(doc, DefaultAnalysisTargets().Primary, true)
 }
 
 // AnalyzeEventFieldsForRenderer keeps the shared document-level checks while
 // obtaining karaoke timing from the selected profile, not the legacy tags.
-func AnalyzeEventFieldsForRenderer(doc ass.Document, profile renderer.Profile) []Diagnostic {
+func AnalyzeEventFieldsForRenderer(doc renderer.Document, profile renderer.Profile) []Diagnostic {
 	return scopeDiagnostics(analyzeEventFields(doc, profile, true), profile)
 }
 
 // includeKaraoke is false only when the document's single shared P05
 // evaluation has a karaoke observer attached in analyzeResolvedDialogue.
-func analyzeEventFields(doc ass.Document, profile renderer.Profile, includeKaraoke bool) []Diagnostic {
+func analyzeEventFields(doc renderer.Document, profile renderer.Profile, includeKaraoke bool) []Diagnostic {
 	diagnostics := eventFormatFindings(doc)
 	for _, dialogue := range doc.Dialogues {
 		if dialogue.MissingFields {
@@ -74,7 +74,7 @@ func analyzeEventFields(doc ass.Document, profile renderer.Profile, includeKarao
 	return diagnostics
 }
 
-func eventFormatFindings(doc ass.Document) []Diagnostic {
+func eventFormatFindings(doc renderer.Document) []Diagnostic {
 	var diagnostics []Diagnostic
 	rule := RuleFor(IssueEventFormat)
 	for _, raw := range doc.Lines {
@@ -118,7 +118,7 @@ func formatMatches(format, canonical []string) bool {
 	return true
 }
 
-func analyzeTimecodes(dialogue ass.Dialogue) []Diagnostic {
+func analyzeTimecodes(dialogue renderer.Dialogue) []Diagnostic {
 	var diagnostics []Diagnostic
 	for _, name := range []string{"start", "end"} {
 		field, ok := dialogue.Field(name)
@@ -140,7 +140,7 @@ func analyzeTimecodes(dialogue ass.Dialogue) []Diagnostic {
 	return diagnostics
 }
 
-func analyzeEventDuration(dialogue ass.Dialogue) []Diagnostic {
+func analyzeEventDuration(dialogue renderer.Dialogue) []Diagnostic {
 	start, startOK := dialogueTime(dialogue, "start")
 	end, endOK := dialogueTime(dialogue, "end")
 	if !startOK || !endOK || start < end {
@@ -159,7 +159,7 @@ func analyzeEventDuration(dialogue ass.Dialogue) []Diagnostic {
 	}}
 }
 
-func analyzeLayer(dialogue ass.Dialogue) []Diagnostic {
+func analyzeLayer(dialogue renderer.Dialogue) []Diagnostic {
 	field, ok := dialogue.Field("layer")
 	if !ok {
 		return nil
@@ -188,13 +188,13 @@ func analyzeLayer(dialogue ass.Dialogue) []Diagnostic {
 // so they do not change the sum. \kt is a v4++ absolute reset whose exact
 // semantics differ between engines, and a VSFilterMod-only tag can rewrite
 // timing, so both cases bail to avoid a false claim.
-func analyzeKaraokeForRenderer(dialogue ass.Dialogue, profile renderer.Profile) []Diagnostic {
+func analyzeKaraokeForRenderer(dialogue renderer.Dialogue, profile renderer.Profile) []Diagnostic {
 	return analyzeKaraokeWithCursor(dialogue, func() (int64, bool) {
 		return karaokeCursorResolved(ass.ParseConcreteDialogue(dialogue.Text), profile)
 	})
 }
 
-func analyzeKaraokeWithCursor(dialogue ass.Dialogue, findCursor func() (int64, bool)) []Diagnostic {
+func analyzeKaraokeWithCursor(dialogue renderer.Dialogue, findCursor func() (int64, bool)) []Diagnostic {
 	start, startOK := dialogueTime(dialogue, "start")
 	end, endOK := dialogueTime(dialogue, "end")
 	if !startOK || !endOK {
@@ -243,7 +243,7 @@ func eventInteger(value string) bool {
 	return err == nil
 }
 
-func analyzeEffect(dialogue ass.Dialogue) []Diagnostic {
+func analyzeEffect(dialogue renderer.Dialogue) []Diagnostic {
 	field, ok := dialogue.Field("effect")
 	if !ok {
 		return nil
@@ -324,7 +324,7 @@ func effectParamCount(params string) int {
 // dialogueTime parses a Start/End cell exactly like libass string2timecode:
 // H:MM:SS.CS with the fourth segment counted as centiseconds. ok is false
 // when the cell lacks the four-group shape both engines honor.
-func dialogueTime(dialogue ass.Dialogue, name string) (int64, bool) {
+func dialogueTime(dialogue renderer.Dialogue, name string) (int64, bool) {
 	field, ok := dialogue.Field(name)
 	if !ok {
 		return 0, false

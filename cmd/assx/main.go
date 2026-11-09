@@ -133,32 +133,25 @@ func run(args []string, stdout, stderr io.Writer) int {
 	}
 	options := analysis.Options{Targets: targets}
 	ctx := context.Background()
-	analyzeSnapshot := func(snapshot analysis.Snapshot) ([]lint.Diagnostic, error) {
+	analyzeSnapshot := func(snapshot analysis.Snapshot) (*analysis.Result, []lint.Diagnostic, error) {
 		result, err := analysis.Analyze(ctx, snapshot, options)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		diagnostics, err := result.Diagnostics(ctx)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
-		return diagnostics, nil
+		return result, diagnostics, nil
 	}
-	diagnostics, err := analyzeSnapshot(snapshot)
+	result, diagnostics, err := analyzeSnapshot(snapshot)
 	if err != nil {
 		progress.stop()
 		_, _ = fmt.Fprintln(stderr, err)
 		return 2
 	}
-	doc := ass.Parse(snapshot.Text())
 	var appliedSafe, appliedUnsafe int
 	if (*fix || *unsafeFix) && (*forceASS || recognition.Class == ass.Recognized) {
-		result, err := analysis.Analyze(ctx, snapshot, options)
-		if err != nil {
-			progress.stop()
-			_, _ = fmt.Fprintln(stderr, err)
-			return 2
-		}
 		merged, err := result.Diagnostics(ctx)
 		if err != nil {
 			progress.stop()
@@ -173,7 +166,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 			return 2
 		}
 		if count > 0 {
-			if !bytes.Equal(source.Encode(doc.Text), original) {
+			if !bytes.Equal(source.Encode(snapshot.Text()), original) {
 				progress.stop()
 				_, _ = fmt.Fprintln(stderr, "Refusing to modify a file that cannot be losslessly round-tripped.")
 				return 2
@@ -199,8 +192,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 				_, _ = fmt.Fprintln(stderr, err)
 				return 2
 			}
-			doc = ass.Parse(fixedText)
-			diagnostics, err = analyzeSnapshot(snapshot)
+			result, diagnostics, err = analyzeSnapshot(snapshot)
 			if err != nil {
 				progress.stop()
 				_, _ = fmt.Fprintln(stderr, err)
@@ -234,15 +226,10 @@ func run(args []string, stdout, stderr io.Writer) int {
 			return 2
 		}
 	default:
-		primaryView, err := targets.Primary.ViewOf(ctx, doc)
-		if err != nil {
-			_, _ = fmt.Fprintln(stderr, err)
-			return 2
-		}
-		view := lintreport.Build(path, diagnostics, primaryView.Document)
+		view := lintreport.Build(path, diagnostics, result.PrimaryView().Document)
 		view.Explain = *explain
 		view.Applied.Safe, view.Applied.Unsafe = appliedSafe, appliedUnsafe
-		if err := pretty.Render(stdout, view, doc.Text, colorAllowed(stdout), outputWidth(stdout)); err != nil {
+		if err := pretty.Render(stdout, view, snapshot.Text(), colorAllowed(stdout), outputWidth(stdout)); err != nil {
 			_, _ = fmt.Fprintln(stderr, err)
 			return 2
 		}

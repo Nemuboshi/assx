@@ -1,6 +1,7 @@
 package lint
 
 import (
+	"assx/internal/ass/renderer"
 	"fmt"
 	"strconv"
 	"strings"
@@ -8,7 +9,7 @@ import (
 	"assx/internal/ass"
 )
 
-func AnalyzeHeaders(doc ass.Document) []Diagnostic {
+func AnalyzeHeaders(doc renderer.Document) []Diagnostic {
 	var out []Diagnostic
 	playResY, playResYValid := headerInt(doc, "playresy")
 	matrix, matrixSet := doc.Headers["ycbcr matrix"]
@@ -65,7 +66,7 @@ func AnalyzeHeaders(doc ass.Document) []Diagnostic {
 	return out
 }
 
-func headerDiagnostic(doc ass.Document, id string, field ass.HeaderField, exists bool, detail string, edits []TextEdit) Diagnostic {
+func headerDiagnostic(doc renderer.Document, id string, field renderer.HeaderField, exists bool, detail string, edits []TextEdit) Diagnostic {
 	rule := RuleFor(id)
 	line := doc.ScriptInfoLine
 	if line == 0 {
@@ -89,14 +90,14 @@ func headerDiagnostic(doc ass.Document, id string, field ass.HeaderField, exists
 	}
 }
 
-func headerValueEdit(doc ass.Document, field ass.HeaderField, exists bool, value, insertion string) []TextEdit {
+func headerValueEdit(doc renderer.Document, field renderer.HeaderField, exists bool, value, insertion string) []TextEdit {
 	if exists {
 		return []TextEdit{{Start: field.ValueStart, End: field.ValueEnd, Replacement: value}}
 	}
 	return []TextEdit{headerInsert(doc, []string{insertion})}
 }
 
-func headerInsert(doc ass.Document, lines []string) TextEdit {
+func headerInsert(doc renderer.Document, lines []string) TextEdit {
 	joined := strings.Join(lines, doc.Newline) + doc.Newline
 	if doc.ScriptInfoLine == 0 {
 		joined = "[Script Info]" + doc.Newline + joined + doc.Newline
@@ -109,7 +110,7 @@ func headerInsert(doc ass.Document, lines []string) TextEdit {
 	return TextEdit{Start: at, End: at, Replacement: joined}
 }
 
-func headerInt(doc ass.Document, name string) (int, bool) {
+func headerInt(doc renderer.Document, name string) (int, bool) {
 	field, exists := doc.Headers[name]
 	if !exists {
 		return 0, false

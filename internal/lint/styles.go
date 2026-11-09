@@ -1,6 +1,7 @@
 package lint
 
 import (
+	"assx/internal/ass/renderer"
 	"fmt"
 	"math"
 	"regexp"
@@ -36,11 +37,11 @@ var (
 	styleColourDecimalDigit   = regexp.MustCompile(`^[+-]?[0-9]`)
 )
 
-func AnalyzeStyles(doc ass.Document) []Diagnostic {
+func AnalyzeStyles(doc renderer.Document) []Diagnostic {
 	return proveSafeFixes(doc, analyzeStyles(doc), defaultFixTargets())
 }
 
-func analyzeStyles(doc ass.Document) []Diagnostic {
+func analyzeStyles(doc renderer.Document) []Diagnostic {
 	var out []Diagnostic
 	sections := styleSections(doc)
 	for _, field := range doc.StyleFields {
@@ -103,7 +104,7 @@ func analyzeStyles(doc ass.Document) []Diagnostic {
 
 // styleSections maps a physical line to its section, so a Style field can be
 // classified as ASS v4+ or legacy SSA. The two dialects differ on Alignment.
-func styleSections(doc ass.Document) map[int]string {
+func styleSections(doc renderer.Document) map[int]string {
 	sections := make(map[int]string, len(doc.Lines))
 	for _, line := range doc.Lines {
 		sections[line.Line] = line.Section
@@ -139,7 +140,7 @@ func styleColourMalformed(value string) bool {
 	return !styleColourDecimalDigit.MatchString(value)
 }
 
-func styleDiagnostic(id string, field ass.StyleField, name, replacement string) Diagnostic {
+func styleDiagnostic(id string, field renderer.StyleField, name, replacement string) Diagnostic {
 	rule := RuleFor(id)
 	diagnostic := Diagnostic{
 		Condition: rule.Condition, Severity: rule.Severity, FixSafety: rule.FixSafety,

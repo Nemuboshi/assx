@@ -14,7 +14,7 @@ import (
 // validity analysis. Nil targets selects libass + xy-VSFilter. The typed
 // semantic comparison also exposes equivalent observations for API consumers.
 // Compatibility findings never authorize edits or change default Analyze.
-func AnalyzeCompatibility(dialogue ass.Dialogue, profiles []renderer.Profile) []Diagnostic {
+func AnalyzeCompatibility(dialogue renderer.Dialogue, profiles []renderer.Profile) []Diagnostic {
 	findings := semantic.CompareDialogue(ass.ParseConcreteDialogue(dialogue.Text), profiles, semantic.EvaluationOptions{})
 	diagnostics := compatibilityDiagnostics(findings, func(span ass.ConcreteSpan) (int, int) { return dialogue.Line, span.Start + 1 })
 	for i := range diagnostics {
@@ -26,14 +26,14 @@ func AnalyzeCompatibility(dialogue ass.Dialogue, profiles []renderer.Profile) []
 
 // AnalyzeDocumentCompatibility uses the lossless document, including records
 // the document view cannot represent. All positions refer to doc.Text byte offsets.
-func AnalyzeDocumentCompatibility(doc ass.Document, profiles []renderer.Profile) []Diagnostic {
+func AnalyzeDocumentCompatibility(doc renderer.Document, profiles []renderer.Profile) []Diagnostic {
 	return analyzeDocumentCompatibility(doc, nil, profiles, semantic.ComparisonMode{})
 }
 
 // analyzeDocumentCompatibility converts findings with a request-supplied
 // concrete document and comparison mode. A nil tree parses doc.Text.
 // A single profile has no pair to compare, so it emits no finding.
-func analyzeDocumentCompatibility(doc ass.Document, tree *ass.ConcreteDocument, profiles []renderer.Profile, mode semantic.ComparisonMode) []Diagnostic {
+func analyzeDocumentCompatibility(doc renderer.Document, tree *ass.ConcreteDocument, profiles []renderer.Profile, mode semantic.ComparisonMode) []Diagnostic {
 	if len(profiles) == 1 {
 		return nil
 	}

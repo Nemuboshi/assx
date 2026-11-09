@@ -1,5 +1,7 @@
 package lint
 
+import ()
+
 // Conditions name what was detected. They carry no numeric identifiers.
 const (
 	IssueArgumentCount           = "arity"

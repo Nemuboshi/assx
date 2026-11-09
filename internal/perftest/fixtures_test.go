@@ -27,7 +27,7 @@ func TestPerformanceFixturesHaveCompleteEvents(t *testing.T) {
 	for _, test := range perftest.Cases(t) {
 		seen[test.Name] = true
 		t.Run(test.Name, func(t *testing.T) {
-			doc := ass.Parse(test.Text)
+			doc := renderer.Parse(test.Text)
 			if len(doc.Dialogues) != wantCounts[test.Name] {
 				t.Fatalf("got %d dialogues, want %d", len(doc.Dialogues), wantCounts[test.Name])
 			}
@@ -58,7 +58,7 @@ func TestPerformanceFixturesHaveCompleteEvents(t *testing.T) {
 func TestPerformanceFixtureFeatures(t *testing.T) {
 	for _, test := range perftest.Cases(t) {
 		t.Run(test.Name, func(t *testing.T) {
-			features := inspectFixture(ass.Parse(test.Text))
+			features := inspectFixture(renderer.Parse(test.Text))
 			requireFeature := func(name string, count int) {
 				t.Helper()
 				if count < 1 {
@@ -129,7 +129,7 @@ type fixtureFeatures struct {
 	multipleTransforms int
 }
 
-func inspectFixture(doc ass.Document) fixtureFeatures {
+func inspectFixture(doc renderer.Document) fixtureFeatures {
 	f := fixtureFeatures{
 		tags:       make(map[string]int),
 		usedStyles: make(map[string]bool),

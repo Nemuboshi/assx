@@ -16,8 +16,8 @@ func TestDocumentsRefreshParsedSnapshotAndIndex(t *testing.T) {
 		t.Fatal(err)
 	}
 	current := store.items[uri]
-	if len(current.parsed.Dialogues) != 1 || current.parsed.Dialogues[0].Text != "new😀" {
-		t.Fatalf("parsed snapshot does not match version 2: %+v", current.parsed.Dialogues)
+	if len(current.view.Dialogues) != 1 || current.view.Dialogues[0].Text != "new😀" {
+		t.Fatalf("parsed snapshot does not match version 2: %+v", current.view.Dialogues)
 	}
 	position, err := current.index.Position(len(current.text))
 	if err != nil || position.Line != 2 || position.Character != 45 {

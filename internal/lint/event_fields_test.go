@@ -1,15 +1,14 @@
 package lint
 
 import (
+	"assx/internal/ass/renderer"
 	"strings"
 	"testing"
-
-	"assx/internal/ass"
 )
 
 // eventDocument builds a minimal file whose [Events] section uses the given
 // Format line (omit it with an empty format) and Dialogue bodies.
-func eventDocument(format string, dialogues ...string) ass.Document {
+func eventDocument(format string, dialogues ...string) renderer.Document {
 	var builder strings.Builder
 	builder.WriteString("[Script Info]\nPlayResX: 640\nPlayResY: 480\n")
 	builder.WriteString("[Events]\n")
@@ -19,7 +18,7 @@ func eventDocument(format string, dialogues ...string) ass.Document {
 	for _, dialogue := range dialogues {
 		builder.WriteString("Dialogue: " + dialogue + "\n")
 	}
-	return ass.Parse(builder.String())
+	return renderer.Parse(builder.String())
 }
 
 func standardEventDialogue(start, end, text string) string {

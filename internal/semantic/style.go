@@ -1,6 +1,7 @@
 package semantic
 
 import (
+	"assx/internal/ass/renderer"
 	"maps"
 	"strconv"
 	"strings"
@@ -59,7 +60,7 @@ type StyleState struct {
 	Values map[string]StateValue
 }
 
-func DefinedStyleNames(fields []ass.StyleField) map[string]struct{} {
+func DefinedStyleNames(fields []renderer.StyleField) map[string]struct{} {
 	styles := make(map[string]struct{})
 	for _, field := range fields {
 		if field.Name == "name" {
@@ -87,7 +88,7 @@ func ResolveResetStyleReference(name string, styles map[string]struct{}) bool {
 	return exists
 }
 
-func StyleDefinitionsByName(fields []ass.StyleField) map[string]map[string]string {
+func StyleDefinitionsByName(fields []renderer.StyleField) map[string]map[string]string {
 	rows := make(map[styleDefinitionKey]map[string]string)
 	duplicates := make(map[styleDefinitionKey]bool)
 	for _, field := range fields {
@@ -124,7 +125,7 @@ func StyleDefinitionsByName(fields []ass.StyleField) map[string]map[string]strin
 
 // StyleStatesByName decodes each unambiguous Style once for all semantic
 // consumers of a document.
-func StyleStatesByName(fields []ass.StyleField) map[string]StyleState {
+func StyleStatesByName(fields []renderer.StyleField) map[string]StyleState {
 	definitions := StyleDefinitionsByName(fields)
 	states := make(map[string]StyleState, len(definitions))
 	for name, definition := range definitions {

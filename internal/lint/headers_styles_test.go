@@ -1,15 +1,14 @@
 package lint
 
 import (
+	"assx/internal/ass/renderer"
 	"strings"
 	"testing"
-
-	"assx/internal/ass"
 )
 
 func TestStylePrecisionFindingsAndFixClasses(t *testing.T) {
 	text := "[V4+ Styles]\nFormat: Name, MarginL, Fontsize, Italic, ScaleX\nStyle: Default, 12.75, 20.123456789, 0.0, 100.00000000000001\n"
-	doc := ass.Parse(text)
+	doc := renderer.Parse(text)
 	diagnostics := AnalyzeStyles(doc)
 	if len(diagnostics) != 4 {
 		t.Fatalf("got %d style findings, want 4: %#v", len(diagnostics), diagnostics)
@@ -45,7 +44,7 @@ func TestStylePrecisionFindingsAndFixClasses(t *testing.T) {
 
 func TestStyleFloatPrecisionIgnoresOrdinaryDecimals(t *testing.T) {
 	text := "[V4+ Styles]\nFormat: Name, Fontsize, Spacing\nStyle: Default, 30.25, -1.5\n"
-	if got := len(AnalyzeStyles(ass.Parse(text))); got != 0 {
+	if got := len(AnalyzeStyles(renderer.Parse(text))); got != 0 {
 		t.Fatalf("ordinary decimal values produced %d findings", got)
 	}
 }
@@ -62,7 +61,7 @@ func TestMatrixAndLayoutHeaderBoundaries(t *testing.T) {
 	}
 	for _, test := range cases {
 		t.Run(test.name, func(t *testing.T) {
-			if got := len(AnalyzeHeaders(ass.Parse(test.text))); got != test.want {
+			if got := len(AnalyzeHeaders(renderer.Parse(test.text))); got != test.want {
 				t.Fatalf("got %d findings, want %d", got, test.want)
 			}
 		})

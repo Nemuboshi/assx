@@ -303,7 +303,7 @@ func evaluatedTag(name string) bool {
 }
 
 type evaluationRequest struct {
-	dialogue ass.Dialogue
+	dialogue renderer.Dialogue
 	profile  renderer.Profile
 	styles   map[string]semantic.StyleState
 	prepared *semantic.PreparedDialogue

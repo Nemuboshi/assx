@@ -13,28 +13,34 @@ import (
 // produced it. A View is not the source document, and its Text spans can differ
 // from another View of the same source.
 type View struct {
-	ass.Document
+	Document
 	Profile Profile
 	Layouts []RecordLayout
 }
 
 // View builds this renderer's view from one source parse.
 func (p Profile) View(ctx context.Context, source ass.Parsed) (View, error) {
-	return p.ViewFromConcrete(ctx, source, p.ResolveDocumentLayouts(source.Concrete))
+	return p.ViewFromConcrete(ctx, DefaultDocument(source), source, p.ResolveDocumentLayouts(source.Concrete))
 }
 
-// ViewOf builds this renderer's view for a document without a concrete tree.
+// ViewOf builds this renderer's view for a document without a source parse.
 // It parses the text again. Prefer View with a Parsed value on hot paths.
-func (p Profile) ViewOf(ctx context.Context, doc ass.Document) (View, error) {
-	return p.View(ctx, ass.ParsedOf(doc))
+func (p Profile) ViewOf(ctx context.Context, doc Document) (View, error) {
+	tree := ass.ParseConcreteDocument(doc.Text)
+	return p.viewFrom(ctx, doc, tree, p.ResolveDocumentLayouts(tree))
 }
 
-// ViewFromConcrete builds this renderer's view from one source parse and that
-// profile's resolved layouts. The caller can share both across every consumer
-// of one source version. A canceled context returns no partial view; the same
+// ViewFromConcrete builds this renderer's view from one default view, one
+// source parse, and that profile's resolved layouts. The caller can share all
+// three across every consumer of one source version, so the default view is
+// built once per request. A canceled context returns no partial view; the same
 // inputs stay usable for a later request.
-func (p Profile) ViewFromConcrete(ctx context.Context, source ass.Parsed, layouts []RecordLayout) (View, error) {
-	view, err := p.projectDocument(ctx, source.Document, source.Concrete, layouts)
+func (p Profile) ViewFromConcrete(ctx context.Context, doc Document, source ass.Parsed, layouts []RecordLayout) (View, error) {
+	return p.viewFrom(ctx, doc, source.Concrete, layouts)
+}
+
+func (p Profile) viewFrom(ctx context.Context, doc Document, tree ass.ConcreteDocument, layouts []RecordLayout) (View, error) {
+	view, err := p.projectDocument(ctx, doc, tree, layouts)
 	if err != nil {
 		return View{}, err
 	}
@@ -42,13 +48,13 @@ func (p Profile) ViewFromConcrete(ctx context.Context, source ass.Parsed, layout
 }
 
 // skipsProjection reports the guard cases that need no concrete document.
-func (p Profile) skipsProjection(doc ass.Document) bool {
+func (p Profile) skipsProjection(doc Document) bool {
 	return p.kind == Libass || len(doc.Lines) == 0 || len(doc.Dialogues) == 1 && len(doc.Dialogues[0].Fields) == 0
 }
 
-func (p Profile) projectDocument(ctx context.Context, doc ass.Document, tree ass.ConcreteDocument, layouts []RecordLayout) (ass.Document, error) {
+func (p Profile) projectDocument(ctx context.Context, doc Document, tree ass.ConcreteDocument, layouts []RecordLayout) (Document, error) {
 	if err := ctx.Err(); err != nil {
-		return ass.Document{}, err
+		return Document{}, err
 	}
 	if p.skipsProjection(doc) {
 		return doc, nil
@@ -99,7 +105,7 @@ func (p Profile) projectDocument(ctx context.Context, doc ass.Document, tree ass
 				}
 				value := strings.TrimSpace(cell.Raw)
 				start := cell.Span.Start + len(cell.Raw) - len(strings.TrimLeft(cell.Raw, " \t"))
-				view.StyleFields = append(view.StyleFields, ass.StyleField{
+				view.StyleFields = append(view.StyleFields, StyleField{
 					StyleName: name, Name: row.Columns[i], Value: value, Line: row.Line,
 					ValueStart: start, ValueEnd: start + len(value), ValueColumn: start - line.ContentSpan.Start + 1,
 				})
@@ -108,10 +114,10 @@ func (p Profile) projectDocument(ctx context.Context, doc ass.Document, tree ass
 		if row.Kind != "dialogue" || !projectDialogues || section != "events" {
 			continue
 		}
-		dialogue := ass.Dialogue{Line: row.Line, LineStart: line.ContentSpan.Start}
+		dialogue := Dialogue{Line: row.Line, LineStart: line.ContentSpan.Start}
 		for i, cell := range row.Cells {
 			name := row.Columns[i]
-			dialogue.Fields = append(dialogue.Fields, ass.EventField{Name: name, Value: cell.Raw, Start: cell.Span.Start, End: cell.Span.End})
+			dialogue.Fields = append(dialogue.Fields, EventField{Name: name, Value: cell.Raw, Start: cell.Span.Start, End: cell.Span.End})
 			dialogue.MissingFields = dialogue.MissingFields || !cell.Present
 			if name == "text" {
 				dialogue.Text, dialogue.TextStart = cell.Raw, cell.Span.Start

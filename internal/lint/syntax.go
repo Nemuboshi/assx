@@ -1,6 +1,7 @@
 package lint
 
 import (
+	"assx/internal/ass/renderer"
 	"fmt"
 	"strings"
 
@@ -8,7 +9,7 @@ import (
 	"assx/internal/ass/spec"
 )
 
-func overrideJunkDiagnostic(dialogue ass.Dialogue, column int, junk string, span ass.ConcreteSpan) Diagnostic {
+func overrideJunkDiagnostic(dialogue renderer.Dialogue, column int, junk string, span ass.ConcreteSpan) Diagnostic {
 	rule := RuleFor(IssueOverrideJunk)
 	return Diagnostic{
 		Condition: rule.Condition, Severity: rule.Severity, Title: rule.Title, Description: rule.Description,

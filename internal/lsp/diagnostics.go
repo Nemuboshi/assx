@@ -51,7 +51,7 @@ func (server *Server) publish(ctx context.Context, output io.Writer, uri string)
 			if err != nil {
 				return err
 			}
-			result, err := analysis.Analyze(ctx, snapshot, server.settings.Options)
+			result, err := analysis.AnalyzeParsed(ctx, snapshot, doc.parsed, server.settings.Options)
 			if err != nil {
 				return err
 			}

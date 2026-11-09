@@ -1,14 +1,13 @@
 package lint
 
 import (
+	"assx/internal/ass/renderer"
 	"fmt"
 	"strings"
 	"testing"
-
-	"assx/internal/ass"
 )
 
-func styleLoadDocument(styles, dialogues int, dialogueText string) ass.Document {
+func styleLoadDocument(styles, dialogues int, dialogueText string) renderer.Document {
 	var text strings.Builder
 	text.WriteString("[V4+ Styles]\nFormat: Name, Fontname, Fontsize, Bold, Italic, ScaleX, ScaleY, Spacing, Outline, Shadow\n")
 	for i := 0; i < styles; i++ {
@@ -16,7 +15,7 @@ func styleLoadDocument(styles, dialogues int, dialogueText string) ass.Document 
 	}
 	text.WriteString("[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n")
 	text.WriteString(strings.Repeat("Dialogue: 0,0:00:00.00,0:00:01.00,S0,,0,0,0,,"+dialogueText+"\n", dialogues))
-	return ass.Parse(text.String())
+	return renderer.Parse(text.String())
 }
 
 func TestStyleStateAllocationsDoNotMultiplyStylesByDialogues(t *testing.T) {

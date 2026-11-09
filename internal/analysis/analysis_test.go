@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"assx/internal/ass"
 	"assx/internal/ass/renderer"
 	"assx/internal/lint"
 	"assx/internal/perftest"
@@ -85,7 +84,7 @@ func provedFromEager(diagnostics []lint.Diagnostic) []lint.Diagnostic {
 
 func TestAnalyzeEmptyOptionsMatchDefaultTargets(t *testing.T) {
 	text := perftest.StyleEdit(t)
-	doc := ass.Parse(text)
+	doc := renderer.Parse(text)
 	eager := lint.AnalyzeDocumentForTargets(doc, lint.DefaultAnalysisTargets())
 
 	result := analyzeTestResult(t, text, Options{})
@@ -318,11 +317,11 @@ func TestResultUnicodeOffsetsAndMalformedRecords(t *testing.T) {
 	if !strings.Contains(fixed, "日本語") {
 		t.Fatal("Unicode content lost")
 	}
-	edited := ass.Parse(fixed).Dialogues[0].Text
+	edited := renderer.Parse(fixed).Dialogues[0].Text
 	if !strings.HasPrefix(edited[strings.Index(edited, "日本語"):], "日本語") {
 		t.Fatal("Unicode byte offsets wrong after the edit")
 	}
-	malformedLine := ass.Parse(text).Dialogues[2].Line
+	malformedLine := renderer.Parse(text).Dialogues[2].Line
 	malformed := false
 	for _, finding := range result.Findings() {
 		if finding.Diagnostic.Line == malformedLine {

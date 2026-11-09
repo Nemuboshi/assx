@@ -43,7 +43,7 @@ func CompareDocumentInMode(tree ass.ConcreteDocument, profiles []renderer.Profil
 		rows := mode.layoutsFor(p, tree)
 		layouts[i] = make(map[ass.ConcreteSpan]renderer.RecordLayout, len(rows))
 		runs[i] = make(map[ass.ConcreteSpan]*Interpretation)
-		var fields []ass.StyleField
+		var fields []renderer.StyleField
 		for _, row := range rows {
 			layouts[i][row.Source] = row
 			spans[row.Source] = true
@@ -55,7 +55,7 @@ func CompareDocumentInMode(tree ass.ConcreteDocument, profiles []renderer.Profil
 				if j >= len(row.Cells) || !row.Cells[j].Present {
 					continue
 				}
-				fields = append(fields, ass.StyleField{StyleName: name, Name: column, Value: strings.TrimSpace(row.Cells[j].Raw), Line: row.Line})
+				fields = append(fields, renderer.StyleField{StyleName: name, Name: column, Value: strings.TrimSpace(row.Cells[j].Raw), Line: row.Line})
 			}
 		}
 		styles := StyleStatesByName(fields)

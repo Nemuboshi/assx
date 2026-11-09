@@ -14,19 +14,19 @@ import (
 
 // AnalyzeForRenderer validates a dialogue under exactly one pinned renderer.
 // Findings are renderer-local observations, never all-target SafeFix proofs.
-func AnalyzeForRenderer(dialogue ass.Dialogue, profile renderer.Profile) []Diagnostic {
+func AnalyzeForRenderer(dialogue renderer.Dialogue, profile renderer.Profile) []Diagnostic {
 	findings, _ := analyzeResolvedDialogue(dialogue, profile, nil, nil, nil)
 	return scopeDiagnostics(findings, profile)
 }
 
 // AnalyzeDocumentForRenderer provides renderer-local observations without fixes.
 // AnalyzeDocumentForTargets also applies compatibility policy and proves edits.
-func AnalyzeDocumentForRenderer(doc ass.Document, profile renderer.Profile) []Diagnostic {
+func AnalyzeDocumentForRenderer(doc renderer.Document, profile renderer.Profile) []Diagnostic {
 	return scopeDiagnostics(analyzeDocumentForProfile(doc, profile, nil), profile)
 }
 
-func analyzeDocumentForProfile(doc ass.Document, profile renderer.Profile, policy RulePolicy) []Diagnostic {
-	findings, _ := analyzeDocumentForProfileContext(context.Background(), ass.ParsedOf(doc), profile, policy, nil)
+func analyzeDocumentForProfile(doc renderer.Document, profile renderer.Profile, policy RulePolicy) []Diagnostic {
+	findings, _ := analyzeDocumentForProfileContext(context.Background(), ass.ParseSource(doc.Text), doc, profile, policy, nil)
 	return findings
 }
 
@@ -35,7 +35,7 @@ func analyzeDocumentForProfile(doc ass.Document, profile renderer.Profile, polic
 // A shared analysis supplies one projected view per profile and reuses
 // resolved dialogue operations across validation, compatibility, and the
 // redundant-Style collector, so each profile resolves an expression once.
-func analyzeDocumentForProfileContext(ctx context.Context, source ass.Parsed, profile renderer.Profile, policy RulePolicy, shared *DocumentAnalysis) ([]Diagnostic, error) {
+func analyzeDocumentForProfileContext(ctx context.Context, source ass.Parsed, defaultDoc renderer.Document, profile renderer.Profile, policy RulePolicy, shared *DocumentAnalysis) ([]Diagnostic, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
@@ -46,7 +46,7 @@ func analyzeDocumentForProfileContext(ctx context.Context, source ass.Parsed, pr
 	}
 	if !ok {
 		var err error
-		view, err = profile.View(ctx, source)
+		view, err = profile.ViewOf(ctx, defaultDoc)
 		if err != nil {
 			return nil, err
 		}
@@ -135,7 +135,7 @@ func scopeDiagnostics(diagnostics []Diagnostic, profile renderer.Profile) []Diag
 
 // analyzeResolvedDialogue validates one dialogue. A caller without request
 // preparation passes nil, and the dialogue resolves once for this pass.
-func analyzeResolvedDialogue(dialogue ass.Dialogue, profile renderer.Profile, styles map[string]semantic.StyleState, collector *styleRunCollector, prepared *semantic.PreparedDialogue) ([]Diagnostic, *Diagnostic) {
+func analyzeResolvedDialogue(dialogue renderer.Dialogue, profile renderer.Profile, styles map[string]semantic.StyleState, collector *styleRunCollector, prepared *semantic.PreparedDialogue) ([]Diagnostic, *Diagnostic) {
 	if prepared == nil {
 		prepared, _ = semantic.PrepareDialogue(context.Background(), ass.ParseConcreteDialogue(dialogue.Text), profile)
 	}
@@ -310,7 +310,7 @@ func (a *dialogueAnalyzer) consumeResolved(tag ass.Tag, result renderer.Result, 
 			}
 		}
 		a.diagnostics = append(a.diagnostics, overrideJunkDiagnostic(
-			ass.Dialogue{Line: a.line}, tag.Column, tail, span))
+			renderer.Dialogue{Line: a.line}, tag.Column, tail, span))
 	}
 }
 
@@ -341,7 +341,7 @@ func verifiedCounts(profile renderer.Profile, name string) string {
 // Renderer-specific drawing checks follow effective drawing state, including
 // resets and unknown operations; they never trust a legacy raw \\p token.
 type resolvedDrawingCollector struct {
-	dialogue  ass.Dialogue
+	dialogue  renderer.Dialogue
 	fragments []ass.DrawingFragment
 	findings  []Diagnostic
 }

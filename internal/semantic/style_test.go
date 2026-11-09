@@ -1,6 +1,7 @@
 package semantic
 
 import (
+	"assx/internal/ass/renderer"
 	"testing"
 
 	"assx/internal/ass"
@@ -45,7 +46,7 @@ func TestDialogueStyleLookupSemantics(t *testing.T) {
 }
 
 func TestStyleDefinitionsKeepCaseDistinctAndRejectDuplicates(t *testing.T) {
-	fields := []ass.StyleField{
+	fields := []renderer.StyleField{
 		{StyleName: "Main", Name: "name", Value: "Main", Line: 1},
 		{StyleName: "Main", Name: "fontsize", Value: "20", Line: 1},
 		{StyleName: "main", Name: "name", Value: "main", Line: 2},
@@ -57,8 +58,8 @@ func TestStyleDefinitionsKeepCaseDistinctAndRejectDuplicates(t *testing.T) {
 	}
 
 	fields = append(fields,
-		ass.StyleField{StyleName: "Main", Name: "name", Value: "Main", Line: 3},
-		ass.StyleField{StyleName: "Main", Name: "fontsize", Value: "40", Line: 3},
+		renderer.StyleField{StyleName: "Main", Name: "name", Value: "Main", Line: 3},
+		renderer.StyleField{StyleName: "Main", Name: "fontsize", Value: "40", Line: 3},
 	)
 	styles = StyleDefinitionsByName(fields)
 	if _, ok := styles["Main"]; ok {

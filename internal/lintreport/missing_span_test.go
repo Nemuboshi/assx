@@ -1,14 +1,14 @@
 package lintreport
 
 import (
+	"assx/internal/ass/renderer"
 	"testing"
 
-	"assx/internal/ass"
 	"assx/internal/lint"
 )
 
 func TestMissingHeaderKeepsCLICaretOnReportedLine(t *testing.T) {
-	doc := ass.Parse("[Script Info]\n[Events]\nDialogue: broken\n")
+	doc := renderer.Parse("[Script Info]\n[Events]\nDialogue: broken\n")
 	view := Build("test.ass", lint.AnalyzeDocument(doc), doc)
 	for _, diagnostic := range view.Groups[0].Diagnostics {
 		if diagnostic.Condition == lint.IssueMatrixHeader {
@@ -22,7 +22,7 @@ func TestMissingHeaderKeepsCLICaretOnReportedLine(t *testing.T) {
 }
 
 func TestShortEventKeepsCLICaretAtReportedColumn(t *testing.T) {
-	doc := ass.Parse("[Events]\nFormat: Layer, Start, End, Text\nDialogue: 1234\n")
+	doc := renderer.Parse("[Events]\nFormat: Layer, Start, End, Text\nDialogue: 1234\n")
 	findings := lint.AnalyzeDocument(doc)
 	view := Build("test.ass", findings, doc)
 	for i, d := range findings {

@@ -5,12 +5,11 @@ import (
 	"path/filepath"
 	"testing"
 
-	"assx/internal/ass"
 	"assx/internal/ass/renderer"
 )
 
 func TestRendererScopedASS006DoesNotInventSafeFix(t *testing.T) {
-	dialogue := ass.Dialogue{
+	dialogue := renderer.Dialogue{
 		Text: `{\pos(1,2,3)\pos(4,5)}A`,
 		Line: 1,
 	}
@@ -53,7 +52,7 @@ func TestRendererScopedASS013DoesNotInventSafeFix(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	findings := AnalyzeRedundantStyleOverridesForRenderer(ass.Parse(string(content)), profile)
+	findings := AnalyzeRedundantStyleOverridesForRenderer(renderer.Parse(string(content)), profile)
 	if len(findings) != 1 {
 		t.Fatalf("scoped style findings = %#v", findings)
 	}

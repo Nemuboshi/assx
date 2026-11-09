@@ -1,9 +1,8 @@
 package lint
 
 import (
+	"assx/internal/ass/renderer"
 	"testing"
-
-	"assx/internal/ass"
 )
 
 func TestVSFilterModTagsWarnWithoutAutomaticFixes(t *testing.T) {
@@ -17,7 +16,7 @@ func TestVSFilterModTagsWarnWithoutAutomaticFixes(t *testing.T) {
 	for _, tag := range tags {
 		t.Run(tag, func(t *testing.T) {
 			text := "{\\" + tag + "(1)}x"
-			diagnostics := Analyze(ass.Dialogue{Text: text})
+			diagnostics := Analyze(renderer.Dialogue{Text: text})
 			var diagnostic Diagnostic
 			for _, finding := range diagnostics {
 				if finding.Condition == IssueVSFilterModTag && finding.Tag == tag {
@@ -71,7 +70,7 @@ func TestVSFilterModTagDisablesDialogueFixes(t *testing.T) {
 }
 
 func TestCommonTagsDoNotGetVSFilterModWarning(t *testing.T) {
-	diagnostics := Analyze(ass.Dialogue{Text: `{\fs20}x`})
+	diagnostics := Analyze(renderer.Dialogue{Text: `{\fs20}x`})
 	for _, diagnostic := range diagnostics {
 		if diagnostic.Condition == IssueVSFilterModTag {
 			t.Fatalf("common tag got VSFilterMod warning: %#v", diagnostic)

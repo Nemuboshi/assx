@@ -1,6 +1,7 @@
 package main
 
 import (
+	"assx/internal/ass/renderer"
 	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
@@ -115,18 +116,18 @@ type baselineEffect struct {
 }
 
 type baselineDialogue struct {
-	Line          int              `json:"line"`
-	Style         string           `json:"style"`
-	TextStart     int              `json:"text_start"`
-	MissingFields bool             `json:"missing_fields"`
-	Fields        []ass.EventField `json:"fields"`
-	Nodes         []baselineNode   `json:"nodes"`
-	Events        []baselineEvent  `json:"events,omitempty"`
-	Text          []baselineText   `json:"text_boundaries,omitempty"`
-	NoEffects     []baselineEffect `json:"no_effects,omitempty"`
+	Line          int                   `json:"line"`
+	Style         string                `json:"style"`
+	TextStart     int                   `json:"text_start"`
+	MissingFields bool                  `json:"missing_fields"`
+	Fields        []renderer.EventField `json:"fields"`
+	Nodes         []baselineNode        `json:"nodes"`
+	Events        []baselineEvent       `json:"events,omitempty"`
+	Text          []baselineText        `json:"text_boundaries,omitempty"`
+	NoEffects     []baselineEffect      `json:"no_effects,omitempty"`
 }
 
-func snapshotDialogue(dialogue ass.Dialogue, styles map[string]semantic.StyleState) baselineDialogue {
+func snapshotDialogue(dialogue renderer.Dialogue, styles map[string]semantic.StyleState) baselineDialogue {
 	tree := ass.ParseConcreteDialogue(dialogue.Text)
 	out := baselineDialogue{
 		Line: dialogue.Line, Style: dialogue.Style, TextStart: dialogue.TextStart,
@@ -260,7 +261,7 @@ func TestRendererBaselineContracts(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			doc := ass.Parse(source.Text)
+			doc := renderer.Parse(source.Text)
 			record := baselineRecord{
 				SourceCommit: baselineCommit, FixtureSHA: sha(raw),
 				RoundTrip: bytes.Equal(source.Encode(doc.Text), raw),

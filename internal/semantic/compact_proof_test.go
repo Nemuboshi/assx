@@ -50,7 +50,7 @@ var compactCorpus = []string{
 }
 
 func compactCorpusStyles() map[string]StyleState {
-	fields := []ass.StyleField{
+	fields := []renderer.StyleField{
 		{StyleName: "Default", Name: "Fontname", Value: "Arial"},
 		{StyleName: "Default", Name: "Bold", Value: "-1"},
 		{StyleName: "Default", Name: "Fontsize", Value: "48"},

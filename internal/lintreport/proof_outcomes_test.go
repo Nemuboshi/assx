@@ -1,15 +1,15 @@
 package lintreport
 
 import (
+	"assx/internal/ass/renderer"
 	"encoding/json"
 	"testing"
 
-	"assx/internal/ass"
 	"assx/internal/lint"
 )
 
 func TestReportFixOutcomesUseValidatedGroupedProofs(t *testing.T) {
-	doc := ass.Document{Text: `{\fs21\fs21}A{\fs22\fs22}B`, Dialogues: []ass.Dialogue{{Text: `{\fs21\fs21}A{\fs22\fs22}B`, Line: 1}}}
+	doc := renderer.Document{Text: `{\fs21\fs21}A{\fs22\fs22}B`, Dialogues: []renderer.Dialogue{{Text: `{\fs21\fs21}A{\fs22\fs22}B`, Line: 1}}}
 	diagnostics := lint.Analyze(doc.Dialogues[0])
 	data, err := json.Marshal(diagnostics)
 	if err != nil {

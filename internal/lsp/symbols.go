@@ -40,7 +40,7 @@ type symbolIndex struct {
 func (server *Server) indexSymbols(doc document) symbolIndex {
 	index := symbolIndex{definitions: make(map[string][]ass.ConcreteSpan), symbols: []documentSymbol{}}
 	childrenByLine := make(map[int][]documentSymbol)
-	for _, field := range doc.parsed.StyleFields {
+	for _, field := range doc.view.StyleFields {
 		if field.Name != "name" || field.Value == "" {
 			continue
 		}
@@ -50,7 +50,7 @@ func (server *Server) indexSymbols(doc document) symbolIndex {
 			childrenByLine[field.Line] = append(childrenByLine[field.Line], symbol)
 		}
 	}
-	for _, dialogue := range doc.parsed.Dialogues {
+	for _, dialogue := range doc.view.Dialogues {
 		if field, ok := dialogue.Field("style"); ok {
 			name := semantic.DialogueStyleLookupName(field.Value)
 			start := field.Start + len(field.Value) - len(strings.TrimLeft(field.Value, " \t*"))

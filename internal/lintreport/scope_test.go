@@ -1,15 +1,15 @@
 package lintreport
 
 import (
+	"assx/internal/ass/renderer"
 	"testing"
 
-	"assx/internal/ass"
 	"assx/internal/lint"
 )
 
 func TestCompatibilityScopeUsesPhysicalColumn(t *testing.T) {
 	source := "[Script Info]\nScriptType: v4.00+\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{\\blur101}x\n"
-	doc := ass.Parse(source)
+	doc := renderer.Parse(source)
 	findings := lint.AnalyzeDocument(doc)
 	view := Build("scope.ass", findings, doc)
 	found := false
@@ -31,8 +31,8 @@ func TestCompatibilityScopeUsesPhysicalColumn(t *testing.T) {
 func TestStandaloneCompatibilitySpanMapsToDocument(t *testing.T) {
 	const prefix = "Dialogue: "
 	text := `{\blur101}x`
-	dialogue := ass.Dialogue{Text: text, Line: 1, TextStart: len(prefix)}
-	doc := ass.Document{Text: prefix + text, Dialogues: []ass.Dialogue{dialogue}}
+	dialogue := renderer.Dialogue{Text: text, Line: 1, TextStart: len(prefix)}
+	doc := renderer.Document{Text: prefix + text, Dialogues: []renderer.Dialogue{dialogue}}
 	findings := lint.AnalyzeCompatibility(dialogue, nil)
 	view := Build("scope.ass", findings, doc)
 	if len(findings) == 0 {
@@ -49,7 +49,7 @@ func TestStandaloneCompatibilitySpanMapsToDocument(t *testing.T) {
 func TestPrimaryScopeUsesConcretePrefixSpan(t *testing.T) {
 	text := `{\fsvp6}x`
 	const prefix = "Dialogue: "
-	doc := ass.Document{Text: prefix + text, Dialogues: []ass.Dialogue{{Text: text, Line: 1, TextStart: len(prefix)}}}
+	doc := renderer.Document{Text: prefix + text, Dialogues: []renderer.Dialogue{{Text: text, Line: 1, TextStart: len(prefix)}}}
 	findings := lint.Analyze(doc.Dialogues[0])
 	view := Build("scope.ass", findings, doc)
 	found := false

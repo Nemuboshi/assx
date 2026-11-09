@@ -5,7 +5,6 @@ import (
 	"strings"
 	"testing"
 
-	"assx/internal/ass"
 	"assx/internal/ass/renderer"
 )
 
@@ -72,7 +71,7 @@ func TestStyleBorderCompatibilityRules(t *testing.T) {
 				outline = "2"
 			}
 			source := borderStyleDocument(tc.border, x, y, outline)
-			findings := diagnosticsForIDs(AnalyzeDocumentCompatibility(ass.Parse(source), tc.profiles), IssueStyleBoxGeometry, IssueStyleBorderMode)
+			findings := diagnosticsForIDs(AnalyzeDocumentCompatibility(renderer.Parse(source), tc.profiles), IssueStyleBoxGeometry, IssueStyleBorderMode)
 			if len(findings) != tc.count {
 				t.Fatalf("got %d findings, want %d: %#v", len(findings), tc.count, findings)
 			}
@@ -93,7 +92,7 @@ func TestStyleBorderCompatibilityRules(t *testing.T) {
 
 func TestStyleBorderWarningsUsePhysicalFieldsAndNeverEdit(t *testing.T) {
 	source := strings.ReplaceAll(borderStyleDocument(" 4 ", "100", "100", "2"), "\n", "\r\n")
-	doc := ass.Parse(source)
+	doc := renderer.Parse(source)
 	warnings := diagnosticsForIDs(AnalyzeDocument(doc), IssueStyleBorderMode)
 	if len(warnings) != 1 {
 		t.Fatalf("default analysis lost mode warning: %#v", warnings)
@@ -124,7 +123,7 @@ func TestStyleBorderComparisonKeepsIndependentLayoutFindings(t *testing.T) {
 		source := borderStyleDocument(tc.border, tc.scale, "100", "2")
 		source = strings.Replace(source, borderStyleFormat, borderStyleFormat+", Justify", 1)
 		source = strings.TrimSuffix(source, "\n") + ",0\n"
-		findings := AnalyzeDocumentCompatibility(ass.Parse(source), []renderer.Profile{libass, mod})
+		findings := AnalyzeDocumentCompatibility(renderer.Parse(source), []renderer.Profile{libass, mod})
 		if len(diagnosticsForIDs(findings, tc.id)) != 1 || len(diagnosticsForIDs(findings, ConditionLayout)) != 1 {
 			t.Fatalf("layout and BorderStyle differences must remain separate: %#v", findings)
 		}
@@ -142,7 +141,7 @@ func TestStyleBorderCompatibilitySkipsUnresolvedRows(t *testing.T) {
 		strings.Replace(base, ",20,20,20,1\n", "\n", 1),
 	}
 	for _, source := range cases {
-		findings := diagnosticsForIDs(AnalyzeDocumentCompatibility(ass.Parse(source), nil), IssueStyleBorderMode, IssueStyleBoxGeometry)
+		findings := diagnosticsForIDs(AnalyzeDocumentCompatibility(renderer.Parse(source), nil), IssueStyleBorderMode, IssueStyleBoxGeometry)
 		if len(findings) != 0 {
 			t.Fatalf("unresolved or different layouts produced a field comparison: %#v", findings)
 		}

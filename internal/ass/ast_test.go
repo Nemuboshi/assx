@@ -103,15 +103,3 @@ func TestConcretePreservesBlockRawItems(t *testing.T) {
 		t.Fatalf("empty=%#v", empty)
 	}
 }
-
-func TestDocumentDialogueConcreteSourceEquality(t *testing.T) {
-	doc := Parse("[Events]\nFormat: Layer, Start, End, Style, Text\nDialogue: 0,0,1,Default,{\\fs20}x\n")
-	if len(doc.Dialogues) != 1 {
-		t.Fatalf("dialogues=%#v", doc.Dialogues)
-	}
-	d := doc.Dialogues[0]
-	tree := ParseConcreteDialogue(d.Text)
-	if tree.Source != doc.Text[d.TextStart:d.TextStart+len(d.Text)] {
-		t.Fatal("dialogue source differs")
-	}
-}

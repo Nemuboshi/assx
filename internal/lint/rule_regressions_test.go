@@ -1,11 +1,10 @@
 package lint
 
 import (
+	"assx/internal/ass/renderer"
 	"os"
 	"strings"
 	"testing"
-
-	"assx/internal/ass"
 )
 
 func diagnosticsForIDs(diags []Diagnostic, ids ...string) []Diagnostic {
@@ -22,7 +21,7 @@ func diagnosticsForIDs(diags []Diagnostic, ids ...string) []Diagnostic {
 
 func TestEmptyParenthesizedClipIsIgnored(t *testing.T) {
 	text := `before{\clip()}after`
-	dialogue := ass.Dialogue{Text: text, Line: 1}
+	dialogue := renderer.Dialogue{Text: text, Line: 1}
 	findings := Analyze(dialogue)
 	if got := diagnosticsForIDs(findings, IssueArgumentCount, IssueOverrideJunk); len(got) != 0 {
 		t.Fatalf("empty clip produced diagnostics: %#v", got)
@@ -34,7 +33,7 @@ func TestEmptyParenthesizedClipFixture(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	findings := AnalyzeDocument(ass.Parse(string(data)))
+	findings := AnalyzeDocument(renderer.Parse(string(data)))
 	if got := diagnosticsForIDs(findings, IssueArgumentCount, IssueOverrideJunk, IssueUnterminatedBlock); len(got) != 0 {
 		t.Fatalf("regression fixture diagnostics = %#v", got)
 	}
@@ -57,7 +56,7 @@ func TestLegacyAlignmentAliasRendererDifference(t *testing.T) {
 		{text: `{\a12}A`, want: false},
 	}
 	for _, test := range cases {
-		dialogue := ass.Dialogue{Text: test.text, Line: 1}
+		dialogue := renderer.Dialogue{Text: test.text, Line: 1}
 		found := false
 		for _, diagnostic := range Analyze(dialogue) {
 			if isBehaviorCondition(diagnostic.Condition) && diagnostic.Tag == "a" {
@@ -84,7 +83,7 @@ func TestUnterminatedOverrideBlock(t *testing.T) {
 	}
 	for _, test := range cases {
 		t.Run(test.name, func(t *testing.T) {
-			dialogue := ass.Dialogue{Text: test.text, Line: 1}
+			dialogue := renderer.Dialogue{Text: test.text, Line: 1}
 			findings := diagnosticsForIDs(Analyze(dialogue), IssueUnterminatedBlock)
 			if len(findings) != test.want {
 				t.Fatalf("findings = %#v, want %d", findings, test.want)
@@ -116,7 +115,7 @@ func TestMalformedStyleColourFields(t *testing.T) {
 	}
 	for _, test := range cases {
 		t.Run(test.name, func(t *testing.T) {
-			doc := ass.Parse("[V4+ Styles]\nFormat: Name, PrimaryColour\nStyle: Default," + test.value + "\n")
+			doc := renderer.Parse("[V4+ Styles]\nFormat: Name, PrimaryColour\nStyle: Default," + test.value + "\n")
 			findings := diagnosticsForIDs(AnalyzeStyles(doc), IssueMalformedStyleColour)
 			if (len(findings) != 0) != test.want {
 				t.Fatalf("findings = %#v, want report=%t", findings, test.want)
@@ -145,7 +144,7 @@ func TestKeywordCaseWarnings(t *testing.T) {
 	}
 	for _, test := range cases {
 		t.Run(test.name, func(t *testing.T) {
-			doc := ass.Parse(test.text)
+			doc := renderer.Parse(test.text)
 			findings := diagnosticsForIDs(AnalyzeKeywords(doc), IssueKeywordCase)
 			if len(findings) != len(test.want) {
 				t.Fatalf("findings = %#v, want %v", findings, test.want)

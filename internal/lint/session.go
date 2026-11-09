@@ -37,13 +37,14 @@ func PrepareDocument(ctx context.Context, source ass.Parsed, profiles []renderer
 		views:        make(map[renderer.Profile]renderer.View, len(profiles)),
 		preparations: semantic.NewDialoguePreparations(),
 	}
+	defaultDoc := renderer.DefaultDocument(source)
 	for _, profile := range profiles {
 		if err := ctx.Err(); err != nil {
 			return nil, err
 		}
 		layouts := profile.ResolveDocumentLayouts(source.Concrete)
 		analysis.layouts[profile] = layouts
-		view, err := profile.ViewFromConcrete(ctx, source, layouts)
+		view, err := profile.ViewFromConcrete(ctx, defaultDoc, source, layouts)
 		if err != nil {
 			return nil, err
 		}
@@ -104,6 +105,7 @@ type PendingFinding struct {
 type Session struct {
 	id          uint64
 	source      ass.Parsed
+	primary     renderer.View
 	targets     AnalysisTargets
 	policy      RulePolicy
 	findings    []Diagnostic
@@ -136,12 +138,16 @@ func Discover(ctx context.Context, source ass.Parsed, targets AnalysisTargets, p
 	if err != nil {
 		return nil, err
 	}
-	findings, err := analyzeDocumentForTargetsUnprovedContext(ctx, source, targets, policy, shared)
+	primaryView, ok := shared.viewFor(source, targets.Primary)
+	if !ok {
+		return nil, fmt.Errorf("no primary view for the parsed source")
+	}
+	findings, err := analyzeDocumentForTargetsUnprovedContext(ctx, source, primaryView.Document, targets, policy, shared)
 	if err != nil {
 		return nil, err
 	}
-	session := &Session{id: newSessionID(), source: source, targets: targets, policy: policy}
-	session.proof = newSessionProofBatch(source, targets.Profiles(), shared.views)
+	session := &Session{id: newSessionID(), source: source, primary: primaryView, targets: targets, policy: policy}
+	session.proof = newSessionProofBatch(source, primaryView.Document, targets.Profiles(), shared.views)
 	for index, diagnostic := range findings {
 		if diagnostic.FixSafety != SafeFix || len(diagnostic.Edits) == 0 {
 			// Proof strips a SafeFix label without edits, as today.
@@ -168,6 +174,9 @@ func clearPendingFix(diagnostic *Diagnostic) {
 	diagnostic.FixProofRef = 0
 	diagnostic.Edits = nil
 }
+
+// PrimaryView returns the primary renderer view this session analyzed.
+func (s *Session) PrimaryView() renderer.View { return s.primary }
 
 // Findings returns copied pending findings in report order. Mutating a
 // result never changes session state.
@@ -201,7 +210,7 @@ func (s *Session) ProveFixes(ctx context.Context, handles []CandidateID) ([]Diag
 	for i, ordinal := range ordinals {
 		batch[i] = cloneDiagnostic(s.candidates[ordinal])
 	}
-	return proveSafeFixesBatchContext(ctx, s.source.Document, batch, s.targets.Profiles(), s.proof)
+	return proveSafeFixesBatchContext(ctx, s.primary.Document, batch, s.targets.Profiles(), s.proof)
 }
 
 func (s *Session) resolve(handles []CandidateID) ([]int, error) {

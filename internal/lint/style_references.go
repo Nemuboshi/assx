@@ -9,11 +9,11 @@ import (
 	"assx/internal/semantic"
 )
 
-func analyzeUndefinedStyleReferencesForRenderer(doc ass.Document, profile renderer.Profile) []Diagnostic {
+func analyzeUndefinedStyleReferencesForRenderer(doc renderer.Document, profile renderer.Profile) []Diagnostic {
 	return analyzeStyleReferences(doc, profile)
 }
 
-func analyzeStyleReferences(doc ass.Document, profile renderer.Profile) []Diagnostic {
+func analyzeStyleReferences(doc renderer.Document, profile renderer.Profile) []Diagnostic {
 	styles := semantic.DefinedStyleNames(doc.StyleFields)
 	var diagnostics []Diagnostic
 	for _, dialogue := range doc.Dialogues {

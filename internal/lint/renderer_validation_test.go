@@ -6,7 +6,6 @@ import (
 	"strings"
 	"testing"
 
-	"assx/internal/ass"
 	"assx/internal/ass/renderer"
 )
 
@@ -48,7 +47,7 @@ func TestScopedValidityPreservesDefaultStrictness(t *testing.T) {
 		{"mod", mod, false, false},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
-			dialogue := ass.Dialogue{Line: 1, Text: `{\pos(1,2,3)}A`}
+			dialogue := renderer.Dialogue{Line: 1, Text: `{\pos(1,2,3)}A`}
 			ds := AnalyzeForRenderer(dialogue, tt.profile)
 			if hasIssue(ds, IssueArgumentCount) != tt.invalid ||
 				hasIssue(ds, IssueRendererUnresolved) != tt.unresolved {
@@ -61,7 +60,7 @@ func TestScopedValidityPreservesDefaultStrictness(t *testing.T) {
 			}
 		})
 	}
-	if !hasIssue(Analyze(ass.Dialogue{Line: 1, Text: `{\pos(1,2,3)}A`}), IssueArgumentCount) {
+	if !hasIssue(Analyze(renderer.Dialogue{Line: 1, Text: `{\pos(1,2,3)}A`}), IssueArgumentCount) {
 		t.Fatal("default parser silently accepted VSFilterMod-only arity")
 	}
 }
@@ -70,7 +69,7 @@ func TestScopedPrefixCollisionsAndJunk(t *testing.T) {
 	lib, xy, mod := scopedProfiles(t)
 	for _, raw := range []string{`\fsvp6`, `\frs10`, `\blend(add)`} {
 		for _, traditional := range []renderer.Profile{lib, xy} {
-			got := AnalyzeForRenderer(ass.Dialogue{Line: 3, Text: "{" + raw + "}X"}, traditional)
+			got := AnalyzeForRenderer(renderer.Dialogue{Line: 3, Text: "{" + raw + "}X"}, traditional)
 			if !hasIssue(got, IssueInvalidValue) {
 				t.Errorf("%s %s lost invalid consumed-prefix value: %#v", traditional.Kind(), raw, got)
 			}
@@ -78,13 +77,13 @@ func TestScopedPrefixCollisionsAndJunk(t *testing.T) {
 				t.Errorf("%s %s confused shadowing with global name lookup: %#v", traditional.Kind(), raw, got)
 			}
 		}
-		got := AnalyzeForRenderer(ass.Dialogue{Line: 3, Text: "{" + raw + "}X"}, mod)
+		got := AnalyzeForRenderer(renderer.Dialogue{Line: 3, Text: "{" + raw + "}X"}, mod)
 		if hasIssue(got, IssueInvalidValue) || hasIssue(got, IssueUnknownTag) || hasIssue(got, IssueVSFilterModTag) {
 			t.Errorf("mod %s uses the wrong command: %#v", raw, got)
 		}
 	}
 	for _, profile := range []renderer.Profile{lib, xy, mod} {
-		ds := AnalyzeForRenderer(ass.Dialogue{Line: 1, Text: `{\fs20junk}A`}, profile)
+		ds := AnalyzeForRenderer(renderer.Dialogue{Line: 1, Text: `{\fs20junk}A`}, profile)
 		if !hasIssue(ds, IssueOverrideJunk) {
 			t.Errorf("%s missing consumed suffix diagnostic: %#v", profile.Kind(), ds)
 		}
@@ -95,13 +94,13 @@ func TestScopedMalformedFormsNestedAndState(t *testing.T) {
 	lib, xy, mod := scopedProfiles(t)
 	for _, profile := range []renderer.Profile{lib, xy, mod} {
 		for _, raw := range []string{`{\clip(1,2,3)}A`, `{\iclip(1,2,3)}A`} {
-			if ds := AnalyzeForRenderer(ass.Dialogue{Line: 1, Text: raw}, profile); !hasIssue(ds, IssueArgumentCount) {
+			if ds := AnalyzeForRenderer(renderer.Dialogue{Line: 1, Text: raw}, profile); !hasIssue(ds, IssueArgumentCount) {
 				t.Errorf("%s malformed clip %q: %#v", profile.Kind(), raw, ds)
 			}
 		}
 	}
 	for _, profile := range []renderer.Profile{lib, xy} {
-		got := AnalyzeForRenderer(ass.Dialogue{Line: 1, Text: `{\t(0,100,\pos(1,2,3))}A`}, profile)
+		got := AnalyzeForRenderer(renderer.Dialogue{Line: 1, Text: `{\t(0,100,\pos(1,2,3))}A`}, profile)
 		if !hasIssue(got, IssueArgumentCount) {
 			t.Errorf("%s nested invalid position escaped validation: %#v", profile.Kind(), got)
 		}
@@ -112,7 +111,7 @@ func TestScopedMalformedFormsNestedAndState(t *testing.T) {
 	}{
 		{lib, false}, {xy, false}, {mod, false},
 	} {
-		got := AnalyzeForRenderer(ass.Dialogue{Line: 1, Text: `{\pos(1,2,3)\pos(4,5)}A`}, tt.profile)
+		got := AnalyzeForRenderer(renderer.Dialogue{Line: 1, Text: `{\pos(1,2,3)\pos(4,5)}A`}, tt.profile)
 		if hasIssue(got, IssueNoEffect) != tt.wantNoEffect {
 			t.Errorf("%s first-wins semantics: %#v", tt.profile.Kind(), got)
 		}
@@ -126,7 +125,7 @@ func TestScopedDocumentConsumersAndJSON(t *testing.T) {
 		"[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n" +
 		`Dialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{\pos(1,2,3)\rMissing}Text` + "\n" +
 		`Dialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{\k200}Text` + "\n"
-	doc := ass.Parse(source)
+	doc := renderer.Parse(source)
 	traditional := AnalyzeDocumentForRenderer(doc, lib)
 	modern := AnalyzeDocumentForRenderer(doc, mod)
 	for _, tt := range []struct {
@@ -168,7 +167,7 @@ func TestScopedDocumentConsumersAndJSON(t *testing.T) {
 
 func TestScopedDrawingAndSyntaxSurviveMigration(t *testing.T) {
 	lib, _, _ := scopedProfiles(t)
-	ds := AnalyzeForRenderer(ass.Dialogue{Line: 1, Text: `{\p1}m 0 {\fs20}l 3{\p0}X{garbage\fs20}{\fnArial`}, lib)
+	ds := AnalyzeForRenderer(renderer.Dialogue{Line: 1, Text: `{\p1}m 0 {\fs20}l 3{\p0}X{garbage\fs20}{\fnArial`}, lib)
 	if !hasIssue(ds, IssueMalformedDrawing) || !hasIssue(ds, IssueOverrideJunk) ||
 		!hasIssue(ds, IssueUnterminatedBlock) {
 		t.Fatalf("lost drawing/override syntax checks: %#v", ds)
@@ -179,7 +178,7 @@ func BenchmarkAnalyzeDocumentRenderer(b *testing.B) {
 	const source = "[Script Info]\nPlayResX: 1920\nPlayResY: 1080\n" +
 		"[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n" +
 		`Dialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{\fs30\pos(1,2)\bord2}Hello{\fs32}world` + "\n"
-	doc := ass.Parse(source)
+	doc := renderer.Parse(source)
 	profile, err := renderer.Standard(renderer.Libass)
 	if err != nil {
 		b.Fatal(err)
@@ -212,7 +211,7 @@ func TestScopedDiagnosticLocationsAndCertainty(t *testing.T) {
 		{mod, `{\posBogus}A`, IssueRendererUnresolved, "pos", Warning},
 		{lib, `{\pos(1,2}A`, IssueRendererUnresolved, "pos", Warning},
 	} {
-		ds := AnalyzeForRenderer(ass.Dialogue{Line: 7, Text: tc.source}, tc.profile)
+		ds := AnalyzeForRenderer(renderer.Dialogue{Line: 7, Text: tc.source}, tc.profile)
 		found := false
 		for _, d := range ds {
 			if d.Condition != tc.id {
@@ -231,7 +230,7 @@ func TestScopedDiagnosticLocationsAndCertainty(t *testing.T) {
 
 func TestScopedExistingConsumerJSONContext(t *testing.T) {
 	_, xy, _ := scopedProfiles(t)
-	got := AnalyzeNoEffectsForRenderer(ass.Dialogue{
+	got := AnalyzeNoEffectsForRenderer(renderer.Dialogue{
 		Line: 1, Text: `{\pos(1,2)\pos(3,4)}A`,
 	}, xy)
 	if len(got) != 1 || got[0].RendererNames() != ProfileScope(xy) {

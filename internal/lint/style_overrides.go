@@ -11,7 +11,7 @@ import (
 
 // AnalyzeRedundantStyleOverrides retains the standalone entry point while
 // sharing the state transitions used by ASS006 and the font checker.
-func AnalyzeRedundantStyleOverrides(doc ass.Document) []Diagnostic {
+func AnalyzeRedundantStyleOverrides(doc renderer.Document) []Diagnostic {
 	targets := DefaultAnalysisTargets()
 	return proveSafeFixes(doc, analyzeRedundantStyleOverrides(doc, targets.Primary), targets.Profiles())
 }
@@ -19,11 +19,11 @@ func AnalyzeRedundantStyleOverrides(doc ass.Document) []Diagnostic {
 // AnalyzeRedundantStyleOverridesForRenderer reports renderer-local redundancy.
 // It deliberately provides no edits: a single-profile observation is not the
 // all-target equivalence proof required by SafeFix (P08).
-func AnalyzeRedundantStyleOverridesForRenderer(doc ass.Document, profile renderer.Profile) []Diagnostic {
+func AnalyzeRedundantStyleOverridesForRenderer(doc renderer.Document, profile renderer.Profile) []Diagnostic {
 	return scopeDiagnostics(analyzeRedundantStyleOverrides(doc, profile), profile)
 }
 
-func analyzeRedundantStyleOverrides(doc ass.Document, profile renderer.Profile) []Diagnostic {
+func analyzeRedundantStyleOverrides(doc renderer.Document, profile renderer.Profile) []Diagnostic {
 	view, err := profile.ViewOf(context.Background(), doc)
 	if err != nil {
 		return nil
@@ -52,7 +52,7 @@ func analyzeRedundantStyleOverrides(doc ass.Document, profile renderer.Profile) 
 // styleRunCollector owns only the ASS013 lint policy (grouping removable tags).
 // It never interprets tag values, renderer precedence, or reset semantics.
 type styleRunCollector struct {
-	dialogue   ass.Dialogue
+	dialogue   renderer.Dialogue
 	tree       ass.ConcreteDialogue
 	styles     map[string]semantic.StyleState
 	stopped    bool
@@ -64,12 +64,12 @@ type styleRunCollector struct {
 	allowEdits bool
 }
 
-func newStyleRunCollectorForRenderer(dialogue ass.Dialogue, styles map[string]semantic.StyleState) *styleRunCollector {
+func newStyleRunCollectorForRenderer(dialogue renderer.Dialogue, styles map[string]semantic.StyleState) *styleRunCollector {
 	tree := ass.ParseConcreteDialogue(dialogue.Text)
 	return makeStyleRunCollector(dialogue, styles, tree.HasCandidates(), tree)
 }
 
-func makeStyleRunCollector(dialogue ass.Dialogue, styles map[string]semantic.StyleState, hasTags bool, tree ass.ConcreteDialogue) *styleRunCollector {
+func makeStyleRunCollector(dialogue renderer.Dialogue, styles map[string]semantic.StyleState, hasTags bool, tree ass.ConcreteDialogue) *styleRunCollector {
 	if !hasTags {
 		return nil
 	}
@@ -195,7 +195,7 @@ func (c *styleRunCollector) diagnostic() (Diagnostic, bool) {
 	}, true
 }
 
-func redundantStyleEdits(dialogue ass.Dialogue, tree ass.ConcreteDialogue, styleTags []ass.Tag) []TextEdit {
+func redundantStyleEdits(dialogue renderer.Dialogue, tree ass.ConcreteDialogue, styleTags []ass.Tag) []TextEdit {
 	candidate := make(map[[2]int]bool, len(styleTags))
 	for _, tag := range styleTags {
 		candidate[[2]int{tag.Start, tag.End}] = true

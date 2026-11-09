@@ -27,7 +27,7 @@ func allStandardProfiles(t *testing.T) []renderer.Profile {
 }
 
 func stylesFixture() map[string]StyleState {
-	doc := ass.Parse("[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\n" +
+	doc := renderer.Parse("[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\n" +
 		"Style: Default,Arial,20,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,2,2,10,10,10,1\n")
 	return StyleStatesByName(doc.StyleFields)
 }
@@ -133,7 +133,7 @@ func TestViewFromConcreteMatchesView(t *testing.T) {
 		source := ass.ParseSource(text)
 		for _, profile := range profiles {
 			layouts := profile.ResolveDocumentLayouts(source.Concrete)
-			built, err := profile.ViewFromConcrete(context.Background(), source, layouts)
+			built, err := profile.ViewFromConcrete(context.Background(), renderer.DefaultDocument(source), source, layouts)
 			if err != nil {
 				t.Fatalf("profile %v: %v", profile.Kind(), err)
 			}
@@ -154,10 +154,10 @@ func TestViewFromConcreteCancellation(t *testing.T) {
 	layouts := xy.ResolveDocumentLayouts(source.Concrete)
 	canceled, cancel := context.WithCancel(context.Background())
 	cancel()
-	if _, err := xy.ViewFromConcrete(canceled, source, layouts); err == nil {
+	if _, err := xy.ViewFromConcrete(canceled, renderer.DefaultDocument(source), source, layouts); err == nil {
 		t.Fatal("canceled projection succeeded")
 	}
-	if _, err := xy.ViewFromConcrete(context.Background(), source, layouts); err != nil {
+	if _, err := xy.ViewFromConcrete(context.Background(), renderer.DefaultDocument(source), source, layouts); err != nil {
 		t.Fatalf("later projection failed: %v", err)
 	}
 }

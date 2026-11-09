@@ -1,16 +1,15 @@
 package lint
 
 import (
+	"assx/internal/ass/renderer"
 	"encoding/json"
 	"strings"
 	"testing"
-
-	"assx/internal/ass"
 )
 
 func TestDocumentDiagnosticsCarryExactDecodedSourceSpans(t *testing.T) {
 	source := "[Script Info]\nPlayResX: 640\n[V4+ Styles]\nFormat: Name, Alignment\nStyle: Default, 10\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,bad,0:00:01.00,Default,,0,0,0,,{\\unknown}text\n"
-	diagnostics := AnalyzeDocument(ass.Parse(source))
+	diagnostics := AnalyzeDocument(renderer.Parse(source))
 	for _, tc := range []struct{ id, literal string }{
 		{IssueStyleAlignment, "10"},
 		{IssueTimecode, "bad"},
@@ -35,7 +34,7 @@ func TestDocumentDiagnosticsCarryExactDecodedSourceSpans(t *testing.T) {
 
 func TestIgnoredTailSpanSelectsOnlyIgnoredBytes(t *testing.T) {
 	source := "[Events]\nDialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{\\fs20junk}x\n"
-	for _, d := range AnalyzeDocument(ass.Parse(source)) {
+	for _, d := range AnalyzeDocument(renderer.Parse(source)) {
 		if d.Condition == IssueOverrideJunk {
 			if d.SourceSpan == nil || source[d.SourceSpan.Start:d.SourceSpan.End] != "junk" {
 				t.Fatalf("ignored tail span = %+v", d.SourceSpan)
@@ -48,7 +47,7 @@ func TestIgnoredTailSpanSelectsOnlyIgnoredBytes(t *testing.T) {
 
 func TestCompatibilitySpanSurvivesJSONRoundTrip(t *testing.T) {
 	source := "[Events]\nDialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{\\blur101}x\n"
-	for _, d := range AnalyzeDocument(ass.Parse(source)) {
+	for _, d := range AnalyzeDocument(renderer.Parse(source)) {
 		if d.SourceSpan == nil || len(d.Renderers) < 2 {
 			continue
 		}
@@ -71,7 +70,7 @@ func TestCompatibilitySpanSurvivesJSONRoundTrip(t *testing.T) {
 
 func TestMissingHeaderUsesAnInsertionPoint(t *testing.T) {
 	source := "[Events]\nDialogue: broken\n"
-	for _, diagnostic := range AnalyzeDocument(ass.Parse(source)) {
+	for _, diagnostic := range AnalyzeDocument(renderer.Parse(source)) {
 		if diagnostic.Condition != IssueMatrixHeader {
 			continue
 		}
@@ -91,7 +90,7 @@ func TestSyntaxAndReferenceSpansUseSourceTokens(t *testing.T) {
 		{IssueUnterminatedBlock, "{"},
 	} {
 		found := false
-		for _, d := range AnalyzeDocument(ass.Parse(source)) {
+		for _, d := range AnalyzeDocument(renderer.Parse(source)) {
 			if d.Condition == tc.id && d.SourceSpan != nil && source[d.SourceSpan.Start:d.SourceSpan.End] == tc.literal {
 				found = true
 				break
@@ -105,7 +104,7 @@ func TestSyntaxAndReferenceSpansUseSourceTokens(t *testing.T) {
 
 func TestNestedOverrideAndResetSpans(t *testing.T) {
 	source := "[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{\\t(0,100,\\pos(1,2,3))\\rAbsent}x\n"
-	diagnostics := AnalyzeDocument(ass.Parse(source))
+	diagnostics := AnalyzeDocument(renderer.Parse(source))
 	for _, literal := range []string{`\pos(1,2,3)`, "Absent"} {
 		found := false
 		for _, diagnostic := range diagnostics {
@@ -122,7 +121,7 @@ func TestNestedOverrideAndResetSpans(t *testing.T) {
 
 func TestUndefinedStyleSpanExcludesFieldWhitespace(t *testing.T) {
 	source := "[Events]\nDialogue: 0,0:00:00.00,0:00:01.00,  Missing  ,,0,0,0,,text\n"
-	for _, d := range AnalyzeDocument(ass.Parse(source)) {
+	for _, d := range AnalyzeDocument(renderer.Parse(source)) {
 		if d.Condition == IssueUndefinedStyle {
 			if d.SourceSpan == nil || source[d.SourceSpan.Start:d.SourceSpan.End] != "Missing" {
 				t.Fatalf("undefined style span = %+v", d.SourceSpan)
@@ -135,7 +134,7 @@ func TestUndefinedStyleSpanExcludesFieldWhitespace(t *testing.T) {
 
 func TestDocumentFindingsHaveBoundedSourceSpans(t *testing.T) {
 	source := "[Script Info]\nPlayResX: 640\n[V4+ Styles]\nFormat: Name, Alignment\nStyle: Default, 10\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,bad,0:00:01.00,Missing,,0,0,0,unknown,{\\fs20junk\\t(0,100,\\pos(1,2,3))}x\n"
-	for _, d := range AnalyzeDocument(ass.Parse(source)) {
+	for _, d := range AnalyzeDocument(renderer.Parse(source)) {
 		if d.SourceSpan == nil || d.SourceSpan.Start < 0 || d.SourceSpan.End < d.SourceSpan.Start || d.SourceSpan.End > len(source) {
 			t.Errorf("%s has invalid span %+v", d.Condition, d.SourceSpan)
 		}

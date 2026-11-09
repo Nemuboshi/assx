@@ -1,12 +1,11 @@
 package lint
 
 import (
+	"assx/internal/ass/renderer"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
-
-	"assx/internal/ass"
 )
 
 func TestRedundantStyleOverridesSafeFix(t *testing.T) {
@@ -15,7 +14,7 @@ func TestRedundantStyleOverridesSafeFix(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	doc := ass.Parse(string(data))
+	doc := renderer.Parse(string(data))
 	diagnostics := primaryFindings(AnalyzeDocument(doc))
 	if len(diagnostics) != 1 || diagnostics[0].Condition != IssueRedundantStyleOverrides {
 		t.Fatalf("diagnostics = %#v", diagnostics)
@@ -27,11 +26,11 @@ func TestRedundantStyleOverridesSafeFix(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	fixedDoc := ass.Parse(fixed)
+	fixedDoc := renderer.Parse(fixed)
 	if count != 1 || len(fixedDoc.Dialogues) != 1 || fixedDoc.Dialogues[0].Text != "alpha beta" {
 		t.Fatalf("fixed document (%d edits):\n%s", count, fixed)
 	}
-	if remaining := AnalyzeRedundantStyleOverrides(ass.Parse(fixed)); len(remaining) != 0 {
+	if remaining := AnalyzeRedundantStyleOverrides(renderer.Parse(fixed)); len(remaining) != 0 {
 		t.Fatalf("fixed document still has redundant style overrides: %#v", remaining)
 	}
 }
@@ -191,7 +190,7 @@ func TestSameValueAssignmentsKeepPreviousEffectiveOwner(t *testing.T) {
 			if err != nil || count != 1 || !strings.Contains(fixed, test.want) {
 				t.Fatalf("safe fix = (%q, %d, %v), want to preserve %q", fixed, count, err, test.want)
 			}
-			for _, remaining := range AnalyzeDocument(ass.Parse(fixed)) {
+			for _, remaining := range AnalyzeDocument(renderer.Parse(fixed)) {
 				if remaining.Condition == IssueNoEffect {
 					t.Fatalf("fixed dialogue still has no-effect: %#v", remaining)
 				}
@@ -218,7 +217,7 @@ func TestRedundantStyleFixPreservesOtherTags(t *testing.T) {
 func TestRedundantStyleRuleRejectsDuplicateDefinitions(t *testing.T) {
 	text := fontOverrideDocument(`{\fnArial}A`, "")
 	text = strings.Replace(text, "Style: Default, Arial, 20, 0, 0, 100, 100, 0\n", "Style: Default, Arial, 20, 0, 0, 100, 100, 0\nStyle: Default, Arial, 20, 0, 0, 100, 100, 0\n", 1)
-	if diagnostics := AnalyzeRedundantStyleOverrides(ass.Parse(text)); len(diagnostics) != 0 {
+	if diagnostics := AnalyzeRedundantStyleOverrides(renderer.Parse(text)); len(diagnostics) != 0 {
 		t.Fatalf("ambiguous style produced findings: %#v", diagnostics)
 	}
 }
@@ -265,16 +264,16 @@ func TestRedundantStyleRuleKeepsNonDefaultNamesCaseSensitive(t *testing.T) {
 	}
 }
 
-func parseFontOverrideText(text string) ass.Document {
-	return ass.Parse(fontOverrideDocument(text, ""))
+func parseFontOverrideText(text string) renderer.Document {
+	return renderer.Parse(fontOverrideDocument(text, ""))
 }
 
-func parseStyleOverrideText(format, style, text string) ass.Document {
+func parseStyleOverrideText(format, style, text string) renderer.Document {
 	return parseStyleDefinitionsText(format, "Style: "+style+"\n", "Default", text)
 }
 
-func parseStyleDefinitionsText(format, definitions, dialogueStyle, text string) ass.Document {
-	return ass.Parse("[Script Info]\nPlayResX: 640\nPlayResY: 480\nYCbCr Matrix: None\nLayoutResX: 640\nLayoutResY: 480\n" +
+func parseStyleDefinitionsText(format, definitions, dialogueStyle, text string) renderer.Document {
+	return renderer.Parse("[Script Info]\nPlayResX: 640\nPlayResY: 480\nYCbCr Matrix: None\nLayoutResX: 640\nLayoutResY: 480\n" +
 		"[V4+ Styles]\nFormat: " + format + "\n" + definitions +
 		"[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n" +
 		"Dialogue: 0, 0:00:00.00, 0:00:02.00, " + dialogueStyle + ",,0,0,0,," + text + "\n")
@@ -306,7 +305,7 @@ func TestRedundantStyleOverridesFollowActiveResetStyle(t *testing.T) {
 	if count != 1 {
 		t.Fatalf("fix count = %d", count)
 	}
-	fixedDoc := ass.Parse(fixed)
+	fixedDoc := renderer.Parse(fixed)
 	if len(fixedDoc.Dialogues) != 1 || fixedDoc.Dialogues[0].Text != `{\rOther}A{\r}B` {
 		t.Fatalf("fixed dialogue = %#v", fixedDoc.Dialogues)
 	}

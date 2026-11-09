@@ -1,10 +1,10 @@
 package main
 
 import (
+	"assx/internal/ass/renderer"
 	"strings"
 	"testing"
 
-	"assx/internal/ass"
 	"assx/internal/lint"
 )
 
@@ -17,7 +17,7 @@ func TestDefaultProfilePrefixCorrections(t *testing.T) {
 	} {
 		t.Run(tc.portable, func(t *testing.T) {
 			var invalid, portability bool
-			for _, d := range lint.Analyze(ass.Dialogue{Text: tc.source}) {
+			for _, d := range lint.Analyze(renderer.Dialogue{Text: tc.source}) {
 				invalid = invalid || d.Condition == lint.IssueInvalidValue && d.Tag == tc.matched && d.Severity == lint.Error && d.Column == 3
 				portability = portability || d.Condition == lint.IssueVSFilterModTag && d.Tag == tc.portable && d.Severity == lint.Warning
 				if d.FixSafety != "" || len(d.Edits) != 0 {
@@ -47,7 +47,7 @@ func TestDefaultCompatibilityAddsScopedObservations(t *testing.T) {
 
 func TestRejectedPositionKeepsStrictErrorAndFixFence(t *testing.T) {
 	source := `{\fs21\fs21\pos(1)\pos(4,5)}x`
-	diagnostics := lint.Analyze(ass.Dialogue{Text: source})
+	diagnostics := lint.Analyze(renderer.Dialogue{Text: source})
 	var strict bool
 	for _, diagnostic := range diagnostics {
 		strict = strict || diagnostic.Condition == lint.IssueArgumentCount && diagnostic.Severity == lint.Error

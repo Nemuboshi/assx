@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -16,11 +17,15 @@ var Workloads = []string{"dialogue", "typesetting", "drawing", "transforms"}
 
 const LongDialogueCount = 10000
 
-// Load reads fixture bytes before benchmark timers start.
-// All consuming benchmark packages live one directory below internal/.
+// Load reads fixture bytes before benchmark timers start. The path is anchored
+// to this package, so any consuming package depth finds the same fixtures.
 func Load(tb testing.TB, name string) string {
 	tb.Helper()
-	path := filepath.Join("..", "..", "testdata", "perf", name+".ass")
+	_, file, _, ok := runtime.Caller(0)
+	if !ok {
+		tb.Fatal("cannot locate the fixture directory")
+	}
+	path := filepath.Join(filepath.Dir(file), "..", "..", "testdata", "perf", name+".ass")
 	data, err := os.ReadFile(path)
 	if err != nil {
 		tb.Fatalf("read fixture %q: %v", path, err)

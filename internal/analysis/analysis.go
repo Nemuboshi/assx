@@ -43,20 +43,28 @@ type Finding struct {
 // Result owns one analysis of one snapshot: findings, options, and the lint
 // session that proves and applies candidates.
 type Result struct {
-	id       uint64
-	snapshot Snapshot
-	options  Options
-	session  *lint.Session
-	findings []Finding
+	id          uint64
+	snapshot    Snapshot
+	source      ass.Parsed
+	primaryView renderer.View
+	options     Options
+	session     *lint.Session
+	findings    []Finding
 
 	// candidateOrdinals lists finding ordinals that hold fix candidates.
 	candidateOrdinals []int
 }
 
-// Analyze discovers findings for one snapshot under the given options. It
-// never constructs a SafeFix proof. It rejects an invalid option set and
-// honors cancellation.
+// Analyze parses one snapshot and discovers findings. It never constructs a
+// SafeFix proof. It rejects an invalid option set and honors cancellation.
 func Analyze(ctx context.Context, snapshot Snapshot, options Options) (*Result, error) {
+	return AnalyzeParsed(ctx, snapshot, ass.ParseSource(snapshot.Text()), options)
+}
+
+// AnalyzeParsed discovers findings from an existing parse of the snapshot
+// text. The caller keeps ownership of that parse and can share it with other
+// consumers of the same source version.
+func AnalyzeParsed(ctx context.Context, snapshot Snapshot, source ass.Parsed, options Options) (*Result, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
@@ -73,16 +81,20 @@ func Analyze(ctx context.Context, snapshot Snapshot, options Options) (*Result, 
 	}
 	targets.Compatibility = slices.Clone(targets.Compatibility)
 	policyValue := slices.Clone(options.Rules)
-	source := ass.ParseSource(snapshot.Text())
+	if source.Text != snapshot.Text() {
+		return nil, fmt.Errorf("parsed source does not match the snapshot text")
+	}
 	session, err := lint.Discover(ctx, source, targets, policyValue)
 	if err != nil {
 		return nil, err
 	}
 	result := &Result{
-		id:       newResultID(),
-		snapshot: snapshot,
-		options:  Options{Targets: targets, Rules: policyValue},
-		session:  session,
+		id:          newResultID(),
+		snapshot:    snapshot,
+		source:      source,
+		primaryView: session.PrimaryView(),
+		options:     Options{Targets: targets, Rules: policyValue},
+		session:     session,
 	}
 	pending := session.Findings()
 	result.findings = make([]Finding, len(pending))
@@ -99,6 +111,12 @@ func Analyze(ctx context.Context, snapshot Snapshot, options Options) (*Result, 
 	}
 	return result, nil
 }
+
+// Source returns the physical parse the result used.
+func (r *Result) Source() ass.Parsed { return r.source }
+
+// PrimaryView returns the primary renderer view for reports.
+func (r *Result) PrimaryView() renderer.View { return r.primaryView }
 
 // Findings returns copied findings in report order. Mutating a result never
 // changes result state.

@@ -1,9 +1,8 @@
 package lint
 
 import (
+	"assx/internal/ass/renderer"
 	"testing"
-
-	"assx/internal/ass"
 )
 
 // ASS v4+ Alignment is a numpad value. The pinned renderers place text for 1
@@ -35,7 +34,7 @@ func TestStyleAlignmentNumpadRange(t *testing.T) {
 	}
 	for _, test := range cases {
 		t.Run(test.name, func(t *testing.T) {
-			doc := ass.Parse(test.doc)
+			doc := renderer.Parse(test.doc)
 			findings := diagnosticsForIDs(AnalyzeStyles(doc), IssueStyleAlignment)
 			if (len(findings) != 0) != test.want {
 				t.Fatalf("Alignment %q: findings = %#v, want report=%t", test.value, findings, test.want)
@@ -55,7 +54,7 @@ func TestStyleAlignmentNumpadRange(t *testing.T) {
 // A fractional Alignment value is a style-integer concern, not an alignment concern, so
 // the two rules never both report the same field.
 func TestStyleAlignmentFractionalLeftToStyleInteger(t *testing.T) {
-	doc := ass.Parse("[V4+ Styles]\nFormat: Name, Alignment\nStyle: Default,0.5\n")
+	doc := renderer.Parse("[V4+ Styles]\nFormat: Name, Alignment\nStyle: Default,0.5\n")
 	if findings := diagnosticsForIDs(AnalyzeStyles(doc), IssueStyleAlignment); len(findings) != 0 {
 		t.Fatalf("fractional Alignment must not be an alignment finding: %#v", findings)
 	}

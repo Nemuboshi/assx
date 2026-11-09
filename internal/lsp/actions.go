@@ -71,7 +71,7 @@ func (server *Server) codeActions(ctx context.Context, raw jsontext.Value) ([]co
 	if err != nil {
 		return actions, err
 	}
-	result, err := analysis.Analyze(ctx, snapshot, server.settings.Options)
+	result, err := analysis.AnalyzeParsed(ctx, snapshot, doc.parsed, server.settings.Options)
 	if err != nil {
 		return actions, err
 	}

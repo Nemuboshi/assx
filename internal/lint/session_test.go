@@ -1,6 +1,7 @@
 package lint
 
 import (
+	"assx/internal/ass/renderer"
 	"context"
 	"encoding/json"
 	"reflect"
@@ -11,9 +12,9 @@ import (
 	"assx/internal/perftest"
 )
 
-func discoverTestSession(t *testing.T, doc ass.Document, policy RulePolicy) *Session {
+func discoverTestSession(t *testing.T, doc renderer.Document, policy RulePolicy) *Session {
 	t.Helper()
-	session, err := Discover(context.Background(), ass.ParsedOf(doc), DefaultAnalysisTargets(), policy)
+	session, err := Discover(context.Background(), ass.ParseSource(doc.Text), DefaultAnalysisTargets(), policy)
 	if err != nil {
 		t.Fatalf("Discover: %v", err)
 	}
@@ -56,14 +57,14 @@ func candidateDiagnostics(diagnostics []Diagnostic) []Diagnostic {
 // block that is wholly Style-redundant (redundant-style). Both tags inside the block
 // are also first-wins no-effect findings (no-effect) whose edits overlap the
 // redundant-style block edit.
-func redundantStyleDoc() ass.Document {
+func redundantStyleDoc() renderer.Document {
 	text := "[Script Info]\nPlayResX: 1920\nPlayResY: 1080\nYCbCr Matrix: None\n" +
 		"[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\n" +
 		"Style: Default,Arial,20,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,2,2,0,0,0,1\n" +
 		"[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n" +
 		"Dialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{\\b0\\b0}plain\n" +
 		"Dialogue: 0,0:00:01.00,0:00:02.00,Default,,0,0,0,,{\\b0\\b0}again\n"
-	return ass.Parse(text)
+	return renderer.Parse(text)
 }
 
 func TestSessionDiscoveryStripsSafeFixAndNeverBuildsProof(t *testing.T) {
@@ -75,7 +76,7 @@ func TestSessionDiscoveryStripsSafeFixAndNeverBuildsProof(t *testing.T) {
 	}
 	t.Cleanup(func() { proofBuilder = old })
 
-	session := discoverTestSession(t, ass.Parse(perftest.StyleEdit(t)), nil)
+	session := discoverTestSession(t, renderer.Parse(perftest.StyleEdit(t)), nil)
 	if calls != 0 {
 		t.Fatalf("Discover invoked the proof builder %d times, want 0", calls)
 	}
@@ -173,7 +174,7 @@ func TestSessionDisabledRuleKeepsOverlappedCandidates(t *testing.T) {
 }
 
 func TestSessionSeverityOverrideAndResultCopies(t *testing.T) {
-	session := discoverTestSession(t, ass.Parse(perftest.StyleEdit(t)), RulePolicy{
+	session := discoverTestSession(t, renderer.Parse(perftest.StyleEdit(t)), RulePolicy{
 		{Condition: IssueNoEffect, Severity: Error},
 		{Condition: IssueStyleInteger, Disabled: true},
 	})
@@ -240,7 +241,7 @@ func TestSessionRejectsInvalidPolicy(t *testing.T) {
 		{"empty id", RulePolicy{{Disabled: true}}},
 	} {
 		t.Run(test.name, func(t *testing.T) {
-			session, err := Discover(context.Background(), ass.ParsedOf(redundantStyleDoc()), DefaultAnalysisTargets(), test.policy)
+			session, err := Discover(context.Background(), ass.ParseSource(redundantStyleDoc().Text), DefaultAnalysisTargets(), test.policy)
 			if err == nil || session != nil {
 				t.Fatalf("policy accepted: %v %#v", err, session)
 			}
@@ -274,7 +275,7 @@ func TestSessionRejectsForeignAndUnknownHandles(t *testing.T) {
 }
 
 func TestSessionLateBarrierRevokesLastDialogue(t *testing.T) {
-	doc := ass.Parse(benchmarkLateProofFailure(250))
+	doc := renderer.Parse(benchmarkLateProofFailure(250))
 	session := discoverTestSession(t, doc, nil)
 	lastLine := doc.Dialogues[len(doc.Dialogues)-1].Line
 	var handles []CandidateID
@@ -317,7 +318,7 @@ func TestSessionLateBarrierRevokesLastDialogue(t *testing.T) {
 }
 
 func TestSessionProveSubsetIsSelfContained(t *testing.T) {
-	doc := ass.Parse(benchmarkLateProofFailure(20))
+	doc := renderer.Parse(benchmarkLateProofFailure(20))
 	session := discoverTestSession(t, doc, nil)
 	handles := allCandidateHandles(session)
 	// The final dialogue's unknown tag revokes its three candidates at
@@ -346,7 +347,7 @@ func TestSessionProveSubsetIsSelfContained(t *testing.T) {
 		t.Fatalf("subset apply: count=%d err=%v", count, err)
 	}
 	changed := 0
-	for i, dialogue := range ass.Parse(fixed).Dialogues {
+	for i, dialogue := range renderer.Parse(fixed).Dialogues {
 		if dialogue.Text != doc.Dialogues[i].Text {
 			changed++
 		}
@@ -368,7 +369,7 @@ func TestSessionEagerAndDeferredMatch(t *testing.T) {
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			text := test.text(t)
-			doc := ass.Parse(text)
+			doc := renderer.Parse(text)
 			targets := DefaultAnalysisTargets()
 			eager := AnalyzeDocumentForTargets(doc, targets)
 			unproved := candidateDiagnostics(analyzeDocumentForTargetsUnproved(doc, targets, nil))
@@ -416,7 +417,7 @@ func TestSessionEagerAndDeferredMatch(t *testing.T) {
 }
 
 func TestSessionRejectsStaleAndForeignApplication(t *testing.T) {
-	doc := ass.Parse(benchmarkLateProofFailure(10))
+	doc := renderer.Parse(benchmarkLateProofFailure(10))
 	session := discoverTestSession(t, doc, nil)
 	authorized, err := session.ProveFixes(context.Background(), allCandidateHandles(session))
 	if err != nil {
@@ -447,17 +448,17 @@ func TestSessionRejectsStaleAndForeignApplication(t *testing.T) {
 		t.Fatal("tampered proof evidence accepted")
 	}
 
-	foreign := AnalyzeDocumentForTargets(ass.Parse(benchmarkLateProofFailure(11)), DefaultAnalysisTargets())
+	foreign := AnalyzeDocumentForTargets(renderer.Parse(benchmarkLateProofFailure(11)), DefaultAnalysisTargets())
 	if _, _, err := session.ApplyFixes(context.Background(), foreign, false); err == nil {
 		t.Fatal("foreign session findings accepted")
 	}
 }
 
 func TestSessionCancellationKeepsResultUsable(t *testing.T) {
-	doc := ass.Parse(benchmarkLateProofFailure(250))
+	doc := renderer.Parse(benchmarkLateProofFailure(250))
 	canceled, cancel := context.WithCancel(context.Background())
 	cancel()
-	if session, err := Discover(canceled, ass.ParsedOf(doc), DefaultAnalysisTargets(), nil); err == nil || session != nil {
+	if session, err := Discover(canceled, ass.ParseSource(doc.Text), DefaultAnalysisTargets(), nil); err == nil || session != nil {
 		t.Fatalf("canceled Discover succeeded: %v %#v", err, session)
 	}
 	session := discoverTestSession(t, doc, nil)

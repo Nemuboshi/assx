@@ -1,6 +1,7 @@
 package lintreport
 
 import (
+	"assx/internal/ass/renderer"
 	"assx/internal/report"
 	"strings"
 	"testing"
@@ -11,8 +12,8 @@ import (
 
 func TestBuildFallsBackToPointForMalformedOverrideBlock(t *testing.T) {
 	source := `{\pos(1,2)`
-	dialogue := ass.Dialogue{Text: source, Line: 1, LineStart: 0, TextStart: 0}
-	got := Build("sample.ass", []lint.Diagnostic{{Condition: "value", Line: 1, Column: 2, Tag: "pos"}}, ass.Document{Text: source, Dialogues: []ass.Dialogue{dialogue}})
+	dialogue := renderer.Dialogue{Text: source, Line: 1, LineStart: 0, TextStart: 0}
+	got := Build("sample.ass", []lint.Diagnostic{{Condition: "value", Line: 1, Column: 2, Tag: "pos"}}, renderer.Document{Text: source, Dialogues: []renderer.Dialogue{dialogue}})
 	if p := got.Groups[0].Diagnostics[0]; p.SourceColumn != 2 || p.SourceWidth != 1 {
 		t.Fatalf("malformed block source = %d:%d, want point at 2", p.SourceColumn, p.SourceWidth)
 	}
@@ -21,7 +22,7 @@ func TestBuildFallsBackToPointForMalformedOverrideBlock(t *testing.T) {
 func TestBuildUsesNestedTagSpanAndDoesNotBorrowEditRange(t *testing.T) {
 	text := `Dialogue: {\t(0,100,\fs20)}`
 	dialogueText := `{\t(0,100,\fs20)}`
-	dialogue := ass.Dialogue{Text: dialogueText, Line: 1, LineStart: 0, TextStart: len("Dialogue: ")}
+	dialogue := renderer.Dialogue{Text: dialogueText, Line: 1, LineStart: 0, TextStart: len("Dialogue: ")}
 	var nestedColumn int
 	ass.WalkConcreteExpressions(ass.ParseConcreteDialogue(dialogue.Text), func(expression ass.ConcreteExpression, nested bool) bool {
 		if nested && expression.Head == "fs20" {
@@ -30,7 +31,7 @@ func TestBuildUsesNestedTagSpanAndDoesNotBorrowEditRange(t *testing.T) {
 		}
 		return true
 	})
-	doc := ass.Document{Text: text, Dialogues: []ass.Dialogue{dialogue}}
+	doc := renderer.Document{Text: text, Dialogues: []renderer.Dialogue{dialogue}}
 	got := Build("sample.ass", []lint.Diagnostic{
 		{Condition: "nested", Line: 1, Column: nestedColumn, Tag: "fs"},
 		{Condition: "unknown", Line: 1, Column: 1, Field: "missing", FixSafety: lint.SafeFix, Edits: []lint.TextEdit{{Start: 1, End: 9}}},
@@ -43,9 +44,9 @@ func TestBuildUsesNestedTagSpanAndDoesNotBorrowEditRange(t *testing.T) {
 	}
 }
 func TestBuildUsesDocumentTextStartAndConcreteFixMetadata(t *testing.T) {
-	doc := ass.Document{Text: "12345678901234567890{\\fs20}\nDialogue: ...........label", Dialogues: []ass.Dialogue{
+	doc := renderer.Document{Text: "12345678901234567890{\\fs20}\nDialogue: ...........label", Dialogues: []renderer.Dialogue{
 		{Text: "{\\fs20}", Line: 1, LineStart: 0, TextStart: 20},
-		{Line: 2, LineStart: 28, Fields: []ass.EventField{{Name: "style", Start: 49, End: 54}}},
+		{Line: 2, LineStart: 28, Fields: []renderer.EventField{{Name: "style", Start: 49, End: 54}}},
 	}}
 	got := Build("sample.ass", []lint.Diagnostic{
 		{Condition: "safe", Line: 1, Column: 3, Tag: "fs", FixSafety: lint.SafeFix, FixProof: &lint.FixProof{}, Edits: []lint.TextEdit{{Start: 1, End: 2}}},

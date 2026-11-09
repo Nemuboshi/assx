@@ -1,14 +1,13 @@
 package lint
 
 import (
+	"assx/internal/ass/renderer"
 	"strings"
 	"testing"
-
-	"assx/internal/ass"
 )
 
 func TestAnalyzeReportsUnknownAndRepeatedSlashAsSuggestion(t *testing.T) {
-	diagnostics := Analyze(ass.Dialogue{Text: `{\\blur2\mystery}`})
+	diagnostics := Analyze(renderer.Dialogue{Text: `{\\blur2\mystery}`})
 	ids := make(map[string]Severity)
 	for _, diagnostic := range diagnostics {
 		ids[diagnostic.Condition] = diagnostic.Severity
@@ -38,7 +37,7 @@ func TestAnalyzeReportsSameValueAssignments(t *testing.T) {
 	for _, test := range cases {
 		t.Run(test.name, func(t *testing.T) {
 			var findings []Diagnostic
-			for _, diagnostic := range Analyze(ass.Dialogue{Text: test.text}) {
+			for _, diagnostic := range Analyze(renderer.Dialogue{Text: test.text}) {
 				if diagnostic.Condition == IssueNoEffect {
 					findings = append(findings, diagnostic)
 				}
@@ -56,7 +55,7 @@ func TestAnalyzeReportsSameValueAssignments(t *testing.T) {
 func TestAnalyzeAssignsMultiSlotTagsOnlyWhenEverySlotMatches(t *testing.T) {
 	text := `{\xbord2\ybord2}A{\bord2}B`
 	var findings []Diagnostic
-	for _, diagnostic := range Analyze(ass.Dialogue{Text: text}) {
+	for _, diagnostic := range Analyze(renderer.Dialogue{Text: text}) {
 		if diagnostic.Condition == IssueNoEffect {
 			findings = append(findings, diagnostic)
 		}
@@ -88,7 +87,7 @@ func TestAnalyzeAssignFirstWinsAndTransitionBehavior(t *testing.T) {
 	for _, test := range cases {
 		t.Run(test.name, func(t *testing.T) {
 			count := 0
-			for _, diagnostic := range Analyze(ass.Dialogue{Text: test.text}) {
+			for _, diagnostic := range Analyze(renderer.Dialogue{Text: test.text}) {
 				if diagnostic.Condition == IssueNoEffect {
 					count++
 				}
@@ -105,7 +104,7 @@ func TestUnverifiedRepeatedSlashEditRemainsUnavailable(t *testing.T) {
 		`{\\blur2}x`,
 		`{\\\blur2}x`,
 	} {
-		diagnostics := Analyze(ass.Dialogue{Text: text})
+		diagnostics := Analyze(renderer.Dialogue{Text: text})
 		for _, diagnostic := range diagnostics {
 			if diagnostic.Condition == IssueRepeatedSlash && (diagnostic.FixSafety != "" || len(diagnostic.Edits) != 0) {
 				t.Fatalf("unverified parser-prefix edit remains available: %#v", diagnostic)
@@ -120,7 +119,7 @@ func TestUnverifiedRepeatedSlashEditRemainsUnavailable(t *testing.T) {
 
 func TestSafeFixRemovesOnlyTheRedundantTag(t *testing.T) {
 	text := `{\fs10\fs20}word`
-	diagnostics := Analyze(ass.Dialogue{Text: text})
+	diagnostics := Analyze(renderer.Dialogue{Text: text})
 	fixed, count, err := ApplyFixes(text, diagnostics, false)
 	if err != nil {
 		t.Fatal(err)
@@ -132,7 +131,7 @@ func TestSafeFixRemovesOnlyTheRedundantTag(t *testing.T) {
 
 func TestHeaderChecksAndUnsafeFixes(t *testing.T) {
 	text := "[Script Info]\r\nPlayResX: 1920\r\nPlayResY: 1080\r\nYCbCr Matrix: TV.601\r\n[Events]\r\nFormat: Layer, Start, End, Text\r\nDialogue: 0,0,1,text\r\n"
-	doc := ass.Parse(text)
+	doc := renderer.Parse(text)
 	diagnostics := AnalyzeHeaders(doc)
 	if len(diagnostics) != 2 || diagnostics[0].Condition != IssueMatrixHeader || diagnostics[1].Condition != IssueLayoutRes {
 		t.Fatalf("header diagnostics = %#v", diagnostics)
@@ -151,14 +150,14 @@ func TestHeaderChecksAndUnsafeFixes(t *testing.T) {
 	if count != 2 || !strings.Contains(fixed, "YCbCr Matrix: TV.709") || !strings.Contains(fixed, "LayoutResX: 1920\r\nLayoutResY: 1080\r\n") {
 		t.Fatalf("unsafe fixed text (%d fixes):\n%s", count, fixed)
 	}
-	if got := len(AnalyzeHeaders(ass.Parse(fixed))); got != 0 {
+	if got := len(AnalyzeHeaders(renderer.Parse(fixed))); got != 0 {
 		t.Fatalf("fixed headers still produce %d diagnostics", got)
 	}
 }
 
 func TestMissingMatrixUnsafeFixAddsExplicitNone(t *testing.T) {
 	text := "[Script Info]\nPlayResX: 640\nPlayResY: 480\n[Events]\n"
-	diagnostics := AnalyzeHeaders(ass.Parse(text))
+	diagnostics := AnalyzeHeaders(renderer.Parse(text))
 	fixed, count, err := ApplyFixes(text, diagnostics, true)
 	if err != nil {
 		t.Fatal(err)
@@ -284,7 +283,7 @@ func TestProofEditMembershipMatchesLinearScan(t *testing.T) {
 // Authorization work must grow with the edit count, not with its square.
 func TestApplyFixesDoesNotScanEveryProofEdit(t *testing.T) {
 	measure := func(dialogues int) (int, int) {
-		doc := ass.Parse(benchmarkASSDocument(dialogues))
+		doc := renderer.Parse(benchmarkASSDocument(dialogues))
 		findings := AnalyzeDocument(doc)
 		before := proofMembershipComparisons.Load()
 		fixed, count, err := ApplyFixes(doc.Text, findings, false)
@@ -340,7 +339,7 @@ func TestNoEffectTransformFixRequiresVerifiedSignature(t *testing.T) {
 		{text: `{\pos(100,100)\bord2\t(\bord2)}A`, want: `{\pos(100,100)\bord2}A`, wantSafeFix: true},
 	}
 	for _, test := range cases {
-		dialogue := ass.Dialogue{Text: test.text, Line: 1}
+		dialogue := renderer.Dialogue{Text: test.text, Line: 1}
 		diagnostics := Analyze(dialogue)
 		var transform []Diagnostic
 		for _, diagnostic := range diagnostics {

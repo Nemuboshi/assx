@@ -42,7 +42,7 @@ func (server *Server) completion(ctx context.Context, raw jsontext.Value) ([]com
 	if err != nil {
 		return nil, err
 	}
-	for _, dialogue := range doc.parsed.Dialogues {
+	for _, dialogue := range doc.view.Dialogues {
 		if field, ok := dialogue.Field("style"); ok && offset >= field.Start && offset <= field.End {
 			return server.styleCompletions(doc, field, offset), ctx.Err()
 		}
@@ -152,7 +152,7 @@ func (server *Server) tagCompletions(doc document, prefix string, start, end int
 	return items
 }
 
-func (server *Server) styleCompletions(doc document, field ass.EventField, offset int) []completionItem {
+func (server *Server) styleCompletions(doc document, field renderer.EventField, offset int) []completionItem {
 	return server.styleNameCompletions(doc, strings.TrimSpace(doc.text[field.Start:offset]), field.Start, offset)
 }
 

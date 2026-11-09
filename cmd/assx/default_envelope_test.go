@@ -1,16 +1,16 @@
 package main
 
 import (
+	"assx/internal/ass/renderer"
 	"testing"
 
-	"assx/internal/ass"
 	"assx/internal/lint"
 )
 
 // These policy invariants remain separate from main@6ba7453 historical goldens.
 // Do not pin transitional diagnostics for names subject to prefix dispatch.
 func TestDefaultRejectsModOnlyPositionArity(t *testing.T) {
-	invalid := lint.Analyze(ass.Dialogue{Text: `{\pos(1,2,3)}x`})
+	invalid := lint.Analyze(renderer.Dialogue{Text: `{\pos(1,2,3)}x`})
 	invalidPos := false
 	for _, d := range invalid {
 		if d.Tag == "pos" && d.Severity == lint.Error {
@@ -21,7 +21,7 @@ func TestDefaultRejectsModOnlyPositionArity(t *testing.T) {
 		t.Fatalf("default renderer accepted a VSFilterMod-only 3-coordinate position: %#v", invalid)
 	}
 
-	valid := lint.Analyze(ass.Dialogue{Text: `{\pos(1,2)}x`})
+	valid := lint.Analyze(renderer.Dialogue{Text: `{\pos(1,2)}x`})
 	for _, d := range valid {
 		if d.Tag == "pos" && d.Severity == lint.Error {
 			t.Fatalf("default renderer rejected a valid 2-coordinate position: %#v", valid)
@@ -37,7 +37,7 @@ func TestPrefixCollisionsDoNotAuthorizeSafeFix(t *testing.T) {
 	for _, name := range []string{"fsvp6", "frs", "blend(add)"} {
 		t.Run(name, func(t *testing.T) {
 			input := "{\\fs10\\fs20\\" + name + "}x"
-			diagnostics := lint.Analyze(ass.Dialogue{Text: input})
+			diagnostics := lint.Analyze(renderer.Dialogue{Text: input})
 			for _, d := range diagnostics {
 				if d.FixSafety == lint.SafeFix {
 					t.Fatalf("unproven edit marked SafeFix after a prefix collision: %#v", d)
@@ -52,7 +52,7 @@ func TestPrefixCollisionsDoNotAuthorizeSafeFix(t *testing.T) {
 }
 
 func TestUnknownOperationBlocksRetroactiveSafeFix(t *testing.T) {
-	diagnostics := lint.Analyze(ass.Dialogue{Text: `{\fs10\fs20\unknownTag}x`})
+	diagnostics := lint.Analyze(renderer.Dialogue{Text: `{\fs10\fs20\unknownTag}x`})
 	foundUnknown := false
 	for _, d := range diagnostics {
 		if d.Condition == lint.IssueUnknownTag {

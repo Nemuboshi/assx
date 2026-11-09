@@ -6,7 +6,6 @@ import (
 	"strings"
 	"testing"
 
-	"assx/internal/ass"
 	"assx/internal/ass/renderer"
 	"assx/internal/perftest"
 )
@@ -89,7 +88,7 @@ func threeProfileTargets(t *testing.T) AnalysisTargets {
 }
 
 // rebuildOneOff reproduces one proof from a fresh single-use batch.
-func rebuildOneOff(t *testing.T, doc ass.Document, profiles []renderer.Profile, edits []FixEditProof, validEdits map[FixEditProof]struct{}) *FixProof {
+func rebuildOneOff(t *testing.T, doc renderer.Document, profiles []renderer.Profile, edits []FixEditProof, validEdits map[FixEditProof]struct{}) *FixProof {
 	t.Helper()
 	proof, err := newProofBatch(doc.Text, doc, profiles).build(edits, validEdits)
 	if err != nil {
@@ -103,7 +102,7 @@ func rebuildOneOff(t *testing.T, doc ass.Document, profiles []renderer.Profile, 
 // selects every dialogue, so each profile compares the whole document once
 // and all findings share the single proof.
 func TestProofBatchStyleEditSharesOneAggregateProof(t *testing.T) {
-	doc := ass.Parse(perftest.StyleEdit(t))
+	doc := renderer.Parse(perftest.StyleEdit(t))
 	targets := DefaultAnalysisTargets()
 	calls := instrumentProofBuilder(t)
 	resetProofBatchCounters()
@@ -165,7 +164,7 @@ func TestProofBatchStyleEditSharesOneAggregateProof(t *testing.T) {
 // runs to its limit, and every attempt shares one batch's before work.
 func TestProofBatchFallbackReusesBeforeWork(t *testing.T) {
 	const dialogues = 250
-	doc := ass.Parse(scalingCase(t, "scaling_250"))
+	doc := renderer.Parse(scalingCase(t, "scaling_250"))
 	targets := DefaultAnalysisTargets()
 	calls := instrumentProofBuilder(t)
 	resetProofBatchCounters()
@@ -221,7 +220,7 @@ func TestProofBatchFallbackReusesBeforeWork(t *testing.T) {
 // the batch hashes its source once. Every attempt's proof carries the same
 // source digest, so a later attempt must not repeat that hash over the source.
 func TestProofBatchHashesSourceOnce(t *testing.T) {
-	doc := ass.Parse(scalingCase(t, "scaling_250"))
+	doc := renderer.Parse(scalingCase(t, "scaling_250"))
 	calls := instrumentProofBuilder(t)
 	resetProofBatchCounters()
 	AnalyzeDocument(doc)
@@ -237,7 +236,7 @@ func TestProofBatchHashesSourceOnce(t *testing.T) {
 // in one write and rejects stale sources, changed evidence, and changed
 // targets.
 func TestProofBatchFallbackGroupsApplyAndReject(t *testing.T) {
-	doc := ass.Parse(scalingCase(t, "scaling_250"))
+	doc := renderer.Parse(scalingCase(t, "scaling_250"))
 	findings := AnalyzeDocument(doc)
 	proved := countSafeProved(findings)
 	if proved == 0 {
@@ -279,7 +278,7 @@ func TestProofBatchFallbackGroupsApplyAndReject(t *testing.T) {
 // TestSessionProofBatchUsesDiscoveryViews requires the session's proof batch
 // to reuse the views discovery prepared, so proving prepares no projection.
 func TestSessionProofBatchUsesDiscoveryViews(t *testing.T) {
-	doc := ass.Parse(benchmarkLateProofFailure(20))
+	doc := renderer.Parse(benchmarkLateProofFailure(20))
 	session := discoverTestSession(t, doc, nil)
 	handles := allCandidateHandles(session)
 	calls := instrumentProofBuilder(t)
@@ -366,14 +365,14 @@ func TestProofBatchKeepsPerProfileWorkSeparate(t *testing.T) {
 
 // missingFieldDoc carries one fractional Style integer, one provable dialogue,
 // and one dialogue whose event row is missing fields.
-func missingFieldDoc() ass.Document {
+func missingFieldDoc() renderer.Document {
 	text := "[Script Info]\nPlayResX: 1920\nPlayResY: 1080\nYCbCr Matrix: None\n" +
 		"[V4+ Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\n" +
 		"Style: Default,Arial,20,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,2,2,0.0,0,0,1\n" +
 		"[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n" +
 		"Dialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{\\b1\\b1\\fs20\\fs20\\t(0,500,\\fscx100)}Benchmark subtitle\n" +
 		"Dialogue: 0,0:00:01.00,0:00:02.00,Default,,0,0,0\n"
-	return ass.Parse(text)
+	return renderer.Parse(text)
 }
 
 // TestProofBatchRejectsUnverifiableDialogueLayout requires the batch to keep
@@ -406,8 +405,8 @@ func TestProofBatchRejectsUnverifiableDialogueLayout(t *testing.T) {
 // TestProofBatchReplacesForeignSourceBatch proves a second source with a
 // session's batch and requires a fresh batch, then reuses the session's own.
 func TestProofBatchReplacesForeignSourceBatch(t *testing.T) {
-	session := discoverTestSession(t, ass.Parse(benchmarkLateProofFailure(6)), nil)
-	foreign := ass.Parse(benchmarkLateProofFailure(7))
+	session := discoverTestSession(t, renderer.Parse(benchmarkLateProofFailure(6)), nil)
+	foreign := renderer.Parse(benchmarkLateProofFailure(7))
 	targets := DefaultAnalysisTargets()
 	diagnostics := candidateDiagnostics(analyzeDocumentForTargetsUnproved(foreign, targets, nil))
 	resetProofBatchCounters()
@@ -448,7 +447,7 @@ func TestProofBatchReplacesForeignSourceBatch(t *testing.T) {
 // batch that its prepared views, trees, and digests do not describe this
 // document.
 func TestProofBatchRequiresTheSameDocumentShape(t *testing.T) {
-	doc := ass.Parse(perftest.StyleEdit(t))
+	doc := renderer.Parse(perftest.StyleEdit(t))
 	profiles := DefaultAnalysisTargets().Profiles()
 	batch := newProofBatch(doc.Text, doc, profiles)
 	truncated := doc

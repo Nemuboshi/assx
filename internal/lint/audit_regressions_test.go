@@ -1,11 +1,10 @@
 package lint
 
 import (
+	"assx/internal/ass/renderer"
 	"reflect"
 	"strings"
 	"testing"
-
-	"assx/internal/ass"
 )
 
 func TestSafeFixRendererRegressions(t *testing.T) {
@@ -37,10 +36,10 @@ func TestSafeFixRendererRegressions(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if got := ass.Parse(fixed).Dialogues[0].Text; got != test.want {
+			if got := renderer.Parse(fixed).Dialogues[0].Text; got != test.want {
 				t.Fatalf("fixed text = %q, want %q", got, test.want)
 			}
-			second, count, err := ApplyFixes(fixed, AnalyzeDocument(ass.Parse(fixed)), false)
+			second, count, err := ApplyFixes(fixed, AnalyzeDocument(renderer.Parse(fixed)), false)
 			if err != nil || count != 0 || second != fixed {
 				t.Fatalf("fix is not stable: (%q, %d, %v)", second, count, err)
 			}
@@ -72,13 +71,13 @@ func TestLateVSFilterModTagsDisableAllDialogueFixes(t *testing.T) {
 func TestWhitespaceOnlyHeaderFixes(t *testing.T) {
 	for _, whitespace := range []string{"", "   ", "\t \t"} {
 		text := "[Script Info]\nPlayResX: 640\nPlayResY: 480\nYCbCr Matrix:" + whitespace + "\nLayoutResX:" + whitespace + "\nLayoutResY:" + whitespace + "\n"
-		doc := ass.Parse(text)
+		doc := renderer.Parse(text)
 		fixed, count, err := ApplyFixes(text, AnalyzeHeaders(doc), true)
 		if err != nil || count != 2 {
 			t.Fatalf("whitespace %q: count=%d error=%v", whitespace, count, err)
 		}
 		for key, want := range map[string]string{"ycbcr matrix": "None", "layoutresx": "640", "layoutresy": "480"} {
-			if got := ass.Parse(fixed).Headers[key].Value; got != want {
+			if got := renderer.Parse(fixed).Headers[key].Value; got != want {
 				t.Fatalf("fixed %s = %q, want %q", key, got, want)
 			}
 		}
@@ -96,7 +95,7 @@ func TestEveryEventFormatHasItsOwnDiagnostic(t *testing.T) {
 		{custom + standard, []int{2}},
 		{custom + standard + custom, []int{2, 6}},
 	} {
-		diagnostics := diagnosticsForIDs(AnalyzeDocument(ass.Parse("[Events]\n"+test.text)), IssueEventFormat)
+		diagnostics := diagnosticsForIDs(AnalyzeDocument(renderer.Parse("[Events]\n"+test.text)), IssueEventFormat)
 		var lines []int
 		for _, diagnostic := range diagnostics {
 			lines = append(lines, diagnostic.Line)
@@ -123,7 +122,7 @@ func TestStyleFallbackAfterNamedResetRequiresRendererAgreement(t *testing.T) {
 
 func TestRedundantStyleMetadataAndStateIsolation(t *testing.T) {
 	doc := parseStyleDefinitionsText("Name, Fontsize", "Style: Default,20\nStyle: Other,24\n", "Default", `{\rOther\fs24}A`)
-	doc = ass.Parse(doc.Text + "Dialogue: 0,0:00:00.00,0:00:02.00,Default,,0,0,0,,{\\fs20}B\n" +
+	doc = renderer.Parse(doc.Text + "Dialogue: 0,0:00:00.00,0:00:02.00,Default,,0,0,0,,{\\fs20}B\n" +
 		"Dialogue: 0,0:00:00.00,0:00:02.00,Default,,0,0,0,,{\\fs24}C\n")
 	diagnostics := AnalyzeRedundantStyleOverrides(doc)
 	if len(diagnostics) != 2 {

@@ -3,7 +3,6 @@ package lint
 import (
 	"testing"
 
-	"assx/internal/ass"
 	"assx/internal/ass/renderer"
 )
 
@@ -18,7 +17,7 @@ func TestP09PreservesDefaultModValueValidation(t *testing.T) {
 		{`{\fshp(bad)}A`, true},
 		{`{\ortho2}A`, false},
 	} {
-		got := Analyze(ass.Dialogue{Text: tc.source})
+		got := Analyze(renderer.Dialogue{Text: tc.source})
 		if !hasIssue(got, IssueVSFilterModTag) || hasIssue(got, IssueInvalidValue) != tc.invalidPrefix {
 			t.Errorf("default portability/prefix validation changed for %s: %#v", tc.source, got)
 		}
@@ -35,7 +34,7 @@ func TestP09ModOrthoFallbackIsNotOutOfRange(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, diagnostic := range AnalyzeForRenderer(ass.Dialogue{Text: `{\ortho2}A`}, profile) {
+	for _, diagnostic := range AnalyzeForRenderer(renderer.Dialogue{Text: `{\ortho2}A`}, profile) {
 		if diagnostic.Condition == IssueInvalidValue {
 			t.Fatalf("original-Style fallback rejected: %#v", diagnostic)
 		}

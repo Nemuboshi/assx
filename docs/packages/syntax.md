@@ -27,8 +27,10 @@ Syntax traversal alone cannot authorize an edit.
 Absent cells differ from delimited empty cells.
 Renderer profiles own field layout interpretation; the CST does not infer a dialect.
 
-`ass.Parse` supplies the existing document lint view and source coordinates.
+`ass.ParseSource` parses the physical structure once and keeps source coordinates.
 It uses LF-delimited framing. The concrete document preserves standalone CR, LF, and CRLF.
+`renderer.DefaultDocument` supplies the default libass view from that tree.
+`renderer.Profile.View` supplies each renderer's own view and never changes the tree.
 Compatibility analysis independently partitions the concrete document under each requested profile.
 Unknown dialects and malformed framing remain unresolved.
 

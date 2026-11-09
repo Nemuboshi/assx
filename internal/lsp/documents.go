@@ -1,6 +1,7 @@
 package lsp
 
 import (
+	"assx/internal/ass/renderer"
 	"fmt"
 	"net/url"
 	"unicode/utf16"
@@ -20,7 +21,8 @@ type document struct {
 	text    string
 	version int
 	index   sourcepos.Index
-	parsed  ass.Document
+	parsed  ass.Parsed
+	view    renderer.Document
 }
 
 func newDocument(text string, version int) (document, error) {
@@ -28,7 +30,8 @@ func newDocument(text string, version int) (document, error) {
 	if err != nil {
 		return document{}, err
 	}
-	return document{text: text, version: version, index: index, parsed: ass.Parse(text)}, nil
+	parsed := ass.ParseSource(text)
+	return document{text: text, version: version, index: index, parsed: parsed, view: renderer.DefaultDocument(parsed)}, nil
 }
 
 // Documents keeps current, unsaved text. A session owns its store.
@@ -96,7 +99,8 @@ func (store *Documents) Change(uri string, version int, changes []Change) error 
 			return err
 		}
 	}
-	store.items[uri] = document{text: text, version: version, index: index, parsed: ass.Parse(text)}
+	parsed := ass.ParseSource(text)
+	store.items[uri] = document{text: text, version: version, index: index, parsed: parsed, view: renderer.DefaultDocument(parsed)}
 	return nil
 }
 

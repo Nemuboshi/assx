@@ -1,6 +1,7 @@
-package ass
+package renderer
 
 import (
+	"assx/internal/ass"
 	"reflect"
 	"strings"
 	"testing"
@@ -112,7 +113,7 @@ func TestParseEventFieldsWithoutTextFormatDropsEvents(t *testing.T) {
 	if len(doc.Dialogues) != 0 {
 		t.Fatalf("libass discards events whose format has no Text: %#v", doc.Dialogues)
 	}
-	if hasFormatName(doc.EventFormat, "text") {
+	if ass.HasFormatName(doc.EventFormat, "text") {
 		t.Fatal("format parsed without Text must stay inspectable")
 	}
 }
@@ -151,7 +152,7 @@ func TestDecodeSourceRoundTripsBOMEncodings(t *testing.T) {
 	}
 	for name, raw := range cases {
 		t.Run(name, func(t *testing.T) {
-			source, err := DecodeSource(raw)
+			source, err := ass.DecodeSource(raw)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -163,7 +164,7 @@ func TestDecodeSourceRoundTripsBOMEncodings(t *testing.T) {
 }
 
 func TestDecodeRejectsIncompleteUTF16(t *testing.T) {
-	if _, err := DecodeSource([]byte{0xff, 0xfe, 0x41}); err == nil {
+	if _, err := ass.DecodeSource([]byte{0xff, 0xfe, 0x41}); err == nil {
 		t.Fatal("expected incomplete UTF-16 code unit error")
 	}
 }
