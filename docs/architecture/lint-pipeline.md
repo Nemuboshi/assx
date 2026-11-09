@@ -47,8 +47,8 @@ flowchart LR
   B["file bytes"] --> D["ass.DecodeSource → Source"]
   D --> R["ass.Recognize → Classification"]
   R --> S["analysis.Snapshot"]
-  S --> P["ass.Parse → ass.Document"]
-  P --> PREP["lint.PrepareDocument → one view per target"]
+  S --> P["ass.ParseSource → ass.Parsed"]
+  P --> PREP["lint.PrepareDocument → one renderer.View per target"]
   PREP --> DISC["lint.Discover → lint.Session"]
   DISC --> V["primary profile pass: document checks → []Diagnostic"]
   V --> DIA["primary dialogue pass: PrepareDialogue, EachOperation → []Diagnostic"]
@@ -124,7 +124,8 @@ or foreign identity yields no action.
 
 | Invariant | Where it holds |
 | --- | --- |
-| One profile produces one projected view | `PrepareDocument`, `profile.DocumentView` |
+| One profile produces one renderer view | `PrepareDocument`, `Profile.View` |
+| Different Text spans are not compared per tag | `CompareDocument`, `applyResolutions` |
 | A renderer-scoped pass strips fixes | `scopeDiagnostics` |
 | A location carries each condition once, with merged observations | `assemble` |
 | Output order is line, then column | stable sort after the passes |

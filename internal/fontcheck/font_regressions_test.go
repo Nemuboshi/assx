@@ -97,12 +97,12 @@ func TestFontChecksFollowOverrideResets(t *testing.T) {
 	}
 }
 
-func parseStyleOverrideText(format, style, text string) ass.Document {
+func parseStyleOverrideText(format, style, text string) ass.Parsed {
 	return parseStyleDefinitionsText(format, "Style: "+style+"\n", "Default", text)
 }
 
-func parseStyleDefinitionsText(format, definitions, dialogueStyle, text string) ass.Document {
-	return ass.Parse("[Script Info]\nPlayResX: 640\nPlayResY: 480\nYCbCr Matrix: None\nLayoutResX: 640\nLayoutResY: 480\n" +
+func parseStyleDefinitionsText(format, definitions, dialogueStyle, text string) ass.Parsed {
+	return ass.ParseSource("[Script Info]\nPlayResX: 640\nPlayResY: 480\nYCbCr Matrix: None\nLayoutResX: 640\nLayoutResY: 480\n" +
 		"[V4+ Styles]\nFormat: " + format + "\n" + definitions +
 		"[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n" +
 		"Dialogue: 0, 0:00:00.00, 0:00:02.00, " + dialogueStyle + ",,0,0,0,," + text + "\n")

@@ -34,8 +34,8 @@ type Finding struct {
 }
 
 // Analyze checks known visible requests against a complete catalog.
-func Analyze(doc ass.Document, catalog *Catalog, profile renderer.Profile) ([]Finding, error) {
-	return AnalyzeUsages(ExtractUsages(doc, profile), catalog)
+func Analyze(source ass.Parsed, catalog *Catalog, profile renderer.Profile) ([]Finding, error) {
+	return AnalyzeUsages(ExtractUsages(source, profile), catalog)
 }
 
 // AnalyzeUsages checks extracted requests without evaluating the source again.

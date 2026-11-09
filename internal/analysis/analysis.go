@@ -73,8 +73,8 @@ func Analyze(ctx context.Context, snapshot Snapshot, options Options) (*Result, 
 	}
 	targets.Compatibility = slices.Clone(targets.Compatibility)
 	policyValue := slices.Clone(options.Rules)
-	doc := ass.Parse(snapshot.Text())
-	session, err := lint.Discover(ctx, doc, targets, policyValue)
+	source := ass.ParseSource(snapshot.Text())
+	session, err := lint.Discover(ctx, source, targets, policyValue)
 	if err != nil {
 		return nil, err
 	}

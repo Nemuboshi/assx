@@ -119,7 +119,7 @@ func TestPreparedDialogueCancellation(t *testing.T) {
 	}
 }
 
-func TestDocumentViewFromConcreteMatchesDocumentView(t *testing.T) {
+func TestViewFromConcreteMatchesView(t *testing.T) {
 	documents := []string{
 		// Reordered Style and Event field layouts.
 		"[Script Info]\nPlayResX: 640\nPlayResY: 480\n[V4+ Styles]\nFormat: Fontsize, Name, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding, Fontname\nStyle: 20,Default,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,2,2,10,10,10,1,Arial\n[Events]\nFormat: End, Layer, Start, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0:00:02.00,0,0:00:01.00,Default,,0,0,0,,{\\b1\\b1}swapped\n",
@@ -130,32 +130,34 @@ func TestDocumentViewFromConcreteMatchesDocumentView(t *testing.T) {
 	}
 	profiles := allStandardProfiles(t)
 	for _, text := range documents {
-		doc := ass.Parse(text)
-		tree := ass.ParseConcreteDocument(doc.Text)
+		source := ass.ParseSource(text)
 		for _, profile := range profiles {
-			layouts := profile.ResolveDocumentLayouts(tree)
-			built, err := profile.DocumentViewFromConcrete(context.Background(), doc, tree, layouts)
+			layouts := profile.ResolveDocumentLayouts(source.Concrete)
+			built, err := profile.ViewFromConcrete(context.Background(), source, layouts)
 			if err != nil {
 				t.Fatalf("profile %v: %v", profile.Kind(), err)
 			}
-			if want := profile.DocumentView(doc); !reflect.DeepEqual(want, built) {
-				t.Fatalf("DocumentViewFromConcrete differs for profile %v on document %q", profile.Kind(), text)
+			want, err := profile.View(context.Background(), source)
+			if err != nil {
+				t.Fatalf("profile %v: %v", profile.Kind(), err)
+			}
+			if !reflect.DeepEqual(want, built) {
+				t.Fatalf("ViewFromConcrete differs for profile %v on document %q", profile.Kind(), text)
 			}
 		}
 	}
 }
 
-func TestDocumentViewFromConcreteCancellation(t *testing.T) {
-	doc := ass.Parse("[Script Info]\nPlayResX: 640\nPlayResY: 480\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0:00:01.00,0:00:02.00,Default,,0,0,0,,x\n")
-	tree := ass.ParseConcreteDocument(doc.Text)
+func TestViewFromConcreteCancellation(t *testing.T) {
+	source := ass.ParseSource("[Script Info]\nPlayResX: 640\nPlayResY: 480\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0:00:01.00,0:00:02.00,Default,,0,0,0,,x\n")
 	xy, _ := renderer.Standard(renderer.XYVSFilter)
-	layouts := xy.ResolveDocumentLayouts(tree)
+	layouts := xy.ResolveDocumentLayouts(source.Concrete)
 	canceled, cancel := context.WithCancel(context.Background())
 	cancel()
-	if _, err := xy.DocumentViewFromConcrete(canceled, doc, tree, layouts); err == nil {
+	if _, err := xy.ViewFromConcrete(canceled, source, layouts); err == nil {
 		t.Fatal("canceled projection succeeded")
 	}
-	if _, err := xy.DocumentViewFromConcrete(context.Background(), doc, tree, layouts); err != nil {
+	if _, err := xy.ViewFromConcrete(context.Background(), source, layouts); err != nil {
 		t.Fatalf("later projection failed: %v", err)
 	}
 }

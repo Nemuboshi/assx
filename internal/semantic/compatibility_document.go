@@ -37,6 +37,7 @@ func CompareDocumentInMode(tree ass.ConcreteDocument, profiles []renderer.Profil
 	preparations := mode.preparations()
 	layouts := make([]map[ass.ConcreteSpan]renderer.RecordLayout, len(unique))
 	runs := make([]map[ass.ConcreteSpan]*Interpretation, len(unique))
+	recordOf := make(map[ass.ConcreteSpan]ass.ConcreteSpan)
 	spans := make(map[ass.ConcreteSpan]bool)
 	for i, p := range unique {
 		rows := mode.layoutsFor(p, tree)
@@ -73,6 +74,7 @@ func CompareDocumentInMode(tree ass.ConcreteDocument, profiles []renderer.Profil
 			for span, o := range observations {
 				offset := cell.Span.Start
 				absolute := ass.ConcreteSpan{Start: span.Start + offset, End: span.End + offset}
+				recordOf[absolute] = row.Source
 				// Argument spans shift in place, so the observation must not
 				// alias the shared prepared result.
 				o.Resolution.Source = absolute
@@ -104,9 +106,13 @@ func CompareDocumentInMode(tree ass.ConcreteDocument, profiles []renderer.Profil
 				a, b := layouts[i][span], layouts[j][span]
 				status := CompatibilityUnresolved
 				if a.Known && b.Known {
-					status = CompatibilityEquivalent
-					if !slices.Equal(a.Columns, b.Columns) || !slices.Equal(a.Cells, b.Cells) {
+					switch {
+					case a.Kind == "dialogue" && !textCellsComparable(a, b):
+						status = CompatibilityNotComparable
+					case !slices.Equal(a.Columns, b.Columns) || !slices.Equal(a.Cells, b.Cells):
 						status = CompatibilityDivergent
+					default:
+						status = CompatibilityEquivalent
 					}
 				}
 				left, right := &Interpretation{Profile: unique[i], Present: a.Known}, &Interpretation{Profile: unique[j], Present: b.Known}
@@ -135,8 +141,15 @@ func CompareDocumentInMode(tree ass.ConcreteDocument, profiles []renderer.Profil
 		return order[i].Start < order[j].Start
 	})
 	for _, span := range order {
+		record := recordOf[span]
 		for i := range unique {
 			for j := i + 1; j < len(unique); j++ {
+				// Different Text spans mean the two streams read different
+				// bytes, so a per-tag comparison has no common text. The
+				// record layout finding states that condition.
+				if !textCellsComparable(layouts[i][record], layouts[j][record]) {
+					continue
+				}
 				a, b := observationAt(runs[i], span, unique[i]), observationAt(runs[j], span, unique[j])
 				out = append(out, compareInterpretations(span, a, b, mode.LintOnly)...)
 			}
@@ -144,6 +157,23 @@ func CompareDocumentInMode(tree ass.ConcreteDocument, profiles []renderer.Profil
 	}
 	sort.SliceStable(out, func(i, j int) bool { return out[i].Source.Start < out[j].Source.Start })
 	return out
+}
+
+// textCell returns the cell that this renderer reads as Text.
+func textCell(row renderer.RecordLayout) (ass.ConcreteCell, bool) {
+	index := slices.Index(row.Columns, "text")
+	if index < 0 || index >= len(row.Cells) {
+		return ass.ConcreteCell{}, false
+	}
+	return row.Cells[index], true
+}
+
+// textCellsComparable reports whether two layouts read the same Text bytes.
+// Tag effects are comparable across renderers only on that shared text.
+func textCellsComparable(a, b renderer.RecordLayout) bool {
+	ac, aok := textCell(a)
+	bc, bok := textCell(b)
+	return aok && bok && ac.Present && bc.Present && ac.Span == bc.Span && ac.Raw == bc.Raw
 }
 
 func layoutValue(row renderer.RecordLayout, name string) string {

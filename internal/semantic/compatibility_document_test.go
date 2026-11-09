@@ -47,14 +47,19 @@ func TestDocumentCompatibilityUnresolvedDialectAndDistinctText(t *testing.T) {
 		if len(findings) == 0 {
 			t.Fatal("dropped unresolved document")
 		}
-		unresolved := false
+		unresolved, notComparable := false, false
 		for _, f := range findings {
-			if f.Status == CompatibilityUnresolved {
-				unresolved = true
-			}
+			unresolved = unresolved || f.Status == CompatibilityUnresolved
+			notComparable = notComparable || f.Status == CompatibilityNotComparable
 			if f.Dimension == "state" && f.Status == CompatibilityEquivalent {
 				t.Fatal("document context invented state equivalence")
 			}
+		}
+		if strings.Contains(source, "Format: Text") {
+			if !notComparable {
+				t.Fatalf("different Text spans were not marked not comparable: %q", source)
+			}
+			continue
 		}
 		if !unresolved {
 			t.Fatalf("no unresolved result for %q", source)
@@ -81,5 +86,25 @@ func TestDocumentCompatibilityActorAlias(t *testing.T) {
 		if strings.HasSuffix(f.Dimension, "-layout") && f.Status != CompatibilityEquivalent {
 			t.Fatalf("Actor alias introduced a false difference: %#v", f)
 		}
+	}
+}
+
+func TestDocumentCompatibilityDifferentTextIsNotComparable(t *testing.T) {
+	source := "[Script Info]\nScriptType: v4.00+\n[Events]\n" +
+		"Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Text, Effect\n" +
+		"Dialogue: 0,0:00:00.00,0:00:02.00,Default,,0,0,0,{\\k20}Hi,{\\k10}X\n"
+	findings := CompareDocument(ass.ParseConcreteDocument(source), nil)
+	layout := false
+	for _, f := range findings {
+		if f.Dimension == "document/dialogue-layout" && f.Status == CompatibilityNotComparable {
+			layout = true
+		}
+		switch f.Dimension {
+		case "dispatch", "arguments", "signature", "state", "ownership", "application":
+			t.Fatalf("compared tags on different Text spans: %#v", f)
+		}
+	}
+	if !layout {
+		t.Fatalf("missing not-comparable layout finding: %#v", findings)
 	}
 }

@@ -13,7 +13,7 @@ import (
 
 func discoverTestSession(t *testing.T, doc ass.Document, policy RulePolicy) *Session {
 	t.Helper()
-	session, err := Discover(context.Background(), doc, DefaultAnalysisTargets(), policy)
+	session, err := Discover(context.Background(), ass.ParsedOf(doc), DefaultAnalysisTargets(), policy)
 	if err != nil {
 		t.Fatalf("Discover: %v", err)
 	}
@@ -240,7 +240,7 @@ func TestSessionRejectsInvalidPolicy(t *testing.T) {
 		{"empty id", RulePolicy{{Disabled: true}}},
 	} {
 		t.Run(test.name, func(t *testing.T) {
-			session, err := Discover(context.Background(), redundantStyleDoc(), DefaultAnalysisTargets(), test.policy)
+			session, err := Discover(context.Background(), ass.ParsedOf(redundantStyleDoc()), DefaultAnalysisTargets(), test.policy)
 			if err == nil || session != nil {
 				t.Fatalf("policy accepted: %v %#v", err, session)
 			}
@@ -457,7 +457,7 @@ func TestSessionCancellationKeepsResultUsable(t *testing.T) {
 	doc := ass.Parse(benchmarkLateProofFailure(250))
 	canceled, cancel := context.WithCancel(context.Background())
 	cancel()
-	if session, err := Discover(canceled, doc, DefaultAnalysisTargets(), nil); err == nil || session != nil {
+	if session, err := Discover(canceled, ass.ParsedOf(doc), DefaultAnalysisTargets(), nil); err == nil || session != nil {
 		t.Fatalf("canceled Discover succeeded: %v %#v", err, session)
 	}
 	session := discoverTestSession(t, doc, nil)

@@ -8,37 +8,42 @@ import (
 	"assx/internal/ass"
 )
 
-// DocumentView projects known ASS v4+ fixed-position VSFilter record groups for lint consumers.
-// Groups with unknown layouts retain the parser's original fields.
-func (p Profile) DocumentView(doc ass.Document) ass.Document {
-	if p.skipsProjection(doc) {
-		return doc
-	}
-	tree := ass.ParseConcreteDocument(doc.Text)
-	view, err := p.projectDocument(context.Background(), doc, tree, p.ResolveDocumentLayouts(tree))
+// View is one renderer's document view. The embedded Document holds the
+// fields that renderer reads. Profile and Layouts name the interpretation that
+// produced it. A View is not the source document, and its Text spans can differ
+// from another View of the same source.
+type View struct {
+	ass.Document
+	Profile Profile
+	Layouts []RecordLayout
+}
+
+// View builds this renderer's view from one source parse.
+func (p Profile) View(ctx context.Context, source ass.Parsed) (View, error) {
+	return p.ViewFromConcrete(ctx, source, p.ResolveDocumentLayouts(source.Concrete))
+}
+
+// ViewOf builds this renderer's view for a document without a concrete tree.
+// It parses the text again. Prefer View with a Parsed value on hot paths.
+func (p Profile) ViewOf(ctx context.Context, doc ass.Document) (View, error) {
+	return p.View(ctx, ass.ParsedOf(doc))
+}
+
+// ViewFromConcrete builds this renderer's view from one source parse and that
+// profile's resolved layouts. The caller can share both across every consumer
+// of one source version. A canceled context returns no partial view; the same
+// inputs stay usable for a later request.
+func (p Profile) ViewFromConcrete(ctx context.Context, source ass.Parsed, layouts []RecordLayout) (View, error) {
+	view, err := p.projectDocument(ctx, source.Document, source.Concrete, layouts)
 	if err != nil {
-		return doc
+		return View{}, err
 	}
-	return view
+	return View{Document: view, Profile: p, Layouts: layouts}, nil
 }
 
 // skipsProjection reports the guard cases that need no concrete document.
 func (p Profile) skipsProjection(doc ass.Document) bool {
 	return p.kind == Libass || len(doc.Lines) == 0 || len(doc.Dialogues) == 1 && len(doc.Dialogues[0].Fields) == 0
-}
-
-// ProjectsDocument reports whether projection can change this document.
-// Callers use it to skip concrete parsing and layout resolution that
-// DocumentViewFromConcrete would ignore anyway.
-func (p Profile) ProjectsDocument(doc ass.Document) bool { return !p.skipsProjection(doc) }
-
-// DocumentViewFromConcrete is the context-aware projection core. The caller
-// supplies one concrete document and that profile's resolved layouts, so a
-// request can share both across every consumer of one source version. A
-// canceled context returns no partial view; the same inputs stay usable for a
-// later request.
-func (p Profile) DocumentViewFromConcrete(ctx context.Context, doc ass.Document, tree ass.ConcreteDocument, layouts []RecordLayout) (ass.Document, error) {
-	return p.projectDocument(ctx, doc, tree, layouts)
 }
 
 func (p Profile) projectDocument(ctx context.Context, doc ass.Document, tree ass.ConcreteDocument, layouts []RecordLayout) (ass.Document, error) {

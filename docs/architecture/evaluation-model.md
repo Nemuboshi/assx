@@ -327,13 +327,14 @@ Exit criteria:
 Implemented.
 
 `DialoguePreparations` caches one neutral program per dialogue text. Every
-profile resolves its own operation map over that program.
-`EvaluatePreparedSet` groups the prepared dialogues by program and folds each
-group once with one state per prepared dialogue. A custom event Format can
-select a different Text span for each renderer, so entries from different text
-spans have different programs and never share one fold. The lint compared pass
-uses the set for karaoke and drawing on dialogues that use `\k`, `\K`, `\kf`,
-`\ko`, `\kt`, or `\p`.
+profile resolves its own operation map over that program. `ass.ParseSource`
+parses the source once, and `Profile.View` derives each renderer view from the
+same concrete tree. `EvaluatePreparedSet` groups the prepared dialogues by
+program and folds each group once with one state per prepared dialogue. A
+custom event Format can select a different Text span for each renderer, so
+entries from different text spans have different programs and never share one
+fold. The lint compared pass uses the set for karaoke and drawing on dialogues
+that use `\k`, `\K`, `\kf`, `\ko`, `\kt`, or `\p`.
 
 The primary renderer keeps its own pass because it also runs the lint rules and
 authorizes fixes. The set covers all compared renderers together.

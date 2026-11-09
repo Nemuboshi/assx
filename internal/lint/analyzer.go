@@ -18,12 +18,13 @@ type TextEdit = edit.TextEdit
 type Status string
 
 const (
-	StatusAccepted  Status = "accepted"
-	StatusRejected  Status = "rejected"
-	StatusIgnored   Status = "ignored"
-	StatusUnknown   Status = "unknown"
-	StatusUnmodeled Status = "unmodeled"
-	StatusInferred  Status = "inferred"
+	StatusAccepted      Status = "accepted"
+	StatusRejected      Status = "rejected"
+	StatusIgnored       Status = "ignored"
+	StatusUnknown       Status = "unknown"
+	StatusUnmodeled     Status = "unmodeled"
+	StatusInferred      Status = "inferred"
+	StatusNotComparable Status = "not-comparable"
 )
 
 // Role tells which selected renderer produced an observation.

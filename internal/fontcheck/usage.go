@@ -1,6 +1,7 @@
 package fontcheck
 
 import (
+	"context"
 	"strconv"
 	"strings"
 	"unicode/utf8"
@@ -50,8 +51,12 @@ type Usage struct {
 }
 
 // ExtractUsages does no font I/O. Unknown text state remains in the result.
-func ExtractUsages(doc ass.Document, profile renderer.Profile) []Usage {
-	doc = profile.DocumentView(doc)
+func ExtractUsages(source ass.Parsed, profile renderer.Profile) []Usage {
+	view, err := profile.View(context.Background(), source)
+	if err != nil {
+		return nil
+	}
+	doc := view.Document
 	definitions := semantic.StyleDefinitionsByName(doc.StyleFields)
 	styles := semantic.StyleStatesByName(doc.StyleFields)
 	for name, fields := range definitions {

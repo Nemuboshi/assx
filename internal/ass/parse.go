@@ -5,12 +5,43 @@ import (
 	"unicode"
 )
 
-// Parse projects the lossless concrete syntax tree onto the renderer-facing
-// document view. Line framing follows every physical newline form (LF, CRLF,
-// bare CR), so the view agrees with the renderers about the file's shape.
-// The concrete tree stays the authority for source spans and raw bytes.
-func Parse(text string) Document {
+// Parsed is one physical parse of a decoded source text. The concrete tree
+// keeps the raw bytes and spans; Document is the default renderer-facing view.
+// Consumers derive renderer views from Concrete, not from another parse.
+type Parsed struct {
+	Text     string
+	Concrete ConcreteDocument
+	Document Document
+}
+
+// ParseSource parses the physical structure once and projects the default
+// document view from it.
+func ParseSource(text string) Parsed {
 	tree := ParseConcreteDocument(text)
+	return Parsed{Text: text, Concrete: tree, Document: documentFromConcrete(tree)}
+}
+
+// Parse returns the default document view. It is a convenience for consumers
+// that need only that view. A consumer that also needs record layouts or
+// source spans must keep the Parsed value from ParseSource.
+func Parse(text string) Document {
+	return ParseSource(text).Document
+}
+
+// ParsedOf returns a Parsed for a document that a caller built without a
+// concrete tree. It parses the source text again. Prefer ParseSource on hot
+// paths.
+func ParsedOf(doc Document) Parsed {
+	return Parsed{Text: doc.Text, Concrete: ParseConcreteDocument(doc.Text), Document: doc}
+}
+
+// documentFromConcrete projects the lossless concrete syntax tree onto the
+// renderer-facing document view. Line framing follows every physical newline
+// form (LF, CRLF, bare CR), so the view agrees with the renderers about the
+// file's shape. The concrete tree stays the authority for source spans and raw
+// bytes.
+func documentFromConcrete(tree ConcreteDocument) Document {
+	text := tree.Source
 	doc := Document{Text: text, Headers: map[string]HeaderField{}, Newline: lineTerminator(text)}
 	section := ""
 	var styleFormat, eventFormat []string

@@ -16,10 +16,11 @@ import (
 type CompatibilityStatus string
 
 const (
-	CompatibilityEquivalent CompatibilityStatus = "equivalent"
-	CompatibilityDivergent  CompatibilityStatus = "divergent"
-	CompatibilityIgnored    CompatibilityStatus = "ignored-or-unsupported"
-	CompatibilityUnresolved CompatibilityStatus = "unresolved"
+	CompatibilityEquivalent    CompatibilityStatus = "equivalent"
+	CompatibilityDivergent     CompatibilityStatus = "divergent"
+	CompatibilityNotComparable CompatibilityStatus = "not-comparable"
+	CompatibilityIgnored       CompatibilityStatus = "ignored-or-unsupported"
+	CompatibilityUnresolved    CompatibilityStatus = "unresolved"
 )
 
 // Interpretation retains a detached observation from one independent run.

@@ -210,7 +210,7 @@ func BenchmarkParseAndAnalyzeDocumentFixtures(b *testing.B) {
 // construction. Compare against BenchmarkAnalyzeDocumentFixtures.
 func BenchmarkSessionDiscovery(b *testing.B) {
 	for _, test := range perftest.Cases(b) {
-		doc := ass.Parse(test.Text)
+		doc := ass.ParseSource(test.Text)
 		reference, err := Discover(context.Background(), doc, DefaultAnalysisTargets(), nil)
 		if err != nil {
 			b.Fatal(err)
@@ -228,7 +228,7 @@ func BenchmarkSessionDiscovery(b *testing.B) {
 	}
 	for _, count := range perftest.ScalingCounts {
 		text := benchmarkLateProofFailure(count)
-		doc := ass.Parse(text)
+		doc := ass.ParseSource(text)
 		reference, err := Discover(context.Background(), doc, DefaultAnalysisTargets(), nil)
 		if err != nil {
 			b.Fatal(err)
@@ -266,7 +266,7 @@ func BenchmarkSessionProveFixes(b *testing.B) {
 
 func proveFixesStage(b *testing.B, name, text string) {
 	b.Helper()
-	session, err := Discover(context.Background(), ass.Parse(text), DefaultAnalysisTargets(), nil)
+	session, err := Discover(context.Background(), ass.ParseSource(text), DefaultAnalysisTargets(), nil)
 	if err != nil {
 		b.Fatal(err)
 	}

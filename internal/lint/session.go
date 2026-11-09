@@ -16,39 +16,34 @@ import (
 // one source version, its concrete document, each target profile's record
 // layouts, and each profile's projected document view. Pass it to the context
 // analysis paths so validation and compatibility read the same bytes; a nil
-// value keeps the legacy single-use behavior.
+// value keeps the single-use behavior.
 type DocumentAnalysis struct {
-	text         string
-	concrete     *ass.ConcreteDocument
+	source       ass.Parsed
 	layouts      map[renderer.Profile][]renderer.RecordLayout
-	views        map[renderer.Profile]ass.Document
+	views        map[renderer.Profile]renderer.View
 	preparations *semantic.DialoguePreparations
 }
 
-// PrepareDocument parses the concrete document once and resolves layouts and
-// views for each exact profile. The projection core returns the document
-// unchanged for a profile that does not project, so those entries cost no
-// extra parse. Dialogue operations are cached per profile and source text.
+// PrepareDocument resolves layouts and views for each exact profile from one
+// source parse. Dialogue operations are cached per profile and source text.
 // A canceled context returns no partial preparation.
-func PrepareDocument(ctx context.Context, doc ass.Document, profiles []renderer.Profile) (*DocumentAnalysis, error) {
+func PrepareDocument(ctx context.Context, source ass.Parsed, profiles []renderer.Profile) (*DocumentAnalysis, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
 	analysis := &DocumentAnalysis{
-		text:         doc.Text,
+		source:       source,
 		layouts:      make(map[renderer.Profile][]renderer.RecordLayout, len(profiles)),
-		views:        make(map[renderer.Profile]ass.Document, len(profiles)),
+		views:        make(map[renderer.Profile]renderer.View, len(profiles)),
 		preparations: semantic.NewDialoguePreparations(),
 	}
-	tree := ass.ParseConcreteDocument(doc.Text)
-	analysis.concrete = &tree
 	for _, profile := range profiles {
 		if err := ctx.Err(); err != nil {
 			return nil, err
 		}
-		layouts := profile.ResolveDocumentLayouts(tree)
+		layouts := profile.ResolveDocumentLayouts(source.Concrete)
 		analysis.layouts[profile] = layouts
-		view, err := profile.DocumentViewFromConcrete(ctx, doc, tree, layouts)
+		view, err := profile.ViewFromConcrete(ctx, source, layouts)
 		if err != nil {
 			return nil, err
 		}
@@ -57,24 +52,24 @@ func PrepareDocument(ctx context.Context, doc ass.Document, profiles []renderer.
 	return analysis, nil
 }
 
-// textMatches reports whether the analysis was prepared for this exact source.
-func (a *DocumentAnalysis) textMatches(doc ass.Document) bool {
-	return a != nil && a.text == doc.Text
+// sourceMatches reports whether the analysis was prepared for this exact source.
+func (a *DocumentAnalysis) sourceMatches(source ass.Parsed) bool {
+	return a != nil && a.source.Text == source.Text
 }
 
-func (a *DocumentAnalysis) viewFor(doc ass.Document, profile renderer.Profile) (ass.Document, bool) {
-	if !a.textMatches(doc) {
-		return ass.Document{}, false
+func (a *DocumentAnalysis) viewFor(source ass.Parsed, profile renderer.Profile) (renderer.View, bool) {
+	if !a.sourceMatches(source) {
+		return renderer.View{}, false
 	}
 	view, ok := a.views[profile]
 	return view, ok
 }
 
-func (a *DocumentAnalysis) concreteDocument(doc ass.Document) (*ass.ConcreteDocument, bool) {
-	if !a.textMatches(doc) {
+func (a *DocumentAnalysis) concreteDocument(source ass.Parsed) (*ass.ConcreteDocument, bool) {
+	if !a.sourceMatches(source) {
 		return nil, false
 	}
-	return a.concrete, a.concrete != nil
+	return &a.source.Concrete, true
 }
 
 // compatibilityMode requests only the differences lint can emit, and shares
@@ -108,7 +103,7 @@ type PendingFinding struct {
 // feed every later proof build for this exact source.
 type Session struct {
 	id          uint64
-	doc         ass.Document
+	source      ass.Parsed
 	targets     AnalysisTargets
 	policy      RulePolicy
 	findings    []Diagnostic
@@ -133,20 +128,20 @@ func newSessionID() uint64 {
 // them. It rejects an invalid policy and honors cancellation. It prepares the
 // document once for the selected targets, so validation and compatibility
 // share layouts, views, and resolved dialogue operations.
-func Discover(ctx context.Context, doc ass.Document, targets AnalysisTargets, policy RulePolicy) (*Session, error) {
+func Discover(ctx context.Context, source ass.Parsed, targets AnalysisTargets, policy RulePolicy) (*Session, error) {
 	if err := policy.validate(); err != nil {
 		return nil, err
 	}
-	shared, err := PrepareDocument(ctx, doc, targets.Profiles())
+	shared, err := PrepareDocument(ctx, source, targets.Profiles())
 	if err != nil {
 		return nil, err
 	}
-	findings, err := analyzeDocumentForTargetsUnprovedContext(ctx, doc, targets, policy, shared)
+	findings, err := analyzeDocumentForTargetsUnprovedContext(ctx, source, targets, policy, shared)
 	if err != nil {
 		return nil, err
 	}
-	session := &Session{id: newSessionID(), doc: doc, targets: targets, policy: policy}
-	session.proof = newSessionProofBatch(doc, targets.Profiles(), shared.views)
+	session := &Session{id: newSessionID(), source: source, targets: targets, policy: policy}
+	session.proof = newSessionProofBatch(source, targets.Profiles(), shared.views)
 	for index, diagnostic := range findings {
 		if diagnostic.FixSafety != SafeFix || len(diagnostic.Edits) == 0 {
 			// Proof strips a SafeFix label without edits, as today.
@@ -206,7 +201,7 @@ func (s *Session) ProveFixes(ctx context.Context, handles []CandidateID) ([]Diag
 	for i, ordinal := range ordinals {
 		batch[i] = cloneDiagnostic(s.candidates[ordinal])
 	}
-	return proveSafeFixesBatchContext(ctx, s.doc, batch, s.targets.Profiles(), s.proof)
+	return proveSafeFixesBatchContext(ctx, s.source.Document, batch, s.targets.Profiles(), s.proof)
 }
 
 func (s *Session) resolve(handles []CandidateID) ([]int, error) {
@@ -236,7 +231,7 @@ func (s *Session) ApplyFixes(ctx context.Context, diagnostics []Diagnostic, incl
 	if err := s.authorize(diagnostics); err != nil {
 		return "", 0, err
 	}
-	return applyFixes(s.doc.Text, diagnostics, includeUnsafe, s.targets, s.policy)
+	return applyFixes(s.source.Text, diagnostics, includeUnsafe, s.targets, s.policy)
 }
 
 type candidateKey struct {

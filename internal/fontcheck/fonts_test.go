@@ -17,7 +17,7 @@ func TestAnalyzeFontsReportsMissingFamilyAndGlyph(t *testing.T) {
 		t.Fatal(err)
 	}
 	text := strings.ReplaceAll(string(fixture), "MISSING_GLYPH", string(rune(0x10ffff)))
-	doc := ass.Parse(text)
+	doc := ass.ParseSource(text)
 
 	fontDir := filepath.Join(t.TempDir(), "nested", "fonts")
 	if err := os.MkdirAll(fontDir, 0o700); err != nil {
@@ -68,7 +68,7 @@ func TestAnalyzeFontsUsesRendererStyleLookup(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	doc := ass.Parse(`[V4+ Styles]
+	doc := ass.ParseSource(`[V4+ Styles]
 Format: Name, Fontname, Fontsize, Bold, Italic
 Style: Main,Go,20,0,0
 Style: main,Definitely Missing,20,0,0

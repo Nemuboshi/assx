@@ -133,9 +133,9 @@ func TestComparedKaraokeAddsObservation(t *testing.T) {
 	t.Fatal("karaoke finding missing")
 }
 
-// A custom event Format moves the VSFilter Text span away from the libass
-// span. The compared fold must keep each profile's own text; one program must
-// not serve both texts.
+// A custom event Format moves the libass Text span away from the VSFilter
+// span. The two libass and VSFilter streams are not comparable, while the
+// primary and VSFilter streams share their Text bytes.
 func TestComparedKaraokeSplitsProjectedTexts(t *testing.T) {
 	const source = "[Script Info]\nScriptType: v4.00+\n" +
 		"[Events]\n" +
@@ -145,17 +145,36 @@ func TestComparedKaraokeSplitsProjectedTexts(t *testing.T) {
 	libass, vsfilter, mod := scopedProfiles(t)
 	targets := AnalysisTargets{Primary: mod, Compatibility: []renderer.Profile{libass, vsfilter}}
 	findings := analyzeDocumentForTargetsUnproved(doc, targets, nil)
+	vsfilterObserved, libassObserved, notComparable := false, false, false
 	for _, finding := range findings {
+		if finding.Condition == ConditionLayout {
+			for _, observation := range finding.Renderers {
+				if observation.Renderer == libass.Kind().String() && observation.Status == StatusNotComparable {
+					notComparable = true
+				}
+			}
+		}
 		if finding.Condition != IssueKaraoke {
 			continue
 		}
 		for _, observation := range finding.Renderers {
 			if observation.Renderer == vsfilter.Kind().String() && observation.Role == RoleCompared && observation.Status == StatusRejected {
-				return
+				vsfilterObserved = true
+			}
+			if observation.Renderer == libass.Kind().String() {
+				libassObserved = true
 			}
 		}
 	}
-	t.Fatalf("compared karaoke finding lost the VSFilter observation: %#v", findings)
+	if !vsfilterObserved {
+		t.Fatalf("compared karaoke finding lost the VSFilter observation: %#v", findings)
+	}
+	if libassObserved {
+		t.Fatalf("compared libass tags on a different Text span: %#v", findings)
+	}
+	if !notComparable {
+		t.Fatalf("different Text spans were not marked not comparable: %#v", findings)
+	}
 }
 
 func TestSameResolution(t *testing.T) {
@@ -180,5 +199,38 @@ func TestSameResolution(t *testing.T) {
 		if sameResolution(base, changed) {
 			t.Fatalf("different resolution reported equal: %#v", changed)
 		}
+	}
+}
+
+// Under the default targets libass is primary and xy-VSFilter is compared.
+// A custom Format moves their Text spans apart, so no compared tag
+// observation is valid for that record.
+func TestDefaultTargetsDoNotCompareDifferentText(t *testing.T) {
+	const source = "[Script Info]\nScriptType: v4.00+\n" +
+		"[Events]\n" +
+		"Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Text, Effect\n" +
+		"Dialogue: 0,0:00:00.00,0:00:02.00,Default,,0,0,0,{\\k20}Hi,{\\k10}X\n"
+	doc := ass.Parse(source)
+	findings := analyzeDocumentForTargetsUnproved(doc, DefaultAnalysisTargets(), nil)
+	notComparable := false
+	for _, finding := range findings {
+		if finding.Condition == ConditionLayout {
+			for _, observation := range finding.Renderers {
+				if observation.Role == RoleCompared && observation.Status == StatusNotComparable {
+					notComparable = true
+				}
+			}
+		}
+		if finding.Condition != IssueKaraoke {
+			continue
+		}
+		for _, observation := range finding.Renderers {
+			if observation.Role == RoleCompared {
+				t.Fatalf("compared karaoke observation on different Text spans: %#v", finding)
+			}
+		}
+	}
+	if !notComparable {
+		t.Fatalf("missing not-comparable layout observation: %#v", findings)
 	}
 }

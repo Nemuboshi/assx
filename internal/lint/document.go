@@ -60,32 +60,41 @@ func AnalyzeDocumentForTargets(doc ass.Document, targets AnalysisTargets) []Diag
 }
 
 func analyzeDocumentForTargetsUnproved(doc ass.Document, targets AnalysisTargets, policy RulePolicy) []Diagnostic {
-	findings, _ := analyzeDocumentForTargetsUnprovedContext(context.Background(), doc, targets, policy, nil)
+	findings, _ := analyzeDocumentForTargetsUnprovedSource(context.Background(), ass.ParsedOf(doc), targets, policy, nil)
 	return findings
 }
 
 // analyzeDocumentForTargetsUnprovedContext runs discovery with optional
-// request preparation. A shared analysis supplies the concrete document, the
-// projected views, and the dialogue operations, so each profile resolves a
-// given expression once per request instead of once per consumer.
-func analyzeDocumentForTargetsUnprovedContext(ctx context.Context, doc ass.Document, targets AnalysisTargets, policy RulePolicy, shared *DocumentAnalysis) ([]Diagnostic, error) {
+// request preparation. A shared analysis supplies the projected views and the
+// dialogue operations, so each profile resolves a given expression once per
+// request instead of once per consumer.
+func analyzeDocumentForTargetsUnprovedContext(ctx context.Context, source ass.Parsed, targets AnalysisTargets, policy RulePolicy, shared *DocumentAnalysis) ([]Diagnostic, error) {
+	return analyzeDocumentForTargetsUnprovedSource(ctx, source, targets, policy, shared)
+}
+
+func analyzeDocumentForTargetsUnprovedSource(ctx context.Context, source ass.Parsed, targets AnalysisTargets, policy RulePolicy, shared *DocumentAnalysis) ([]Diagnostic, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	findings, err := analyzeDocumentForProfileContext(ctx, doc, targets.Primary, policy, shared)
+	findings, err := analyzeDocumentForProfileContext(ctx, source, targets.Primary, policy, shared)
 	if err != nil {
 		return nil, err
 	}
 	stampPass(findings, targets.Primary, RolePrimary)
-	findings = applyResolutions(ctx, doc, targets, shared, findings)
-	for _, dialogue := range doc.Dialogues {
+	findings = applyResolutions(ctx, source, targets, shared, findings)
+	for _, dialogue := range source.Document.Dialogues {
 		if err := ctx.Err(); err != nil {
 			return nil, err
 		}
 		findings = append(findings, portabilityDiagnostics(dialogue, targets)...)
 	}
-	tree, _ := shared.concreteDocument(doc)
-	findings = append(findings, analyzeDocumentCompatibility(doc, tree, targets.Profiles(), shared.compatibilityMode())...)
+	tree := &source.Concrete
+	if shared != nil {
+		if sharedTree, ok := shared.concreteDocument(source); ok {
+			tree = sharedTree
+		}
+	}
+	findings = append(findings, analyzeDocumentCompatibility(source.Document, tree, targets.Profiles(), shared.compatibilityMode())...)
 	return policy.apply(assemble(findings, targets.Primary)), nil
 }
 

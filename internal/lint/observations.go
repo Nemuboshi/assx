@@ -83,19 +83,29 @@ func lintResolved(tag ass.Tag, result renderer.Result, profile renderer.Profile,
 	return analyzer.diagnostics
 }
 
+// resolvedView returns the prepared view for one profile, or builds it when
+// the caller has no shared preparation.
+func resolvedView(ctx context.Context, source ass.Parsed, profile renderer.Profile, shared *DocumentAnalysis) (renderer.View, bool) {
+	if shared != nil {
+		if view, ok := shared.viewFor(source, profile); ok {
+			return view, true
+		}
+	}
+	view, err := profile.View(ctx, source)
+	return view, err == nil
+}
+
 // primaryResolutions records how the primary renderer decoded every
 // expression. Compared checks run only where the compared decode differs.
-func primaryResolutions(ctx context.Context, doc ass.Document, targets AnalysisTargets, shared *DocumentAnalysis) map[resolutionKey]renderer.Result {
+func primaryResolutions(ctx context.Context, source ass.Parsed, targets AnalysisTargets, shared *DocumentAnalysis) (map[resolutionKey]renderer.Result, renderer.View) {
 	results := make(map[resolutionKey]renderer.Result)
-	view := targets.Primary.DocumentView(doc)
-	if shared != nil {
-		if preparedView, ok := shared.viewFor(doc, targets.Primary); ok {
-			view = preparedView
-		}
+	view, ok := resolvedView(ctx, source, targets.Primary, shared)
+	if !ok {
+		return results, view
 	}
 	for _, dialogue := range view.Dialogues {
 		if ctx.Err() != nil {
-			return results
+			return results, view
 		}
 		var prepared *semantic.PreparedDialogue
 		if shared != nil {
@@ -113,13 +123,13 @@ func primaryResolutions(ctx context.Context, doc ass.Document, targets AnalysisT
 			return true
 		})
 	}
-	return results
+	return results, view
 }
 
 // applyResolutions fills compared observations. A compared expression whose
 // decode equals the primary's copies the primary verdict; a different decode
 // runs the rule cascade once and can create a finding.
-func applyResolutions(ctx context.Context, doc ass.Document, targets AnalysisTargets, shared *DocumentAnalysis, findings []Diagnostic) []Diagnostic {
+func applyResolutions(ctx context.Context, source ass.Parsed, targets AnalysisTargets, shared *DocumentAnalysis, findings []Diagnostic) []Diagnostic {
 	bySpan := make(map[resolutionKey][]int, len(findings))
 	for i := range findings {
 		if span := findings[i].SourceSpan; span != nil {
@@ -127,7 +137,11 @@ func applyResolutions(ctx context.Context, doc ass.Document, targets AnalysisTar
 			bySpan[key] = append(bySpan[key], i)
 		}
 	}
-	primary := primaryResolutions(ctx, doc, targets, shared)
+	primary, primaryView := primaryResolutions(ctx, source, targets, shared)
+	primaryText := make(map[int]string, len(primaryView.Dialogues))
+	for _, dialogue := range primaryView.Dialogues {
+		primaryText[dialogue.Line] = dialogue.Text
+	}
 	created := make(map[resolutionKey]map[string]int)
 	var added []Diagnostic
 	attach := func(d Diagnostic, observation Observation) {
@@ -161,16 +175,19 @@ func applyResolutions(ctx context.Context, doc ass.Document, targets AnalysisTar
 		if profile == targets.Primary {
 			continue
 		}
-		view := profile.DocumentView(doc)
-		if shared != nil {
-			if preparedView, ok := shared.viewFor(doc, profile); ok {
-				view = preparedView
-			}
+		view, ok := resolvedView(ctx, source, profile, shared)
+		if !ok {
+			return findings
 		}
 		styles := semantic.StyleStatesByName(view.StyleFields)
 		for _, dialogue := range view.Dialogues {
 			if err := ctx.Err(); err != nil {
 				return findings
+			}
+			// Different Text spans have no shared tag stream. The layout
+			// finding reports that condition instead of a tag comparison.
+			if text, ok := primaryText[dialogue.Line]; !ok || text != dialogue.Text {
+				continue
 			}
 			var prepared *semantic.PreparedDialogue
 			if shared != nil {

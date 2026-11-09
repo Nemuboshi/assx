@@ -26,7 +26,7 @@ func AnalyzeDocumentForRenderer(doc ass.Document, profile renderer.Profile) []Di
 }
 
 func analyzeDocumentForProfile(doc ass.Document, profile renderer.Profile, policy RulePolicy) []Diagnostic {
-	findings, _ := analyzeDocumentForProfileContext(context.Background(), doc, profile, policy, nil)
+	findings, _ := analyzeDocumentForProfileContext(context.Background(), ass.ParsedOf(doc), profile, policy, nil)
 	return findings
 }
 
@@ -35,15 +35,23 @@ func analyzeDocumentForProfile(doc ass.Document, profile renderer.Profile, polic
 // A shared analysis supplies one projected view per profile and reuses
 // resolved dialogue operations across validation, compatibility, and the
 // redundant-Style collector, so each profile resolves an expression once.
-func analyzeDocumentForProfileContext(ctx context.Context, doc ass.Document, profile renderer.Profile, policy RulePolicy, shared *DocumentAnalysis) ([]Diagnostic, error) {
+func analyzeDocumentForProfileContext(ctx context.Context, source ass.Parsed, profile renderer.Profile, policy RulePolicy, shared *DocumentAnalysis) ([]Diagnostic, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	if view, ok := shared.viewFor(doc, profile); ok {
-		doc = view
-	} else {
-		doc = profile.DocumentView(doc)
+	var view renderer.View
+	var ok bool
+	if shared != nil {
+		view, ok = shared.viewFor(source, profile)
 	}
+	if !ok {
+		var err error
+		view, err = profile.View(ctx, source)
+		if err != nil {
+			return nil, err
+		}
+	}
+	doc := view.Document
 	diagnostics := AnalyzeHeaders(doc)
 	diagnostics = append(diagnostics, AnalyzeKeywords(doc)...)
 	diagnostics = append(diagnostics, analyzeStyles(doc)...)

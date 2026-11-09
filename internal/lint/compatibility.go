@@ -65,7 +65,7 @@ func compatibilityDiagnostics(findings []semantic.CompatibilityFinding, location
 			continue
 		}
 		condition := behaviorCondition(finding.Dimension)
-		if finding.Status != semantic.CompatibilityDivergent {
+		if finding.Status != semantic.CompatibilityDivergent && finding.Status != semantic.CompatibilityNotComparable {
 			condition = IssueRendererUnresolved
 		}
 		k := key{finding.Source, condition, finding.Detail, finding.Status}

@@ -69,7 +69,7 @@ func runFonts(args []string, stdout, stderr io.Writer) int {
 			_, _ = fmt.Fprintln(stderr, "Input has tentative ASS/SSA structure; font analysis may be incomplete.")
 		}
 	}
-	doc := ass.Parse(source.Text)
+	parsed := ass.ParseSource(source.Text)
 	catalog, err := fontcheck.NewCatalog(fontcheck.Source{Directory: *directory})
 	if err != nil {
 		return fail(err)
@@ -77,7 +77,7 @@ func runFonts(args []string, stdout, stderr io.Writer) int {
 	if len(catalog.Issues) > 0 {
 		return fail(fmt.Errorf("font catalog is incomplete: %s: %s (%d unreadable entries)", catalog.Issues[0].Path, catalog.Issues[0].Detail, len(catalog.Issues)))
 	}
-	usages := fontcheck.ExtractUsages(doc, profile)
+	usages := fontcheck.ExtractUsages(parsed, profile)
 	findings, err := fontcheck.AnalyzeUsages(usages, catalog)
 	if err != nil {
 		return fail(err)

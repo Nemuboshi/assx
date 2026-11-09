@@ -1,6 +1,7 @@
 package lint
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"slices"
@@ -58,7 +59,7 @@ type proofBatch struct {
 	beforeDoc ass.Document
 	profiles  []renderer.Profile
 	rawStyles map[string]semantic.StyleState
-	seeded    map[renderer.Profile]ass.Document
+	seeded    map[renderer.Profile]renderer.View
 	targets   []FixTarget
 	preps     map[renderer.Profile]*proofProfilePrep
 	// sourceHash is the digest of the batch's own source. No edit can change
@@ -75,15 +76,15 @@ func newProofBatch(source string, beforeDoc ass.Document, profiles []renderer.Pr
 
 // newSessionProofBatch builds the batch a Discover call attaches to its
 // session, seeded with the views discovery already prepared for the source.
-func newSessionProofBatch(doc ass.Document, profiles []renderer.Profile, views map[renderer.Profile]ass.Document) *proofBatch {
-	batch := newProofBatch(doc.Text, doc, profiles)
+func newSessionProofBatch(source ass.Parsed, profiles []renderer.Profile, views map[renderer.Profile]renderer.View) *proofBatch {
+	batch := newProofBatch(source.Text, source.Document, profiles)
 	batch.seedViews(views)
 	return batch
 }
 
 // seedViews adopts projected documents prepared earlier for the exact same
 // source, so a session's discovery views feed its proofs without re-parsing.
-func (b *proofBatch) seedViews(views map[renderer.Profile]ass.Document) {
+func (b *proofBatch) seedViews(views map[renderer.Profile]renderer.View) {
 	if b != nil && len(views) != 0 {
 		b.seeded = views
 	}
@@ -103,7 +104,7 @@ func (b *proofBatch) usable(source string, beforeDoc ass.Document, profiles []re
 
 // proofProfilePrep is one profile's before-side work items for the batch.
 type proofProfilePrep struct {
-	view   ass.Document
+	view   renderer.View
 	styles map[string]semantic.StyleState
 	byLine map[int]ass.Dialogue
 	before map[int]*proofBeforeDialogue
@@ -159,9 +160,12 @@ func (b *proofBatch) build(edits []FixEditProof, validEdits map[FixEditProof]str
 		afterDoc = proofDocument(changed, edits)
 		if len(b.beforeDoc.Dialogues) != len(afterDoc.Dialogues) || !reflect.DeepEqual(b.beforeDoc.EventFormat, afterDoc.EventFormat) {
 			for _, profile := range b.profiles {
-				view := profile.DocumentView(afterDoc)
+				view, err := profile.ViewOf(context.Background(), afterDoc)
+				if err != nil {
+					return nil, err
+				}
 				if len(view.Dialogues) == len(b.beforeDoc.Dialogues) && reflect.DeepEqual(view.EventFormat, b.beforeDoc.EventFormat) {
-					afterDoc = view
+					afterDoc = view.Document
 					break
 				}
 			}
@@ -217,14 +221,17 @@ func (b *proofBatch) build(edits []FixEditProof, validEdits map[FixEditProof]str
 	affected := affectedDialogues(b.beforeDoc, edits, byDialogue)
 	for _, profile := range b.profiles {
 		prep := b.prep(profile)
-		profileAfter := profile.DocumentView(afterDoc)
+		profileAfter, err := profile.ViewOf(context.Background(), afterDoc)
+		if err != nil {
+			return nil, err
+		}
 		if len(b.beforeDoc.Lines) == 0 {
-			profileAfter = afterDoc
+			profileAfter.Document = afterDoc
 		}
 		if !reflect.DeepEqual(prep.styles, semantic.StyleStatesByName(profileAfter.StyleFields)) {
 			return nil, fmt.Errorf("%s edit changes interpreted Style state", profile.Kind())
 		}
-		profileStyleEvidence, err := verifyStyleIntegerEdits(prep.view, profileAfter, edits)
+		profileStyleEvidence, err := verifyStyleIntegerEdits(prep.view.Document, profileAfter.Document, edits)
 		if err != nil {
 			return nil, fmt.Errorf("%s: %w", profile.Kind(), err)
 		}
@@ -297,16 +304,20 @@ func (b *proofBatch) prep(profile renderer.Profile) *proofProfilePrep {
 		proofBatchReuse.Add(1)
 		return prep
 	}
-	var view ass.Document
+	var view renderer.View
 	if seeded, ok := b.seeded[profile]; ok && seeded.Text == b.beforeDoc.Text && len(seeded.Dialogues) == len(b.beforeDoc.Dialogues) {
 		view = seeded
 		proofBatchReuse.Add(1)
 	} else {
 		proofBatchViews.Add(1)
-		view = profile.DocumentView(b.beforeDoc)
-		if len(b.beforeDoc.Lines) == 0 {
-			view = b.beforeDoc
+		projected, err := profile.ViewOf(context.Background(), b.beforeDoc)
+		if err != nil {
+			projected = renderer.View{Document: b.beforeDoc, Profile: profile}
 		}
+		if len(b.beforeDoc.Lines) == 0 {
+			projected.Document = b.beforeDoc
+		}
+		view = projected
 	}
 	prep := &proofProfilePrep{
 		view:   view,

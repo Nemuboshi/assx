@@ -1,6 +1,7 @@
 package lint
 
 import (
+	"context"
 	"sort"
 
 	"assx/internal/ass"
@@ -23,7 +24,11 @@ func AnalyzeRedundantStyleOverridesForRenderer(doc ass.Document, profile rendere
 }
 
 func analyzeRedundantStyleOverrides(doc ass.Document, profile renderer.Profile) []Diagnostic {
-	doc = profile.DocumentView(doc)
+	view, err := profile.ViewOf(context.Background(), doc)
+	if err != nil {
+		return nil
+	}
+	doc = view.Document
 	styles := semantic.StyleStatesByName(doc.StyleFields)
 	var diagnostics []Diagnostic
 	for _, dialogue := range doc.Dialogues {

@@ -258,6 +258,8 @@ func compatibilityObservations(finding semantic.CompatibilityFinding) []Observat
 		documentLevelStatus = StatusUnknown
 	case semantic.CompatibilityIgnored:
 		documentLevelStatus = StatusIgnored
+	case semantic.CompatibilityNotComparable:
+		documentLevelStatus = StatusNotComparable
 	}
 	statusFor := func(interpretation *semantic.Interpretation) Status {
 		if interpretation.Resolution.Name == "" {

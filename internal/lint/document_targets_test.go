@@ -1,12 +1,22 @@
 package lint
 
 import (
+	"context"
 	"strings"
 	"testing"
 
 	"assx/internal/ass"
 	"assx/internal/ass/renderer"
 )
+
+func viewOf(t *testing.T, profile renderer.Profile, doc ass.Document) renderer.View {
+	t.Helper()
+	view, err := profile.ViewOf(context.Background(), doc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return view
+}
 
 func TestPrimaryVSFilterUsesFixedDocumentSlots(t *testing.T) {
 	xy, _ := renderer.Standard(renderer.XYVSFilter)
@@ -27,7 +37,7 @@ func TestPrimaryVSFilterUsesFixedDocumentSlots(t *testing.T) {
 	if len(missingText.Dialogues) != 0 {
 		t.Fatal("libass view unexpectedly retained missing Text")
 	}
-	if len(xy.DocumentView(missingText).Dialogues) != 1 {
+	if len(viewOf(t, xy, missingText).Dialogues) != 1 {
 		t.Fatal("fixed-position primary lost the Text field")
 	}
 }
@@ -58,7 +68,7 @@ func TestSafeFixProofUsesEachTargetsStyleLayout(t *testing.T) {
 	}
 
 	// Recreate a primary-projected proof to verify application rechecks the source layouts.
-	projected := proveSafeFixes(xy.DocumentView(doc), analyzeDocumentForTargetsUnproved(doc, targets, nil), targets.Profiles())
+	projected := proveSafeFixes(viewOf(t, xy, doc).Document, analyzeDocumentForTargetsUnproved(doc, targets, nil), targets.Profiles())
 	if safe, _, _ := CountFixes(projected); safe == 0 {
 		t.Fatal("test input did not reproduce a primary-view proof")
 	}
@@ -72,7 +82,7 @@ func TestUnknownDialectKeepsOriginalVSFilterView(t *testing.T) {
 	xy, _ := renderer.Standard(renderer.XYVSFilter)
 	source := "[Script Info]\nScriptType: v4.00\nPlayResX: 640\nPlayResY: 480\n[V4 Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, TertiaryColour, BackColour, Bold, Italic, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, AlphaLevel, Encoding\nStyle: Default,Arial,20,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,1,2,2,2,10,10,10,0,1\n[Events]\nFormat: Marked, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: Marked=0,0:00:00.00,0:00:01.00,Default,,0,0,0,,A\n"
 	doc := ass.Parse(source)
-	view := xy.DocumentView(doc)
+	view := viewOf(t, xy, doc).Document
 	if len(view.Dialogues) != 1 || len(view.StyleFields) != len(doc.StyleFields) {
 		t.Fatal("unsupported SSA records were projected as ASS v4+")
 	}

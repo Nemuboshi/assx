@@ -234,7 +234,12 @@ func run(args []string, stdout, stderr io.Writer) int {
 			return 2
 		}
 	default:
-		view := lintreport.Build(path, diagnostics, targets.Primary.DocumentView(doc))
+		primaryView, err := targets.Primary.ViewOf(ctx, doc)
+		if err != nil {
+			_, _ = fmt.Fprintln(stderr, err)
+			return 2
+		}
+		view := lintreport.Build(path, diagnostics, primaryView.Document)
 		view.Explain = *explain
 		view.Applied.Safe, view.Applied.Unsafe = appliedSafe, appliedUnsafe
 		if err := pretty.Render(stdout, view, doc.Text, colorAllowed(stdout), outputWidth(stdout)); err != nil {

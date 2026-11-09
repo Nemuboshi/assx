@@ -130,6 +130,11 @@ own record layout. Document observations retain absolute decoded-source spans;
 lint maps them to physical lines, including CR, LF, and CRLF. Records dropped
 by the historical parser remain visible to compatibility analysis.
 
+When two profiles read different bytes as Text for one record, that record is
+not comparable. The layout finding keeps the `not-comparable` status, and no
+per-tag comparison runs on that record. Each profile still evaluates its own
+Text span and Style inputs.
+
 This API verifies source partitioning, not full renderer document loading.
 Unsupported dialects, malformed framing, unresolved resets, drawing, karaoke,
 and time-dependent transforms remain explicitly unresolved where no sufficient

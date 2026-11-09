@@ -35,7 +35,7 @@ func BenchmarkFontAnalysisComparison(b *testing.B) {
 	if err != nil {
 		b.Fatal(err)
 	}
-	doc := ass.Parse(strings.ReplaceAll(string(data), "MISSING_GLYPH", string(rune(0x10ffff))))
+	doc := ass.ParseSource(strings.ReplaceAll(string(data), "MISSING_GLYPH", string(rune(0x10ffff))))
 	for b.Loop() {
 		if _, err := Analyze(doc, c, renderer.Profile{}); err != nil {
 			b.Fatal(err)
