@@ -311,6 +311,15 @@ func (m *evaluator) consumeTag(tag renderer.Tag) TagEvent {
 		m.blockProofs(&event, UncertaintyMalformed)
 		return event
 	}
+	if (tag.Name == "fade" || tag.Name == "fad") && len(tag.Args) == 0 {
+		// Zero arguments keep the previous fade in all three renderers.
+		event.Policy = tagSpec.Behavior
+		event.Slots = tagSpec.Slots
+		m.fillValues(&event.Before, tagSpec.Slots)
+		m.fillValues(&event.After, tagSpec.Slots)
+		event.Known = true
+		return event
+	}
 	if !known || tagSpec.VSFilterModOnly && len(tagSpec.Slots) == 0 {
 		m.markActiveLive()
 		m.invalidateAll()

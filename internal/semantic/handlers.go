@@ -146,6 +146,21 @@ func assignmentUncertainty(tag renderer.Tag, tagSpec spec.TagSpec) SemanticUncer
 }
 
 func (m *evaluator) assignmentValues(tag renderer.Tag, tagSpec spec.TagSpec, slots []string) ([]string, bool) {
+	// The ASS v4+ Style layout has no field for these slots. libass zeroes
+	// them on an empty tag, and xy-VSFilter/VSFilterMod restore their Style
+	// value, which is the renderer default zero. (libass 425-434/812-824/
+	// 531-546; xy 2315-2321/2336-2342/2455-2467; vsm 2915-2925/2939-2944/
+	// 3118-3128.)
+	if len(tag.Args) == 0 {
+		switch tag.Name {
+		case "blur", "be", "fax", "fay", "frx", "fry":
+			values := make([]string, len(slots))
+			for i := range values {
+				values[i] = "0"
+			}
+			return values, true
+		}
+	}
 	var values []string
 	var valuesKnown bool
 	if style, present := m.options.Styles[m.activeStyle]; present {

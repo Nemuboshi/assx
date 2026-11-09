@@ -104,11 +104,11 @@ func candidateScenarios(observation *Interpretation) []string {
 // compareScenarioOutcomes compares only domains with a verified semantic
 // distinction. Editorial labels such as zero/restored or both-forms/assign-int
 // can describe different mechanisms that produce the same invocation result.
-func compareScenarioOutcomes(name, scenario string, a, b renderer.BehaviorEvidence) CompatibilityStatus {
-	if !a.Verified || !b.Verified {
+func compareScenarioOutcomes(name, scenario string, a, b *Interpretation, av, bv renderer.BehaviorEvidence) CompatibilityStatus {
+	if !av.Verified || !bv.Verified {
 		return CompatibilityUnresolved
 	}
-	if a.Outcome == b.Outcome {
+	if av.Outcome == bv.Outcome {
 		return CompatibilityEquivalent
 	}
 	switch scenario {
@@ -139,7 +139,42 @@ func compareScenarioOutcomes(name, scenario string, a, b renderer.BehaviorEviden
 			return CompatibilityDivergent
 		}
 	}
+	// Differing mechanism labels can still describe the same result. Compare
+	// the modeled slot values before falling back to unresolved.
+	if status, ok := sameKnownOutcome(a.Event, b.Event); ok {
+		return status
+	}
 	return CompatibilityUnresolved
+}
+
+// sameKnownOutcome compares the slot values after a transition. Unknown and
+// non-aligned slots cannot prove equality or difference.
+func sameKnownOutcome(a, b TagEvent) (CompatibilityStatus, bool) {
+	if len(a.Slots) == 0 || len(a.Slots) != len(b.Slots) {
+		return CompatibilityUnresolved, false
+	}
+	known := false
+	for i, slot := range a.Slots {
+		j := slices.Index(b.Slots, slot)
+		if j < 0 || i >= len(a.After) || j >= len(b.After) {
+			return CompatibilityUnresolved, false
+		}
+		av, bv := a.After[i], b.After[j]
+		if !av.Known && !bv.Known {
+			continue
+		}
+		if !av.Known || !bv.Known {
+			return CompatibilityUnresolved, false
+		}
+		known = true
+		if av != bv {
+			return CompatibilityDivergent, true
+		}
+	}
+	if !known {
+		return CompatibilityUnresolved, false
+	}
+	return CompatibilityEquivalent, true
 }
 
 // Resolution status and scenario evidence deliberately remain independent. A

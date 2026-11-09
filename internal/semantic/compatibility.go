@@ -254,7 +254,7 @@ func compareInterpretations(span ass.ConcreteSpan, a, b *Interpretation, lintOnl
 		slices.Sort(scenarios)
 		for _, scenario := range slices.Compact(scenarios) {
 			av, bv := scenarioEvidence(a, scenario, as), scenarioEvidence(b, scenario, bs)
-			status := compareScenarioOutcomes(ar.Name, scenario, av, bv)
+			status := compareScenarioOutcomes(ar.Name, scenario, a, b, av, bv)
 			if scenario == "coord-round" && !slices.Equal(ar.Args, br.Args) {
 				status = CompatibilityUnresolved
 			}
@@ -274,6 +274,10 @@ func compareInterpretations(span ass.ConcreteSpan, a, b *Interpretation, lintOnl
 		switch {
 		case knownStateDifference(ae, be):
 			stateStatus = CompatibilityDivergent
+		case !ae.Applied && !be.Applied:
+			// Both actions leave the tracked state untouched, so this span
+			// introduces no state difference even when the value is unknown.
+			stateStatus = CompatibilityEquivalent
 		case sameTrackedState(ae, be, a.ActiveStyle, b.ActiveStyle):
 			stateStatus = CompatibilityEquivalent
 		}

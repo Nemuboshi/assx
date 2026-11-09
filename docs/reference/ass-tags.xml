@@ -1015,6 +1015,9 @@
         <p i="1" name="t_in" kind="ms" value="list" range="the \fad shape: a1/a3 = FF, a2 = 0 fixed"/>
         <p i="2" name="t_out" kind="ms" range="fade-out duration"/>
       </sig>
+      <sig n="0" form="bare" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:622-655 xy:src/subtitles/RTS.cpp:2396-2423 vsm:src/subtitles/RTS.cpp:3055-3075">
+        <p i="1" name="empty" kind="none" range="Empty bare suffix: renderer-defined reset, fallback, or zero value (pinned source citation)"/>
+      </sig>
     </params>
     <scen id="repeat" status="V" verified="libass xy vsm" base="latch-blocked" vsfilter="latch-blocked" vsfiltermod="latch-blocked"
           cite="libass:libass/ass_parse.c:650-656 xy:src/subtitles/RTS.cpp:2400,2411 vsm:src/subtitles/RTS.cpp:3057,3069">
@@ -1028,6 +1031,10 @@
     </scen>
     <scen id="style-reset" status="V" verified="libass xy" base="kept" vsfilter="kept" vsfiltermod="unchecked"
           cite="libass:libass/ass_render.c:1075-1111 xy:src/subtitles/RTS.cpp:2643-2647"/>
+    <scen id="empty-arg" status="V" verified="libass xy vsm" base="keep-previous" vsfilter="keep-previous" vsfiltermod="keep-previous"
+          cite="libass:libass/ass_parse.c:622-655 xy:src/subtitles/RTS.cpp:2396-2423 vsm:src/subtitles/RTS.cpp:3055-3075">
+      An empty \fade leaves the previous fade state unchanged.
+    </scen>
   </tag>
 
   <tag name="fad" status="V">
@@ -1042,6 +1049,9 @@
         <p i="3" name="a3" kind="alpha8" range="end alpha"/>
         <p i="4" name="t1" kind="ms" range="fade-in end"/> <p i="5" name="t2" kind="ms" range="solid-text start"/>
         <p i="6" name="t3" kind="ms" range="solid-text end"/> <p i="7" name="t4" kind="ms" range="fade-out end"/>
+      </sig>
+      <sig n="0" form="bare" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:622-655 xy:src/subtitles/RTS.cpp:2396-2423 vsm:src/subtitles/RTS.cpp:3055-3075">
+        <p i="1" name="empty" kind="none" range="Empty bare suffix: renderer-defined reset, fallback, or zero value (pinned source citation)"/>
       </sig>
     </params>
     <scen id="name-match" status="V" verified="libass xy vsm" base="matched" vsfilter="matched" vsfiltermod="matched"
@@ -1059,6 +1069,10 @@
           cite="libass:libass/ass_parse.c:650-656 xy:src/subtitles/RTS.cpp:2400,2411 vsm:src/subtitles/RTS.cpp:3057,3069">
       Same fade/fad handler and EF_FADE latch as \fade; a second \fad or a
       \fad after \fade is ignored.
+    </scen>
+    <scen id="empty-arg" status="V" verified="libass xy vsm" base="keep-previous" vsfilter="keep-previous" vsfiltermod="keep-previous"
+          cite="libass:libass/ass_parse.c:622-655 xy:src/subtitles/RTS.cpp:2396-2423 vsm:src/subtitles/RTS.cpp:3055-3075">
+      An empty \fad leaves the previous fade state unchanged.
     </scen>
   </tag>
 
@@ -1170,6 +1184,9 @@
         <p i="2" name="t2" kind="ms" range="window end"/>
         <p i="3" name="accel" kind="number" range="easing exponent, 1 = linear; unclamped"/>
         <p i="4" name="modifiers" kind="modifiers" range="libass rejects cnt&gt;3 (709-710); xy has no upper guard"/>
+      </sig>
+      <sig n="0" form="bare" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:670-714 xy:src/subtitles/RTS.cpp:2670-2699 vsm:src/subtitles/RTS.cpp:3613">
+        <p i="1" name="empty" kind="none" range="Empty bare suffix: renderer-defined reset, fallback, or zero value (pinned source citation)"/>
       </sig>
     </params>
     <scen id="empty-arg" status="V" verified="libass xy vsm" base="keep-previous" vsfilter="keep-previous" vsfiltermod="keep-previous"
