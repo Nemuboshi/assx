@@ -268,6 +268,7 @@ type scanProgress struct {
 	done     chan struct{}
 	finished chan struct{}
 	stopOnce sync.Once
+	ansi     bool
 }
 
 func startScanProgress(writer io.Writer, path string, enabled bool) *scanProgress {
@@ -275,6 +276,7 @@ func startScanProgress(writer io.Writer, path string, enabled bool) *scanProgres
 	if !enabled || !interactiveTerminal(writer) {
 		return progress
 	}
+	progress.ansi = ansiSupported(writer)
 	progress.done = make(chan struct{})
 	progress.finished = make(chan struct{})
 	go func() {
@@ -284,10 +286,13 @@ func startScanProgress(writer io.Writer, path string, enabled bool) *scanProgres
 		frames := []string{"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"}
 		frame := 0
 		draw := func() {
-			icon := colorText(colorAllowed(writer), "36", frames[frame])
+			icon := frames[frame]
+			if progress.ansi {
+				icon = colorText(true, "36", icon)
+			}
 			// Transient progress is best-effort; report output is checked separately.
-			// Keep the line one cell short of the window so it never wraps.
-			_, _ = fmt.Fprintf(writer, "\r\033[2K%s", scanStatus(icon, path, outputWidth(writer)))
+			width := outputWidth(writer)
+			_, _ = fmt.Fprint(writer, scanRedraw(scanStatus(icon, path, width), width, progress.ansi))
 			frame = (frame + 1) % len(frames)
 		}
 		draw()
@@ -311,6 +316,18 @@ func scanStatus(icon, path string, width int) string {
 	return line
 }
 
+// scanRedraw returns one progress frame. Without ANSI support it pads with
+// spaces so a plain carriage return overwrites the previous frame.
+func scanRedraw(status string, width int, ansiTerm bool) string {
+	if ansiTerm {
+		return "\r\033[2K" + status
+	}
+	if pad := width - 1 - ansi.StringWidth(status); pad > 0 {
+		status += strings.Repeat(" ", pad)
+	}
+	return "\r" + status
+}
+
 func (p *scanProgress) stop() {
 	if p.done == nil {
 		return
@@ -318,8 +335,18 @@ func (p *scanProgress) stop() {
 	p.stopOnce.Do(func() {
 		close(p.done)
 		<-p.finished
-		_, _ = fmt.Fprint(p.writer, "\r\033[2K")
+		if p.ansi {
+			_, _ = fmt.Fprint(p.writer, "\r\033[2K")
+		} else {
+			_, _ = fmt.Fprint(p.writer, scanRedraw("", outputWidth(p.writer), false), "\r")
+		}
 	})
+}
+
+// ansiSupported reports whether the writer accepts ANSI escape sequences.
+func ansiSupported(writer io.Writer) bool {
+	file, ok := terminalFile(writer)
+	return ok && enableVirtualTerminal(file)
 }
 
 func interactiveTerminal(writer io.Writer) bool {
@@ -327,7 +354,8 @@ func interactiveTerminal(writer io.Writer) bool {
 }
 
 func colorAllowed(writer io.Writer) bool {
-	return reportColorAllowed(isTerminal(writer), os.Getenv("TERM"), os.Getenv("NO_COLOR"))
+	return reportColorAllowed(isTerminal(writer), os.Getenv("TERM"), os.Getenv("NO_COLOR")) &&
+		ansiSupported(writer)
 }
 
 func reportColorAllowed(tty bool, term, noColor string) bool {

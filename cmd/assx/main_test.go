@@ -55,6 +55,19 @@ func TestScanStatusFitsWindow(t *testing.T) {
 	}
 }
 
+func TestScanRedrawFallsBackWithoutANSI(t *testing.T) {
+	plain := scanRedraw("Scanning x.ass", 20, false)
+	if strings.Contains(plain, "\x1b") {
+		t.Fatalf("plain redraw contains ANSI: %q", plain)
+	}
+	if got := ansi.StringWidth(strings.TrimPrefix(plain, "\r")); got != 19 {
+		t.Fatalf("plain redraw pads to %d cells, want 19", got)
+	}
+	if got := scanRedraw("x", 20, true); got != "\r\x1b[2Kx" {
+		t.Fatalf("ANSI redraw = %q", got)
+	}
+}
+
 func TestTerminalTextEscapesControls(t *testing.T) {
 	got := terminalText("bad\x1b[31m\x7f.ass")
 	if strings.Contains(got, "\x1b") || strings.ContainsRune(got, '\x7f') {
