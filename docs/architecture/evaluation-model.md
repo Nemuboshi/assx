@@ -328,9 +328,10 @@ Implemented.
 
 `DialoguePreparations` caches one neutral program per dialogue text. Every
 profile resolves its own operation map over that program.
-`EvaluatePreparedSet` folds the program once with one state per prepared
-dialogue. Every entry shares the program built from the same dialogue text; a
-projection lays out fields and never rewrites that text. The lint compared pass
+`EvaluatePreparedSet` groups the prepared dialogues by program and folds each
+group once with one state per prepared dialogue. A custom event Format can
+select a different Text span for each renderer, so entries from different text
+spans have different programs and never share one fold. The lint compared pass
 uses the set for karaoke and drawing on dialogues that use `\k`, `\K`, `\kf`,
 `\ko`, `\kt`, or `\p`.
 
@@ -359,6 +360,8 @@ Exit criteria:
 - `TestCompactCompareMatchesFullReference`: trace equivalence.
 - `TestRendererBaselineContracts`: contract drift through the review path.
 - `TestEvaluatePreparedSetSharesProgram`: one program, two states.
+- `TestEvaluatePreparedSetSplitsDifferentTexts`: a program per text, no mixed
+  fold.
 - `TestSameResolution`: structural equality gates the compared rule cascade.
 - `BenchmarkSessionDiscovery`: scaling gate.
 

@@ -153,17 +153,52 @@ func (d *DialoguePreparations) store(profile renderer.Profile, text string, prep
 	byText[text] = prepared
 }
 
-// EvaluatePreparedSet folds one neutral program once with one state per
-// prepared dialogue. Every entry must be prepared from the same dialogue text:
-// the program cache then returns one shared program, and projection never
-// rewrites that text.
+// EvaluatePreparedSet folds each neutral program once with one state for every
+// prepared dialogue that uses that program. A program holds the token offsets
+// of one dialogue text, and an operation map uses the offsets of the text it
+// was resolved from. Entries from different texts therefore have different
+// programs, and each program gets its own fold. Results stay parallel to the
+// input.
 func EvaluatePreparedSet(prepared []*PreparedDialogue, options []EvaluationOptions) []Evaluation {
-	if options[0].Observer.Text == nil && !prepared[0].tree.HasCandidates() {
-		return make([]Evaluation, len(prepared))
+	out := make([]Evaluation, len(prepared))
+	if len(prepared) == 0 {
+		return out
 	}
-	states := make([]evaluationState, len(prepared))
-	for i := range prepared {
-		states[i] = evaluationState{profile: prepared[i].profile, operations: prepared[i].operations, options: options[i]}
+	type programGroup struct {
+		program *program
+		indexes []int
 	}
-	return evaluateProgramSet(prepared[0].program, states)
+	groups := make([]programGroup, 0, 1)
+	groupAt := make(map[*program]int, len(prepared))
+	for i, entry := range prepared {
+		at, seen := groupAt[entry.program]
+		if !seen {
+			at = len(groups)
+			groupAt[entry.program] = at
+			groups = append(groups, programGroup{program: entry.program})
+		}
+		groups[at].indexes = append(groups[at].indexes, i)
+	}
+	for _, group := range groups {
+		first := group.indexes[0]
+		skip := !prepared[first].tree.HasCandidates()
+		for _, i := range group.indexes {
+			if options[i].Observer.Text != nil {
+				skip = false
+				break
+			}
+		}
+		if skip {
+			continue
+		}
+		states := make([]evaluationState, len(group.indexes))
+		for state, i := range group.indexes {
+			states[state] = evaluationState{profile: prepared[i].profile, operations: prepared[i].operations, options: options[i]}
+		}
+		results := evaluateProgramSet(group.program, states)
+		for state, i := range group.indexes {
+			out[i] = results[state]
+		}
+	}
+	return out
 }

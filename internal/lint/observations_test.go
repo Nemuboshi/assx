@@ -133,6 +133,31 @@ func TestComparedKaraokeAddsObservation(t *testing.T) {
 	t.Fatal("karaoke finding missing")
 }
 
+// A custom event Format moves the VSFilter Text span away from the libass
+// span. The compared fold must keep each profile's own text; one program must
+// not serve both texts.
+func TestComparedKaraokeSplitsProjectedTexts(t *testing.T) {
+	const source = "[Script Info]\nScriptType: v4.00+\n" +
+		"[Events]\n" +
+		"Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Text, Effect\n" +
+		"Dialogue: 0,0:00:00.00,0:00:00.10,Default,,0,0,0,{\\k100}Hi,{\\k5}A{\\k10}B\n"
+	doc := ass.Parse(source)
+	libass, vsfilter, mod := scopedProfiles(t)
+	targets := AnalysisTargets{Primary: mod, Compatibility: []renderer.Profile{libass, vsfilter}}
+	findings := analyzeDocumentForTargetsUnproved(doc, targets, nil)
+	for _, finding := range findings {
+		if finding.Condition != IssueKaraoke {
+			continue
+		}
+		for _, observation := range finding.Renderers {
+			if observation.Renderer == vsfilter.Kind().String() && observation.Role == RoleCompared && observation.Status == StatusRejected {
+				return
+			}
+		}
+	}
+	t.Fatalf("compared karaoke finding lost the VSFilter observation: %#v", findings)
+}
+
 func TestSameResolution(t *testing.T) {
 	base := renderer.Result{
 		Closed: true, Status: renderer.Matched, Signature: renderer.SignatureVerified, HasPolicy: true,

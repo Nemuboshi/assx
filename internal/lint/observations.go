@@ -292,9 +292,10 @@ type evaluationRequest struct {
 	prepared *semantic.PreparedDialogue
 }
 
-// comparedEvaluationSet folds one neutral program once for every compared
-// renderer, then converts each state into observations. A projection lays out
-// fields and never rewrites dialogue text, so every request shares one program.
+// comparedEvaluationSet folds one neutral program per projected dialogue text
+// for every compared renderer that shares it, then converts each state into
+// observations. A custom event Format can select a different text span for
+// each renderer, so requests from different texts never share one fold.
 func comparedEvaluationSet(requests []evaluationRequest) []Diagnostic {
 	prepared := make([]*semantic.PreparedDialogue, len(requests))
 	options := make([]semantic.EvaluationOptions, len(requests))
