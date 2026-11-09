@@ -15,13 +15,13 @@ func BenchmarkAnalyzeDocument(b *testing.B) {
 		b.Run(test.name, func(b *testing.B) {
 			b.ReportAllocs()
 			for i := 0; i < b.N; i++ {
-				_ = AnalyzeDocument(doc)
+				_ = analyzeDocumentTest(doc)
 			}
 		})
 	}
 }
 
-func BenchmarkParseAndAnalyzeDocument(b *testing.B) {
+func BenchmarkParseAndanalyzeDocumentTest(b *testing.B) {
 	for _, test := range []struct {
 		name  string
 		count int
@@ -30,7 +30,7 @@ func BenchmarkParseAndAnalyzeDocument(b *testing.B) {
 		b.Run(test.name, func(b *testing.B) {
 			b.ReportAllocs()
 			for i := 0; i < b.N; i++ {
-				_ = AnalyzeDocument(defaultDocument(text))
+				_ = analyzeDocumentTest(defaultDocument(text))
 			}
 		})
 	}

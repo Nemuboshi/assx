@@ -25,11 +25,11 @@ func AnalyzeRedundantStyleOverridesForRenderer(doc renderer.Document, profile re
 
 func analyzeRedundantStyleOverrides(doc renderer.Document, profile renderer.Profile) []Diagnostic {
 	source := ass.ParseSource(doc.Text)
-	view, err := profile.ViewFromConcrete(context.Background(), doc, source, profile.ResolveDocumentLayouts(source.Concrete))
+	prepared, err := renderer.PrepareFrom(context.Background(), doc, source, []renderer.Profile{profile})
 	if err != nil {
 		return nil
 	}
-	doc = view.Document
+	doc = prepared.Views[profile].Document
 	styles := semantic.StyleStatesByName(doc.StyleFields)
 	var diagnostics []Diagnostic
 	for _, dialogue := range doc.Dialogues {

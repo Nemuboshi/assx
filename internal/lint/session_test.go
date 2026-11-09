@@ -371,7 +371,7 @@ func TestSessionEagerAndDeferredMatch(t *testing.T) {
 			text := test.text(t)
 			doc := defaultDocument(text)
 			targets := DefaultAnalysisTargets()
-			eager := AnalyzeDocumentForTargets(doc, targets)
+			eager := analyzeTargetsTest(doc, targets)
 			unproved := candidateDiagnostics(analyzeDocumentForTargetsUnproved(doc, targets, nil))
 			session := discoverTestSession(t, doc, nil)
 			lazy, err := session.ProveFixes(context.Background(), allCandidateHandles(session))
@@ -448,7 +448,7 @@ func TestSessionRejectsStaleAndForeignApplication(t *testing.T) {
 		t.Fatal("tampered proof evidence accepted")
 	}
 
-	foreign := AnalyzeDocumentForTargets(defaultDocument(benchmarkLateProofFailure(11)), DefaultAnalysisTargets())
+	foreign := analyzeTargetsTest(defaultDocument(benchmarkLateProofFailure(11)), DefaultAnalysisTargets())
 	if _, _, err := session.ApplyFixes(context.Background(), foreign, false); err == nil {
 		t.Fatal("foreign session findings accepted")
 	}

@@ -21,7 +21,7 @@ func TestSafeFixRequestedTargetScope(t *testing.T) {
 	}
 	for _, targets := range cases {
 		t.Run(ProfileScope(targets.Primary), func(t *testing.T) {
-			ds := AnalyzeDocumentForTargets(doc, targets)
+			ds := analyzeTargetsTest(doc, targets)
 			safe, _, _ := CountFixes(ds)
 			if safe == 0 {
 				t.Fatal("no scoped fix")
@@ -57,7 +57,7 @@ func TestSafeFixRejectsProofTampering(t *testing.T) {
 		{"interpretations", func(p *FixProof) { p.Interpretations = nil }},
 	} {
 		t.Run(mutation.name, func(t *testing.T) {
-			ds := AnalyzeDocumentForTargets(doc, targets)
+			ds := analyzeTargetsTest(doc, targets)
 			var proof *FixProof
 			for _, d := range ds {
 				if d.FixProof != nil {
@@ -79,7 +79,7 @@ func TestSafeFixRejectsProofTampering(t *testing.T) {
 func TestSafeFixRejectsForeignProfile(t *testing.T) {
 	known, _ := renderer.New(renderer.VSFilterMod)
 	doc := parseFontOverrideText(`{\fs21\fs21}A`)
-	ds := AnalyzeDocumentForTargets(doc, AnalysisTargets{Primary: known})
+	ds := analyzeTargetsTest(doc, AnalysisTargets{Primary: known})
 	other, err := renderer.New(renderer.VSFilterMod)
 	if err != nil {
 		t.Fatal(err)
@@ -91,7 +91,7 @@ func TestSafeFixRejectsForeignProfile(t *testing.T) {
 	if _, _, err := ApplyFixesForTargets(doc.Text, ds, false, targets); err != nil {
 		t.Fatalf("proof rejected the pinned profile: %v", err)
 	}
-	safe, _, _ := CountFixes(AnalyzeDocumentForTargets(doc, targets))
+	safe, _, _ := CountFixes(analyzeTargetsTest(doc, targets))
 	if safe == 0 {
 		t.Fatal("pinned VSFilterMod profile granted no fixes")
 	}
@@ -111,7 +111,7 @@ func TestSafeFixRejectsChangedSourceWithRequestedPolicy(t *testing.T) {
 	libass, _ := renderer.Standard(renderer.Libass)
 	targets := AnalysisTargets{Primary: libass}
 	doc := parseFontOverrideText(`{\fs21\fs21}A`)
-	ds := AnalyzeDocumentForTargets(doc, targets)
+	ds := analyzeTargetsTest(doc, targets)
 	if _, _, err := ApplyFixesForTargets(doc.Text+"changed", ds, false, targets); err == nil {
 		t.Fatal("stale proof authorized changed source")
 	}
@@ -121,7 +121,7 @@ func TestSafeFixScopeDoesNotTrustDiagnosticRenderer(t *testing.T) {
 	libass, _ := renderer.Standard(renderer.Libass)
 	doc := parseFontOverrideText(`{\fs21\fs21}A`)
 	targets := AnalysisTargets{Primary: libass}
-	ds := AnalyzeDocumentForTargets(doc, targets)
+	ds := analyzeTargetsTest(doc, targets)
 	// Exercise the public JSON boundary, including grouped proof references.
 	data, err := json.Marshal(ds)
 	if err != nil {

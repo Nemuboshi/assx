@@ -35,7 +35,7 @@ func (server *Server) completion(ctx context.Context, raw jsontext.Value) ([]com
 		return nil, fmt.Errorf("invalid completion position")
 	}
 	doc, ok := server.documents.items[params.TextDocument.URI]
-	if !ok || ass.Recognize(doc.text).Class == ass.Rejected {
+	if !ok || ass.RecognizeParsed(doc.parsed).Class == ass.Rejected {
 		return items, nil
 	}
 	offset, err := doc.index.Offset(params.Position)

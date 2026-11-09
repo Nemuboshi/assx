@@ -60,7 +60,8 @@ func runFonts(args []string, stdout, stderr io.Writer) int {
 	if err != nil {
 		return fail(err)
 	}
-	recognition := ass.Recognize(source.Text)
+	parsed := ass.ParseSource(source.Text)
+	recognition := ass.RecognizeParsed(parsed)
 	if !*forceASS {
 		switch recognition.Class {
 		case ass.Rejected:
@@ -69,7 +70,6 @@ func runFonts(args []string, stdout, stderr io.Writer) int {
 			_, _ = fmt.Fprintln(stderr, "Input has tentative ASS/SSA structure; font analysis may be incomplete.")
 		}
 	}
-	parsed := ass.ParseSource(source.Text)
 	catalog, err := fontcheck.NewCatalog(fontcheck.Source{Directory: *directory})
 	if err != nil {
 		return fail(err)

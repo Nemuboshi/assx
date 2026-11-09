@@ -25,7 +25,7 @@ func BenchmarkAnalyzeDocumentFixtures(b *testing.B) {
 			b.ReportAllocs()
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
-				benchmarkDiagnostics = AnalyzeDocument(doc)
+				benchmarkDiagnostics = analyzeDocumentTest(doc)
 			}
 		})
 	}
@@ -38,7 +38,7 @@ func BenchmarkAnalyzeDocumentFixtures(b *testing.B) {
 func benchmarkLateProofFailureStage(b *testing.B, dialogues int) {
 	text := benchmarkLateProofFailure(dialogues)
 	failure := defaultDocument(text)
-	initial := AnalyzeDocument(failure)
+	initial := analyzeDocumentTest(failure)
 	firstProof, lateCandidate, lateProof := false, false, false
 	lastLine := failure.Dialogues[len(failure.Dialogues)-1].Line
 	var candidates int
@@ -69,7 +69,7 @@ func benchmarkLateProofFailureStage(b *testing.B, dialogues int) {
 		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			benchmarkDiagnostics = AnalyzeDocument(failure)
+			benchmarkDiagnostics = analyzeDocumentTest(failure)
 		}
 		b.ReportMetric(float64(candidates), "cand/op")
 	})
@@ -78,7 +78,7 @@ func benchmarkLateProofFailureStage(b *testing.B, dialogues int) {
 func benchmarkStyleEditStage(b *testing.B) {
 	text := perftest.StyleEdit(b)
 	doc := defaultDocument(text)
-	findings := AnalyzeDocument(doc)
+	findings := analyzeDocumentTest(doc)
 	var styleProofs, dialogueProofs int
 	for _, diagnostic := range primaryFindings(findings) {
 		if diagnostic.FixSafety != SafeFix || (diagnostic.FixProof == nil && diagnostic.FixProofRef == 0) {
@@ -104,7 +104,7 @@ func benchmarkStyleEditStage(b *testing.B) {
 		b.ReportAllocs()
 		b.ResetTimer()
 		for i := 0; i < b.N; i++ {
-			benchmarkDiagnostics = AnalyzeDocument(doc)
+			benchmarkDiagnostics = analyzeDocumentTest(doc)
 		}
 		b.ReportMetric(float64(1+want), "cand/op")
 	})
@@ -127,7 +127,7 @@ func TestBenchmarkLateProofFailure(t *testing.T) {
 	if len(doc.Dialogues) != dialogues {
 		t.Fatalf("fixture has %d dialogues, want %d", len(doc.Dialogues), dialogues)
 	}
-	findings := AnalyzeDocument(doc)
+	findings := analyzeDocumentTest(doc)
 	primary := primaryFindings(findings)
 	for i, dialogue := range doc.Dialogues {
 		unknown := strings.Contains(dialogue.Text, `\mystery`)
@@ -173,7 +173,7 @@ func TestBenchmarkLateProofFailure(t *testing.T) {
 func BenchmarkApplyFixesScaling(b *testing.B) {
 	for _, dialogues := range []int{250, 1000, 4000} {
 		doc := defaultDocument(benchmarkASSDocument(dialogues))
-		findings := AnalyzeDocument(doc)
+		findings := analyzeDocumentTest(doc)
 		b.Run(fmt.Sprintf("dialogues_%d", dialogues), func(b *testing.B) {
 			b.SetBytes(int64(len(doc.Text)))
 			b.ReportAllocs()
@@ -200,7 +200,7 @@ func BenchmarkParseAndAnalyzeDocumentFixtures(b *testing.B) {
 			b.ReportAllocs()
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
-				benchmarkDiagnostics = AnalyzeDocument(defaultDocument(test.Text))
+				benchmarkDiagnostics = analyzeDocumentTest(defaultDocument(test.Text))
 			}
 		})
 	}

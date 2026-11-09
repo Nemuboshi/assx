@@ -34,7 +34,7 @@ func (server *Server) publish(ctx context.Context, output io.Writer, uri string)
 	if doc, ok := server.documents.items[uri]; ok {
 		params.Version = new(doc.version)
 		identity := server.identityPrefix(doc)
-		recognition := ass.Recognize(doc.text)
+		recognition := ass.RecognizeParsed(doc.parsed)
 		analyze := recognition.Class != ass.Rejected
 		if !analyze && server.settings.ForceASS {
 			analyze = true

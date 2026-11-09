@@ -37,8 +37,10 @@ text that is not valid UTF-8. It copies the optional version, so a later
 change to the caller value cannot change the snapshot. A snapshot holds no
 parsed form and no file handle.
 
-`Analyze` parses the snapshot text, runs discovery through `lint.Discover`,
-and returns a `Result`. Discovery runs every lint pass and records each fix
+`Analyze` accepts the caller's `ass.Parsed`, runs discovery through
+`lint.Discover`, and returns a `Result`. The caller parses once and can share
+that parse with LSP features or a second consumer. `Result` keeps the parse
+and the primary view for reports. Discovery runs every lint pass and records each fix
 candidate. It never constructs a `FixProof`, a proof label, or an executable
 SafeFix edit. `Findings` returns copies in report order. Mutating a returned
 finding cannot change result state.
@@ -62,8 +64,8 @@ duplicate ID, and a non-candidate ID. A candidate that cannot be proved
 returns its diagnostic without automatic edits, as the eager path does.
 
 `Diagnostics` proves every candidate and merges the result into the pending
-findings. Its output equals `lint.AnalyzeDocumentForTargets` for the same
-snapshot, targets, and policy. The CLI uses it for its unchanged bytes.
+findings. Its output equals document analysis for the same snapshot, targets, and
+policy. The CLI uses it for its unchanged bytes.
 
 ## Application
 

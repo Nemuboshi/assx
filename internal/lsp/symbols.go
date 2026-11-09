@@ -138,7 +138,7 @@ func (server *Server) documentSymbols(ctx context.Context, raw jsontext.Value) (
 		return nil, err
 	}
 	doc, ok := server.documents.items[params.TextDocument.URI]
-	if !ok || ass.Recognize(doc.text).Class == ass.Rejected {
+	if !ok || ass.RecognizeParsed(doc.parsed).Class == ass.Rejected {
 		return []documentSymbol{}, nil
 	}
 	return server.indexSymbols(doc).symbols, nil
@@ -156,7 +156,7 @@ func (server *Server) styleLocations(ctx context.Context, raw jsontext.Value, in
 		return nil, fmt.Errorf("invalid style position request")
 	}
 	doc, ok := server.documents.items[params.TextDocument.URI]
-	if !ok || ass.Recognize(doc.text).Class == ass.Rejected {
+	if !ok || ass.RecognizeParsed(doc.parsed).Class == ass.Rejected {
 		return results, nil
 	}
 	offset, err := doc.index.Offset(params.Position)

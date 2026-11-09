@@ -10,7 +10,7 @@ import (
 
 func TestSafeFixProofCarriesEveryDefaultRenderer(t *testing.T) {
 	doc := parseFontOverrideText(`{\fs21\fs21}A`)
-	diagnostics := AnalyzeDocument(doc)
+	diagnostics := analyzeDocumentTest(doc)
 	var finding *Diagnostic
 	for i := range diagnostics {
 		if diagnostics[i].Condition == IssueNoEffect && diagnostics[i].FixSafety == SafeFix {
@@ -50,7 +50,7 @@ func TestEmptyOverrideSafeFixRequiresResolvedOperations(t *testing.T) {
 		{name: "unknown command", text: `{}{\mystery}A`},
 	} {
 		t.Run(test.name, func(t *testing.T) {
-			diagnostics := AnalyzeDocument(parseFontOverrideText(test.text))
+			diagnostics := analyzeDocumentTest(parseFontOverrideText(test.text))
 			for _, diagnostic := range diagnostics {
 				if diagnostic.Condition != IssueEmptyOverrideBlock {
 					continue
@@ -71,7 +71,7 @@ func TestEmptyOverrideSafeFixRequiresResolvedOperations(t *testing.T) {
 
 func TestGroupedProofSerializesOnceWithReferences(t *testing.T) {
 	doc := parseFontOverrideText(`{\fs21\fs21}A{\fs22\fs22}B`)
-	diagnostics := primaryFindings(AnalyzeDocument(doc))
+	diagnostics := primaryFindings(analyzeDocumentTest(doc))
 	type proofSummary struct {
 		FixProof    json.RawMessage `json:"fix_proof"`
 		FixProofRef int             `json:"fix_proof_ref"`
@@ -148,7 +148,7 @@ func TestApplyFixesRejectsDanglingProofReference(t *testing.T) {
 
 func TestSafeFixRejectsModifiedProofEvidence(t *testing.T) {
 	doc := parseFontOverrideText(`{\fs21\fs21}A`)
-	diagnostics := AnalyzeDocument(doc)
+	diagnostics := analyzeDocumentTest(doc)
 	before, _, _ := CountFixes(diagnostics)
 	for i := range diagnostics {
 		if diagnostics[i].FixProof != nil {
@@ -225,7 +225,7 @@ func TestSafeFixRejectsEditOutsideItsRuleSource(t *testing.T) {
 
 func TestSafeFixRejectsStaleSourceAndMissingProof(t *testing.T) {
 	doc := parseFontOverrideText(`{\fs21\fs21}A`)
-	diagnostics := AnalyzeDocument(doc)
+	diagnostics := analyzeDocumentTest(doc)
 	if _, _, err := ApplyFixes(doc.Text+"B", diagnostics, false); err == nil {
 		t.Fatal("SafeFix applied after its source changed")
 	}
@@ -243,7 +243,7 @@ func TestSafeFixRejectsStaleSourceAndMissingProof(t *testing.T) {
 
 func TestSafeFixProofPreservesFirstWinsOwnership(t *testing.T) {
 	doc := parseFontOverrideText(`{\an7\an8}A`)
-	diagnostics := AnalyzeDocument(doc)
+	diagnostics := analyzeDocumentTest(doc)
 	var finding *Diagnostic
 	for i := range diagnostics {
 		if diagnostics[i].Condition == IssueNoEffect && diagnostics[i].Tag == "an" {

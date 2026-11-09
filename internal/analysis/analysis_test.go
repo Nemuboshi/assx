@@ -85,8 +85,14 @@ func provedFromEager(diagnostics []lint.Diagnostic) []lint.Diagnostic {
 
 func TestAnalyzeEmptyOptionsMatchDefaultTargets(t *testing.T) {
 	text := perftest.StyleEdit(t)
-	doc := defaultDocument(text)
-	eager := lint.AnalyzeDocumentForTargets(doc, lint.DefaultAnalysisTargets())
+	eagerResult, err := Analyze(context.Background(), mustSnapshot(t, text), ass.ParseSource(text), Options{Targets: lint.DefaultAnalysisTargets()})
+	if err != nil {
+		t.Fatal(err)
+	}
+	eager, err := eagerResult.Diagnostics(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	result := analyzeTestResult(t, text, Options{})
 	var pending []lint.Diagnostic

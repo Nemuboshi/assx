@@ -18,18 +18,45 @@ type View struct {
 	Layouts []RecordLayout
 }
 
-// View builds this renderer's view from one source parse.
-func (p Profile) View(ctx context.Context, source ass.Parsed) (View, error) {
-	return p.ViewFromConcrete(ctx, DefaultDocument(source), source, p.ResolveDocumentLayouts(source.Concrete))
+// Prepared holds one layout set and one view per requested profile. It is the
+// shared view preparation for one source version.
+type Prepared struct {
+	Views   map[Profile]View
+	Layouts map[Profile][]RecordLayout
 }
 
-// ViewFromConcrete builds this renderer's view from one default view, one
-// source parse, and that profile's resolved layouts. The caller can share all
-// three across every consumer of one source version, so the default view is
-// built once per request. A canceled context returns no partial view; the same
-// inputs stay usable for a later request.
-func (p Profile) ViewFromConcrete(ctx context.Context, doc Document, source ass.Parsed, layouts []RecordLayout) (View, error) {
-	return p.viewFrom(ctx, doc, source.Concrete, layouts)
+// Prepare builds the default view once, then every requested renderer view
+// from it. A canceled context returns no partial preparation.
+func Prepare(ctx context.Context, source ass.Parsed, profiles []Profile) (Prepared, error) {
+	return PrepareFrom(ctx, DefaultDocument(source), source, profiles)
+}
+
+// PrepareFrom builds every requested renderer view from an existing default
+// view. Use it when the caller already has that view, for example after an
+// edit.
+func PrepareFrom(ctx context.Context, doc Document, source ass.Parsed, profiles []Profile) (Prepared, error) {
+	prepared := Prepared{
+		Views:   make(map[Profile]View, len(profiles)),
+		Layouts: make(map[Profile][]RecordLayout, len(profiles)),
+	}
+	for _, profile := range profiles {
+		if err := ctx.Err(); err != nil {
+			return Prepared{}, err
+		}
+		layouts := profile.ResolveDocumentLayouts(source.Concrete)
+		view, err := profile.viewFrom(ctx, doc, source.Concrete, layouts)
+		if err != nil {
+			return Prepared{}, err
+		}
+		prepared.Layouts[profile] = layouts
+		prepared.Views[profile] = view
+	}
+	return prepared, nil
+}
+
+// View builds this renderer's view from one source parse.
+func (p Profile) View(ctx context.Context, source ass.Parsed) (View, error) {
+	return p.viewFrom(ctx, DefaultDocument(source), source.Concrete, p.ResolveDocumentLayouts(source.Concrete))
 }
 
 func (p Profile) viewFrom(ctx context.Context, doc Document, tree ass.ConcreteDocument, layouts []RecordLayout) (View, error) {

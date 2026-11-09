@@ -119,7 +119,7 @@ func TestPreparedDialogueCancellation(t *testing.T) {
 	}
 }
 
-func TestViewFromConcreteMatchesView(t *testing.T) {
+func TestPrepareFromMatchesView(t *testing.T) {
 	documents := []string{
 		// Reordered Style and Event field layouts.
 		"[Script Info]\nPlayResX: 640\nPlayResY: 480\n[V4+ Styles]\nFormat: Fontsize, Name, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding, Fontname\nStyle: 20,Default,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,2,2,10,10,10,1,Arial\n[Events]\nFormat: End, Layer, Start, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0:00:02.00,0,0:00:01.00,Default,,0,0,0,,{\\b1\\b1}swapped\n",
@@ -132,8 +132,7 @@ func TestViewFromConcreteMatchesView(t *testing.T) {
 	for _, text := range documents {
 		source := ass.ParseSource(text)
 		for _, profile := range profiles {
-			layouts := profile.ResolveDocumentLayouts(source.Concrete)
-			built, err := profile.ViewFromConcrete(context.Background(), renderer.DefaultDocument(source), source, layouts)
+			prepared, err := renderer.PrepareFrom(context.Background(), renderer.DefaultDocument(source), source, []renderer.Profile{profile})
 			if err != nil {
 				t.Fatalf("profile %v: %v", profile.Kind(), err)
 			}
@@ -141,23 +140,22 @@ func TestViewFromConcreteMatchesView(t *testing.T) {
 			if err != nil {
 				t.Fatalf("profile %v: %v", profile.Kind(), err)
 			}
-			if !reflect.DeepEqual(want, built) {
-				t.Fatalf("ViewFromConcrete differs for profile %v on document %q", profile.Kind(), text)
+			if !reflect.DeepEqual(want, prepared.Views[profile]) {
+				t.Fatalf("PrepareFrom differs for profile %v on document %q", profile.Kind(), text)
 			}
 		}
 	}
 }
 
-func TestViewFromConcreteCancellation(t *testing.T) {
+func TestPrepareFromCancellation(t *testing.T) {
 	source := ass.ParseSource("[Script Info]\nPlayResX: 640\nPlayResY: 480\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0:00:01.00,0:00:02.00,Default,,0,0,0,,x\n")
 	xy, _ := renderer.Standard(renderer.XYVSFilter)
-	layouts := xy.ResolveDocumentLayouts(source.Concrete)
 	canceled, cancel := context.WithCancel(context.Background())
 	cancel()
-	if _, err := xy.ViewFromConcrete(canceled, renderer.DefaultDocument(source), source, layouts); err == nil {
+	if _, err := renderer.PrepareFrom(canceled, renderer.DefaultDocument(source), source, []renderer.Profile{xy}); err == nil {
 		t.Fatal("canceled projection succeeded")
 	}
-	if _, err := xy.ViewFromConcrete(context.Background(), renderer.DefaultDocument(source), source, layouts); err != nil {
+	if _, err := renderer.PrepareFrom(context.Background(), renderer.DefaultDocument(source), source, []renderer.Profile{xy}); err != nil {
 		t.Fatalf("later projection failed: %v", err)
 	}
 }

@@ -22,15 +22,15 @@ type Recognition struct {
 	Evidence []RecognitionEvidence
 }
 
-// Recognize checks content in its section context. A filename is not evidence.
-// This is an input boundary, not ASS syntax or renderer validation.
-func Recognize(text string) Recognition {
-	tree := ParseConcreteDocument(text)
+// RecognizeParsed checks content in its section context from an existing
+// physical parse. A filename is not evidence. This is an input boundary, not
+// ASS syntax or renderer validation.
+func RecognizeParsed(source Parsed) Recognition {
 	result := Recognition{Class: Rejected}
 	credible := false
 	tentative := false
 	foreign := false
-	for _, line := range tree.Lines {
+	for _, line := range source.Concrete.Lines {
 		for _, char := range line.Content {
 			if (char < 0x20 && char != '\t') || char == 0x7f {
 				return Recognition{Class: Rejected, Evidence: []RecognitionEvidence{{ID: "input.binary", Line: line.Number}}}

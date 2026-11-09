@@ -19,7 +19,7 @@ func TestStyleEditWorkloadProvesDocumentWide(t *testing.T) {
 	if len(doc.Dialogues) != perftest.StyleEditDialogueCount {
 		t.Fatalf("got %d dialogues, want %d", len(doc.Dialogues), perftest.StyleEditDialogueCount)
 	}
-	findings := AnalyzeDocument(doc)
+	findings := analyzeDocumentTest(doc)
 	primary := primaryFindings(findings)
 
 	var styleCandidates, styleProofs int
@@ -78,7 +78,7 @@ func TestLateProofFailureScalesCandidates(t *testing.T) {
 		if len(doc.Dialogues) != count {
 			t.Fatalf("late failure %d: got %d dialogues", count, len(doc.Dialogues))
 		}
-		findings := AnalyzeDocument(doc)
+		findings := analyzeDocumentTest(doc)
 		primary := primaryFindings(findings)
 		lastLine := doc.Dialogues[len(doc.Dialogues)-1].Line
 		var proved, revoked int

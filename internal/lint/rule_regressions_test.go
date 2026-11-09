@@ -33,7 +33,7 @@ func TestEmptyParenthesizedClipFixture(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	findings := AnalyzeDocument(defaultDocument(string(data)))
+	findings := analyzeDocumentTest(defaultDocument(string(data)))
 	if got := diagnosticsForIDs(findings, IssueArgumentCount, IssueOverrideJunk, IssueUnterminatedBlock); len(got) != 0 {
 		t.Fatalf("regression fixture diagnostics = %#v", got)
 	}

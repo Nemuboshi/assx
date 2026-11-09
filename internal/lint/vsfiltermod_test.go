@@ -46,7 +46,7 @@ func TestVSFilterModTagsWarnWithoutAutomaticFixes(t *testing.T) {
 
 func TestVSFilterModTagDisablesDialogueFixes(t *testing.T) {
 	doc := parseFontOverrideText(`{\fs21\fs20\distort(1)}x`)
-	diagnostics := AnalyzeDocument(doc)
+	diagnostics := analyzeDocumentTest(doc)
 	foundWarning := false
 	foundNoEffect := false
 	for _, diagnostic := range diagnostics {

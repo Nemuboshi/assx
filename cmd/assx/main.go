@@ -109,7 +109,8 @@ func run(args []string, stdout, stderr io.Writer) int {
 		_, _ = fmt.Fprintln(stderr, err)
 		return 2
 	}
-	recognition := ass.Recognize(source.Text)
+	parsed := ass.ParseSource(source.Text)
+	recognition := ass.RecognizeParsed(parsed)
 	if !*forceASS {
 		switch recognition.Class {
 		case ass.Rejected:
@@ -144,7 +145,6 @@ func run(args []string, stdout, stderr io.Writer) int {
 		}
 		return result, diagnostics, nil
 	}
-	parsed := ass.ParseSource(snapshot.Text())
 	result, diagnostics, err := analyzeSnapshot(snapshot, parsed)
 	if err != nil {
 		progress.stop()

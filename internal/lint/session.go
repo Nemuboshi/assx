@@ -37,19 +37,12 @@ func PrepareDocument(ctx context.Context, source ass.Parsed, profiles []renderer
 		views:        make(map[renderer.Profile]renderer.View, len(profiles)),
 		preparations: semantic.NewDialoguePreparations(),
 	}
-	defaultDoc := renderer.DefaultDocument(source)
-	for _, profile := range profiles {
-		if err := ctx.Err(); err != nil {
-			return nil, err
-		}
-		layouts := profile.ResolveDocumentLayouts(source.Concrete)
-		analysis.layouts[profile] = layouts
-		view, err := profile.ViewFromConcrete(ctx, defaultDoc, source, layouts)
-		if err != nil {
-			return nil, err
-		}
-		analysis.views[profile] = view
+	prepared, err := renderer.Prepare(ctx, source, profiles)
+	if err != nil {
+		return nil, err
 	}
+	analysis.layouts = prepared.Layouts
+	analysis.views = prepared.Views
 	return analysis, nil
 }
 

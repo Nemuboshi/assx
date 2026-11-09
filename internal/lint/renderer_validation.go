@@ -19,12 +19,6 @@ func AnalyzeForRenderer(dialogue renderer.Dialogue, profile renderer.Profile) []
 	return scopeDiagnostics(findings, profile)
 }
 
-// AnalyzeDocumentForRenderer provides renderer-local observations without fixes.
-// AnalyzeDocumentForTargets also applies compatibility policy and proves edits.
-func AnalyzeDocumentForRenderer(doc renderer.Document, profile renderer.Profile) []Diagnostic {
-	return scopeDiagnostics(analyzeDocumentForProfile(doc, profile, nil), profile)
-}
-
 func analyzeDocumentForProfile(doc renderer.Document, profile renderer.Profile, policy RulePolicy) []Diagnostic {
 	findings, _ := analyzeDocumentForProfileContext(context.Background(), ass.ParseSource(doc.Text), doc, profile, policy, nil)
 	return findings
@@ -46,11 +40,11 @@ func analyzeDocumentForProfileContext(ctx context.Context, source ass.Parsed, de
 	}
 	if !ok {
 		source := ass.ParseSource(defaultDoc.Text)
-		var err error
-		view, err = profile.ViewFromConcrete(ctx, defaultDoc, source, profile.ResolveDocumentLayouts(source.Concrete))
+		prepared, err := renderer.PrepareFrom(ctx, defaultDoc, source, []renderer.Profile{profile})
 		if err != nil {
 			return nil, err
 		}
+		view = prepared.Views[profile]
 	}
 	doc := view.Document
 	diagnostics := AnalyzeHeaders(doc)

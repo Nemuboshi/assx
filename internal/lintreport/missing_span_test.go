@@ -8,7 +8,7 @@ import (
 
 func TestMissingHeaderKeepsCLICaretOnReportedLine(t *testing.T) {
 	doc := defaultDocument("[Script Info]\n[Events]\nDialogue: broken\n")
-	view := Build("test.ass", lint.AnalyzeDocument(doc), doc)
+	view := Build("test.ass", analyzeDocument(t, doc), doc)
 	for _, diagnostic := range view.Groups[0].Diagnostics {
 		if diagnostic.Condition == lint.IssueMatrixHeader {
 			if diagnostic.SourceColumn != 1 {
@@ -22,7 +22,7 @@ func TestMissingHeaderKeepsCLICaretOnReportedLine(t *testing.T) {
 
 func TestShortEventKeepsCLICaretAtReportedColumn(t *testing.T) {
 	doc := defaultDocument("[Events]\nFormat: Layer, Start, End, Text\nDialogue: 1234\n")
-	findings := lint.AnalyzeDocument(doc)
+	findings := analyzeDocument(t, doc)
 	view := Build("test.ass", findings, doc)
 	for i, d := range findings {
 		if d.Condition == lint.IssueShortEvent {

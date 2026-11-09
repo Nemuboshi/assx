@@ -126,8 +126,8 @@ func TestScopedDocumentConsumersAndJSON(t *testing.T) {
 		`Dialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{\pos(1,2,3)\rMissing}Text` + "\n" +
 		`Dialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{\k200}Text` + "\n"
 	doc := defaultDocument(source)
-	traditional := AnalyzeDocumentForRenderer(doc, lib)
-	modern := AnalyzeDocumentForRenderer(doc, mod)
+	traditional := analyzeRendererTest(doc, lib)
+	modern := analyzeRendererTest(doc, mod)
 	for _, tt := range []struct {
 		name                 string
 		ds                   []Diagnostic
@@ -153,14 +153,14 @@ func TestScopedDocumentConsumersAndJSON(t *testing.T) {
 			t.Errorf("%s renderer context missing from JSON: %s", tt.name, b)
 		}
 	}
-	before, err := json.Marshal(AnalyzeDocument(doc))
+	before, err := json.Marshal(analyzeDocumentTest(doc))
 	if err != nil {
 		t.Fatal(err)
 	}
 	if !strings.Contains(string(before), `"renderer":"libass"`) {
 		t.Fatalf("default JSON omits pinned primary scope: %s", before)
 	}
-	if !reflect.DeepEqual(modern, AnalyzeDocumentForRenderer(doc, mod)) {
+	if !reflect.DeepEqual(modern, analyzeRendererTest(doc, mod)) {
 		t.Fatal("renderer scoped diagnostic ordering is nondeterministic")
 	}
 }
@@ -186,13 +186,13 @@ func BenchmarkAnalyzeDocumentRenderer(b *testing.B) {
 	b.Run("default", func(b *testing.B) {
 		b.ReportAllocs()
 		for i := 0; i < b.N; i++ {
-			_ = AnalyzeDocument(doc)
+			_ = analyzeDocumentTest(doc)
 		}
 	})
 	b.Run("scoped", func(b *testing.B) {
 		b.ReportAllocs()
 		for i := 0; i < b.N; i++ {
-			_ = AnalyzeDocumentForRenderer(doc, profile)
+			_ = analyzeRendererTest(doc, profile)
 		}
 	})
 }

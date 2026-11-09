@@ -77,7 +77,7 @@ func TestReviewRendererScopedKaraokeDocumentWarnings(t *testing.T) {
 				"Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text",
 				standardEventDialogue("0:00:00.00", "0:00:00.50", tc.text),
 			)
-			full := AnalyzeDocumentForRenderer(doc, tc.profile)
+			full := analyzeRendererTest(doc, tc.profile)
 			eventOnly := AnalyzeEventFieldsForRenderer(doc, tc.profile)
 			for _, ds := range [][]Diagnostic{full, eventOnly} {
 				count := 0
@@ -112,7 +112,7 @@ func TestReviewDefaultKaraokeContractUnchanged(t *testing.T) {
 		standardEventDialogue("0:00:00.00", "0:00:00.50", `{\k200}A`),
 	)
 	if !hasIssue(AnalyzeEventFields(doc), IssueKaraoke) ||
-		!hasIssue(AnalyzeDocument(doc), IssueKaraoke) {
+		!hasIssue(analyzeDocumentTest(doc), IssueKaraoke) {
 		t.Fatal("frozen default karaoke warning changed")
 	}
 }

@@ -93,7 +93,7 @@ func TestStyleBorderCompatibilityRules(t *testing.T) {
 func TestStyleBorderWarningsUsePhysicalFieldsAndNeverEdit(t *testing.T) {
 	source := strings.ReplaceAll(borderStyleDocument(" 4 ", "100", "100", "2"), "\n", "\r\n")
 	doc := defaultDocument(source)
-	warnings := diagnosticsForIDs(AnalyzeDocument(doc), IssueStyleBorderMode)
+	warnings := diagnosticsForIDs(analyzeDocumentTest(doc), IssueStyleBorderMode)
 	if len(warnings) != 1 {
 		t.Fatalf("default analysis lost mode warning: %#v", warnings)
 	}
@@ -108,7 +108,7 @@ func TestStyleBorderWarningsUsePhysicalFieldsAndNeverEdit(t *testing.T) {
 			t.Fatalf("warning changed source: count=%d err=%v", count, err)
 		}
 	}
-	if findings := diagnosticsForIDs(AnalyzeDocumentForRenderer(doc, DefaultAnalysisTargets().Primary), IssueStyleBorderMode, IssueStyleBoxGeometry); len(findings) != 0 {
+	if findings := diagnosticsForIDs(analyzeRendererTest(doc, DefaultAnalysisTargets().Primary), IssueStyleBorderMode, IssueStyleBoxGeometry); len(findings) != 0 {
 		t.Fatalf("single-profile validation reported a comparison: %#v", findings)
 	}
 }

@@ -181,7 +181,7 @@ func TestApplyFixesRejectsOverlappingEdits(t *testing.T) {
 func provedNoEffectFix(t *testing.T) (string, Diagnostic) {
 	t.Helper()
 	doc := parseFontOverrideText(`{\fs21\fs21}A`)
-	for _, diagnostic := range AnalyzeDocument(doc) {
+	for _, diagnostic := range analyzeDocumentTest(doc) {
 		if diagnostic.Condition == IssueNoEffect && diagnostic.FixProof != nil && len(diagnostic.Edits) == 1 {
 			return doc.Text, diagnostic
 		}
@@ -284,7 +284,7 @@ func TestProofEditMembershipMatchesLinearScan(t *testing.T) {
 func TestApplyFixesDoesNotScanEveryProofEdit(t *testing.T) {
 	measure := func(dialogues int) (int, int) {
 		doc := defaultDocument(benchmarkASSDocument(dialogues))
-		findings := AnalyzeDocument(doc)
+		findings := analyzeDocumentTest(doc)
 		before := proofMembershipComparisons.Load()
 		fixed, count, err := ApplyFixes(doc.Text, findings, false)
 		work := int(proofMembershipComparisons.Load() - before)

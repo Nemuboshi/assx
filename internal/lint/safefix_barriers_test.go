@@ -33,7 +33,7 @@ func TestLateUnmodeledTagsRevokeLintSafeFixes(t *testing.T) {
 				name        string
 				diagnostics []Diagnostic
 			}{
-				{"document lint", AnalyzeDocument(doc)},
+				{"document lint", analyzeDocumentTest(doc)},
 				{"redundant-style standalone", AnalyzeRedundantStyleOverrides(doc)},
 				{"no-effect standalone", Analyze(doc.Dialogues[0])},
 			} {
@@ -60,7 +60,7 @@ func TestLateUnmodeledTagsRevokeLintSafeFixes(t *testing.T) {
 func TestUnknownTagRetainsNonFixableASS006Diagnostic(t *testing.T) {
 	doc := parseFontOverrideText(`{\fs20\fs20\mystery}A`)
 	var seen bool
-	for _, finding := range AnalyzeDocument(doc) {
+	for _, finding := range analyzeDocumentTest(doc) {
 		if finding.Condition == IssueNoEffect {
 			seen = true
 			if finding.FixSafety != "" || len(finding.Edits) != 0 {

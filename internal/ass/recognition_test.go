@@ -35,7 +35,7 @@ func TestRecognizeContentInSectionContext(t *testing.T) {
 		{"credible ass outweighs foreign prose", "[Events]\nDialogue: broken\nWEBVTT\n", Recognized, "events.dialogue"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
-			got := Recognize(tc.text)
+			got := RecognizeParsed(ParseSource(tc.text))
 			if got.Class != tc.want {
 				t.Fatalf("classification = %s, want %s; evidence = %+v", got.Class, tc.want, got.Evidence)
 			}

@@ -11,11 +11,12 @@ import (
 
 func viewOf(t *testing.T, profile renderer.Profile, doc renderer.Document) renderer.View {
 	t.Helper()
-	view, err := profile.View(context.Background(), ass.ParseSource(doc.Text))
+	source := ass.ParseSource(doc.Text)
+	prepared, err := renderer.PrepareFrom(context.Background(), doc, source, []renderer.Profile{profile})
 	if err != nil {
 		t.Fatal(err)
 	}
-	return view
+	return prepared.Views[profile]
 }
 
 func TestPrimaryVSFilterUsesFixedDocumentSlots(t *testing.T) {
@@ -24,7 +25,7 @@ func TestPrimaryVSFilterUsesFixedDocumentSlots(t *testing.T) {
 	source := "[Script Info]\nScriptType: v4.00+\nPlayResX: 640\nPlayResY: 480\nLayoutResX: 640\nLayoutResY: 480\nYCbCr Matrix: None\n[Events]\nFormat: Start, Layer, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{\\fs21\\fs21}A\n"
 	doc := defaultDocument(source)
 	for _, profile := range []renderer.Profile{xy, libass} {
-		findings := AnalyzeDocumentForTargets(doc, AnalysisTargets{Primary: profile})
+		findings := analyzeTargetsTest(doc, AnalysisTargets{Primary: profile})
 		invalid := false
 		for _, d := range findings {
 			invalid = invalid || d.Severity == Error
@@ -48,7 +49,7 @@ func TestSafeFixProofUsesEachTargetsStyleLayout(t *testing.T) {
 	source := "[Script Info]\nScriptType: v4.00+\nPlayResX: 640\nPlayResY: 480\n[V4+ Styles]\nFormat: Name, Fontname, Bold, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Fontsize, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\nStyle: Default,Arial,20,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,30,0,0,0,100,100,0,0,1,2,2,2,10,10,10,1\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{\\fs20}A\n"
 	doc := defaultDocument(source)
 	targets := AnalysisTargets{Primary: xy, Compatibility: []renderer.Profile{libass}}
-	findings := AnalyzeDocumentForTargets(doc, targets)
+	findings := analyzeTargetsTest(doc, targets)
 	redundant := false
 	for _, finding := range findings {
 		if finding.Condition != IssueNoEffect && finding.Condition != IssueRedundantStyleOverrides {
@@ -89,7 +90,7 @@ func TestUnknownDialectKeepsOriginalVSFilterView(t *testing.T) {
 	if _, ok := view.Dialogues[0].Field("marked"); !ok {
 		t.Fatal("SSA Marked field was renamed to an ASS layer")
 	}
-	for _, finding := range AnalyzeDocumentForTargets(doc, AnalysisTargets{Primary: xy}) {
+	for _, finding := range analyzeTargetsTest(doc, AnalysisTargets{Primary: xy}) {
 		if finding.Condition == IssueUndefinedStyle {
 			t.Fatalf("valid SSA Style was lost: %#v", finding)
 		}
@@ -100,11 +101,11 @@ func TestSafeFixDoesNotBorrowPrimaryStyleLayout(t *testing.T) {
 	doc := parseStyleOverrideText("Name, MarginL", "Default,12.75", "A")
 	libass, _ := renderer.Standard(renderer.Libass)
 	local := AnalysisTargets{Primary: libass}
-	localFindings := AnalyzeDocumentForTargets(doc, local)
+	localFindings := analyzeTargetsTest(doc, local)
 	if safe, _, _ := CountFixes(localFindings); safe != 1 {
 		t.Fatal("libass integer field proof missing")
 	}
-	shared := AnalyzeDocument(doc)
+	shared := analyzeDocumentTest(doc)
 	if safe, _, _ := CountFixes(shared); safe != 0 {
 		t.Fatal("xy font-name field borrowed libass integer proof")
 	}
@@ -120,7 +121,7 @@ func TestSafeFixReauthorizesSameSetWithDifferentPrimary(t *testing.T) {
 	doc := parseStyleOverrideText("Name, Fontname, Fontsize", "Default,Arial,20", `{\fs20}A`)
 	first := AnalysisTargets{Primary: libass, Compatibility: []renderer.Profile{xy}}
 	second := AnalysisTargets{Primary: xy, Compatibility: []renderer.Profile{libass}}
-	findings := AnalyzeDocumentForTargets(doc, first)
+	findings := analyzeTargetsTest(doc, first)
 	fixed, count, err := ApplyFixesForTargets(doc.Text, findings, false, second)
 	if err != nil || count != 1 || !strings.Contains(fixed, ",,A\n") {
 		t.Fatalf("reauthorized same-set fix rejected: count=%d err=%v", count, err)

@@ -30,7 +30,8 @@ Renderer profiles own field layout interpretation; the CST does not infer a dial
 `ass.ParseSource` parses the physical structure once and keeps source coordinates.
 It uses LF-delimited framing. The concrete document preserves standalone CR, LF, and CRLF.
 `renderer.DefaultDocument` supplies the default libass view from that tree.
-`renderer.Profile.View` supplies each renderer's own view and never changes the tree.
+`renderer.Prepare` supplies every requested view from one default view, and
+`renderer.Profile.View` supplies one profile's view. Neither changes the tree.
 Compatibility analysis independently partitions the concrete document under each requested profile.
 Unknown dialects and malformed framing remain unresolved.
 
@@ -47,7 +48,7 @@ SafeFix requires byte-exact round-trip equality before replacing the file.
 
 ## Input recognition
 
-`ass.Recognize` classifies decoded content before CLI analysis. It uses physical lines and section context from `ParseConcreteDocument`. It does not use the filename suffix, lint rules, or a renderer profile. Its evidence contains stable identifiers and physical line numbers.
+`ass.RecognizeParsed` classifies decoded content before CLI analysis. It uses the physical lines and section context from an existing `ass.Parsed`. It does not use the filename suffix, lint rules, or a renderer profile. Its evidence contains stable identifiers and physical line numbers.
 
 `Recognized` requires a credible record inside `[Events]`, a Style section, or `[Script Info]`. A meaningful event or Style `Format:` also qualifies. A `Comment:` record alone stays `Tentative`. A known section without credible records is `Tentative`. Text without credible ASS structure is `Rejected`. A NUL or other disallowed control byte rejects the input. A WebVTT marker or subtitle timing arrow rejects sparse input. Credible ASS records take precedence over foreign-looking text elsewhere. Unknown sections and malformed ASS values do not cause rejection by themselves.
 

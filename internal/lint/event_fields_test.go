@@ -309,9 +309,9 @@ func TestKaraokeCursorFindings(t *testing.T) {
 	}
 }
 
-func TestEventRulesRunThroughAnalyzeDocument(t *testing.T) {
+func TestEventRulesRunThroughanalyzeDocumentTest(t *testing.T) {
 	doc := eventDocument("Layer, Start, End, Style, Text", "0,0,1,Default,reversed")
-	findings := AnalyzeDocument(doc)
+	findings := analyzeDocumentTest(doc)
 	ids := map[string]int{}
 	for _, finding := range findings {
 		ids[finding.Condition]++

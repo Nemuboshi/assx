@@ -53,7 +53,7 @@ func (server *Server) commandAt(raw jsontext.Value) (document, commandLocation, 
 		return document{}, commandLocation{}, false, fmt.Errorf("invalid text document position")
 	}
 	doc, ok := server.documents.items[params.TextDocument.URI]
-	if !ok || ass.Recognize(doc.text).Class == ass.Rejected {
+	if !ok || ass.RecognizeParsed(doc.parsed).Class == ass.Rejected {
 		return document{}, commandLocation{}, false, nil
 	}
 	offset, err := doc.index.Offset(params.Position)

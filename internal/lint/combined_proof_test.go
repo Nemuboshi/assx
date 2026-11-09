@@ -11,7 +11,7 @@ func TestApplyRechecksCombinedIndependentProofGroups(t *testing.T) {
 	libass, _ := renderer.Standard(renderer.Libass)
 	targets := AnalysisTargets{Primary: libass}
 	doc := parseFontOverrideText(`{\fs21\fs21}A{\r\fs22\fs22\pos(1,2)\bord2\t(\bord2)}B`)
-	findings := AnalyzeDocumentForTargets(doc, targets)
+	findings := analyzeTargetsTest(doc, targets)
 	var separate []Diagnostic
 	for _, d := range findings {
 		if d.FixSafety != SafeFix || d.Condition != IssueNoEffect || d.Tag != "fs" {

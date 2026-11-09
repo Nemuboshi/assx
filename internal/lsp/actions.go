@@ -55,7 +55,7 @@ func (server *Server) codeActions(ctx context.Context, raw jsontext.Value) ([]co
 		return actions, fmt.Errorf("invalid code action parameters")
 	}
 	doc, ok := server.documents.items[params.TextDocument.URI]
-	if !ok || ass.Recognize(doc.text).Class != ass.Recognized {
+	if !ok || ass.RecognizeParsed(doc.parsed).Class != ass.Recognized {
 		return actions, nil
 	}
 	start, err := doc.index.Offset(params.Range.Start)

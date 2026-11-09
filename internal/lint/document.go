@@ -54,12 +54,6 @@ func (index *intervalIndex) overlapsAny(query editpkg.Interval) bool {
 	return candidates != 0 && index.maxEnd[candidates-1] > query.Start
 }
 
-// AnalyzeDocumentForTargets validates only the primary renderer and reports
-// compatibility observations for the full selected profile set separately.
-func AnalyzeDocumentForTargets(doc renderer.Document, targets AnalysisTargets) []Diagnostic {
-	return proveSafeFixes(doc, analyzeDocumentForTargetsUnproved(doc, targets, nil), targets.Profiles())
-}
-
 func analyzeDocumentForTargetsUnproved(doc renderer.Document, targets AnalysisTargets, policy RulePolicy) []Diagnostic {
 	findings, _ := analyzeDocumentForTargetsUnprovedSource(context.Background(), ass.ParseSource(doc.Text), doc, targets, policy, nil)
 	return findings
@@ -97,10 +91,6 @@ func analyzeDocumentForTargetsUnprovedSource(ctx context.Context, source ass.Par
 	}
 	findings = append(findings, analyzeDocumentCompatibility(defaultDoc, tree, targets.Profiles(), shared.compatibilityMode())...)
 	return policy.apply(assemble(findings, targets.Primary)), nil
-}
-
-func AnalyzeDocument(doc renderer.Document) []Diagnostic {
-	return AnalyzeDocumentForTargets(doc, DefaultAnalysisTargets())
 }
 
 // redundantIntervals flattens the redundant findings' edits into the interval

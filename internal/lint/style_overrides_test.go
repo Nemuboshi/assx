@@ -15,7 +15,7 @@ func TestRedundantStyleOverridesSafeFix(t *testing.T) {
 		t.Fatal(err)
 	}
 	doc := defaultDocument(string(data))
-	diagnostics := primaryFindings(AnalyzeDocument(doc))
+	diagnostics := primaryFindings(analyzeDocumentTest(doc))
 	if len(diagnostics) != 1 || diagnostics[0].Condition != IssueRedundantStyleOverrides {
 		t.Fatalf("diagnostics = %#v", diagnostics)
 	}
@@ -118,7 +118,7 @@ func TestRedundantStyleOverrideProperties(t *testing.T) {
 
 func TestRedundantStyleOverrideRestorationAndOverlap(t *testing.T) {
 	format, style := "Name, Outline", "Default,2"
-	if diagnostics := primaryFindings(AnalyzeDocument(parseStyleOverrideText(format, style, `{\bord4}A{\bord2}B`))); len(diagnostics) != 0 {
+	if diagnostics := primaryFindings(analyzeDocumentTest(parseStyleOverrideText(format, style, `{\bord4}A{\bord2}B`))); len(diagnostics) != 0 {
 		t.Fatalf("state restoration was reported: %#v", diagnostics)
 	}
 	mixedAlpha := parseStyleOverrideText(
@@ -131,7 +131,7 @@ func TestRedundantStyleOverrideRestorationAndOverlap(t *testing.T) {
 	}
 
 	doc := parseStyleOverrideText(format, style, `{\bord4\bord2}A`)
-	diagnostics := primaryFindings(AnalyzeDocument(doc))
+	diagnostics := primaryFindings(analyzeDocumentTest(doc))
 	if len(diagnostics) != 1 || diagnostics[0].Condition != IssueRedundantStyleOverrides {
 		t.Fatalf("redundant sequence diagnostics = %#v", diagnostics)
 	}
@@ -140,7 +140,7 @@ func TestRedundantStyleOverrideRestorationAndOverlap(t *testing.T) {
 		t.Fatalf("unproved custom-layout sequence changed source: count=%d err=%v", count, err)
 	}
 
-	overlap := primaryFindings(AnalyzeDocument(parseStyleOverrideText(format, style, `{\bord2\bord2}A`)))
+	overlap := primaryFindings(analyzeDocumentTest(parseStyleOverrideText(format, style, `{\bord2\bord2}A`)))
 	if len(overlap) != 1 || overlap[0].Condition != IssueRedundantStyleOverrides {
 		t.Fatalf("no-effect/redundant-style overlap was not assigned to redundant-style: %#v", overlap)
 	}
@@ -182,7 +182,7 @@ func TestSameValueAssignmentsKeepPreviousEffectiveOwner(t *testing.T) {
 	for _, test := range cases {
 		t.Run(test.name, func(t *testing.T) {
 			doc := parseStyleOverrideText(test.format, test.style, test.text)
-			diagnostics := primaryFindings(AnalyzeDocument(doc))
+			diagnostics := primaryFindings(analyzeDocumentTest(doc))
 			if len(diagnostics) != 1 || diagnostics[0].Condition != IssueNoEffect || diagnostics[0].FixSafety != SafeFix {
 				t.Fatalf("diagnostics = %#v", diagnostics)
 			}
@@ -190,7 +190,7 @@ func TestSameValueAssignmentsKeepPreviousEffectiveOwner(t *testing.T) {
 			if err != nil || count != 1 || !strings.Contains(fixed, test.want) {
 				t.Fatalf("safe fix = (%q, %d, %v), want to preserve %q", fixed, count, err, test.want)
 			}
-			for _, remaining := range AnalyzeDocument(defaultDocument(fixed)) {
+			for _, remaining := range analyzeDocumentTest(defaultDocument(fixed)) {
 				if remaining.Condition == IssueNoEffect {
 					t.Fatalf("fixed dialogue still has no-effect: %#v", remaining)
 				}
@@ -201,7 +201,7 @@ func TestSameValueAssignmentsKeepPreviousEffectiveOwner(t *testing.T) {
 
 func TestRedundantStyleFixPreservesOtherTags(t *testing.T) {
 	doc := parseFontOverrideText(`{\c&H00FF00&\fnCourier New\fnArial}A{\fnArial}B`)
-	diagnostics := primaryFindings(AnalyzeDocument(doc))
+	diagnostics := primaryFindings(analyzeDocumentTest(doc))
 	if len(diagnostics) != 1 || diagnostics[0].Condition != IssueRedundantStyleOverrides {
 		t.Fatalf("diagnostics = %#v", diagnostics)
 	}
@@ -228,7 +228,7 @@ func TestRedundantStyleRuleUsesRendererDialogueStyleLookup(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			doc := parseStyleDefinitionsText("Name, Fontname, Fontsize", definitions, name, `{\fs20}A`)
 			var styleFinding, undefinedFinding bool
-			for _, diagnostic := range AnalyzeDocument(doc) {
+			for _, diagnostic := range analyzeDocumentTest(doc) {
 				styleFinding = styleFinding || diagnostic.Condition == IssueRedundantStyleOverrides
 				undefinedFinding = undefinedFinding || diagnostic.Condition == IssueUndefinedStyle
 			}
@@ -253,7 +253,7 @@ func TestRedundantStyleRuleKeepsNonDefaultNamesCaseSensitive(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			doc := parseStyleDefinitionsText("Name, Fontname, Fontsize", definitions, test.name, test.text)
 			var styleFinding, undefinedFinding bool
-			for _, diagnostic := range AnalyzeDocument(doc) {
+			for _, diagnostic := range analyzeDocumentTest(doc) {
 				styleFinding = styleFinding || diagnostic.Condition == IssueRedundantStyleOverrides
 				undefinedFinding = undefinedFinding || diagnostic.Condition == IssueUndefinedStyle
 			}

@@ -95,7 +95,7 @@ func styleReferenceDocument(styles, dialogueStyle, text string) renderer.Documen
 
 func undefinedStyleFindings(doc renderer.Document) []Diagnostic {
 	var findings []Diagnostic
-	for _, diagnostic := range AnalyzeDocument(doc) {
+	for _, diagnostic := range analyzeDocumentTest(doc) {
 		if diagnostic.Condition == IssueUndefinedStyle {
 			findings = append(findings, diagnostic)
 		}

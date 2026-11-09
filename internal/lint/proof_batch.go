@@ -77,7 +77,11 @@ func newProofBatch(source string, beforeDoc renderer.Document, profiles []render
 
 // viewForDocument derives one renderer view without parsing the text again.
 func viewForDocument(ctx context.Context, profile renderer.Profile, source ass.Parsed, doc renderer.Document) (renderer.View, error) {
-	return profile.ViewFromConcrete(ctx, doc, source, profile.ResolveDocumentLayouts(source.Concrete))
+	prepared, err := renderer.PrepareFrom(ctx, doc, source, []renderer.Profile{profile})
+	if err != nil {
+		return renderer.View{}, err
+	}
+	return prepared.Views[profile], nil
 }
 
 // newSessionProofBatch builds the batch a Discover call attaches to its

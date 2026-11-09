@@ -4,18 +4,18 @@ The run order and the proof boundary are in [the lint pipeline](../architecture/
 
 ## Current API boundary
 
-`lint.AnalyzeForRenderer(dialogue, profile)` and
-`lint.AnalyzeDocumentForRenderer(document, profile)` evaluate a **single pinned
-renderer**. The document entry point also checks headers, event fields,
-Style definitions/references, drawing syntax, and karaoke timing.
-These observation-only APIs do not authorize edits.
-`AnalyzeDocumentForTargets` accepts a primary profile and compatibility profiles.
+`lint.AnalyzeForRenderer(dialogue, profile)` evaluates a **single pinned
+renderer** for one dialogue. Document analysis runs through
+`lint.Discover` and checks headers, event fields, Style definitions/references,
+drawing syntax, and karaoke timing. These observation-only paths do not
+authorize edits.
+`Discover` accepts a primary profile and compatibility profiles.
 VSFilter primaries project fixed ASS v4+ record slots, including when Format fields differ.
 Style and Dialogue rows form separate groups.
 A group projects only when every row has a known ASS v4+ layout.
 Unknown groups keep the parser's original fields. This is not a complete renderer
 loader.
-`Analyze` and `AnalyzeDocument` call the same concrete/profile pipeline with libass primary and xy-VSFilter compatibility.
+`Analyze` (one dialogue) and `Discover` (one document) call the same concrete/profile pipeline with libass primary and xy-VSFilter compatibility.
 There is no historical input adapter or duplicate semantic path.
 
 Only the renderer-neutral concrete syntax tree is used for naming and

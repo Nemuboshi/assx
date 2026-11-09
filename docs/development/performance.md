@@ -46,7 +46,7 @@ a useful later extension.
 | `BenchmarkCompareDialogue` | Pairwise compatibility comparison on pre-parsed CSTs |
 | `BenchmarkAnalyzeDocumentFixtures` | All lint passes on a pre-parsed document, including the `late_candidate_failure_N` and `style_edit_proof_N` stages |
 | `BenchmarkSessionDiscovery` | `lint.Discover` on the same documents: every lint pass and candidate recording, no SafeFix proof construction |
-| `BenchmarkParseAndAnalyzeDocumentFixtures` | Complete default document view plus `lint.AnalyzeDocument` |
+| `BenchmarkParseAndAnalyzeDocumentFixtures` | Complete default document view plus document analysis |
 
 The scaling fixtures (`scaling_250` … `scaling_10000`) separate source-size
 growth from feature mix. The lint analysis of `long_10000` is dominated by

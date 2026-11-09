@@ -31,14 +31,14 @@ func TestSafeFixRendererRegressions(t *testing.T) {
 	for _, test := range cases {
 		t.Run(test.name, func(t *testing.T) {
 			doc := parseStyleOverrideText(test.format, test.style, test.text)
-			fixed, _, err := ApplyFixes(doc.Text, AnalyzeDocument(doc), false)
+			fixed, _, err := ApplyFixes(doc.Text, analyzeDocumentTest(doc), false)
 			if err != nil {
 				t.Fatal(err)
 			}
 			if got := defaultDocument(fixed).Dialogues[0].Text; got != test.want {
 				t.Fatalf("fixed text = %q, want %q", got, test.want)
 			}
-			second, count, err := ApplyFixes(fixed, AnalyzeDocument(defaultDocument(fixed)), false)
+			second, count, err := ApplyFixes(fixed, analyzeDocumentTest(defaultDocument(fixed)), false)
 			if err != nil || count != 0 || second != fixed {
 				t.Fatalf("fix is not stable: (%q, %d, %v)", second, count, err)
 			}
@@ -53,7 +53,7 @@ func TestLateVSFilterModTagsDisableAllDialogueFixes(t *testing.T) {
 		`{\fs20}A{\unknown}B{\distort(1)}C`,
 	} {
 		doc := parseFontOverrideText(text)
-		for _, diagnostics := range [][]Diagnostic{AnalyzeDocument(doc), AnalyzeRedundantStyleOverrides(doc)} {
+		for _, diagnostics := range [][]Diagnostic{analyzeDocumentTest(doc), AnalyzeRedundantStyleOverrides(doc)} {
 			for _, diagnostic := range diagnostics {
 				if diagnostic.FixSafety != "" || len(diagnostic.Edits) != 0 {
 					t.Fatalf("%s remains auto-fixable: %#v", text, diagnostic)
@@ -94,7 +94,7 @@ func TestEveryEventFormatHasItsOwnDiagnostic(t *testing.T) {
 		{custom + standard, []int{2}},
 		{custom + standard + custom, []int{2, 6}},
 	} {
-		diagnostics := diagnosticsForIDs(AnalyzeDocument(defaultDocument("[Events]\n"+test.text)), IssueEventFormat)
+		diagnostics := diagnosticsForIDs(analyzeDocumentTest(defaultDocument("[Events]\n"+test.text)), IssueEventFormat)
 		var lines []int
 		for _, diagnostic := range diagnostics {
 			lines = append(lines, diagnostic.Line)
@@ -112,7 +112,7 @@ func TestStyleFallbackAfterNamedResetRequiresRendererAgreement(t *testing.T) {
 	definitions := "Style: Default,Arial,20,0,0\nStyle: Other,Courier New,24,-1,-1\n"
 	for _, text := range []string{`{\rOther\b}A`, `{\rOther\b2}A`, `{\rOther\i}A`, `{\rOther\i2}A`, `{\rOther\fn0}A`, `{\rOther\fn(0)}A`, `{\rOther\fs0}A`, `{\rOther\fs}A`} {
 		doc := parseStyleDefinitionsText("Name, Fontname, Fontsize, Bold, Italic", definitions, "Default", text)
-		fixed, count, err := ApplyFixes(doc.Text, AnalyzeDocument(doc), false)
+		fixed, count, err := ApplyFixes(doc.Text, analyzeDocumentTest(doc), false)
 		if err != nil || count != 0 || fixed != doc.Text {
 			t.Fatalf("renderer-dependent fallback %s changed: (%q, %d, %v)", text, fixed, count, err)
 		}

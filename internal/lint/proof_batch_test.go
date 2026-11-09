@@ -106,7 +106,7 @@ func TestProofBatchStyleEditSharesOneAggregateProof(t *testing.T) {
 	targets := DefaultAnalysisTargets()
 	calls := instrumentProofBuilder(t)
 	resetProofBatchCounters()
-	findings := AnalyzeDocument(doc)
+	findings := analyzeDocumentTest(doc)
 	attempts, views, comparisons, reuse := *calls, proofBatchViews.Load(), proofBatchComparisons.Load(), proofBatchReuse.Load()
 
 	if attempts != 1 {
@@ -168,7 +168,7 @@ func TestProofBatchFallbackReusesBeforeWork(t *testing.T) {
 	targets := DefaultAnalysisTargets()
 	calls := instrumentProofBuilder(t)
 	resetProofBatchCounters()
-	first := AnalyzeDocument(doc)
+	first := analyzeDocumentTest(doc)
 	attempts, views, trees, hashes, reuse := *calls, proofBatchViews.Load(), proofBatchTrees.Load(), proofBatchHashes.Load(), proofBatchReuse.Load()
 
 	if attempts < 2 {
@@ -210,7 +210,7 @@ func TestProofBatchFallbackReusesBeforeWork(t *testing.T) {
 		}
 	}
 
-	second := AnalyzeDocument(doc)
+	second := analyzeDocumentTest(doc)
 	if got, want := marshalJSON(t, second), marshalJSON(t, first); got != want {
 		t.Fatal("fallback run changed bytes between identical runs")
 	}
@@ -223,7 +223,7 @@ func TestProofBatchHashesSourceOnce(t *testing.T) {
 	doc := defaultDocument(scalingCase(t, "scaling_250"))
 	calls := instrumentProofBuilder(t)
 	resetProofBatchCounters()
-	AnalyzeDocument(doc)
+	analyzeDocumentTest(doc)
 	if *calls < 2 {
 		t.Fatalf("proof attempts = %d, want the fallback schedule to halve a failing batch", *calls)
 	}
@@ -237,7 +237,7 @@ func TestProofBatchHashesSourceOnce(t *testing.T) {
 // targets.
 func TestProofBatchFallbackGroupsApplyAndReject(t *testing.T) {
 	doc := defaultDocument(scalingCase(t, "scaling_250"))
-	findings := AnalyzeDocument(doc)
+	findings := analyzeDocumentTest(doc)
 	proved := countSafeProved(findings)
 	if proved == 0 {
 		t.Fatal("fixture proved nothing")
@@ -319,7 +319,7 @@ func TestProofBatchKeepsPerProfileWorkSeparate(t *testing.T) {
 	}
 	calls := instrumentProofBuilder(t)
 	resetProofBatchCounters()
-	findings := AnalyzeDocumentForTargets(doc, targets)
+	findings := analyzeTargetsTest(doc, targets)
 	if *calls != 1 {
 		t.Fatalf("proof attempts = %d, want one aggregate build", *calls)
 	}
@@ -380,7 +380,7 @@ func missingFieldDoc() renderer.Document {
 // dialogue row it cannot map, instead of proving a partial document.
 func TestProofBatchRejectsUnverifiableDialogueLayout(t *testing.T) {
 	doc := missingFieldDoc()
-	findings := AnalyzeDocument(doc)
+	findings := analyzeDocumentTest(doc)
 	proved := countSafeProved(findings)
 	if proved != 3 {
 		t.Fatalf("proved = %d, want the three dialogue edits of the mapped row", proved)
@@ -425,7 +425,7 @@ func TestProofBatchReplacesForeignSourceBatch(t *testing.T) {
 	if proved == 0 {
 		t.Fatal("foreign source proved nothing")
 	}
-	eager := AnalyzeDocumentForTargets(foreign, targets)
+	eager := analyzeTargetsTest(foreign, targets)
 	if want := countSafeProved(eager); proved != want {
 		t.Fatalf("foreign proof proved %d, want %d", proved, want)
 	}
