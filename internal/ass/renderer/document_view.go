@@ -104,12 +104,10 @@ func (p Profile) projectDocument(ctx context.Context, doc Document, tree ass.Con
 		view.StyleFields = nil
 	}
 	sections := make([]string, len(tree.Lines))
-	section := ""
+	var cursor documentCursor
 	for i, line := range tree.Lines {
-		if line.Header != nil {
-			section = strings.ToLower(strings.TrimSpace(line.Header.RawName))
-		}
-		sections[i] = section
+		cursor.enter(line)
+		sections[i] = cursor.Section()
 	}
 	for _, row := range layouts {
 		line := tree.Lines[row.Line-1]

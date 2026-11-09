@@ -35,6 +35,27 @@ Transitions:
 The previous two booleans could represent an illegal state. The enum removes
 that state.
 
+### Document projection cursor
+
+Owner: `internal/ass/renderer/document_cursor.go`.
+
+State:
+
+- current section
+- Style Format
+- Event Format
+- ScriptType v4.00+ flag
+
+Transitions:
+
+- `enter` changes the section.
+- `setStyleFormat` and `setEventFormat` replace one format and apply the
+  Actor-to-Name alias.
+- `resetStyleFormat` restores the dialect default path.
+
+The default document pass, the layout resolver, and the view projector use the
+same cursor. Each pass keeps its own section and exact-key policy.
+
 ## Accepted implicit state
 
 These machines stay as they are. An enum would add no safety.
@@ -59,15 +80,10 @@ These machines stay as they are. An enum would add no safety.
 
 ## Migration order
 
-1. **Document projection cursor.** Three passes derive section and Format
-   state: `documentFromConcrete`, `ResolveDocumentLayouts`, and
-   `projectDocument`. Extract one cursor that answers the current section and
-   the current Style/Event format. Keep each pass's interpretation in its own
-   code. This removes drift between the three passes.
-2. **Tag fold transitions.** The evaluator has many early returns. Extract one
+1. **Tag fold transitions.** The evaluator has many early returns. Extract one
    transition result only after a table test covers every branch. Do not
    merge independent flags into one enum.
-3. **Proof lifecycle.** `analysis.Result`, `lint.Session`, and `proofBatch`
+2. **Proof lifecycle.** `analysis.Result`, `lint.Session`, and `proofBatch`
    already use opaque IDs and source checks. Add a phase only if a new caller
    needs to observe it.
 

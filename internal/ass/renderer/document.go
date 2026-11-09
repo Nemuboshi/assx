@@ -27,47 +27,38 @@ type RecordLayout struct {
 // records. libass honors Format names; both VSFilter parsers read fixed slots.
 // SSA/v4++ and malformed framing remain unresolved until explicitly modeled.
 func (p Profile) ResolveDocumentLayouts(tree ass.ConcreteDocument) []RecordLayout {
-	eventColumns, styleColumns := slices.Clone(assEventColumns), slices.Clone(assStyleColumns)
-	scriptASS := false
-	section := ""
+	cursor := documentCursor{styleFormat: slices.Clone(assStyleColumns), eventFormat: slices.Clone(assEventColumns)}
 	var out []RecordLayout
 	for _, line := range tree.Lines {
 		if line.Header != nil {
-			section = strings.ToLower(strings.TrimSpace(line.Header.RawName))
+			cursor.enter(line)
 			continue
 		}
-		if line.Record == nil {
+		key, exact, ok := recordKey(line)
+		if !ok {
 			continue
 		}
 		record := *line.Record
-		key := strings.ToLower(strings.TrimSpace(record.Key))
-		exactRecordKey := strings.TrimLeft(record.Key, " \t")
-		if key == "scripttype" && (p.kind != Libass || section == "script info" && exactRecordKey == "ScriptType") {
-			scriptASS = strings.EqualFold(strings.TrimSpace(record.Body), "v4.00+")
+		if key == "scripttype" && (p.kind != Libass || cursor.Section() == "script info" && exact == "ScriptType") {
+			cursor.scriptASS = strings.EqualFold(strings.TrimSpace(record.Body), "v4.00+")
 		}
-		if key == "format" && p.kind == Libass && exactRecordKey == "Format" {
-			columns := ass.ParseFormat(record.Body)
-			for i, column := range columns {
-				if column == "actor" {
-					columns[i] = "name"
-				}
-			}
-			if section == "events" {
-				eventColumns = columns
-			}
-			if section == "v4+ styles" {
-				styleColumns = columns
+		if key == "format" && p.kind == Libass && exact == "Format" {
+			switch cursor.Section() {
+			case "events":
+				cursor.setEventFormat(record.Body, true)
+			case "v4+ styles":
+				cursor.setStyleFormat(record.Body, true)
 			}
 		}
 		if key != "dialogue" && key != "style" {
 			continue
 		}
-		columns := styleColumns
-		known := section == "v4+ styles"
+		columns := cursor.styleFormat
+		known := cursor.Section() == "v4+ styles"
 		tail := -1
 		if key == "dialogue" {
-			columns = eventColumns
-			known = section == "events" && scriptASS
+			columns = cursor.eventFormat
+			known = cursor.Section() == "events" && cursor.scriptASS
 			tail = slices.Index(columns, "text")
 		}
 		// libass requires the exact record keyword; case-insensitive VSFilter
@@ -76,7 +67,7 @@ func (p Profile) ResolveDocumentLayouts(tree ass.ConcreteDocument) []RecordLayou
 		if key == "dialogue" {
 			exactKey = "Dialogue"
 		}
-		if p.kind == Libass && exactRecordKey != exactKey {
+		if p.kind == Libass && exact != exactKey {
 			known = false
 		}
 		out = append(out, RecordLayout{Line: line.Number, Source: line.ContentSpan, Kind: key, Columns: slices.Clone(columns), Cells: record.Partition(tree.Source, len(columns), tail), Known: known, Citation: p.documentCitation()})

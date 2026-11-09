@@ -22,29 +22,28 @@ func DefaultDocument(source ass.Parsed) Document {
 func documentFromConcrete(tree ass.ConcreteDocument) Document {
 	text := tree.Source
 	doc := Document{Text: text, Headers: map[string]HeaderField{}, Newline: lineTerminator(text)}
-	section := ""
-	var styleFormat, eventFormat []string
+	var cursor documentCursor
 	for i := range tree.Lines {
 		line := tree.Lines[i]
 		doc.Lines = append(doc.Lines, RawLine{
-			Line: line.Number, Offset: line.Span.Start, Content: line.Content, Section: section,
+			Line: line.Number, Offset: line.Span.Start, Content: line.Content, Section: cursor.Section(),
 		})
 		if line.Header != nil {
-			section = strings.ToLower(strings.TrimSpace(line.Header.RawName))
-			styleFormat = nil
-			if section == "script info" && doc.ScriptInfoLine == 0 {
+			cursor.enter(line)
+			cursor.resetStyleFormat()
+			if cursor.Section() == "script info" && doc.ScriptInfoLine == 0 {
 				doc.ScriptInfoLine = line.Number
 				doc.ScriptInfoInsert = line.Span.End
 			}
 			continue
 		}
-		record := line.Record
-		if record == nil {
+		key, _, ok := recordKey(line)
+		if !ok {
 			continue
 		}
-		key := strings.ToLower(strings.TrimSpace(record.Key))
+		record := line.Record
 		switch {
-		case section == "script info":
+		case cursor.Section() == "script info":
 			switch key {
 			case "playresx", "playresy", "ycbcr matrix", "layoutresx", "layoutresy":
 				if _, exists := doc.Headers[key]; exists {
@@ -56,34 +55,26 @@ func documentFromConcrete(tree ass.ConcreteDocument) Document {
 					ValueStart: record.BodySpan.Start + start, ValueEnd: record.BodySpan.Start + end,
 				}
 			}
-		case ass.IsStyleSection(section):
+		case ass.IsStyleSection(cursor.Section()):
 			if key == "format" {
-				styleFormat = ass.ParseFormat(record.Body)
+				cursor.setStyleFormat(record.Body, false)
 				continue
 			}
 			if key != "style" {
 				continue
 			}
-			if styleFormat == nil {
-				styleFormat = defaultStyleFormat(section)
-			}
-			doc.StyleFields = append(doc.StyleFields, parseStyleFields(line.Content, line.Span.Start, line.Number, styleFormat)...)
-		case section == "events":
+			format := cursor.styleFormatOrDefault(defaultStyleFormat)
+			doc.StyleFields = append(doc.StyleFields, parseStyleFields(line.Content, line.Span.Start, line.Number, format)...)
+		case cursor.Section() == "events":
 			if key == "format" {
-				doc.EventFormat = ass.ParseFormat(record.Body)
-				eventFormat = doc.EventFormat
+				cursor.setEventFormat(record.Body, false)
+				doc.EventFormat = cursor.eventFormat
 				continue
 			}
 			if key != "dialogue" {
 				continue
 			}
-			format := eventFormat
-			if len(format) == 0 {
-				// libass substitutes the standard v4+ event format
-				// (ass.c event_format_fallback) when no Format line was
-				// read yet.
-				format = standardEventFormat
-			}
+			format := cursor.eventFormatOrDefault(standardEventFormat)
 			// A Format line without a Text name silently drops every
 			// event in libass; the Format line itself gets flagged.
 			if !ass.HasFormatName(format, "text") {
