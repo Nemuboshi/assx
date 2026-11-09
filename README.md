@@ -3,7 +3,7 @@ assx checks ASS subtitle files for lint issues.
 ## Usage
 
 ```text
-assx [lint] [--renderer=RENDERERS] [--format pretty|plain|json] [--explain] [--fix] [--unsafe-fix] [--force-ass] file.ass
+assx [lint] [--renderer=RENDERERS] [--format pretty|plain|json] [--severity suggestion|warning|error] [--explain] [--fix] [--unsafe-fix] [--force-ass] file.ass
 ```
 
 - `file.ass`: the ASS file to check.
@@ -13,6 +13,7 @@ assx [lint] [--renderer=RENDERERS] [--format pretty|plain|json] [--explain] [--f
 - assx models the pinned VSFilterMod build, which defines `_VSMOD` in every configuration. It does not model the `_LUA` gate: the pinned source compiles Lua code but loads no script. See [build capabilities](docs/packages/profiles.md#vsfiltermod-build-capabilities).
 - Exit status: 0 for no primary errors, 1 for primary errors, 2 for usage, input/output, or fix-application failures.
 - `--format pretty|plain|json`: choose output format; defaults to `pretty`. Pretty output shows a compact diagnostic report with source frames; color is used only on an interactive terminal. A scan spinner appears only when stderr is interactive. `plain` preserves the text-oriented output; `json` emits machine-readable diagnostics.
+- `--severity suggestion|warning|error`: set the minimum reported severity; defaults to `suggestion`. The filter applies to every output format, fix counts, and `--fix`. Exit status depends only on primary errors, which this threshold never hides.
 - `--explain`: include expanded rule descriptions and evidence URLs in pretty output.
 - `--fix`: apply safe fixes. If the input is a symbolic link, update its target and preserve the link.
 - `--unsafe-fix`: apply safe and unsafe fixes.

@@ -225,6 +225,56 @@ func TestRunJSONStaysValidAndReportsUnknownTagsAsSuggestion(t *testing.T) {
 	}
 }
 
+func TestRunSeverityThresholdFiltersDiagnostics(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "levels.ass")
+	input := "[Script Info]\nYCbCr Matrix: None\nPlayResX: 640\nPlayResY: 480\nLayoutResX: 640\nLayoutResY: 480\n[V4+ Styles]\nFormat: Name, Fontname, Fontsize\nStyle: Default, Arial, 20\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{\\mysteryTag}text\nDialogue: 0,0:00:01.00,0:00:02.00,Default,,0,0,0,,{\\fade(1)}text\n"
+	if err := os.WriteFile(path, []byte(input), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	for _, tc := range []struct {
+		level          string
+		wantSuggestion bool
+		wantError      bool
+	}{
+		{"suggestion", true, true},
+		{"warning", false, true},
+		{"error", false, true},
+	} {
+		t.Run(tc.level, func(t *testing.T) {
+			var stdout, stderr strings.Builder
+			if code := run([]string{"--format", "json", "--renderer=libass", "--severity=" + tc.level, path}, &stdout, &stderr); code != 1 {
+				t.Fatalf("run returned %d, want 1: %s", code, stderr.String())
+			}
+			var diagnostics []map[string]any
+			if err := json.Unmarshal([]byte(stdout.String()), &diagnostics); err != nil {
+				t.Fatalf("invalid JSON: %v\n%s", err, stdout.String())
+			}
+			var suggestions, errors int
+			for _, diagnostic := range diagnostics {
+				switch diagnostic["severity"] {
+				case "suggestion":
+					suggestions++
+				case "error":
+					errors++
+				}
+			}
+			if suggestions != 0 && !tc.wantSuggestion {
+				t.Fatalf("severity %s kept suggestions: %#v", tc.level, diagnostics)
+			}
+			if tc.wantSuggestion && suggestions == 0 {
+				t.Fatalf("severity %s dropped suggestions: %#v", tc.level, diagnostics)
+			}
+			if tc.wantError && errors == 0 {
+				t.Fatalf("severity %s dropped errors: %#v", tc.level, diagnostics)
+			}
+		})
+	}
+	var stdout, stderr strings.Builder
+	if code := run([]string{"--severity=hint", path}, &stdout, &stderr); code != 2 || !strings.Contains(stderr.String(), "Unknown severity") {
+		t.Fatalf("invalid severity returned %d: %s", code, stderr.String())
+	}
+}
+
 func TestPlainDoesNotCountUnknownSeverityAsSuggestion(t *testing.T) {
 	var stdout strings.Builder
 	if err := plain.Render(&stdout, "sample.ass", []report.Diagnostic{{Condition: "ASS999", Severity: "future", Title: "Unknown severity"}}, 0, ""); err != nil {

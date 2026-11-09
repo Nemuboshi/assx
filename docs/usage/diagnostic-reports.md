@@ -17,6 +17,7 @@ Lint diagnostics carry decoded-byte `SourceSpan` ranges at their creation sites.
 The pretty presenter escapes terminal control characters from file paths, source, and diagnostic text. It crops long source lines around the location and adapts the source-frame width to the detected terminal width (80 columns when output is redirected). Color is enabled only for an interactive stdout when `NO_COLOR` is unset and `TERM` is not `dumb`. Scan progress is written only to interactive stderr.
 
 Use `--explain` to include full rule descriptions and evidence URLs. The default report shows the short diagnostic detail when available.
+`--severity` filters final diagnostics before report assembly, fix counting, and fix application. Exit status still depends only on primary errors, which the threshold never hides.
 
 ## Font reports
 

@@ -50,6 +50,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 	flags := flag.NewFlagSet("assx", flag.ContinueOnError)
 	flags.SetOutput(stderr)
 	format := flags.String("format", "pretty", "diagnostic output: pretty, plain, or json")
+	severityName := flags.String("severity", "suggestion", "minimum reported severity: suggestion, warning, or error")
 	explain := flags.Bool("explain", false, "include expanded rule explanations and evidence in pretty output")
 	fix := flags.Bool("fix", false, "apply safe fixes")
 	unsafeFix := flags.Bool("unsafe-fix", false, "apply safe and unsafe fixes")
@@ -58,7 +59,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 	// Usage and fallback diagnostics on stderr are best-effort: their write
 	// failures cannot be reported through the same failing stream.
 	flags.Usage = func() {
-		_, _ = fmt.Fprintln(stderr, "Usage: assx [lint] [--format pretty|plain|json] [--renderer=RENDERERS] [--explain] [--fix] [--unsafe-fix] [--force-ass] file.ass")
+		_, _ = fmt.Fprintln(stderr, "Usage: assx [lint] [--format pretty|plain|json] [--severity suggestion|warning|error] [--renderer=RENDERERS] [--explain] [--fix] [--unsafe-fix] [--force-ass] file.ass")
 	}
 	if err := flags.Parse(args); err != nil {
 		if strings.Contains(err.Error(), "flag provided but not defined: -check-fonts") || strings.Contains(err.Error(), "flag provided but not defined: -font-dir") {
@@ -75,6 +76,11 @@ func run(args []string, stdout, stderr io.Writer) int {
 	}
 	if *format != "pretty" && *format != "plain" && *format != "json" {
 		_, _ = fmt.Fprintf(stderr, "Unknown output format %q. Use pretty, plain, or json.\n", *format)
+		return 2
+	}
+	minimum, ok := parseSeverity(*severityName)
+	if !ok {
+		_, _ = fmt.Fprintf(stderr, "Unknown severity %q. Use suggestion, warning, or error.\n", *severityName)
 		return 2
 	}
 
@@ -144,7 +150,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 		if err != nil {
 			return nil, nil, err
 		}
-		return result, diagnostics, nil
+		return result, filterSeverity(diagnostics, minimum), nil
 	}
 	result, diagnostics, err := analyzeSnapshot(snapshot, parsed)
 	if err != nil {
@@ -261,6 +267,32 @@ func outputWidth(writer io.Writer) int {
 		}
 	}
 	return 80
+}
+
+var severityRank = map[lint.Severity]int{
+	lint.Suggestion: 0,
+	lint.Warning:    1,
+	lint.Error:      2,
+}
+
+func parseSeverity(name string) (lint.Severity, bool) {
+	severity := lint.Severity(name)
+	_, ok := severityRank[severity]
+	return severity, ok
+}
+
+// filterSeverity keeps findings at or above the minimum reported severity.
+func filterSeverity(diagnostics []lint.Diagnostic, minimum lint.Severity) []lint.Diagnostic {
+	if minimum == lint.Suggestion {
+		return diagnostics
+	}
+	out := diagnostics[:0]
+	for _, diagnostic := range diagnostics {
+		if severityRank[diagnostic.Severity] >= severityRank[minimum] {
+			out = append(out, diagnostic)
+		}
+	}
+	return out
 }
 
 type scanProgress struct {
