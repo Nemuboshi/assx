@@ -464,3 +464,30 @@ func TestProofBatchRequiresTheSameDocumentShape(t *testing.T) {
 		t.Error("a batch accepted a document with fewer lines")
 	}
 }
+
+// TestReleaseProofCacheRebuildsPreparedWork requires the request boundary to
+// free prepared proof work and the next call to rebuild it.
+func TestReleaseProofCacheRebuildsPreparedWork(t *testing.T) {
+	doc := defaultDocument(benchmarkLateProofFailure(20))
+	session := discoverTestSession(t, doc, nil)
+	handles := allCandidateHandles(session)
+	resetProofBatchCounters()
+	first, err := session.ProveFixes(context.Background(), handles)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := proofBatchViews.Load(); got != 0 {
+		t.Fatalf("first proof prepared %d views; discovery views must be reused", got)
+	}
+	session.ReleaseProofCache()
+	second, err := session.ProveFixes(context.Background(), handles)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := proofBatchViews.Load(); got == 0 {
+		t.Fatal("proof cache was not released; no view was rebuilt")
+	}
+	if got, want := marshalJSON(t, second), marshalJSON(t, first); got != want {
+		t.Fatal("release changed proof bytes")
+	}
+}

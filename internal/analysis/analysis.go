@@ -126,7 +126,9 @@ func (r *Result) ProveFixes(ctx context.Context, ids []FindingID) ([]lint.Diagno
 	if err != nil {
 		return nil, err
 	}
-	return r.session.ProveFixes(ctx, handles)
+	out, err := r.session.ProveFixes(ctx, handles)
+	r.session.ReleaseProofCache()
+	return out, err
 }
 
 // Diagnostics proves every candidate and merges the result into the pending
@@ -138,6 +140,7 @@ func (r *Result) Diagnostics(ctx context.Context) ([]lint.Diagnostic, error) {
 		return nil, err
 	}
 	authorized, err := r.session.ProveFixes(ctx, handles)
+	r.session.ReleaseProofCache()
 	if err != nil {
 		return nil, err
 	}

@@ -206,6 +206,14 @@ func (s *Session) ProveFixes(ctx context.Context, handles []CandidateID) ([]Diag
 	return proveSafeFixesBatchContext(ctx, s.primary.Document, batch, s.targets.Profiles(), s.proof)
 }
 
+// ReleaseProofCache drops the prepared before-side proof work after a request.
+// The session stays usable; a later proof call rebuilds the cache.
+func (s *Session) ReleaseProofCache() {
+	if s != nil {
+		s.proof.release()
+	}
+}
+
 func (s *Session) resolve(handles []CandidateID) ([]int, error) {
 	seen := make(map[int]bool, len(handles))
 	ordinals := make([]int, 0, len(handles))

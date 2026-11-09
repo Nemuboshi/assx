@@ -309,6 +309,18 @@ func (b *proofBatch) fixTargetsChecked() ([]FixTarget, error) {
 	return targets, nil
 }
 
+// release drops prepared before-side work after a request's proof builds.
+// The batch remains usable; a later proof call rebuilds from the stored source
+// and views. This bounds retained trees, traces, and views to one request.
+func (b *proofBatch) release() {
+	if b == nil {
+		return
+	}
+	b.preps = make(map[renderer.Profile]*proofProfilePrep, len(b.profiles))
+	b.seeded = nil
+	b.rawStyles = nil
+}
+
 // prep returns one profile's before view, interpreted Style state, and line
 // index, prepared at most once per batch.
 func (b *proofBatch) prep(profile renderer.Profile) *proofProfilePrep {
