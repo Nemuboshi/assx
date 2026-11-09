@@ -40,6 +40,7 @@ SafeFix application recomputes authorized edits under the caller's primary and c
 See [the verification rules](docs/rules/verification.md) for evidence scope and limits.
 
 For condition names and explanations, see the [condition catalog](docs/reference/catalog.md). For pretty report behavior, see [diagnostic reports](docs/usage/diagnostic-reports.md).
+For explicit and accepted implicit state, see [state machines](docs/architecture/state-machines.md).
 For reproducible performance benchmarks, profiling, and the pinned baseline, see [performance benchmarks](docs/development/performance.md).
 
 ## Development
