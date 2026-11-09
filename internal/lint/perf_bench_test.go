@@ -1,6 +1,7 @@
 package lint
 
 import (
+	"assx/internal/semantic"
 	"context"
 	"fmt"
 	"strings"
@@ -293,4 +294,31 @@ func proveFixesStage(b *testing.B, name, text string) {
 		}
 		b.ReportMetric(float64(proved), "proved/op")
 	})
+}
+
+// Measures discovery analysis after one shared view preparation. The physical
+// parse and view preparation are outside the timer. Each iteration starts a
+// fresh dialogue preparation cache, so results do not share resolved work.
+func BenchmarkDiscoveryFixtures(b *testing.B) {
+	display := DefaultAnalysisTargets()
+	for _, test := range perftest.Cases(b) {
+		source := ass.ParseSource(test.Text)
+		shared, err := PrepareDocument(context.Background(), source, display.Profiles())
+		if err != nil {
+			b.Fatal(err)
+		}
+		primary, ok := shared.viewFor(source, display.Primary)
+		if !ok {
+			b.Fatal("missing primary view")
+		}
+		b.Run(test.Name, func(b *testing.B) {
+			b.SetBytes(int64(len(test.Text)))
+			b.ReportAllocs()
+			b.ResetTimer()
+			for i := 0; i < b.N; i++ {
+				shared.preparations = semantic.NewDialoguePreparations()
+				_, _ = analyzeDocumentForTargetsUnprovedContext(context.Background(), source, primary.Document, display, nil, shared)
+			}
+		})
+	}
 }

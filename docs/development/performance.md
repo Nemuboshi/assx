@@ -41,11 +41,13 @@ a useful later extension.
 | Benchmark | What is timed per operation |
 | --- | --- |
 | `BenchmarkParseConcreteDialogueFixtures` | Lossless CST parsing for each Dialogue, without document parsing |
-| `BenchmarkASSDocumentParse` | Default document fields and spans, without dialogue CST construction |
+| `BenchmarkParseSourceFixtures` | Physical parse only: lines, records, cells, spans. No default view. |
+| `BenchmarkDefaultDocumentFixtures` | Default document view from a physical parse. The parse is outside the timer. |
 | `BenchmarkEvaluateDialogue` | Explicit libass effective-state evaluation on pre-parsed CSTs |
 | `BenchmarkCompareDialogue` | Pairwise compatibility comparison on pre-parsed CSTs |
 | `BenchmarkAnalyzeDocumentFixtures` | All lint passes on a pre-parsed document, including the `late_candidate_failure_N` and `style_edit_proof_N` stages |
-| `BenchmarkSessionDiscovery` | `lint.Discover` on the same documents: every lint pass and candidate recording, no SafeFix proof construction |
+| `BenchmarkDiscoveryFixtures` | Discovery analysis after one shared view preparation. Parse and view preparation are outside the timer. |
+| `BenchmarkSessionDiscovery` | Full `lint.Discover` on a parsed source: view preparation, every lint pass, and candidate recording. No SafeFix proof construction. |
 | `BenchmarkParseAndAnalyzeDocumentFixtures` | Complete default document view plus document analysis |
 
 The scaling fixtures (`scaling_250` … `scaling_10000`) separate source-size
@@ -72,9 +74,9 @@ Keep hardware-specific notes outside the repository.
 
 ~~~sh
 go test ./...
-go test ./internal/ass ./internal/semantic ./internal/lint \
+go test ./internal/ass ./internal/ass/renderer ./internal/semantic ./internal/lint \
   -run '^$' \
-  -bench 'Benchmark(ASSDocumentParse|ParseConcreteDialogueFixtures|EvaluateDialogue|AnalyzeDocumentFixtures|ParseAndAnalyzeDocumentFixtures)$' \
+  -bench 'Benchmark(ParseSourceFixtures|DefaultDocumentFixtures|ParseConcreteDialogueFixtures|DiscoveryFixtures|SessionDiscovery|EvaluateDialogue|AnalyzeDocumentFixtures|ParseAndAnalyzeDocumentFixtures)$' \
   -benchmem -benchtime=250ms -count=5 > before.txt
 ~~~
 
