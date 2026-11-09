@@ -10,6 +10,8 @@ import (
 	"testing"
 	"unicode/utf16"
 
+	"github.com/charmbracelet/x/ansi"
+
 	"assx/internal/ass"
 	"assx/internal/lint"
 	"assx/internal/report"
@@ -34,6 +36,22 @@ func TestReportColorPolicy(t *testing.T) {
 				t.Fatalf("colorAllowed = %t, want %t", got, tc.want)
 			}
 		})
+	}
+}
+
+func TestScanStatusFitsWindow(t *testing.T) {
+	path := `C:\fansub\project\SweetSub-unpublished\Seihantai na Kimi to Boku\publish\[SweetSub] Seihantai na Kimi to Boku - 24.chs.ass`
+	for _, width := range []int{20, 40, 80, 120} {
+		line := scanStatus("⠙", path, width)
+		if got := ansi.StringWidth(line); got > width-1 {
+			t.Errorf("width %d: %q uses %d cells", width, line, got)
+		}
+	}
+	if line := scanStatus("⠋", "short.ass", 80); line != "⠋ Scanning short.ass" {
+		t.Errorf("short status = %q", line)
+	}
+	if got := ansi.StringWidth(scanStatus("⠋", strings.Repeat("字幕", 20), 30)); got > 29 {
+		t.Errorf("wide path uses %d cells", got)
 	}
 }
 

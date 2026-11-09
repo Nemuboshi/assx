@@ -15,6 +15,7 @@ import (
 	"time"
 	"unicode"
 
+	"github.com/charmbracelet/x/ansi"
 	"github.com/charmbracelet/x/term"
 
 	"assx/internal/analysis"
@@ -285,7 +286,8 @@ func startScanProgress(writer io.Writer, path string, enabled bool) *scanProgres
 		draw := func() {
 			icon := colorText(colorAllowed(writer), "36", frames[frame])
 			// Transient progress is best-effort; report output is checked separately.
-			_, _ = fmt.Fprintf(writer, "\r\033[2K%s Scanning %s", icon, terminalText(path))
+			// Keep the line one cell short of the window so it never wraps.
+			_, _ = fmt.Fprintf(writer, "\r\033[2K%s", scanStatus(icon, path, outputWidth(writer)))
 			frame = (frame + 1) % len(frames)
 		}
 		draw()
@@ -299,6 +301,14 @@ func startScanProgress(writer io.Writer, path string, enabled bool) *scanProgres
 		}
 	}()
 	return progress
+}
+
+func scanStatus(icon, path string, width int) string {
+	line := icon + " Scanning " + terminalText(path)
+	if width > 1 && ansi.StringWidth(line) >= width {
+		line = ansi.Truncate(line, width-1, "…")
+	}
+	return line
 }
 
 func (p *scanProgress) stop() {
