@@ -56,6 +56,9 @@ func TestSessionLifecycleAndProtocolResponses(t *testing.T) {
 	if _, err := readFrame(reader); err != io.EOF {
 		t.Fatalf("extra output: %v", err)
 	}
+	if server.state != serverShutdown {
+		t.Fatalf("server state = %v, want shutdown", server.state)
+	}
 }
 
 func TestSessionAppliesVersionedBufferChanges(t *testing.T) {
@@ -92,6 +95,9 @@ func TestSessionRejectsUninitializedRequestAndAbruptEOF(t *testing.T) {
 	payload, err := readFrame(bufio.NewReader(&output))
 	if err != nil || !strings.Contains(string(payload), `"code":-32002`) {
 		t.Fatalf("pre-initialize response = %s, %v", payload, err)
+	}
+	if server.state != serverUninitialized {
+		t.Fatalf("server state = %v, want uninitialized", server.state)
 	}
 }
 

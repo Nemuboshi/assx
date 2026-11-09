@@ -32,10 +32,17 @@ type response struct {
 	Error   *rpcError       `json:"error,omitzero"`
 }
 
+type serverState uint8
+
+const (
+	serverUninitialized serverState = iota
+	serverInitialized
+	serverShutdown
+)
+
 type Server struct {
 	documents          Documents
-	initialized        bool
-	shutdown           bool
+	state              serverState
 	warnings           int
 	settings           settings
 	settingsGeneration int
@@ -61,7 +68,7 @@ func (server *Server) Run(ctx context.Context, input io.Reader, output io.Writer
 			return ctx.Err()
 		}
 		if err == io.EOF {
-			if server.shutdown {
+			if server.state == serverShutdown {
 				return nil
 			}
 			return fmt.Errorf("LSP client disconnected before shutdown")
@@ -93,7 +100,7 @@ func (server *Server) Run(ctx context.Context, input io.Reader, output io.Writer
 			continue
 		}
 		if message.Method == "exit" && len(message.ID) == 0 {
-			if server.shutdown {
+			if server.state == serverShutdown {
 				return nil
 			}
 			return fmt.Errorf("LSP client exited before shutdown")
@@ -118,7 +125,7 @@ func validID(id jsontext.Value) bool {
 }
 
 func (server *Server) handleRequest(ctx context.Context, output io.Writer, message request) error {
-	if message.Method == "initialize" && !server.initialized && !server.shutdown {
+	if message.Method == "initialize" && server.state == serverUninitialized {
 		if message.Params.Kind() != '{' {
 			return server.reply(output, message.ID, nil, &rpcError{-32602, "Invalid params"})
 		}
@@ -150,7 +157,7 @@ func (server *Server) handleRequest(ctx context.Context, output io.Writer, messa
 		server.settings = configured
 		server.editSupport = params.Capabilities.Workspace.WorkspaceEdit.DocumentChanges
 		server.snippetSupport = params.Capabilities.TextDocument.Completion.CompletionItem.SnippetSupport
-		server.initialized = true
+		server.state = serverInitialized
 		capabilities := struct {
 			PositionEncoding string `json:"positionEncoding"`
 			TextDocumentSync struct {
@@ -184,14 +191,14 @@ func (server *Server) handleRequest(ctx context.Context, output io.Writer, messa
 			Capabilities any `json:"capabilities"`
 		}{Capabilities: capabilities}, nil)
 	}
-	if !server.initialized {
+	if server.state == serverUninitialized {
 		return server.reply(output, message.ID, nil, &rpcError{-32002, "Server not initialized"})
 	}
-	if server.shutdown {
+	if server.state == serverShutdown {
 		return server.reply(output, message.ID, nil, &rpcError{-32600, "Server is shut down"})
 	}
 	if message.Method == "shutdown" {
-		server.shutdown = true
+		server.state = serverShutdown
 		return server.reply(output, message.ID, jsontext.Value("null"), nil)
 	}
 	if message.Method == "textDocument/codeAction" && server.editSupport {
@@ -266,7 +273,7 @@ func (server *Server) reply(output io.Writer, id jsontext.Value, result any, fai
 }
 
 func (server *Server) notify(ctx context.Context, output io.Writer, message request) error {
-	if !server.initialized || server.shutdown {
+	if server.state != serverInitialized {
 		return nil
 	}
 	switch message.Method {
