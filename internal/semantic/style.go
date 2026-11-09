@@ -310,6 +310,8 @@ func StyleTagState(tag renderer.Tag, tagSpec spec.TagSpec, slots []string, base,
 		}
 	case "fscx", "fscy", "fsp":
 		resetToStyle = len(tag.Args) == 0
+	case "1a", "2a", "3a", "4a", "alpha":
+		resetToStyle = len(tag.Args) == 0
 	}
 	if resetToStyle {
 		values := make([]string, len(slots))

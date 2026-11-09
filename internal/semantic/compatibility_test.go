@@ -114,6 +114,8 @@ func TestCompatibilityVerifiedScenarios(t *testing.T) {
 		{`{\move(0,0,10,10,500,100)}A`, "behavior/out-of-range", CompatibilityDivergent},
 		{`{\frz}A`, "behavior/empty-arg", CompatibilityEquivalent},
 		{`{\fn}A`, "behavior/empty-arg", CompatibilityEquivalent},
+		{`{\4a}A`, "behavior/empty-arg", CompatibilityEquivalent},
+		{`{\alpha}A`, "behavior/empty-arg", CompatibilityEquivalent},
 		{`{\be200}A`, "behavior/out-of-range", CompatibilityUnresolved},
 	}
 	for _, tt := range tests {
@@ -131,6 +133,33 @@ func TestCompatibilityVerifiedScenarios(t *testing.T) {
 				}
 			}
 			t.Fatalf("missing scenario %s", tt.dimension)
+		})
+	}
+}
+
+func TestCompatibilityEmptyAlphaResetApplication(t *testing.T) {
+	styles := map[string]StyleState{
+		"Default": CanonicalStyleState(map[string]string{
+			"primarycolour": "&H80112233&", "secondarycolour": "&H80778899&",
+			"outlinecolour": "&H80AABBCC&", "backcolour": "&H80445566&",
+		}),
+	}
+	for _, source := range []string{`{\1a&HFF&\4a&HFF&}A{\4a}B`, `{\alpha&HFF&}A{\alpha}B`} {
+		t.Run(source, func(t *testing.T) {
+			findings := CompareDialogue(ass.ParseConcreteDialogue(source), nil, EvaluationOptions{Styles: styles, DialogueStyle: "Default"})
+			found := false
+			for _, f := range findings {
+				if f.Dimension != "application" {
+					continue
+				}
+				found = true
+				if f.Status != CompatibilityEquivalent {
+					t.Fatalf("empty alpha reset is not a certain application: %#v", f)
+				}
+			}
+			if !found {
+				t.Fatal("missing application observation")
+			}
 		})
 	}
 }
