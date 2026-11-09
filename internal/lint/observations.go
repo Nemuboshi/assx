@@ -77,7 +77,7 @@ func sameResolution(a, b renderer.Result) bool {
 
 // lintResolved runs the tag cascade for one compared resolution. The helper
 // keeps creation and observation filling on one rule path.
-func lintResolved(tag ass.Tag, result renderer.Result, profile renderer.Profile, line, textStart int) []Diagnostic {
+func lintResolved(tag renderer.Tag, result renderer.Result, profile renderer.Profile, line, textStart int) []Diagnostic {
 	analyzer := dialogueAnalyzer{line: line, textStart: textStart}
 	analyzer.consumeResolved(tag, result, profile)
 	return analyzer.diagnostics

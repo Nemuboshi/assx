@@ -33,7 +33,7 @@ func TestEmptyParenthesizedClipFixture(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	findings := AnalyzeDocument(renderer.Parse(string(data)))
+	findings := AnalyzeDocument(defaultDocument(string(data)))
 	if got := diagnosticsForIDs(findings, IssueArgumentCount, IssueOverrideJunk, IssueUnterminatedBlock); len(got) != 0 {
 		t.Fatalf("regression fixture diagnostics = %#v", got)
 	}
@@ -115,7 +115,7 @@ func TestMalformedStyleColourFields(t *testing.T) {
 	}
 	for _, test := range cases {
 		t.Run(test.name, func(t *testing.T) {
-			doc := renderer.Parse("[V4+ Styles]\nFormat: Name, PrimaryColour\nStyle: Default," + test.value + "\n")
+			doc := defaultDocument("[V4+ Styles]\nFormat: Name, PrimaryColour\nStyle: Default," + test.value + "\n")
 			findings := diagnosticsForIDs(AnalyzeStyles(doc), IssueMalformedStyleColour)
 			if (len(findings) != 0) != test.want {
 				t.Fatalf("findings = %#v, want report=%t", findings, test.want)
@@ -144,7 +144,7 @@ func TestKeywordCaseWarnings(t *testing.T) {
 	}
 	for _, test := range cases {
 		t.Run(test.name, func(t *testing.T) {
-			doc := renderer.Parse(test.text)
+			doc := defaultDocument(test.text)
 			findings := diagnosticsForIDs(AnalyzeKeywords(doc), IssueKeywordCase)
 			if len(findings) != len(test.want) {
 				t.Fatalf("findings = %#v, want %v", findings, test.want)

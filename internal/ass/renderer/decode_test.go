@@ -1,8 +1,7 @@
-package ass_test
+package renderer
 
 import (
-	. "assx/internal/ass"
-	"assx/internal/ass/renderer"
+	"assx/internal/ass"
 	"testing"
 
 	"assx/internal/ass/spec"
@@ -58,7 +57,7 @@ func TestExactDecoderRejectsPrefixOnly(t *testing.T) {
 
 func TestTagIRPreservesASTAndExposesSpec(t *testing.T) {
 	source := "{\\fs20junk\\t(\\clip(1.5,0,30,40))}Text"
-	tree := ParseConcreteDialogue(source)
+	tree := ass.ParseConcreteDialogue(source)
 	if len(tree.Nodes) < 1 || tree.Nodes[0].Block == nil {
 		t.Fatalf("missing parsed block: %#v", tree.Nodes)
 	}
@@ -166,10 +165,10 @@ func TestRendererIntegerDefaultsAndOverflow(t *testing.T) {
 
 func resolvedTestTag(t *testing.T, source string) Tag {
 	t.Helper()
-	profile, _ := renderer.Standard(renderer.Libass)
-	tree := ParseConcreteDialogue(source)
+	profile, _ := Standard(Libass)
+	tree := ass.ParseConcreteDialogue(source)
 	r := profile.Resolve(*tree.Nodes[0].Block.Items[0].Expression, source)
-	tag := Tag{Name: r.Name, Raw: r.Raw, Start: r.Source.Start, End: r.Source.End, Paren: r.Form == renderer.Paren}
+	tag := Tag{Name: r.Name, Raw: r.Raw, Start: r.Source.Start, End: r.Source.End, Paren: r.Form == Paren}
 	for _, arg := range r.Args {
 		tag.Args = append(tag.Args, arg.Raw)
 	}

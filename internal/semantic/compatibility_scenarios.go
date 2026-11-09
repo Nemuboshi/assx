@@ -5,7 +5,6 @@ import (
 	"slices"
 	"strings"
 
-	"assx/internal/ass"
 	"assx/internal/ass/renderer"
 	"assx/internal/ass/spec"
 )
@@ -36,9 +35,9 @@ func candidateScenarios(observation *Interpretation) []string {
 	if !r.HasPolicy {
 		return scenarios
 	}
-	ir := ass.DecodeTagWithSpec(e.Tag, r.Policy, true)
+	ir := renderer.DecodeTagWithSpec(e.Tag, r.Policy, true)
 	value := ir.Argument(0)
-	if (value.Status == ass.ValueValid || value.Status == ass.ValueAmbiguous) && value.Consumed == len(value.Raw) {
+	if (value.Status == renderer.ValueValid || value.Status == renderer.ValueAmbiguous) && value.Consumed == len(value.Raw) {
 		if value.Number < 0 && r.Name != "fs" && r.Name != "move" {
 			scenarios = append(scenarios, "negative")
 		}
@@ -77,7 +76,7 @@ func candidateScenarios(observation *Interpretation) []string {
 			}
 		}
 	}
-	if r.Name == "fs" && RelativeFontSize(e.Tag) && (value.Status == ass.ValueValid || value.Status == ass.ValueAmbiguous) && value.Consumed == len(value.Raw) && math.Trunc(value.Number) != value.Number {
+	if r.Name == "fs" && RelativeFontSize(e.Tag) && (value.Status == renderer.ValueValid || value.Status == renderer.ValueAmbiguous) && value.Consumed == len(value.Raw) && math.Trunc(value.Number) != value.Number {
 		scenarios = append(scenarios, "arg-form")
 	}
 	if r.Name == "fsc" && len(r.Args) > 0 {
@@ -86,7 +85,7 @@ func candidateScenarios(observation *Interpretation) []string {
 	if (r.Name == "clip" || r.Name == "iclip") && len(r.Args) == 4 {
 		for i := range r.Args {
 			v := ir.Argument(i)
-			if (v.Status == ass.ValueValid || v.Status == ass.ValueAmbiguous) && v.Consumed == len(v.Raw) && math.Trunc(v.Number) != math.Trunc(v.Number+0.5) {
+			if (v.Status == renderer.ValueValid || v.Status == renderer.ValueAmbiguous) && v.Consumed == len(v.Raw) && math.Trunc(v.Number) != math.Trunc(v.Number+0.5) {
 				scenarios = append(scenarios, "coord-round")
 				break
 			}
@@ -94,7 +93,7 @@ func candidateScenarios(observation *Interpretation) []string {
 	}
 	if r.Name == "move" && len(r.Args) == 6 {
 		t1, t2 := ir.Argument(4), ir.Argument(5)
-		if t1.Status == ass.ValueValid && t2.Status == ass.ValueValid && t1.Consumed == len(t1.Raw) && t2.Consumed == len(t2.Raw) && t1.Number > t2.Number {
+		if t1.Status == renderer.ValueValid && t2.Status == renderer.ValueValid && t1.Consumed == len(t1.Raw) && t2.Consumed == len(t2.Raw) && t1.Number > t2.Number {
 			scenarios = append(scenarios, "out-of-range")
 		}
 	}
@@ -167,13 +166,13 @@ func scenarioEvidence(observation *Interpretation, scenario string, candidates [
 		if r.Name == "fsc" {
 			// The explicit behavior row proves that traditional handlers ignore
 			// this argument, even though their signature lists only bare reset.
-			applicable = len(r.Args) == 1 && ass.DecodeExactNumber(r.Args[0].Raw).Status == ass.ValueValid &&
+			applicable = len(r.Args) == 1 && renderer.DecodeExactNumber(r.Args[0].Raw).Status == renderer.ValueValid &&
 				(r.Signature == renderer.SignatureVerified || observation.Profile.Kind() == renderer.Libass || observation.Profile.Kind() == renderer.XYVSFilter)
 		}
 	case "out-of-range":
 		if r.Name == "move" {
 			for _, arg := range r.Args {
-				applicable = applicable && ass.DecodeExactNumber(arg.Raw).Status == ass.ValueValid
+				applicable = applicable && renderer.DecodeExactNumber(arg.Raw).Status == renderer.ValueValid
 			}
 		}
 	}
@@ -189,8 +188,8 @@ func rectangleRoundingDomain(observation *Interpretation) bool {
 		return false
 	}
 	for _, arg := range r.Args {
-		value := ass.DecodeExactNumber(arg.Raw)
-		if value.Status != ass.ValueValid || math.Trunc(value.Number) < math.MinInt32 || math.Trunc(value.Number) > math.MaxInt32 {
+		value := renderer.DecodeExactNumber(arg.Raw)
+		if value.Status != renderer.ValueValid || math.Trunc(value.Number) < math.MinInt32 || math.Trunc(value.Number) > math.MaxInt32 {
 			return false
 		}
 		switch observation.Profile.Kind() {

@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"strings"
 
-	"assx/internal/ass"
 	"assx/internal/ass/spec"
 )
 
@@ -241,8 +240,8 @@ func canonicalStyleColour(raw string) (colour, alpha string, ok bool) {
 	if len(digits) != 8 {
 		return "", "", false
 	}
-	parsed := ass.DecodeExactHex(raw)
-	if parsed.Status != ass.ValueValid {
+	parsed := renderer.DecodeExactHex(raw)
+	if parsed.Status != renderer.ValueValid {
 		return "", "", false
 	}
 	value := uint64(parsed.Hex)
@@ -250,11 +249,11 @@ func canonicalStyleColour(raw string) (colour, alpha string, ok bool) {
 }
 
 func parseStyleInteger(raw string) (int, bool) {
-	value := ass.DecodeExactInteger(raw)
-	return int(value.Integer), value.Status == ass.ValueValid
+	value := renderer.DecodeExactInteger(raw)
+	return int(value.Integer), value.Status == renderer.ValueValid
 }
 
-func StyleTagState(tag ass.Tag, tagSpec spec.TagSpec, slots []string, base, original map[string]StateValue) ([]string, bool) {
+func StyleTagState(tag renderer.Tag, tagSpec spec.TagSpec, slots []string, base, original map[string]StateValue) ([]string, bool) {
 	name := strings.ToLower(tag.Name)
 	resetToStyle := false
 	switch name {
@@ -302,7 +301,7 @@ func StyleTagState(tag ass.Tag, tagSpec spec.TagSpec, slots []string, base, orig
 		// restores the Style value.
 		raw = strings.Trim(raw, " \t\r\n\v\f")
 		value, known := tag.IntegerArgument()
-		if !known || raw != "" && ass.DecodeRendererInteger(raw).Consumed == 0 {
+		if !known || raw != "" && renderer.DecodeRendererInteger(raw).Consumed == 0 {
 			return nil, false
 		}
 		resetToStyle = raw == "" || (value != 0 && value != 1 && (name == "i" || value < 100))

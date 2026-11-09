@@ -2,7 +2,6 @@ package semantic
 
 import (
 	"assx/internal/ass"
-	"assx/internal/ass/renderer"
 	"assx/internal/perftest"
 	"testing"
 )
@@ -11,7 +10,7 @@ var benchmarkCompatibilityFindings []CompatibilityFinding
 
 func BenchmarkCompareDialogue(b *testing.B) {
 	for _, fixture := range perftest.Cases(b) {
-		document := renderer.Parse(fixture.Text)
+		document := defaultDocument(fixture.Text)
 		trees := make([]ass.ConcreteDialogue, len(document.Dialogues))
 		var size int
 		for i, dialogue := range document.Dialogues {

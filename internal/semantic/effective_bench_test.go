@@ -13,7 +13,7 @@ var benchmarkEffects []NoEffect
 // Isolates the semantic effective-state engine from ASS and AST parsing.
 func BenchmarkEvaluateDialogue(b *testing.B) {
 	for _, test := range perftest.Cases(b) {
-		doc := renderer.Parse(test.Text)
+		doc := defaultDocument(test.Text)
 		trees := make([]ass.ConcreteDialogue, len(doc.Dialogues))
 		var bytes int
 		for i, dialogue := range doc.Dialogues {
@@ -49,7 +49,7 @@ func BenchmarkCompareResolvedProof(b *testing.B) {
 	}
 	options := EvaluationOptions{Styles: compactCorpusStyles(), DialogueStyle: "Default"}
 	for _, test := range perftest.Cases(b) {
-		doc := renderer.Parse(test.Text)
+		doc := defaultDocument(test.Text)
 		if len(doc.Dialogues) > 50 {
 			doc.Dialogues = doc.Dialogues[:50]
 		}

@@ -52,7 +52,7 @@ func TestRendererScopedASS013DoesNotInventSafeFix(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	findings := AnalyzeRedundantStyleOverridesForRenderer(renderer.Parse(string(content)), profile)
+	findings := AnalyzeRedundantStyleOverridesForRenderer(defaultDocument(string(content)), profile)
 	if len(findings) != 1 {
 		t.Fatalf("scoped style findings = %#v", findings)
 	}

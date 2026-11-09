@@ -24,7 +24,8 @@ func AnalyzeRedundantStyleOverridesForRenderer(doc renderer.Document, profile re
 }
 
 func analyzeRedundantStyleOverrides(doc renderer.Document, profile renderer.Profile) []Diagnostic {
-	view, err := profile.ViewOf(context.Background(), doc)
+	source := ass.ParseSource(doc.Text)
+	view, err := profile.ViewFromConcrete(context.Background(), doc, source, profile.ResolveDocumentLayouts(source.Concrete))
 	if err != nil {
 		return nil
 	}
@@ -57,8 +58,8 @@ type styleRunCollector struct {
 	styles     map[string]semantic.StyleState
 	stopped    bool
 	hasTags    bool
-	candidates []ass.Tag
-	runTags    []ass.Tag
+	candidates []renderer.Tag
+	runTags    []renderer.Tag
 	runStart   map[string]semantic.StateValue
 	runTouched map[string]bool
 	allowEdits bool
@@ -195,7 +196,7 @@ func (c *styleRunCollector) diagnostic() (Diagnostic, bool) {
 	}, true
 }
 
-func redundantStyleEdits(dialogue renderer.Dialogue, tree ass.ConcreteDialogue, styleTags []ass.Tag) []TextEdit {
+func redundantStyleEdits(dialogue renderer.Dialogue, tree ass.ConcreteDialogue, styleTags []renderer.Tag) []TextEdit {
 	candidate := make(map[[2]int]bool, len(styleTags))
 	for _, tag := range styleTags {
 		candidate[[2]int{tag.Start, tag.End}] = true

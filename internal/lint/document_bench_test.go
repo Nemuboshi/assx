@@ -1,7 +1,6 @@
 package lint
 
 import (
-	"assx/internal/ass/renderer"
 	"strings"
 	"testing"
 )
@@ -12,7 +11,7 @@ func BenchmarkAnalyzeDocument(b *testing.B) {
 		count int
 	}{{"100_dialogues", 100}, {"1000_dialogues", 1000}} {
 		text := benchmarkASSDocument(test.count)
-		doc := renderer.Parse(text)
+		doc := defaultDocument(text)
 		b.Run(test.name, func(b *testing.B) {
 			b.ReportAllocs()
 			for i := 0; i < b.N; i++ {
@@ -31,7 +30,7 @@ func BenchmarkParseAndAnalyzeDocument(b *testing.B) {
 		b.Run(test.name, func(b *testing.B) {
 			b.ReportAllocs()
 			for i := 0; i < b.N; i++ {
-				_ = AnalyzeDocument(renderer.Parse(text))
+				_ = AnalyzeDocument(defaultDocument(text))
 			}
 		})
 	}

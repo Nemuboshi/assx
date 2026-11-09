@@ -1,7 +1,6 @@
 package lint
 
 import (
-	"assx/internal/ass/renderer"
 	"context"
 	"fmt"
 	"strings"
@@ -20,7 +19,7 @@ var benchmarkSession *Session
 // Measures all lint passes with document parsing excluded.
 func BenchmarkAnalyzeDocumentFixtures(b *testing.B) {
 	for _, test := range perftest.Cases(b) {
-		doc := renderer.Parse(test.Text)
+		doc := defaultDocument(test.Text)
 		b.Run(test.Name, func(b *testing.B) {
 			b.SetBytes(int64(len(test.Text)))
 			b.ReportAllocs()
@@ -38,7 +37,7 @@ func BenchmarkAnalyzeDocumentFixtures(b *testing.B) {
 
 func benchmarkLateProofFailureStage(b *testing.B, dialogues int) {
 	text := benchmarkLateProofFailure(dialogues)
-	failure := renderer.Parse(text)
+	failure := defaultDocument(text)
 	initial := AnalyzeDocument(failure)
 	firstProof, lateCandidate, lateProof := false, false, false
 	lastLine := failure.Dialogues[len(failure.Dialogues)-1].Line
@@ -78,7 +77,7 @@ func benchmarkLateProofFailureStage(b *testing.B, dialogues int) {
 
 func benchmarkStyleEditStage(b *testing.B) {
 	text := perftest.StyleEdit(b)
-	doc := renderer.Parse(text)
+	doc := defaultDocument(text)
 	findings := AnalyzeDocument(doc)
 	var styleProofs, dialogueProofs int
 	for _, diagnostic := range primaryFindings(findings) {
@@ -124,7 +123,7 @@ func benchmarkLateProofFailure(dialogues int) string {
 
 func TestBenchmarkLateProofFailure(t *testing.T) {
 	const dialogues = 3
-	doc := renderer.Parse(benchmarkLateProofFailure(dialogues))
+	doc := defaultDocument(benchmarkLateProofFailure(dialogues))
 	if len(doc.Dialogues) != dialogues {
 		t.Fatalf("fixture has %d dialogues, want %d", len(doc.Dialogues), dialogues)
 	}
@@ -173,7 +172,7 @@ func TestBenchmarkLateProofFailure(t *testing.T) {
 // never with its square.
 func BenchmarkApplyFixesScaling(b *testing.B) {
 	for _, dialogues := range []int{250, 1000, 4000} {
-		doc := renderer.Parse(benchmarkASSDocument(dialogues))
+		doc := defaultDocument(benchmarkASSDocument(dialogues))
 		findings := AnalyzeDocument(doc)
 		b.Run(fmt.Sprintf("dialogues_%d", dialogues), func(b *testing.B) {
 			b.SetBytes(int64(len(doc.Text)))
@@ -201,7 +200,7 @@ func BenchmarkParseAndAnalyzeDocumentFixtures(b *testing.B) {
 			b.ReportAllocs()
 			b.ResetTimer()
 			for i := 0; i < b.N; i++ {
-				benchmarkDiagnostics = AnalyzeDocument(renderer.Parse(test.Text))
+				benchmarkDiagnostics = AnalyzeDocument(defaultDocument(test.Text))
 			}
 		})
 	}

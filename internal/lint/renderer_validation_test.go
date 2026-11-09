@@ -125,7 +125,7 @@ func TestScopedDocumentConsumersAndJSON(t *testing.T) {
 		"[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n" +
 		`Dialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{\pos(1,2,3)\rMissing}Text` + "\n" +
 		`Dialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{\k200}Text` + "\n"
-	doc := renderer.Parse(source)
+	doc := defaultDocument(source)
 	traditional := AnalyzeDocumentForRenderer(doc, lib)
 	modern := AnalyzeDocumentForRenderer(doc, mod)
 	for _, tt := range []struct {
@@ -178,7 +178,7 @@ func BenchmarkAnalyzeDocumentRenderer(b *testing.B) {
 	const source = "[Script Info]\nPlayResX: 1920\nPlayResY: 1080\n" +
 		"[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n" +
 		`Dialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{\fs30\pos(1,2)\bord2}Hello{\fs32}world` + "\n"
-	doc := renderer.Parse(source)
+	doc := defaultDocument(source)
 	profile, err := renderer.Standard(renderer.Libass)
 	if err != nil {
 		b.Fatal(err)

@@ -9,7 +9,7 @@ import (
 
 func TestCompatibilityScopeUsesPhysicalColumn(t *testing.T) {
 	source := "[Script Info]\nScriptType: v4.00+\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{\\blur101}x\n"
-	doc := renderer.Parse(source)
+	doc := defaultDocument(source)
 	findings := lint.AnalyzeDocument(doc)
 	view := Build("scope.ass", findings, doc)
 	found := false

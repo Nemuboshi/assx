@@ -19,7 +19,7 @@ const (
 )
 
 type NoEffect struct {
-	Tag          ass.Tag
+	Tag          renderer.Tag
 	Reason       NoEffectReason
 	OwnerIndex   int
 	ProofRevoked bool // An unmodeled operation invalidated the SafeFix proof.
@@ -43,7 +43,7 @@ const (
 // Before and After correspond to Slots, in the same order. Observers must not
 // retain the slices or mutate the state view.
 type TagEvent struct {
-	Tag         ass.Tag
+	Tag         renderer.Tag
 	Index       int
 	Policy      spec.Behavior
 	Slots       []string
@@ -127,7 +127,7 @@ type owner struct {
 }
 
 type noEffectCandidate struct {
-	tag        ass.Tag
+	tag        renderer.Tag
 	reason     NoEffectReason
 	ownerIndex int
 	always     bool
@@ -143,7 +143,7 @@ type evaluator struct {
 	proofsDisabled    bool
 	tagIndex          int
 	store             slotStore
-	allTags           []ass.Tag
+	allTags           []renderer.Tag
 	live              map[int]bool
 	candidates        map[int]noEffectCandidate
 	originalStyle     string
@@ -262,7 +262,7 @@ func (m *evaluator) markActiveLive() {
 	})
 }
 
-func (m *evaluator) consumeTag(tag ass.Tag) TagEvent {
+func (m *evaluator) consumeTag(tag renderer.Tag) TagEvent {
 	index := m.tagIndex
 	m.tagIndex++
 	if !m.options.SkipNoEffectProofs {
@@ -520,7 +520,7 @@ func (m *evaluator) blockProofs(event *TagEvent, reason SemanticUncertainty) {
 	event.Uncertainty = reason
 }
 
-func (m *evaluator) markCandidate(index int, tag ass.Tag, reason NoEffectReason, ownerIndex int, always bool) {
+func (m *evaluator) markCandidate(index int, tag renderer.Tag, reason NoEffectReason, ownerIndex int, always bool) {
 	if previous, exists := m.candidates[index]; exists {
 		always = always || previous.always
 		if ownerIndex < 0 {
@@ -532,9 +532,9 @@ func (m *evaluator) markCandidate(index int, tag ass.Tag, reason NoEffectReason,
 	}
 }
 
-func (m *evaluator) tagAt(index int) ass.Tag {
+func (m *evaluator) tagAt(index int) renderer.Tag {
 	if index >= 0 && index < len(m.allTags) {
 		return m.allTags[index]
 	}
-	return ass.Tag{}
+	return renderer.Tag{}
 }

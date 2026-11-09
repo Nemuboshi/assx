@@ -53,7 +53,7 @@ func analyzeStyles(doc renderer.Document) []Diagnostic {
 		}
 		if integerStyleFields[field.Name] {
 			value := strings.TrimSpace(field.Value)
-			decoded := ass.DecodeInteger(value)
+			decoded := renderer.DecodeInteger(value)
 			replacement := strings.TrimSpace(value[:decoded.Consumed])
 			if !strings.Contains(value, ".") || decoded.Consumed == 0 || value == replacement {
 				continue
@@ -123,8 +123,8 @@ func isASSStyleSection(section string) bool {
 // so the two rules do not both report the same field.
 func alignmentOutsideNumpad(value string) bool {
 	trimmed := strings.TrimSpace(value)
-	decoded := ass.DecodeInteger(trimmed)
-	if decoded.Status != ass.ValueValid || decoded.Consumed != len(trimmed) {
+	decoded := renderer.DecodeInteger(trimmed)
+	if decoded.Status != renderer.ValueValid || decoded.Consumed != len(trimmed) {
 		return false
 	}
 	return decoded.Integer < 1 || decoded.Integer > 9

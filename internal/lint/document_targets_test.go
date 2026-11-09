@@ -1,6 +1,7 @@
 package lint
 
 import (
+	"assx/internal/ass"
 	"context"
 	"strings"
 	"testing"
@@ -10,7 +11,7 @@ import (
 
 func viewOf(t *testing.T, profile renderer.Profile, doc renderer.Document) renderer.View {
 	t.Helper()
-	view, err := profile.ViewOf(context.Background(), doc)
+	view, err := profile.View(context.Background(), ass.ParseSource(doc.Text))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -21,7 +22,7 @@ func TestPrimaryVSFilterUsesFixedDocumentSlots(t *testing.T) {
 	xy, _ := renderer.Standard(renderer.XYVSFilter)
 	libass, _ := renderer.Standard(renderer.Libass)
 	source := "[Script Info]\nScriptType: v4.00+\nPlayResX: 640\nPlayResY: 480\nLayoutResX: 640\nLayoutResY: 480\nYCbCr Matrix: None\n[Events]\nFormat: Start, Layer, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{\\fs21\\fs21}A\n"
-	doc := renderer.Parse(source)
+	doc := defaultDocument(source)
 	for _, profile := range []renderer.Profile{xy, libass} {
 		findings := AnalyzeDocumentForTargets(doc, AnalysisTargets{Primary: profile})
 		invalid := false
@@ -32,7 +33,7 @@ func TestPrimaryVSFilterUsesFixedDocumentSlots(t *testing.T) {
 			t.Fatalf("%s primary used the wrong event layout", profile.Kind())
 		}
 	}
-	missingText := renderer.Parse(strings.Replace(source, ", Text\n", ", Unknown\n", 1))
+	missingText := defaultDocument(strings.Replace(source, ", Text\n", ", Unknown\n", 1))
 	if len(missingText.Dialogues) != 0 {
 		t.Fatal("libass view unexpectedly retained missing Text")
 	}
@@ -45,7 +46,7 @@ func TestSafeFixProofUsesEachTargetsStyleLayout(t *testing.T) {
 	xy, _ := renderer.Standard(renderer.XYVSFilter)
 	libass, _ := renderer.Standard(renderer.Libass)
 	source := "[Script Info]\nScriptType: v4.00+\nPlayResX: 640\nPlayResY: 480\n[V4+ Styles]\nFormat: Name, Fontname, Bold, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Fontsize, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\nStyle: Default,Arial,20,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,30,0,0,0,100,100,0,0,1,2,2,2,10,10,10,1\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{\\fs20}A\n"
-	doc := renderer.Parse(source)
+	doc := defaultDocument(source)
 	targets := AnalysisTargets{Primary: xy, Compatibility: []renderer.Profile{libass}}
 	findings := AnalyzeDocumentForTargets(doc, targets)
 	redundant := false
@@ -80,7 +81,7 @@ func TestSafeFixProofUsesEachTargetsStyleLayout(t *testing.T) {
 func TestUnknownDialectKeepsOriginalVSFilterView(t *testing.T) {
 	xy, _ := renderer.Standard(renderer.XYVSFilter)
 	source := "[Script Info]\nScriptType: v4.00\nPlayResX: 640\nPlayResY: 480\n[V4 Styles]\nFormat: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, TertiaryColour, BackColour, Bold, Italic, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, AlphaLevel, Encoding\nStyle: Default,Arial,20,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,1,2,2,2,10,10,10,0,1\n[Events]\nFormat: Marked, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\nDialogue: Marked=0,0:00:00.00,0:00:01.00,Default,,0,0,0,,A\n"
-	doc := renderer.Parse(source)
+	doc := defaultDocument(source)
 	view := viewOf(t, xy, doc).Document
 	if len(view.Dialogues) != 1 || len(view.StyleFields) != len(doc.StyleFields) {
 		t.Fatal("unsupported SSA records were projected as ASS v4+")

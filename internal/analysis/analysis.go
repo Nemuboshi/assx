@@ -55,16 +55,10 @@ type Result struct {
 	candidateOrdinals []int
 }
 
-// Analyze parses one snapshot and discovers findings. It never constructs a
-// SafeFix proof. It rejects an invalid option set and honors cancellation.
-func Analyze(ctx context.Context, snapshot Snapshot, options Options) (*Result, error) {
-	return AnalyzeParsed(ctx, snapshot, ass.ParseSource(snapshot.Text()), options)
-}
-
-// AnalyzeParsed discovers findings from an existing parse of the snapshot
-// text. The caller keeps ownership of that parse and can share it with other
-// consumers of the same source version.
-func AnalyzeParsed(ctx context.Context, snapshot Snapshot, source ass.Parsed, options Options) (*Result, error) {
+// Analyze discovers findings from an existing parse of the snapshot text. The
+// caller owns that parse and can share it with other consumers of the same
+// source version. It never constructs a SafeFix proof.
+func Analyze(ctx context.Context, snapshot Snapshot, source ass.Parsed, options Options) (*Result, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}

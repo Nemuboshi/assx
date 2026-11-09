@@ -41,12 +41,12 @@ a useful later extension.
 | Benchmark | What is timed per operation |
 | --- | --- |
 | `BenchmarkParseConcreteDialogueFixtures` | Lossless CST parsing for each Dialogue, without document parsing |
-| `BenchmarkASSDocumentParse` | `renderer.Parse` document fields and spans, without dialogue CST construction |
+| `BenchmarkASSDocumentParse` | Default document fields and spans, without dialogue CST construction |
 | `BenchmarkEvaluateDialogue` | Explicit libass effective-state evaluation on pre-parsed CSTs |
 | `BenchmarkCompareDialogue` | Pairwise compatibility comparison on pre-parsed CSTs |
 | `BenchmarkAnalyzeDocumentFixtures` | All lint passes on a pre-parsed document, including the `late_candidate_failure_N` and `style_edit_proof_N` stages |
 | `BenchmarkSessionDiscovery` | `lint.Discover` on the same documents: every lint pass and candidate recording, no SafeFix proof construction |
-| `BenchmarkParseAndAnalyzeDocumentFixtures` | Complete `renderer.Parse` plus `lint.AnalyzeDocument` |
+| `BenchmarkParseAndAnalyzeDocumentFixtures` | Complete default document view plus `lint.AnalyzeDocument` |
 
 The scaling fixtures (`scaling_250` … `scaling_10000`) separate source-size
 growth from feature mix. The lint analysis of `long_10000` is dominated by

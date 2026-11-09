@@ -39,7 +39,7 @@ type baselineTag struct {
 	Children   []baselineTag `json:"children,omitempty"`
 }
 
-func snapshotTag(tag ass.Tag) baselineTag {
+func snapshotTag(tag renderer.Tag) baselineTag {
 	out := baselineTag{
 		Name: tag.Name, Raw: tag.Raw, Args: tag.Args, Start: tag.Start, End: tag.End,
 		Column: tag.Column, Paren: tag.Paren, Transition: tag.InTransition,
@@ -261,7 +261,7 @@ func TestRendererBaselineContracts(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			doc := renderer.Parse(source.Text)
+			doc := defaultDocument(source.Text)
 			record := baselineRecord{
 				SourceCommit: baselineCommit, FixtureSHA: sha(raw),
 				RoundTrip: bytes.Equal(source.Encode(doc.Text), raw),

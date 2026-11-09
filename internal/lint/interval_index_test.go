@@ -23,7 +23,7 @@ func scaledRedundantStyleDoc(dialogues int) renderer.Document {
 		fmt.Fprintf(&text, "Dialogue: 0,0:%02d:%02d.00,0:%02d:%02d.00,Default,,0,0,0,,{\\b0\\b0}plain line %d\n",
 			i/60, i%60, i/60, (i%60)+1, i)
 	}
-	return renderer.Parse(text.String())
+	return defaultDocument(text.String())
 }
 
 // overlapWork runs the redundant-style suppression path for one document under

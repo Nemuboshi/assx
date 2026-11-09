@@ -45,8 +45,9 @@ func analyzeDocumentForProfileContext(ctx context.Context, source ass.Parsed, de
 		view, ok = shared.viewFor(source, profile)
 	}
 	if !ok {
+		source := ass.ParseSource(defaultDoc.Text)
 		var err error
-		view, err = profile.ViewOf(ctx, defaultDoc)
+		view, err = profile.ViewFromConcrete(ctx, defaultDoc, source, profile.ResolveDocumentLayouts(source.Concrete))
 		if err != nil {
 			return nil, err
 		}
@@ -228,13 +229,13 @@ func analyzeResolvedDialogue(dialogue renderer.Dialogue, profile renderer.Profil
 
 // Convert only a resolved command into the existing diagnostic/decoder view;
 // never re-infer its identity or arguments via the global tag registry.
-func resolvedLintTag(result renderer.Result, nested bool) ass.Tag {
+func resolvedLintTag(result renderer.Result, nested bool) renderer.Tag {
 	name := result.Name
 	if name == "" {
 		name = strings.TrimSpace(result.Head)
 	}
 	slashes := len(result.Raw) - len(strings.TrimLeft(result.Raw, "\\"))
-	tag := ass.Tag{
+	tag := renderer.Tag{
 		Name: name, Raw: result.Raw, Start: result.Source.Start,
 		End: result.Source.End, Column: result.Source.Start + slashes + 1,
 		Paren: result.Form == renderer.Paren, InTransition: nested,
@@ -246,7 +247,7 @@ func resolvedLintTag(result renderer.Result, nested bool) ass.Tag {
 	return tag
 }
 
-func (a *dialogueAnalyzer) consumeResolved(tag ass.Tag, result renderer.Result, profile renderer.Profile) {
+func (a *dialogueAnalyzer) consumeResolved(tag renderer.Tag, result renderer.Result, profile renderer.Profile) {
 	if tag.RepeatedSlashes != 0 {
 		a.add(IssueRepeatedSlash, tag, fmt.Sprintf("Found %d extra backslash(es) before the tag.", tag.RepeatedSlashes))
 		return
@@ -283,7 +284,7 @@ func (a *dialogueAnalyzer) consumeResolved(tag ass.Tag, result renderer.Result, 
 		a.add(IssueRendererUnresolved, tag, "This invocation is inferred from source evidence but is not verified for this renderer.")
 		return
 	}
-	ir := ass.DecodeTagWithSpec(tag, result.Policy, true)
+	ir := renderer.DecodeTagWithSpec(tag, result.Policy, true)
 	if result.Form == renderer.Bare && result.Shadowed == "" && len(tag.Args) == 1 &&
 		ir.Argument(0).Consumed == 0 && result.Policy.Value != 0 && result.Name != "fn" {
 		a.add(IssueUnknownTag, tag, "The complete command head has no recognized value; the selected renderer consumes a shorter prefix.")

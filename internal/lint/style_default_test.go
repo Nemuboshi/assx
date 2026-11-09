@@ -1,14 +1,13 @@
 package lint
 
 import (
-	"assx/internal/ass/renderer"
 	"strings"
 	"testing"
 )
 
 func TestDefaultASSStyleFormatChecksIntegerFields(t *testing.T) {
 	text := "[V4+ Styles]\nStyle: Default,Arial,20,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,0,2,20.5,30,40,1\n"
-	diagnostics := AnalyzeStyles(renderer.Parse(text))
+	diagnostics := AnalyzeStyles(defaultDocument(text))
 	if len(diagnostics) != 1 || diagnostics[0].Condition != IssueStyleInteger || diagnostics[0].Field != "Default.marginl" {
 		t.Fatalf("default format diagnostics = %#v", diagnostics)
 	}

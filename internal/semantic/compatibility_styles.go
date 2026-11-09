@@ -26,8 +26,8 @@ func compareStyleBorders(a, b renderer.RecordLayout, left, right *Interpretation
 		return nil
 	}
 	raw := strings.Trim(cell.Raw, " \t\r\n\v\f")
-	value := ass.DecodeExactInteger(raw)
-	if value.Status != ass.ValueValid || value.Raw != raw {
+	value := renderer.DecodeExactInteger(raw)
+	if value.Status != renderer.ValueValid || value.Raw != raw {
 		return nil
 	}
 	lk, rk := left.Profile.Kind(), right.Profile.Kind()
@@ -78,9 +78,9 @@ func styleComparisonNumber(a, b renderer.RecordLayout, name string) (float64, bo
 		return 0, false
 	}
 	raw := strings.Trim(cell.Raw, " \t\r\n\v\f")
-	value := ass.DecodeExactNumber(raw)
+	value := renderer.DecodeExactNumber(raw)
 	// Keep float precision differences separate from box scaling.
-	return value.Number, value.Status == ass.ValueValid && value.Raw == raw && float64(float32(value.Number)) == value.Number
+	return value.Number, value.Status == renderer.ValueValid && value.Raw == raw && float64(float32(value.Number)) == value.Number
 }
 
 func styleBorderCitation(profile renderer.Profile) string {

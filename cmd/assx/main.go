@@ -133,8 +133,8 @@ func run(args []string, stdout, stderr io.Writer) int {
 	}
 	options := analysis.Options{Targets: targets}
 	ctx := context.Background()
-	analyzeSnapshot := func(snapshot analysis.Snapshot) (*analysis.Result, []lint.Diagnostic, error) {
-		result, err := analysis.Analyze(ctx, snapshot, options)
+	analyzeSnapshot := func(snapshot analysis.Snapshot, parsed ass.Parsed) (*analysis.Result, []lint.Diagnostic, error) {
+		result, err := analysis.Analyze(ctx, snapshot, parsed, options)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -144,7 +144,8 @@ func run(args []string, stdout, stderr io.Writer) int {
 		}
 		return result, diagnostics, nil
 	}
-	result, diagnostics, err := analyzeSnapshot(snapshot)
+	parsed := ass.ParseSource(snapshot.Text())
+	result, diagnostics, err := analyzeSnapshot(snapshot, parsed)
 	if err != nil {
 		progress.stop()
 		_, _ = fmt.Fprintln(stderr, err)
@@ -192,7 +193,8 @@ func run(args []string, stdout, stderr io.Writer) int {
 				_, _ = fmt.Fprintln(stderr, err)
 				return 2
 			}
-			result, diagnostics, err = analyzeSnapshot(snapshot)
+			parsed = ass.ParseSource(fixedText)
+			result, diagnostics, err = analyzeSnapshot(snapshot, parsed)
 			if err != nil {
 				progress.stop()
 				_, _ = fmt.Fprintln(stderr, err)

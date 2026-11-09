@@ -11,7 +11,7 @@ A `ConcreteExpression` is a lexical candidate, not a resolved tag.
 The head `fsvp6` does not establish whether the command is `fsvp` or `fs`.
 A three-coordinate `pos` survives parsing without becoming valid in the primary renderer.
 `renderer.Profile` resolves each candidate independently.
-The generic `ass.Tag` is a resolved decoder and observer view, not another parser.
+The generic `renderer.Tag` is a resolved decoder and observer view, not another parser. Decode helpers live in `internal/ass/renderer`, so `ass` keeps only the physical tree.
 There is no `ParseDialogueText`, inferred `DecodeTag`, token adapter, or legacy tag resolver.
 
 Parenthesis traversal is iterative.

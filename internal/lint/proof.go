@@ -238,7 +238,7 @@ func supportedProofRule(id string) bool {
 }
 
 func proofDocument(source string, edits []FixEditProof) renderer.Document {
-	doc := renderer.Parse(source)
+	doc := renderer.DefaultDocument(ass.ParseSource(source))
 	if len(doc.Dialogues) != 0 {
 		return doc
 	}
@@ -297,9 +297,9 @@ func verifyStyleIntegerEdits(before, after renderer.Document, edits []FixEditPro
 		if !integerStyleFields[field.Name] || !styleFieldEdited(field, edits, IssueStyleInteger) {
 			return nil, fmt.Errorf("style field %s.%s changed without an integer proof", field.StyleName, field.Name)
 		}
-		oldValue := ass.DecodeInteger(strings.TrimSpace(field.Value))
-		newValue := ass.DecodeInteger(strings.TrimSpace(other.Value))
-		if oldValue.Status != ass.ValueValid || newValue.Status != ass.ValueValid ||
+		oldValue := renderer.DecodeInteger(strings.TrimSpace(field.Value))
+		newValue := renderer.DecodeInteger(strings.TrimSpace(other.Value))
+		if oldValue.Status != renderer.ValueValid || newValue.Status != renderer.ValueValid ||
 			oldValue.Consumed == 0 || newValue.Consumed == 0 || oldValue.Integer != newValue.Integer {
 			return nil, fmt.Errorf("style field %s.%s changes its consumed integer", field.StyleName, field.Name)
 		}

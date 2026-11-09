@@ -32,7 +32,7 @@ func meaningfulRawJunk(raw string) string {
 
 // ignoredTagTailIR never resolves names. Renderer-scoped consumers supply the
 // precise policy already chosen by their Profile.
-func ignoredTagTailIR(tag ass.Tag, ir ass.TagIR) string {
+func ignoredTagTailIR(tag renderer.Tag, ir renderer.TagIR) string {
 	if tag.Paren || len(tag.Args) != 1 || !ir.Known {
 		return ""
 	}

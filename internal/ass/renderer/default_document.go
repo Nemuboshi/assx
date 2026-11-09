@@ -14,11 +14,6 @@ func DefaultDocument(source ass.Parsed) Document {
 	return documentFromConcrete(source.Concrete)
 }
 
-// Parse returns the default document view from one physical parse.
-func Parse(text string) Document {
-	return DefaultDocument(ass.ParseSource(text))
-}
-
 // documentFromConcrete projects the lossless concrete syntax tree onto the
 // renderer-facing document view. Line framing follows every physical newline
 // form (LF, CRLF, bare CR), so the view agrees with the renderers about the

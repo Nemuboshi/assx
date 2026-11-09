@@ -60,7 +60,7 @@ func TestCompatibilityDiagnosticsSeparateValidityAndFixSafety(t *testing.T) {
 
 func TestDocumentCompatibilityDiagnosticsPhysicalLocations(t *testing.T) {
 	source := "[Script Info]\rScriptType: v4.00+\r[Events]\rFormat: Text\rDialogue: {\\fs20}A\r"
-	doc := renderer.Parse(source)
+	doc := defaultDocument(source)
 	findings := AnalyzeDocumentCompatibility(doc, nil)
 	if len(findings) == 0 {
 		t.Fatal("an unrepresented event hid document incompatibility")

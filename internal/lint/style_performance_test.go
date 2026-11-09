@@ -15,7 +15,7 @@ func styleLoadDocument(styles, dialogues int, dialogueText string) renderer.Docu
 	}
 	text.WriteString("[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n")
 	text.WriteString(strings.Repeat("Dialogue: 0,0:00:00.00,0:00:01.00,S0,,0,0,0,,"+dialogueText+"\n", dialogues))
-	return renderer.Parse(text.String())
+	return defaultDocument(text.String())
 }
 
 func TestStyleStateAllocationsDoNotMultiplyStylesByDialogues(t *testing.T) {

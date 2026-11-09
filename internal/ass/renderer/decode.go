@@ -1,4 +1,4 @@
-package ass
+package renderer
 
 import (
 	"math"

@@ -131,7 +131,7 @@ func TestSafeFixRemovesOnlyTheRedundantTag(t *testing.T) {
 
 func TestHeaderChecksAndUnsafeFixes(t *testing.T) {
 	text := "[Script Info]\r\nPlayResX: 1920\r\nPlayResY: 1080\r\nYCbCr Matrix: TV.601\r\n[Events]\r\nFormat: Layer, Start, End, Text\r\nDialogue: 0,0,1,text\r\n"
-	doc := renderer.Parse(text)
+	doc := defaultDocument(text)
 	diagnostics := AnalyzeHeaders(doc)
 	if len(diagnostics) != 2 || diagnostics[0].Condition != IssueMatrixHeader || diagnostics[1].Condition != IssueLayoutRes {
 		t.Fatalf("header diagnostics = %#v", diagnostics)
@@ -150,14 +150,14 @@ func TestHeaderChecksAndUnsafeFixes(t *testing.T) {
 	if count != 2 || !strings.Contains(fixed, "YCbCr Matrix: TV.709") || !strings.Contains(fixed, "LayoutResX: 1920\r\nLayoutResY: 1080\r\n") {
 		t.Fatalf("unsafe fixed text (%d fixes):\n%s", count, fixed)
 	}
-	if got := len(AnalyzeHeaders(renderer.Parse(fixed))); got != 0 {
+	if got := len(AnalyzeHeaders(defaultDocument(fixed))); got != 0 {
 		t.Fatalf("fixed headers still produce %d diagnostics", got)
 	}
 }
 
 func TestMissingMatrixUnsafeFixAddsExplicitNone(t *testing.T) {
 	text := "[Script Info]\nPlayResX: 640\nPlayResY: 480\n[Events]\n"
-	diagnostics := AnalyzeHeaders(renderer.Parse(text))
+	diagnostics := AnalyzeHeaders(defaultDocument(text))
 	fixed, count, err := ApplyFixes(text, diagnostics, true)
 	if err != nil {
 		t.Fatal(err)
@@ -283,7 +283,7 @@ func TestProofEditMembershipMatchesLinearScan(t *testing.T) {
 // Authorization work must grow with the edit count, not with its square.
 func TestApplyFixesDoesNotScanEveryProofEdit(t *testing.T) {
 	measure := func(dialogues int) (int, int) {
-		doc := renderer.Parse(benchmarkASSDocument(dialogues))
+		doc := defaultDocument(benchmarkASSDocument(dialogues))
 		findings := AnalyzeDocument(doc)
 		before := proofMembershipComparisons.Load()
 		fixed, count, err := ApplyFixes(doc.Text, findings, false)

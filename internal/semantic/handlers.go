@@ -5,7 +5,6 @@ import (
 	"strings"
 	"unicode"
 
-	"assx/internal/ass"
 	"assx/internal/ass/renderer"
 	"assx/internal/ass/spec"
 )
@@ -13,7 +12,7 @@ import (
 // Tag-specific semantics live here; simple assignments remain metadata-driven.
 // No per-tag interface allocations or runtime registration are required.
 
-func (m *evaluator) handleTransformChild(tag ass.Tag, tagSpec spec.TagSpec) SemanticUncertainty {
+func (m *evaluator) handleTransformChild(tag renderer.Tag, tagSpec spec.TagSpec) SemanticUncertainty {
 	if m.profile.RecursiveTransformChildren() {
 		// Mod recursively applies all handlers. Do not publish a static value
 		// for animated assignments or let a later child retain pos3 depth.
@@ -43,7 +42,7 @@ func (m *evaluator) handleTransformChild(tag ass.Tag, tagSpec spec.TagSpec) Sema
 	return UncertaintyUnsupported
 }
 
-func (m *evaluator) consumeTransform(tag ass.Tag, index int) bool {
+func (m *evaluator) consumeTransform(tag renderer.Tag, index int) bool {
 	if len(m.children[tag.Start]) > 0 {
 		m.markActiveLive()
 	}
@@ -58,7 +57,7 @@ func (m *evaluator) consumeTransform(tag ass.Tag, index int) bool {
 	return noEffect
 }
 
-func resolveAssignmentPolicy(tag ass.Tag, tagSpec spec.TagSpec) ([]string, spec.Behavior) {
+func resolveAssignmentPolicy(tag renderer.Tag, tagSpec spec.TagSpec) ([]string, spec.Behavior) {
 	slots, behavior := tagSpec.Slots, tagSpec.Behavior
 	if tagSpec.Semantic == spec.SemanticClip {
 		if len(tag.Args) == 4 {
@@ -72,7 +71,7 @@ func resolveAssignmentPolicy(tag ass.Tag, tagSpec spec.TagSpec) ([]string, spec.
 
 // applyModPositionDepth retains the accepted depth write despite the pinned
 // three-argument position layout defect (RTS.cpp:3530-3539,4238-4241).
-func (m *evaluator) applyModPositionDepth(tag ass.Tag, index int, event *TagEvent) {
+func (m *evaluator) applyModPositionDepth(tag renderer.Tag, index int, event *TagEvent) {
 	event.Policy = spec.FirstWins
 	event.Slots = []string{"position", "z_depth"}
 	m.fillValues(&event.Before, event.Slots)
@@ -97,8 +96,8 @@ func (m *evaluator) applyModPositionDepth(tag ass.Tag, index int, event *TagEven
 	m.store.set("position", UnknownValue())
 	m.store.setOwner("position", owner{index: index, start: m.position})
 	depth := UnknownValue()
-	decoded := ass.DecodeExactNumber(tag.Args[2])
-	if decoded.Status == ass.ValueValid && !strings.ContainsFunc(tag.Raw, func(r rune) bool {
+	decoded := renderer.DecodeExactNumber(tag.Args[2])
+	if decoded.Status == renderer.ValueValid && !strings.ContainsFunc(tag.Raw, func(r rune) bool {
 		return r > unicode.MaxASCII && unicode.IsSpace(r)
 	}) {
 		if value, ok := canonicalFloat(decoded.Number * 80); ok {
@@ -111,7 +110,7 @@ func (m *evaluator) applyModPositionDepth(tag ass.Tag, index int, event *TagEven
 	m.fillValues(&event.After, event.Slots)
 }
 
-func (m *evaluator) handleRelativeFontSize(tag ass.Tag, tagSpec spec.TagSpec, event *TagEvent, slots []string) bool {
+func (m *evaluator) handleRelativeFontSize(tag renderer.Tag, tagSpec spec.TagSpec, event *TagEvent, slots []string) bool {
 	if tagSpec.Semantic != spec.SemanticFontSize || !RelativeFontSize(tag) {
 		return false
 	}
@@ -123,22 +122,22 @@ func (m *evaluator) handleRelativeFontSize(tag ass.Tag, tagSpec spec.TagSpec, ev
 
 // assignmentUncertainty preserves the decoder's distinctions without
 // making a renderer-specific assumption when canonicalization fails.
-func assignmentUncertainty(tag ass.Tag, tagSpec spec.TagSpec) SemanticUncertainty {
-	ir := ass.DecodeTagWithSpec(tag, tagSpec, true)
+func assignmentUncertainty(tag renderer.Tag, tagSpec spec.TagSpec) SemanticUncertainty {
+	ir := renderer.DecodeTagWithSpec(tag, tagSpec, true)
 	if tagSpec.Semantic == spec.SemanticClip && len(tag.Args) != 4 && ir.HasExpectedArity() {
 		return UncertaintyUnsupported
 	}
 	switch ir.ArgumentsStatus() {
-	case ass.ValueInvalid:
+	case renderer.ValueInvalid:
 		return UncertaintyMalformed
-	case ass.ValueAmbiguous:
+	case renderer.ValueAmbiguous:
 		return UncertaintyRendererDependent
-	case ass.ValueUnknown:
+	case renderer.ValueUnknown:
 		return UncertaintyUnresolved
 	}
 	if tagSpec.Value == spec.IntegerValue && len(tag.Args) == 1 {
 		decoded := ir.Argument(0)
-		if decoded.Status == ass.ValueValid && (tagSpec.Min != 0 || tagSpec.Max != 0) &&
+		if decoded.Status == renderer.ValueValid && (tagSpec.Min != 0 || tagSpec.Max != 0) &&
 			(decoded.Integer < int64(tagSpec.Min) || decoded.Integer > int64(tagSpec.Max)) {
 			return UncertaintyMalformed
 		}
@@ -146,7 +145,7 @@ func assignmentUncertainty(tag ass.Tag, tagSpec spec.TagSpec) SemanticUncertaint
 	return UncertaintyUnresolved
 }
 
-func (m *evaluator) assignmentValues(tag ass.Tag, tagSpec spec.TagSpec, slots []string) ([]string, bool) {
+func (m *evaluator) assignmentValues(tag renderer.Tag, tagSpec spec.TagSpec, slots []string) ([]string, bool) {
 	var values []string
 	var valuesKnown bool
 	if style, present := m.options.Styles[m.activeStyle]; present {
@@ -157,8 +156,8 @@ func (m *evaluator) assignmentValues(tag ass.Tag, tagSpec spec.TagSpec, slots []
 	}
 	modReset := tagSpec.VSFilterModOnly && len(tag.Args) == 0
 	if tag.Name == "ortho" && len(tag.Args) == 1 {
-		decoded := ass.DecodeExactInteger(tag.Args[0])
-		if decoded.Status != ass.ValueValid || decoded.Integer < -1<<31 || decoded.Integer > 1<<31-1 {
+		decoded := renderer.DecodeExactInteger(tag.Args[0])
+		if decoded.Status != renderer.ValueValid || decoded.Integer < -1<<31 || decoded.Integer > 1<<31-1 {
 			return nil, false
 		}
 		modReset = decoded.Integer != 0 && decoded.Integer != 1
@@ -207,7 +206,7 @@ func (m *evaluator) invalidateKaraoke(reason SemanticUncertainty) SemanticUncert
 	return reason
 }
 
-func (m *evaluator) accumulate(tag ass.Tag) SemanticUncertainty {
+func (m *evaluator) accumulate(tag renderer.Tag) SemanticUncertainty {
 	const slot = "karaoke_cursor"
 	if tag.Name == "kt" {
 		return m.invalidateKaraoke(UncertaintyRendererDependent)
@@ -218,10 +217,10 @@ func (m *evaluator) accumulate(tag ass.Tag) SemanticUncertainty {
 		return m.invalidateKaraoke(UncertaintyMalformed)
 	}
 	if len(tag.Args) == 1 {
-		value := ass.DecodeNumber(tag.Args[0])
+		value := renderer.DecodeNumber(tag.Args[0])
 		// Prefix-only decoding is sufficient for syntax diagnostics, but not
 		// for proof of a canonical karaoke duration.
-		if value.Status != ass.ValueValid || value.Consumed != len(value.Raw) ||
+		if value.Status != renderer.ValueValid || value.Consumed != len(value.Raw) ||
 			value.Number < 0 || value.Number > float64(int64(^uint64(0)>>1)/10) {
 			return m.invalidateKaraoke(UncertaintyMalformed)
 		}
@@ -239,7 +238,7 @@ func (m *evaluator) accumulate(tag ass.Tag) SemanticUncertainty {
 	return UncertaintyNone
 }
 
-func (m *evaluator) transitionHasNoEffect(tag ass.Tag) bool {
+func (m *evaluator) transitionHasNoEffect(tag renderer.Tag) bool {
 	if len(m.children[tag.Start]) == 0 {
 		return true
 	}
@@ -264,7 +263,7 @@ func (m *evaluator) transitionHasNoEffect(tag ass.Tag) bool {
 	return true
 }
 
-func (m *evaluator) resetStyle(tag ass.Tag) bool {
+func (m *evaluator) resetStyle(tag renderer.Tag) bool {
 	target := m.originalStyle
 	if len(tag.Args) > 0 && strings.TrimSpace(tag.Args[0]) != "" {
 		target = strings.TrimSpace(tag.Args[0])

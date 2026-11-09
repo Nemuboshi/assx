@@ -189,7 +189,7 @@ func noEffectDetail(effect semantic.NoEffect) string {
 	}
 }
 
-func (a *dialogueAnalyzer) add(id string, tag ass.Tag, detail string) {
+func (a *dialogueAnalyzer) add(id string, tag renderer.Tag, detail string) {
 	rule := RuleFor(id)
 	span := ass.ConcreteSpan{Start: a.textStart + tag.Start, End: a.textStart + tag.End}
 	a.diagnostics = append(a.diagnostics, Diagnostic{
@@ -201,7 +201,7 @@ func (a *dialogueAnalyzer) add(id string, tag ass.Tag, detail string) {
 
 // validateIR checks values under the resolved policy. Differential checks
 // belong only to the semantic compatibility engine.
-func (a *dialogueAnalyzer) validateIR(tag ass.Tag, ir ass.TagIR, policyArity bool) {
+func (a *dialogueAnalyzer) validateIR(tag renderer.Tag, ir renderer.TagIR, policyArity bool) {
 	if !ir.Known {
 		return
 	}
@@ -219,7 +219,7 @@ func (a *dialogueAnalyzer) validateIR(tag ass.Tag, ir ass.TagIR, policyArity boo
 
 	arg := tag.Args[0]
 	decoded := ir.Argument(0)
-	usable := decoded.Status == ass.ValueValid || decoded.Status == ass.ValueAmbiguous
+	usable := decoded.Status == renderer.ValueValid || decoded.Status == renderer.ValueAmbiguous
 	invalid := func(detail string) { a.add(IssueInvalidValue, tag, detail) }
 
 	switch tagSpec.Value {

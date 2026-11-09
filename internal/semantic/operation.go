@@ -11,7 +11,7 @@ import (
 // resolvedOperation is the only command/policy input accepted by the state
 // engine. Input is always resolved from the neutral CST.
 type resolvedOperation struct {
-	tag       ass.Tag
+	tag       renderer.Tag
 	policy    spec.TagSpec
 	known     bool
 	match     renderer.MatchStatus
@@ -29,7 +29,7 @@ type resolvedOperation struct {
 type semanticToken struct {
 	text   string
 	start  int
-	tag    ass.Tag
+	tag    renderer.Tag
 	hasTag bool
 }
 
@@ -41,11 +41,11 @@ type program struct {
 	children map[int][]int // parent tag start -> child tag starts, in source order
 }
 
-func (m *evaluator) operationFor(tag ass.Tag) resolvedOperation {
+func (m *evaluator) operationFor(tag renderer.Tag) resolvedOperation {
 	return m.operations[tag.Start]
 }
 
-func (m *evaluator) policyFor(tag ass.Tag) (spec.TagSpec, bool) {
+func (m *evaluator) policyFor(tag renderer.Tag) (spec.TagSpec, bool) {
 	op := m.operationFor(tag)
 	return op.policy, op.known
 }
@@ -78,7 +78,7 @@ func buildProgram(tree ass.ConcreteDialogue) *program {
 				last := len(stack) - 1
 				current := stack[last]
 				stack = stack[:last]
-				tag := ass.Tag{
+				tag := renderer.Tag{
 					Start: current.expr.Span.Start, End: current.expr.Span.End,
 					Column: current.expr.HeadSpan.Start + 1,
 					Paren:  current.expr.Parenthesized, InTransition: current.nested,
@@ -151,7 +151,7 @@ func resolveOperations(tree ass.ConcreteDialogue, profile renderer.Profile, coll
 				if name == "" {
 					name = strings.TrimSpace(result.Head)
 				}
-				tag := ass.Tag{
+				tag := renderer.Tag{
 					Name: name, Raw: result.Raw, Start: result.Source.Start,
 					End: result.Source.End, SlashStart: current.expr.SlashSpan.Start,
 					Column: current.expr.HeadSpan.Start + 1,

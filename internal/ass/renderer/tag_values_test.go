@@ -1,4 +1,4 @@
-package ass_test
+package renderer
 
 import "testing"
 

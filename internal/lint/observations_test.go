@@ -40,7 +40,7 @@ func TestComparedResolutionCreatesArityFinding(t *testing.T) {
 		"[V4+ Styles]\nFormat: Name, Fontname, Fontsize\nStyle: Default, Arial, 20\n" +
 		"[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n" +
 		"Dialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{\\pos(1,2,3)}Hi\n"
-	doc := renderer.Parse(source)
+	doc := defaultDocument(source)
 	mod, err := renderer.Standard(renderer.VSFilterMod)
 	if err != nil {
 		t.Fatal(err)
@@ -81,7 +81,7 @@ func TestComparedValueFindingKeepsEveryObservation(t *testing.T) {
 		"[V4+ Styles]\nFormat: Name, Fontname, Fontsize\nStyle: Default, Arial, 20\n" +
 		"[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n" +
 		"Dialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{\\b2}Hi\n"
-	doc := renderer.Parse(source)
+	doc := defaultDocument(source)
 	libass, err := renderer.Standard(renderer.Libass)
 	if err != nil {
 		t.Fatal(err)
@@ -110,7 +110,7 @@ func TestComparedKaraokeAddsObservation(t *testing.T) {
 		"[V4+ Styles]\nFormat: Name, Fontname, Fontsize\nStyle: Default, Arial, 20\n" +
 		"[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n" +
 		"Dialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{\\k9999}Hi\n"
-	doc := renderer.Parse(source)
+	doc := defaultDocument(source)
 	libass, err := renderer.Standard(renderer.Libass)
 	if err != nil {
 		t.Fatal(err)
@@ -140,7 +140,7 @@ func TestComparedKaraokeSplitsProjectedTexts(t *testing.T) {
 		"[Events]\n" +
 		"Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Text, Effect\n" +
 		"Dialogue: 0,0:00:00.00,0:00:00.10,Default,,0,0,0,{\\k100}Hi,{\\k5}A{\\k10}B\n"
-	doc := renderer.Parse(source)
+	doc := defaultDocument(source)
 	libass, vsfilter, mod := scopedProfiles(t)
 	targets := AnalysisTargets{Primary: mod, Compatibility: []renderer.Profile{libass, vsfilter}}
 	findings := analyzeDocumentForTargetsUnproved(doc, targets, nil)
@@ -209,7 +209,7 @@ func TestDefaultTargetsDoNotCompareDifferentText(t *testing.T) {
 		"[Events]\n" +
 		"Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Text, Effect\n" +
 		"Dialogue: 0,0:00:00.00,0:00:02.00,Default,,0,0,0,{\\k20}Hi,{\\k10}X\n"
-	doc := renderer.Parse(source)
+	doc := defaultDocument(source)
 	findings := analyzeDocumentForTargetsUnproved(doc, DefaultAnalysisTargets(), nil)
 	notComparable := false
 	for _, finding := range findings {

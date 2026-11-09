@@ -64,7 +64,7 @@ func redundantStyleDoc() renderer.Document {
 		"[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n" +
 		"Dialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,{\\b0\\b0}plain\n" +
 		"Dialogue: 0,0:00:01.00,0:00:02.00,Default,,0,0,0,,{\\b0\\b0}again\n"
-	return renderer.Parse(text)
+	return defaultDocument(text)
 }
 
 func TestSessionDiscoveryStripsSafeFixAndNeverBuildsProof(t *testing.T) {
@@ -76,7 +76,7 @@ func TestSessionDiscoveryStripsSafeFixAndNeverBuildsProof(t *testing.T) {
 	}
 	t.Cleanup(func() { proofBuilder = old })
 
-	session := discoverTestSession(t, renderer.Parse(perftest.StyleEdit(t)), nil)
+	session := discoverTestSession(t, defaultDocument(perftest.StyleEdit(t)), nil)
 	if calls != 0 {
 		t.Fatalf("Discover invoked the proof builder %d times, want 0", calls)
 	}
@@ -174,7 +174,7 @@ func TestSessionDisabledRuleKeepsOverlappedCandidates(t *testing.T) {
 }
 
 func TestSessionSeverityOverrideAndResultCopies(t *testing.T) {
-	session := discoverTestSession(t, renderer.Parse(perftest.StyleEdit(t)), RulePolicy{
+	session := discoverTestSession(t, defaultDocument(perftest.StyleEdit(t)), RulePolicy{
 		{Condition: IssueNoEffect, Severity: Error},
 		{Condition: IssueStyleInteger, Disabled: true},
 	})
@@ -275,7 +275,7 @@ func TestSessionRejectsForeignAndUnknownHandles(t *testing.T) {
 }
 
 func TestSessionLateBarrierRevokesLastDialogue(t *testing.T) {
-	doc := renderer.Parse(benchmarkLateProofFailure(250))
+	doc := defaultDocument(benchmarkLateProofFailure(250))
 	session := discoverTestSession(t, doc, nil)
 	lastLine := doc.Dialogues[len(doc.Dialogues)-1].Line
 	var handles []CandidateID
@@ -318,7 +318,7 @@ func TestSessionLateBarrierRevokesLastDialogue(t *testing.T) {
 }
 
 func TestSessionProveSubsetIsSelfContained(t *testing.T) {
-	doc := renderer.Parse(benchmarkLateProofFailure(20))
+	doc := defaultDocument(benchmarkLateProofFailure(20))
 	session := discoverTestSession(t, doc, nil)
 	handles := allCandidateHandles(session)
 	// The final dialogue's unknown tag revokes its three candidates at
@@ -347,7 +347,7 @@ func TestSessionProveSubsetIsSelfContained(t *testing.T) {
 		t.Fatalf("subset apply: count=%d err=%v", count, err)
 	}
 	changed := 0
-	for i, dialogue := range renderer.Parse(fixed).Dialogues {
+	for i, dialogue := range defaultDocument(fixed).Dialogues {
 		if dialogue.Text != doc.Dialogues[i].Text {
 			changed++
 		}
@@ -369,7 +369,7 @@ func TestSessionEagerAndDeferredMatch(t *testing.T) {
 	} {
 		t.Run(test.name, func(t *testing.T) {
 			text := test.text(t)
-			doc := renderer.Parse(text)
+			doc := defaultDocument(text)
 			targets := DefaultAnalysisTargets()
 			eager := AnalyzeDocumentForTargets(doc, targets)
 			unproved := candidateDiagnostics(analyzeDocumentForTargetsUnproved(doc, targets, nil))
@@ -417,7 +417,7 @@ func TestSessionEagerAndDeferredMatch(t *testing.T) {
 }
 
 func TestSessionRejectsStaleAndForeignApplication(t *testing.T) {
-	doc := renderer.Parse(benchmarkLateProofFailure(10))
+	doc := defaultDocument(benchmarkLateProofFailure(10))
 	session := discoverTestSession(t, doc, nil)
 	authorized, err := session.ProveFixes(context.Background(), allCandidateHandles(session))
 	if err != nil {
@@ -448,14 +448,14 @@ func TestSessionRejectsStaleAndForeignApplication(t *testing.T) {
 		t.Fatal("tampered proof evidence accepted")
 	}
 
-	foreign := AnalyzeDocumentForTargets(renderer.Parse(benchmarkLateProofFailure(11)), DefaultAnalysisTargets())
+	foreign := AnalyzeDocumentForTargets(defaultDocument(benchmarkLateProofFailure(11)), DefaultAnalysisTargets())
 	if _, _, err := session.ApplyFixes(context.Background(), foreign, false); err == nil {
 		t.Fatal("foreign session findings accepted")
 	}
 }
 
 func TestSessionCancellationKeepsResultUsable(t *testing.T) {
-	doc := renderer.Parse(benchmarkLateProofFailure(250))
+	doc := defaultDocument(benchmarkLateProofFailure(250))
 	canceled, cancel := context.WithCancel(context.Background())
 	cancel()
 	if session, err := Discover(canceled, ass.ParseSource(doc.Text), DefaultAnalysisTargets(), nil); err == nil || session != nil {

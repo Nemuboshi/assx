@@ -1,8 +1,11 @@
 package lint
 
-import "assx/internal/ass"
+import (
+	"assx/internal/ass"
+	"assx/internal/ass/renderer"
+)
 
-func noEffectRemovalEditConcrete(tree ass.ConcreteDialogue, tag ass.Tag, textStart int) TextEdit {
+func noEffectRemovalEditConcrete(tree ass.ConcreteDialogue, tag renderer.Tag, textStart int) TextEdit {
 	candidate := [2]int{tag.Start, tag.End}
 	for _, node := range tree.Nodes {
 		block := node.Block

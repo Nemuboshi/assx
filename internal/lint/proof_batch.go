@@ -56,6 +56,7 @@ func resetProofBatchCounters() {
 // shape, and profile set match exactly, and it never crosses requests.
 type proofBatch struct {
 	source    string
+	before    ass.Parsed
 	beforeDoc renderer.Document
 	profiles  []renderer.Profile
 	rawStyles map[string]semantic.StyleState
@@ -69,9 +70,14 @@ type proofBatch struct {
 
 func newProofBatch(source string, beforeDoc renderer.Document, profiles []renderer.Profile) *proofBatch {
 	return &proofBatch{
-		source: source, beforeDoc: beforeDoc, profiles: profiles,
+		source: source, before: ass.ParseSource(source), beforeDoc: beforeDoc, profiles: profiles,
 		preps: make(map[renderer.Profile]*proofProfilePrep, len(profiles)),
 	}
+}
+
+// viewForDocument derives one renderer view without parsing the text again.
+func viewForDocument(ctx context.Context, profile renderer.Profile, source ass.Parsed, doc renderer.Document) (renderer.View, error) {
+	return profile.ViewFromConcrete(ctx, doc, source, profile.ResolveDocumentLayouts(source.Concrete))
 }
 
 // newSessionProofBatch builds the batch a Discover call attaches to its
@@ -159,8 +165,9 @@ func (b *proofBatch) build(edits []FixEditProof, validEdits map[FixEditProof]str
 	if hasStyleFieldEdits(edits) {
 		afterDoc = proofDocument(changed, edits)
 		if len(b.beforeDoc.Dialogues) != len(afterDoc.Dialogues) || !reflect.DeepEqual(b.beforeDoc.EventFormat, afterDoc.EventFormat) {
+			afterSource := ass.ParseSource(afterDoc.Text)
 			for _, profile := range b.profiles {
-				view, err := profile.ViewOf(context.Background(), afterDoc)
+				view, err := viewForDocument(context.Background(), profile, afterSource, afterDoc)
 				if err != nil {
 					return nil, err
 				}
@@ -219,9 +226,10 @@ func (b *proofBatch) build(edits []FixEditProof, validEdits map[FixEditProof]str
 	}
 	byDialogue := dialogueEditsByIndex(b.beforeDoc, edits)
 	affected := affectedDialogues(b.beforeDoc, edits, byDialogue)
+	afterSource := ass.ParseSource(afterDoc.Text)
 	for _, profile := range b.profiles {
 		prep := b.prep(profile)
-		profileAfter, err := profile.ViewOf(context.Background(), afterDoc)
+		profileAfter, err := viewForDocument(context.Background(), profile, afterSource, afterDoc)
 		if err != nil {
 			return nil, err
 		}
@@ -310,7 +318,7 @@ func (b *proofBatch) prep(profile renderer.Profile) *proofProfilePrep {
 		proofBatchReuse.Add(1)
 	} else {
 		proofBatchViews.Add(1)
-		projected, err := profile.ViewOf(context.Background(), b.beforeDoc)
+		projected, err := viewForDocument(context.Background(), profile, b.before, b.beforeDoc)
 		if err != nil {
 			projected = renderer.View{Document: b.beforeDoc, Profile: profile}
 		}

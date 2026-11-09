@@ -1,6 +1,7 @@
 package analysis
 
 import (
+	"assx/internal/ass"
 	"context"
 	"encoding/json"
 	"reflect"
@@ -19,7 +20,7 @@ func analyzeTestResult(t *testing.T, text string, options Options) *Result {
 	if err != nil {
 		t.Fatalf("NewSnapshot: %v", err)
 	}
-	result, err := Analyze(context.Background(), snapshot, options)
+	result, err := Analyze(context.Background(), snapshot, ass.ParseSource(snapshot.Text()), options)
 	if err != nil {
 		t.Fatalf("Analyze: %v", err)
 	}
@@ -84,7 +85,7 @@ func provedFromEager(diagnostics []lint.Diagnostic) []lint.Diagnostic {
 
 func TestAnalyzeEmptyOptionsMatchDefaultTargets(t *testing.T) {
 	text := perftest.StyleEdit(t)
-	doc := renderer.Parse(text)
+	doc := defaultDocument(text)
 	eager := lint.AnalyzeDocumentForTargets(doc, lint.DefaultAnalysisTargets())
 
 	result := analyzeTestResult(t, text, Options{})
@@ -317,11 +318,11 @@ func TestResultUnicodeOffsetsAndMalformedRecords(t *testing.T) {
 	if !strings.Contains(fixed, "日本語") {
 		t.Fatal("Unicode content lost")
 	}
-	edited := renderer.Parse(fixed).Dialogues[0].Text
+	edited := defaultDocument(fixed).Dialogues[0].Text
 	if !strings.HasPrefix(edited[strings.Index(edited, "日本語"):], "日本語") {
 		t.Fatal("Unicode byte offsets wrong after the edit")
 	}
-	malformedLine := renderer.Parse(text).Dialogues[2].Line
+	malformedLine := defaultDocument(text).Dialogues[2].Line
 	malformed := false
 	for _, finding := range result.Findings() {
 		if finding.Diagnostic.Line == malformedLine {
@@ -377,7 +378,7 @@ func TestAnalyzeRejectsInvalidPolicy(t *testing.T) {
 		{{Condition: lint.IssueNoEffect}, {Condition: lint.IssueNoEffect, Disabled: true}},
 		{{Condition: lint.IssueNoEffect, Severity: lint.Severity("hint")}},
 	} {
-		if result, err := Analyze(context.Background(), snapshot, Options{Rules: policy}); err == nil || result != nil {
+		if result, err := Analyze(context.Background(), snapshot, ass.ParseSource(snapshot.Text()), Options{Rules: policy}); err == nil || result != nil {
 			t.Fatalf("invalid policy accepted: %v %#v", err, result)
 		}
 	}
@@ -427,7 +428,7 @@ func TestResultCancellationLeavesUsableState(t *testing.T) {
 	snapshot := mustSnapshot(t, text)
 	canceled, cancel := context.WithCancel(context.Background())
 	cancel()
-	if _, err := Analyze(canceled, snapshot, Options{}); err == nil {
+	if _, err := Analyze(canceled, snapshot, ass.ParseSource(snapshot.Text()), Options{}); err == nil {
 		t.Fatal("canceled Analyze succeeded")
 	}
 	result := analyzeTestResult(t, text, Options{})
@@ -470,11 +471,11 @@ func TestAnalyzeCancellationMidRequestReturnsNoResult(t *testing.T) {
 	// Budget: Analyze entry and request-preparation entry; the first
 	// per-profile layout check then stops the request.
 	budget := &budgetContext{Context: context.Background(), remaining: 2}
-	result, err := Analyze(budget, snapshot, Options{})
+	result, err := Analyze(budget, snapshot, ass.ParseSource(snapshot.Text()), Options{})
 	if err == nil || result != nil {
 		t.Fatalf("mid-document cancellation returned a result: %v %#v", err, result)
 	}
-	whole, err := Analyze(context.Background(), snapshot, Options{})
+	whole, err := Analyze(context.Background(), snapshot, ass.ParseSource(snapshot.Text()), Options{})
 	if err != nil || len(whole.Findings()) == 0 {
 		t.Fatalf("later request unusable: %v", err)
 	}
@@ -495,11 +496,11 @@ func TestAnalyzeOneLargeDialogueIsAtomic(t *testing.T) {
 	// whole, and the dialogue-1 boundary stops the request. That proves one
 	// dialogue is the atomic unit: no partial dialogue state is returned.
 	budget := &budgetContext{Context: context.Background(), remaining: 9}
-	result, err := Analyze(budget, snapshot, Options{})
+	result, err := Analyze(budget, snapshot, ass.ParseSource(snapshot.Text()), Options{})
 	if err == nil || result != nil {
 		t.Fatalf("canceled discovery returned a result: %v %#v", err, result)
 	}
-	whole, err := Analyze(context.Background(), snapshot, Options{})
+	whole, err := Analyze(context.Background(), snapshot, ass.ParseSource(snapshot.Text()), Options{})
 	if err != nil || len(whole.Findings()) == 0 {
 		t.Fatalf("later request unusable: %v", err)
 	}

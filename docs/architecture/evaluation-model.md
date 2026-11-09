@@ -132,7 +132,7 @@ resolve again for a second renderer.
 ```go
 type programEvent struct {
     kind  eventKind // text, tag, scopeOpen, scopeClose
-    tag   ass.Tag
+    tag   renderer.Tag
     index int       // tag ordinal in emission order
     text  string
     start int

@@ -1,7 +1,6 @@
 package perftest_test
 
 import (
-	"assx/internal/ass/renderer"
 	"fmt"
 	"strings"
 	"testing"
@@ -19,7 +18,7 @@ func TestPerformanceScalingFixtures(t *testing.T) {
 		if got, wantName := test.Name, fmt.Sprintf("scaling_%d", want[i]); got != wantName {
 			t.Fatalf("unexpected scaling name %q, want %q", got, wantName)
 		}
-		doc := renderer.Parse(test.Text)
+		doc := defaultDocument(test.Text)
 		if len(doc.Dialogues) != want[i] {
 			t.Fatalf("%s has %d dialogues, want %d", test.Name, len(doc.Dialogues), want[i])
 		}
@@ -45,7 +44,7 @@ func TestPerformanceScalingFixtures(t *testing.T) {
 
 func TestPerformanceStyleEditFixture(t *testing.T) {
 	text := perftest.StyleEdit(t)
-	doc := renderer.Parse(text)
+	doc := defaultDocument(text)
 	if len(doc.Dialogues) != perftest.StyleEditDialogueCount {
 		t.Fatalf("got %d dialogues, want %d", len(doc.Dialogues), perftest.StyleEditDialogueCount)
 	}

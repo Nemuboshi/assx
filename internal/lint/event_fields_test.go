@@ -18,7 +18,7 @@ func eventDocument(format string, dialogues ...string) renderer.Document {
 	for _, dialogue := range dialogues {
 		builder.WriteString("Dialogue: " + dialogue + "\n")
 	}
-	return renderer.Parse(builder.String())
+	return defaultDocument(builder.String())
 }
 
 func standardEventDialogue(start, end, text string) string {

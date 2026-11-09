@@ -1,7 +1,6 @@
 package lint
 
 import (
-	"assx/internal/ass/renderer"
 	"strings"
 	"testing"
 
@@ -16,7 +15,7 @@ const styleEditBlock = `{` + `\b1\b1\fs20\fs20\t(0,500,\fscx100)}`
 // and no override-block candidate.
 func TestStyleEditWorkloadProvesDocumentWide(t *testing.T) {
 	text := perftest.StyleEdit(t)
-	doc := renderer.Parse(text)
+	doc := defaultDocument(text)
 	if len(doc.Dialogues) != perftest.StyleEditDialogueCount {
 		t.Fatalf("got %d dialogues, want %d", len(doc.Dialogues), perftest.StyleEditDialogueCount)
 	}
@@ -75,7 +74,7 @@ func TestStyleEditWorkloadProvesDocumentWide(t *testing.T) {
 // benchmark stage guards; this test keeps the fast sizes in go test.
 func TestLateProofFailureScalesCandidates(t *testing.T) {
 	for _, count := range []int{250, 1000} {
-		doc := renderer.Parse(benchmarkLateProofFailure(count))
+		doc := defaultDocument(benchmarkLateProofFailure(count))
 		if len(doc.Dialogues) != count {
 			t.Fatalf("late failure %d: got %d dialogues", count, len(doc.Dialogues))
 		}

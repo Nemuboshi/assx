@@ -1,12 +1,12 @@
 package semantic
 
 import (
+	"assx/internal/ass/renderer"
 	"math"
 	"strconv"
 	"strings"
 	"unicode"
 
-	"assx/internal/ass"
 	"assx/internal/ass/spec"
 )
 
@@ -26,11 +26,11 @@ func KnownValue(value string) StateValue {
 // CanonicalTagState decodes every argument at most once. Syntax diagnostics
 // may accept a renderer-consumed prefix, but equivalence proofs require an
 // unambiguous value whose entire argument is consumed.
-func CanonicalTagState(tag ass.Tag, tagSpec spec.TagSpec, slots []string) ([]string, bool) {
+func CanonicalTagState(tag renderer.Tag, tagSpec spec.TagSpec, slots []string) ([]string, bool) {
 	if len(slots) == 0 {
 		return nil, false
 	}
-	ir := ass.DecodeTagWithSpec(tag, tagSpec, true)
+	ir := renderer.DecodeTagWithSpec(tag, tagSpec, true)
 	var value string
 	var ok bool
 	switch tagSpec.Value {
@@ -47,7 +47,7 @@ func CanonicalTagState(tag ass.Tag, tagSpec spec.TagSpec, slots []string) ([]str
 		}
 		raw := strings.TrimSpace(tag.Args[0])
 		decoded := ir.Argument(0)
-		if decoded.Status != ass.ValueValid || decoded.Consumed != len(decoded.Raw) {
+		if decoded.Status != renderer.ValueValid || decoded.Consumed != len(decoded.Raw) {
 			return nil, false
 		}
 		switch tagSpec.Value {
@@ -114,7 +114,7 @@ func CanonicalTagState(tag ass.Tag, tagSpec spec.TagSpec, slots []string) ([]str
 		parts := make([]string, len(tag.Args))
 		for i := range tag.Args {
 			decoded := ir.Argument(i)
-			if decoded.Status != ass.ValueValid || decoded.Consumed != len(decoded.Raw) {
+			if decoded.Status != renderer.ValueValid || decoded.Consumed != len(decoded.Raw) {
 				return nil, false
 			}
 			parts[i], ok = canonicalFloat(decoded.Number)
@@ -162,7 +162,7 @@ func canonicalBoldInteger(value int64, style bool) (string, bool) {
 	return strconv.FormatInt(value, 10), true
 }
 
-func RelativeFontSize(tag ass.Tag) bool {
+func RelativeFontSize(tag renderer.Tag) bool {
 	if tag.Name != "fs" || len(tag.Args) == 0 {
 		return false
 	}
@@ -171,16 +171,16 @@ func RelativeFontSize(tag ass.Tag) bool {
 }
 
 func CanonicalInteger(raw string) (string, bool) {
-	value := ass.DecodeExactInteger(raw)
-	if value.Status != ass.ValueValid {
+	value := renderer.DecodeExactInteger(raw)
+	if value.Status != renderer.ValueValid {
 		return "", false
 	}
 	return strconv.FormatInt(value.Integer, 10), true
 }
 
 func CanonicalBold(raw string, style bool) (string, bool) {
-	decoded := ass.DecodeExactInteger(raw)
-	if decoded.Status != ass.ValueValid {
+	decoded := renderer.DecodeExactInteger(raw)
+	if decoded.Status != renderer.ValueValid {
 		return "", false
 	}
 	return canonicalBoldInteger(decoded.Integer, style)
@@ -195,6 +195,6 @@ func CanonicalNumber(raw string) (string, bool) {
 }
 
 func ParseFloat(raw string) (float64, bool) {
-	value := ass.DecodeExactNumber(raw)
-	return value.Number, value.Status == ass.ValueValid
+	value := renderer.DecodeExactNumber(raw)
+	return value.Number, value.Status == renderer.ValueValid
 }

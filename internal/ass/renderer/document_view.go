@@ -23,13 +23,6 @@ func (p Profile) View(ctx context.Context, source ass.Parsed) (View, error) {
 	return p.ViewFromConcrete(ctx, DefaultDocument(source), source, p.ResolveDocumentLayouts(source.Concrete))
 }
 
-// ViewOf builds this renderer's view for a document without a source parse.
-// It parses the text again. Prefer View with a Parsed value on hot paths.
-func (p Profile) ViewOf(ctx context.Context, doc Document) (View, error) {
-	tree := ass.ParseConcreteDocument(doc.Text)
-	return p.viewFrom(ctx, doc, tree, p.ResolveDocumentLayouts(tree))
-}
-
 // ViewFromConcrete builds this renderer's view from one default view, one
 // source parse, and that profile's resolved layouts. The caller can share all
 // three across every consumer of one source version, so the default view is
