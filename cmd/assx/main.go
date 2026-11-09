@@ -153,12 +153,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 	}
 	var appliedSafe, appliedUnsafe int
 	if (*fix || *unsafeFix) && (*forceASS || recognition.Class == ass.Recognized) {
-		merged, err := result.Diagnostics(ctx)
-		if err != nil {
-			progress.stop()
-			_, _ = fmt.Fprintln(stderr, err)
-			return 2
-		}
+		merged := diagnostics
 		availableSafe, availableUnsafe, _ := lint.CountFixes(merged)
 		fixedText, count, err := result.ApplyFixes(ctx, merged, *unsafeFix)
 		if err != nil {
