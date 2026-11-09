@@ -123,6 +123,7 @@
       <result name="retain-empty"/> <result name="discard-empty"/>
       <result name="bare-only"/> <result name="default-full"/>
       <result name="quirk-a5"/> <result name="bit-map"/>
+      <result name="default-1000"/>
     </vocab>
 
     <kinds>
@@ -158,6 +159,10 @@
       three (libass 827-828; xy/vsm 2348/2950 fall to org at n==2..99).
       libass treats &gt;=100 as a weight; xy/vsm pass it through as fontWeight.
     </scen>
+    <scen id="empty-arg" status="V" verified="libass xy vsm" base="style-reset" vsfilter="style-reset" vsfiltermod="style-reset"
+          cite="libass:libass/ass_parse.c:825-829 xy:src/subtitles/RTS.cpp:2344-2350 vsm:src/subtitles/RTS.cpp:2946-2952">
+      An empty \b restores the Style Bold weight.
+    </scen>
   </tag>
 
   <tag name="i" status="V">
@@ -173,6 +178,10 @@
           cite="libass:libass/ass_parse.c:831-835 xy:src/subtitles/RTS.cpp:2527-2533">
       Values other than 0/1 restore style Italic (xy n==0?false:n==1?true:org).
     </scen>
+    <scen id="empty-arg" status="V" verified="libass xy" base="style-reset" vsfilter="style-reset" vsfiltermod="unchecked"
+          cite="libass:libass/ass_parse.c:831-835 xy:src/subtitles/RTS.cpp:2527-2533">
+      An empty \i restores the Style Italic flag.
+    </scen>
   </tag>
 
   <tag name="u" status="V">
@@ -186,6 +195,10 @@
     </params>
     <scen id="out-of-range" status="V" verified="libass xy" base="style-reset" vsfilter="style-reset" vsfiltermod="unchecked"
           cite="libass:libass/ass_parse.c:890-897 xy:src/subtitles/RTS.cpp:2702-2708"/>
+    <scen id="empty-arg" status="V" verified="libass xy" base="style-reset" vsfilter="style-reset" vsfiltermod="unchecked"
+          cite="libass:libass/ass_parse.c:890-897 xy:src/subtitles/RTS.cpp:2702-2708">
+      An empty \u restores the Style Underline flag.
+    </scen>
   </tag>
 
   <tag name="s" status="V">
@@ -199,6 +212,10 @@
     </params>
     <scen id="out-of-range" status="V" verified="libass xy vsm" base="style-reset" vsfilter="style-reset" vsfiltermod="style-reset"
           cite="libass:libass/ass_parse.c:882-889 xy:src/subtitles/RTS.cpp:2662-2668 vsm:src/subtitles/RTS.cpp:3606-3611"/>
+    <scen id="empty-arg" status="V" verified="libass xy vsm" base="style-reset" vsfilter="style-reset" vsfiltermod="style-reset"
+          cite="libass:libass/ass_parse.c:882-889 xy:src/subtitles/RTS.cpp:2662-2668 vsm:src/subtitles/RTS.cpp:3606-3611">
+      An empty \s restores the Style StrikeOut flag.
+    </scen>
   </tag>
 
   <tag name="q" status="V">
@@ -239,6 +256,10 @@
     sets style.charSet, consumed by the GDI font selection.
     <scen id="effect-note" status="V" verified="libass xy vsm" base="unsupported" vsfilter="supported" vsfiltermod="supported"
           cite="libass:libass/ass_parse.c:910-916 libass:libass/ass_shaper.c:1137-1145 xy:src/subtitles/RTS.cpp:2439-2445 vsm:src/subtitles/RTS.cpp:3095-3100"/>
+    <scen id="empty-arg" status="V" verified="libass xy vsm" base="style-reset" vsfilter="style-reset" vsfiltermod="style-reset"
+          cite="libass:libass/ass_parse.c:910-916 xy:src/subtitles/RTS.cpp:2439-2445 vsm:src/subtitles/RTS.cpp:3095-3100">
+      An empty \fe restores the Style Encoding.
+    </scen>
   </tag>
 
   <!-- ===== font name / size / scale / spacing ===== -->
@@ -293,6 +314,10 @@
       VSFilterMod converts with wcstol (integer truncation of fractional
       arguments), libass and xy use floating parsing.
     </scen>
+    <scen id="empty-arg" status="V" verified="libass xy vsm" base="style-reset" vsfilter="style-reset" vsfiltermod="style-reset"
+          cite="libass:libass/ass_parse.c:465-475 xy:src/subtitles/RTS.cpp:2506-2525 vsm:src/subtitles/RTS.cpp:3188-3206">
+      An empty \fs restores the Style FontSize.
+    </scen>
   </tag>
 
   <tag name="fsc" status="V">
@@ -309,6 +334,10 @@
     \fsc(value). This is todo item 1; assx's style.go:230-238 mirrors it.
     <scen id="arg-form" status="V" verified="libass xy vsm" requires="_VSMOD" base="bare-only" vsfilter="bare-only" vsfiltermod="assign"
           cite="libass:libass/ass_parse.c:454-456 xy:src/subtitles/RTS.cpp:2493-2497 vsm:src/subtitles/RTS.cpp:3150-3165"/>
+    <scen id="empty-arg" status="V" verified="libass xy vsm" base="style-reset" vsfilter="style-reset" vsfiltermod="style-reset"
+          cite="libass:libass/ass_parse.c:454-456 xy:src/subtitles/RTS.cpp:2493-2497 vsm:src/subtitles/RTS.cpp:3150-3165">
+      An empty \fsc restores both Style scales.
+    </scen>
   </tag>
 
   <tag name="fscx" status="V">
@@ -325,6 +354,10 @@
       Negative scale clamps to 0 after blending (assx canonicalizes negative
       fscx/fscy to "0", semantic/state.go).
     </scen>
+    <scen id="empty-arg" status="V" verified="libass xy vsm" base="style-reset" vsfilter="style-reset" vsfiltermod="style-reset"
+          cite="libass:libass/ass_parse.c:436-444 xy:src/subtitles/RTS.cpp:2477-2484 vsm:src/subtitles/RTS.cpp:3136-3142">
+      An empty \fscx restores the Style ScaleX.
+    </scen>
   </tag>
 
   <tag name="fscy" status="V">
@@ -338,6 +371,10 @@
     </params>
     <scen id="negative" status="V" verified="libass xy" base="clamp-low" vsfilter="clamp-low" vsfiltermod="clamp-low"
           cite="libass:libass/ass_parse.c:445-453 xy:src/subtitles/RTS.cpp:2485-2492"/>
+    <scen id="empty-arg" status="V" verified="libass xy" base="style-reset" vsfilter="style-reset" vsfiltermod="unchecked"
+          cite="libass:libass/ass_parse.c:445-453 xy:src/subtitles/RTS.cpp:2485-2492">
+      An empty \fscy restores the Style ScaleY.
+    </scen>
   </tag>
 
   <tag name="fsp" status="V">
@@ -371,6 +408,10 @@
     </params>
     <scen id="negative" status="V" verified="libass xy vsm" base="clamp-low" vsfilter="clamp-low" vsfiltermod="clamp-low"
           cite="libass:libass/ass_parse.c:477-488 xy:src/subtitles/RTS.cpp:2323-2334 vsm:src/subtitles/RTS.cpp:2927-2937"/>
+    <scen id="empty-arg" status="V" verified="libass xy vsm" base="style-reset" vsfilter="style-reset" vsfiltermod="style-reset"
+          cite="libass:libass/ass_parse.c:477-488 xy:src/subtitles/RTS.cpp:2323-2334 vsm:src/subtitles/RTS.cpp:2927-2937">
+      An empty \bord restores the Style Outline.
+    </scen>
   </tag>
 
   <tag name="xbord" status="V">
@@ -384,6 +425,10 @@
     </params>
     <scen id="negative" status="V" verified="libass xy" base="clamp-low" vsfilter="clamp-low" vsfiltermod="unchecked"
           cite="libass:libass/ass_parse.c:355-363 xy:src/subtitles/RTS.cpp:2710-2717"/>
+    <scen id="empty-arg" status="V" verified="libass xy" base="style-reset" vsfilter="style-reset" vsfiltermod="unchecked"
+          cite="libass:libass/ass_parse.c:355-363 xy:src/subtitles/RTS.cpp:2710-2717">
+      An empty \xbord restores the Style Outline.
+    </scen>
   </tag>
 
   <tag name="ybord" status="V">
@@ -397,6 +442,10 @@
     </params>
     <scen id="negative" status="V" verified="libass xy" base="clamp-low" vsfilter="clamp-low" vsfiltermod="unchecked"
           cite="libass:libass/ass_parse.c:364-372 xy:src/subtitles/RTS.cpp:2728-2735"/>
+    <scen id="empty-arg" status="V" verified="libass xy" base="style-reset" vsfilter="style-reset" vsfiltermod="unchecked"
+          cite="libass:libass/ass_parse.c:364-372 xy:src/subtitles/RTS.cpp:2728-2735">
+      An empty \ybord restores the Style Outline.
+    </scen>
   </tag>
 
   <tag name="shad" status="V">
@@ -413,6 +462,10 @@
       libass clamps \shad but deliberately not \xshad/\yshad
       ("VSFilter compatibility", ass_parse.c:875 comment).
     </scen>
+    <scen id="empty-arg" status="V" verified="libass xy vsm" base="style-reset" vsfilter="style-reset" vsfiltermod="style-reset"
+          cite="libass:libass/ass_parse.c:869-881 xy:src/subtitles/RTS.cpp:2649-2660 vsm:src/subtitles/RTS.cpp:3594-3604">
+      An empty \shad restores the Style Shadow.
+    </scen>
   </tag>
 
   <tag name="xshad" status="V">
@@ -428,6 +481,10 @@
           cite="libass:libass/ass_parse.c:373-380 xy:src/subtitles/RTS.cpp:2719-2726">
       Negative x shadow stays negative (contrast with \shad above).
     </scen>
+    <scen id="empty-arg" status="V" verified="libass xy" base="style-reset" vsfilter="style-reset" vsfiltermod="unchecked"
+          cite="libass:libass/ass_parse.c:373-380 xy:src/subtitles/RTS.cpp:2719-2726">
+      An empty \xshad restores the Style Shadow.
+    </scen>
   </tag>
 
   <tag name="yshad" status="V">
@@ -441,6 +498,10 @@
     </params>
     <scen id="negative" status="V" verified="libass xy" base="assign" vsfilter="assign" vsfiltermod="unchecked"
           cite="libass:libass/ass_parse.c:381-388 xy:src/subtitles/RTS.cpp:2737-2744"/>
+    <scen id="empty-arg" status="V" verified="libass xy" base="style-reset" vsfilter="style-reset" vsfiltermod="unchecked"
+          cite="libass:libass/ass_parse.c:381-388 xy:src/subtitles/RTS.cpp:2737-2744">
+      An empty \yshad restores the Style Shadow.
+    </scen>
   </tag>
 
   <tag name="blur" status="V">
@@ -566,6 +627,10 @@
       A negative value is kept: no renderer clamps or rejects it. libass blends
       val*pwr + old*(1-pwr); xy/vsm assign CalcAnimation(wcstod).
     </scen>
+    <scen id="empty-arg" status="V" verified="libass xy vsm" base="style-reset" vsfilter="style-reset" vsfiltermod="style-reset"
+          cite="libass:libass/ass_parse.c:547-555 xy:src/subtitles/RTS.cpp:2469-2475 vsm:src/subtitles/RTS.cpp:3130-3134">
+      An empty \fr restores the Style Angle.
+    </scen>
   </tag>
 
   <tag name="fax" status="V">
@@ -620,6 +685,11 @@
       libass dispatches \c and \1c from one branch (749: tag("c") || tag("1c"));
       forks keep separate map entries that converge on the same handler body.
     </scen>
+    <scen id="empty-arg" status="V" verified="libass xy" base="style-reset" vsfilter="style-reset" vsfiltermod="unchecked"
+          cite="libass:libass/ass_parse.c:749-755 xy:src/subtitles/RTS.cpp:2386-2394">
+      An empty \c restores the Style primary colour. libass also restores
+      that slot's alpha; xy-VSFilter and VSFilterMod keep the current alpha.
+    </scen>
   </tag>
 
   <tag name="1c" status="S">
@@ -631,6 +701,11 @@
         <p i="1" name="empty" kind="none" range="Empty bare suffix: renderer-defined reset, fallback, or zero value (pinned source citation)"/>
       </sig>
     </params>
+    <scen id="empty-arg" status="V" verified="libass xy vsm" base="style-reset" vsfilter="style-reset" vsfiltermod="style-reset"
+          cite="libass:libass/ass_parse.c:749-755 xy:src/subtitles/RTS.cpp:2276-2289 vsm:src/subtitles/RTS.cpp:2677-2711">
+      An empty \1c restores the Style primary colour. libass also restores
+      that slot's alpha; xy-VSFilter and VSFilterMod keep the current alpha.
+    </scen>
   </tag>
   <tag name="2c" status="S">
     <params status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:756-762 xy:src/subtitles/RTS.cpp:2259 vsm:src/subtitles/RTS.cpp:2524-2525">
@@ -641,6 +716,11 @@
         <p i="1" name="empty" kind="none" range="Empty bare suffix: renderer-defined reset, fallback, or zero value (pinned source citation)"/>
       </sig>
     </params>
+    <scen id="empty-arg" status="V" verified="libass xy vsm" base="style-reset" vsfilter="style-reset" vsfiltermod="style-reset"
+          cite="libass:libass/ass_parse.c:756-762 xy:src/subtitles/RTS.cpp:2276-2289 vsm:src/subtitles/RTS.cpp:2677-2711">
+      An empty \2c restores the Style secondary colour. libass also restores
+      that slot's alpha; xy-VSFilter and VSFilterMod keep the current alpha.
+    </scen>
   </tag>
   <tag name="3c" status="S">
     <params status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:763-769 xy:src/subtitles/RTS.cpp:2260 vsm:src/subtitles/RTS.cpp:2524-2525">
@@ -651,6 +731,11 @@
         <p i="1" name="empty" kind="none" range="Empty bare suffix: renderer-defined reset, fallback, or zero value (pinned source citation)"/>
       </sig>
     </params>
+    <scen id="empty-arg" status="V" verified="libass xy vsm" base="style-reset" vsfilter="style-reset" vsfiltermod="style-reset"
+          cite="libass:libass/ass_parse.c:763-769 xy:src/subtitles/RTS.cpp:2276-2289 vsm:src/subtitles/RTS.cpp:2677-2711">
+      An empty \3c restores the Style outline colour. libass also restores
+      that slot's alpha; xy-VSFilter and VSFilterMod keep the current alpha.
+    </scen>
   </tag>
   <tag name="4c" status="S">
     <params status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:770-776 xy:src/subtitles/RTS.cpp:2261 vsm:src/subtitles/RTS.cpp:2524-2525">
@@ -661,6 +746,11 @@
         <p i="1" name="empty" kind="none" range="Empty bare suffix: renderer-defined reset, fallback, or zero value (pinned source citation)"/>
       </sig>
     </params>
+    <scen id="empty-arg" status="V" verified="libass xy vsm" base="style-reset" vsfilter="style-reset" vsfiltermod="style-reset"
+          cite="libass:libass/ass_parse.c:770-776 xy:src/subtitles/RTS.cpp:2276-2289 vsm:src/subtitles/RTS.cpp:2677-2711">
+      An empty \4c restores the Style back colour. libass also restores
+      that slot's alpha; xy-VSFilter and VSFilterMod keep the current alpha.
+    </scen>
   </tag>
   <tag name="1a" status="V">
     <params status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:777-783 xy:src/subtitles/RTS.cpp:2276-2289 vsm:src/subtitles/RTS.cpp:2527-2528,2712-2720">
@@ -763,6 +853,10 @@
       Valid domain is 1..9; anything else selects the style alignment and
       still latches the slot.
     </scen>
+    <scen id="empty-arg" status="V" verified="libass xy vsm" base="style-reset" vsfilter="style-reset" vsfiltermod="style-reset"
+          cite="libass:libass/ass_parse.c:584-593 xy:src/subtitles/RTS.cpp:2301-2306 vsm:src/subtitles/RTS.cpp:2903-2907">
+      An empty \an restores the Style Alignment.
+    </scen>
   </tag>
 
   <tag name="a" status="V">
@@ -786,6 +880,14 @@
       libass domain 1..11, xy/vsm n in (0,12); outside falls to the style
       alignment and latches the shared slot (same PARSED_A/m_scrAlignment as
       \an: libass 586/597, xy 2304/2311).
+    </scen>
+    <scen id="empty-arg" status="V" verified="libass xy vsm" base="style-reset" vsfilter="style-reset" vsfiltermod="style-reset"
+          cite="libass:libass/ass_parse.c:594-604 xy:src/subtitles/RTS.cpp:2308-2313 vsm:src/subtitles/RTS.cpp:2909-2913">
+      An empty \a restores the Style Alignment.
+    </scen>
+    <scen id="repeat" status="V" verified="libass xy vsm" base="latch-blocked" vsfilter="latch-blocked" vsfiltermod="latch-blocked"
+          cite="libass:libass/ass_parse.c:595-604 xy:src/subtitles/RTS.cpp:2308-2313 vsm:src/subtitles/RTS.cpp:2909-2913">
+      A prior \a or \an latch blocks later alignment commands.
     </scen>
   </tag>
 
@@ -1119,6 +1221,10 @@
       style = reset to default render context with a lookup miss); xy falls
       back to org when m_styles.Lookup fails (2646).
     </scen>
+    <scen id="empty-arg" status="V" verified="libass xy" base="style-reset" vsfilter="style-reset" vsfiltermod="unchecked"
+          cite="libass:libass/ass_parse.c:805-811 xy:src/subtitles/RTS.cpp:2643-2647">
+      An empty \r restores the original Style.
+    </scen>
   </tag>
 
   <!-- ===== karaoke family ===== -->
@@ -1157,6 +1263,10 @@
       \K is an alias of \kf (both case-sensitive: libass registers K in the
       same branch as kf; xy registers K and k as distinct keys).
     </scen>
+    <scen id="empty-arg" status="V" verified="libass xy" base="default-1000" vsfilter="default-1000" vsfiltermod="unchecked"
+          cite="libass:libass/ass_parse.c:845-852 xy:src/subtitles/RTS.cpp:2544-2553">
+      An empty \K uses the default 1000 ms duration.
+    </scen>
   </tag>
 
   <tag name="kf" status="V">
@@ -1170,6 +1280,10 @@
     </params>
     <scen id="repeat" status="V" verified="libass xy" base="accumulate" vsfilter="accumulate" vsfiltermod="unchecked"
           cite="libass:libass/ass_parse.c:845-852 xy:src/subtitles/RTS.cpp:2544-2553"/>
+    <scen id="empty-arg" status="V" verified="libass xy" base="default-1000" vsfilter="default-1000" vsfiltermod="unchecked"
+          cite="libass:libass/ass_parse.c:845-852 xy:src/subtitles/RTS.cpp:2544-2553">
+      An empty \kf uses the default 1000 ms duration.
+    </scen>
   </tag>
 
   <tag name="ko" status="V">
@@ -1183,6 +1297,10 @@
     </params>
     <scen id="repeat" status="V" verified="libass xy" base="accumulate" vsfilter="accumulate" vsfiltermod="unchecked"
           cite="libass:libass/ass_parse.c:853-860 xy:src/subtitles/RTS.cpp:2555-2563"/>
+    <scen id="empty-arg" status="V" verified="libass xy" base="default-1000" vsfilter="default-1000" vsfiltermod="unchecked"
+          cite="libass:libass/ass_parse.c:853-860 xy:src/subtitles/RTS.cpp:2555-2563">
+      An empty \ko uses the default 1000 ms duration.
+    </scen>
   </tag>
 
   <tag name="kt" status="V">
@@ -1219,6 +1337,10 @@
     <scen id="style-reset" status="V" verified="libass xy" base="kept" vsfilter="kept" vsfiltermod="unchecked"
           cite="libass:libass/ass_render.c:1075-1111 xy:src/subtitles/RTS.cpp:2643-2647">
       \r does not leave drawing mode (KeepOnStyleReset drawing_scale).
+    </scen>
+    <scen id="empty-arg" status="V" verified="libass xy vsm" base="zero" vsfilter="zero" vsfiltermod="zero"
+          cite="libass:libass/ass_parse.c:901-904 xy:src/subtitles/RTS.cpp:2629-2633 vsm:src/subtitles/RTS.cpp:3544-3547">
+      An empty \p sets the drawing scale to zero.
     </scen>
   </tag>
 

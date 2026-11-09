@@ -120,8 +120,8 @@
             {
               "name": "alignment",
               "value": {
-                "Value": "",
-                "Known": false
+                "Value": "2",
+                "Known": true
               },
               "source": -1
             },
@@ -386,8 +386,8 @@
             {
               "name": "alignment",
               "value": {
-                "Value": "",
-                "Known": false
+                "Value": "7",
+                "Known": true
               },
               "source": -1
             },
@@ -451,8 +451,8 @@
           ],
           "before": [
             {
-              "Value": "",
-              "Known": false
+              "Value": "7",
+              "Known": true
             }
           ],
           "after": [
@@ -709,9 +709,29 @@
           "libass:libass/ass.c:478-529,640-762,827-857",
           "xy-VSFilter:src/subtitles/STS.cpp:1425-1558"
         ]
+      },
+      {
+        "file": "ordinary.ass",
+        "condition": "redundant-style",
+        "severity": "suggestion",
+        "title": "Overrides match style",
+        "description": "Style-backed override tags leave the corresponding Style properties unchanged across dialogue text.",
+        "suggested_fix": "Remove the redundant override tags.",
+        "line": 16,
+        "column": 14,
+        "tag": "an",
+        "detail": "The override tags leave the active Style properties unchanged across dialogue text.",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "ignored"
+          }
+        ],
+        "sources": null
       }
     ],
-    "summary": "Fixes available: 0 safe, 0 unsafe, 2 not auto-fixable.",
+    "summary": "Fixes available: 0 safe, 0 unsafe, 3 not auto-fixable.",
     "output_sha256": "ef3337daa78e9ec2ac533aaebccbe0b2373e1bcf867c505b501f8e703ef59a65",
     "changed": false
   },
@@ -833,9 +853,29 @@
           "libass:libass/ass.c:478-529,640-762,827-857",
           "xy-VSFilter:src/subtitles/STS.cpp:1425-1558"
         ]
+      },
+      {
+        "file": "ordinary.ass",
+        "condition": "redundant-style",
+        "severity": "suggestion",
+        "title": "Overrides match style",
+        "description": "Style-backed override tags leave the corresponding Style properties unchanged across dialogue text.",
+        "suggested_fix": "Remove the redundant override tags.",
+        "line": 16,
+        "column": 14,
+        "tag": "an",
+        "detail": "The override tags leave the active Style properties unchanged across dialogue text.",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "ignored"
+          }
+        ],
+        "sources": null
       }
     ],
-    "summary": "Fixes available: 0 safe, 0 unsafe, 2 not auto-fixable.",
+    "summary": "Fixes available: 0 safe, 0 unsafe, 3 not auto-fixable.",
     "output_sha256": "ef3337daa78e9ec2ac533aaebccbe0b2373e1bcf867c505b501f8e703ef59a65",
     "changed": false
   },
@@ -907,9 +947,29 @@
           "libass:libass/ass.c:478-529,640-762,827-857",
           "xy-VSFilter:src/subtitles/STS.cpp:1425-1558"
         ]
+      },
+      {
+        "file": "ordinary.ass",
+        "condition": "redundant-style",
+        "severity": "suggestion",
+        "title": "Overrides match style",
+        "description": "Style-backed override tags leave the corresponding Style properties unchanged across dialogue text.",
+        "suggested_fix": "Remove the redundant override tags.",
+        "line": 16,
+        "column": 14,
+        "tag": "an",
+        "detail": "The override tags leave the active Style properties unchanged across dialogue text.",
+        "renderers": [
+          {
+            "renderer": "libass",
+            "role": "primary",
+            "status": "ignored"
+          }
+        ],
+        "sources": null
       }
     ],
-    "summary": "Fixes available: 0 safe, 0 unsafe, 2 not auto-fixable.",
+    "summary": "Fixes available: 0 safe, 0 unsafe, 3 not auto-fixable.",
     "output_sha256": "ef3337daa78e9ec2ac533aaebccbe0b2373e1bcf867c505b501f8e703ef59a65",
     "changed": false
   }

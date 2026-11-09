@@ -14,6 +14,7 @@ const (
 	fontSizeProperty        = "fontsize"
 	boldProperty            = "bold"
 	italicProperty          = "italic"
+	alignmentProperty       = "alignment"
 	scaleXProperty          = "scalex"
 	scaleYProperty          = "scaley"
 	spacingProperty         = "spacing"
@@ -34,6 +35,7 @@ var stylePropertySlots = map[string][]string{
 	fontSizeProperty:        {"fontsize"},
 	boldProperty:            {"bold"},
 	italicProperty:          {"italic"},
+	alignmentProperty:       {"alignment"},
 	scaleXProperty:          {"scale_x"},
 	scaleYProperty:          {"scale_y"},
 	spacingProperty:         {"spacing"},
@@ -209,6 +211,14 @@ func canonicalStyleValues(property, raw string, slots []string) ([]string, bool)
 			}
 		}
 		value, ok = CanonicalNumber(raw)
+	case alignmentProperty:
+		var number int
+		number, ok = parseStyleInteger(raw)
+		if ok && number >= 1 && number <= 9 {
+			value = strconv.Itoa(number)
+		} else {
+			ok = false
+		}
 	case encodingProperty:
 		value, ok = CanonicalInteger(raw)
 	case primaryColourProperty, secondaryColourProperty, outlineColourProperty, backColourProperty:
@@ -292,22 +302,28 @@ func StyleTagState(tag renderer.Tag, tagSpec spec.TagSpec, slots []string, base,
 		} else {
 			return nil, false
 		}
-	case "b", "i":
+	case "b", "i", "s", "u":
 		raw, known := tag.RawArgument()
 		if !known {
 			return nil, false
 		}
-		// Both renderers skip surrounding whitespace, and an empty argument
-		// restores the Style value.
+		// All three renderers skip surrounding whitespace, and an empty
+		// argument restores the Style value.
 		raw = strings.Trim(raw, " \t\r\n\v\f")
 		value, known := tag.IntegerArgument()
 		if !known || raw != "" && renderer.DecodeRendererInteger(raw).Consumed == 0 {
 			return nil, false
 		}
-		resetToStyle = raw == "" || (value != 0 && value != 1 && (name == "i" || value < 100))
+		resetToStyle = raw == "" || (value != 0 && value != 1 && (name != "b" || value < 100))
 		if !resetToStyle {
 			tag.Args = []string{strconv.FormatInt(int64(value), 10)}
 		}
+	case "a", "an", "frz", "fr", "fe":
+		resetToStyle = len(tag.Args) == 0
+	case "c", "1c", "2c", "3c", "4c":
+		resetToStyle = len(tag.Args) == 0
+	case "bord", "xbord", "ybord", "shad", "xshad", "yshad":
+		resetToStyle = len(tag.Args) == 0
 	case "fscx", "fscy", "fsp":
 		resetToStyle = len(tag.Args) == 0
 	case "1a", "2a", "3a", "4a", "alpha":

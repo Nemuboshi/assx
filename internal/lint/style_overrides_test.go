@@ -97,6 +97,7 @@ func TestRedundantStyleOverrideProperties(t *testing.T) {
 		{name: "underline", format: "Name, Underline", style: "Default,-1", text: `{\u1}A`},
 		{name: "strikeout", format: "Name, StrikeOut", style: "Default,0", text: `{\s0}A`},
 		{name: "encoding", format: "Name, Encoding", style: "Default,1", text: `{\fe1}A`},
+		{name: "alignment", format: "Name, Alignment", style: "Default,7", text: `{\an7}A`},
 	}
 	for _, test := range cases {
 		t.Run(test.name, func(t *testing.T) {
