@@ -252,6 +252,12 @@
         <p i="1" name="empty" kind="none" range="Empty bare suffix: renderer-defined reset, fallback, or zero value (pinned source citation)"/>
       </sig>
     </params>
+    <scen id="empty-arg" status="V" verified="libass xy vsm" base="style-reset" vsfilter="style-reset" vsfiltermod="style-reset"
+          cite="libass:libass/ass_parse.c:556-565 xy:src/subtitles/RTS.cpp:2447-2453 vsm:src/subtitles/RTS.cpp:3102-3106">
+      An empty \fn resets to the style font name in all three: libass takes the
+      nargs==0 else branch (560-563), xy an empty parameter (2448-2451), vsm
+      the same condition (3103-3105).
+    </scen>
     <scen id="value-map" status="V" verified="libass xy vsm" base="style-reset" vsfilter="style-reset" vsfiltermod="style-reset"
           cite="libass:libass/ass_parse.c:556-565 xy:src/subtitles/RTS.cpp:2447-2453 vsm:src/subtitles/RTS.cpp:3102-3106">
       The argument "0" resets to the style font name in all three (libass

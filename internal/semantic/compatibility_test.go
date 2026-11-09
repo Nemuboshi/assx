@@ -113,6 +113,7 @@ func TestCompatibilityVerifiedScenarios(t *testing.T) {
 		{`{\fe1}A`, "behavior/effect-note", CompatibilityDivergent},
 		{`{\move(0,0,10,10,500,100)}A`, "behavior/out-of-range", CompatibilityDivergent},
 		{`{\frz}A`, "behavior/empty-arg", CompatibilityEquivalent},
+		{`{\fn}A`, "behavior/empty-arg", CompatibilityEquivalent},
 		{`{\be200}A`, "behavior/out-of-range", CompatibilityUnresolved},
 	}
 	for _, tt := range tests {
