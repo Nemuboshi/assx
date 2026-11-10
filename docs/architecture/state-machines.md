@@ -56,6 +56,26 @@ Transitions:
 The default document pass, the layout resolver, and the view projector use the
 same cursor. Each pass keeps its own section and exact-key policy.
 
+### Tag transitions
+
+Owner: `internal/semantic/effective.go`. Test: `tag_branch_test.go`.
+
+`consumeTag` has branches that end the fold. Each one returns a
+`tagTransition` value instead of calling the effect methods inline, and
+`applyTransition` is the only place that applies it. The value has independent
+fields, not one phase:
+
+- `live` marks current owners as used by source text.
+- `invalidate` selects the scope: nothing, listed slots, all slots from the
+  current position, or the malformed-tag slots.
+- `uncertain` marks first-wins latches that an unsupported form might claim.
+- `barrier` revokes SafeFix proofs and records why.
+
+A branch that continues into the assignment fold applies its barrier before
+the fold, because the fold's candidate proofs read `proofsDisabled`. The table
+test pins the effect set of every branch: uncertainty reason, barrier, ignored,
+applied, known, and the slots left known after the tag.
+
 ## Accepted implicit state
 
 These machines stay as they are. An enum would add no safety.
@@ -65,7 +85,8 @@ These machines stay as they are. An enum would add no safety.
   transitions.
 - `semantic.evaluator`: `baseValid`, `proofsDisabled`, and
   `collisionDisabled` are independent facts. They describe proof and
-  collision safety, not one phase.
+  collision safety, not one phase. The branch effects that set them are
+  collected in `tagTransition`, but the flags stay separate.
 - `ass.ParseConcreteDocument` and `ParseConcreteDialogue`: local `section`,
   offsets, and parenthesis depth. They are parser cursors, not lifecycle
   states.
@@ -80,10 +101,7 @@ These machines stay as they are. An enum would add no safety.
 
 ## Migration order
 
-1. **Tag fold transitions.** The evaluator has many early returns. Extract one
-   transition result only after a table test covers every branch. Do not
-   merge independent flags into one enum.
-2. **Proof lifecycle.** `analysis.Result`, `lint.Session`, and `proofBatch`
+1. **Proof lifecycle.** `analysis.Result`, `lint.Session`, and `proofBatch`
    already use opaque IDs and source checks. Add a phase only if a new caller
    needs to observe it.
 
