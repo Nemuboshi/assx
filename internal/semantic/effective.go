@@ -251,6 +251,53 @@ func (m *evaluator) consumeText(text string) {
 	}
 }
 
+// tagTransition is the state effect one consumeTag branch has outside the
+// fold: liveness, invalidation scope, latch uncertainty, and the SafeFix
+// barrier. Each branch declares its effect set here, so a new branch cannot
+// silently skip proof revocation or invalidation.
+type tagTransition struct {
+	live       bool
+	invalidate invalidateScope
+	slots      []string
+	tagSpec    spec.TagSpec
+	uncertain  []string
+	barrier    SemanticUncertainty
+}
+
+type invalidateScope uint8
+
+const (
+	invalidateNothing invalidateScope = iota
+	invalidateSlots
+	invalidateEverything
+	invalidateMalformedSlots
+)
+
+// applyTransition applies t in the order the branches have always used: owners
+// are marked live before poisoning, because a poisoned owner no longer counts
+// as used by source text. The barrier applies here, not at the end of the
+// fold: the fold's candidate proofs read proofsDisabled.
+func (m *evaluator) applyTransition(event TagEvent, t tagTransition) TagEvent {
+	if t.live {
+		m.markActiveLive()
+	}
+	switch t.invalidate {
+	case invalidateSlots:
+		m.invalidate(t.slots)
+	case invalidateEverything:
+		m.invalidateAll()
+	case invalidateMalformedSlots:
+		m.invalidateMalformedTag(t.tagSpec, event.Index)
+	}
+	for _, slot := range t.uncertain {
+		m.store.markUncertain(slot)
+	}
+	if t.barrier != UncertaintyNone {
+		m.blockProofs(&event, t.barrier)
+	}
+	return event
+}
+
 func (m *evaluator) markActiveLive() {
 	if m.options.SkipNoEffectProofs {
 		return
@@ -271,10 +318,9 @@ func (m *evaluator) consumeTag(tag renderer.Tag) TagEvent {
 	event := TagEvent{Tag: tag, Index: index}
 
 	if tag.RepeatedSlashes > 0 {
-		m.markActiveLive()
-		m.invalidateAll()
-		m.blockProofs(&event, UncertaintyUnresolved)
-		return event
+		return m.applyTransition(event, tagTransition{
+			live: true, invalidate: invalidateEverything, barrier: UncertaintyUnresolved,
+		})
 	}
 
 	tagSpec, known := m.policyFor(tag)
@@ -284,32 +330,28 @@ func (m *evaluator) consumeTag(tag renderer.Tag) TagEvent {
 	event.Citation = op.citation
 	// Handle unclosed syntax before the unknown-name fast path to revoke prior proofs.
 	if op.unclosed {
-		m.markActiveLive()
+		t := tagTransition{live: true, invalidate: invalidateEverything, barrier: UncertaintyMalformed}
 		if tag.Name == "clip" || tag.Name == "iclip" {
-			m.invalidateMalformedTag(spec.TagSpec{Semantic: spec.SemanticClip}, index)
-		} else {
-			m.invalidateAll()
+			t.invalidate = invalidateMalformedSlots
+			t.tagSpec = spec.TagSpec{Semantic: spec.SemanticClip}
 		}
-		m.blockProofs(&event, UncertaintyMalformed)
-		return event
+		return m.applyTransition(event, t)
 	}
 	switch op.match {
 	case renderer.UnknownName, renderer.Ignored, renderer.Disabled:
 		event.Ignored = true
-		m.markActiveLive()
-		m.invalidateAll()
 		reason := UncertaintyUnsupported
 		if op.match == renderer.Disabled {
 			reason = UncertaintyRendererDependent
 		}
-		m.blockProofs(&event, reason)
-		return event
+		return m.applyTransition(event, tagTransition{
+			live: true, invalidate: invalidateEverything, barrier: reason,
+		})
 	}
 	if op.signature == renderer.SignatureRejected {
 		// Rejection cannot own a latch, but malformed source remains a fix fence.
 		event.Ignored = true
-		m.blockProofs(&event, UncertaintyMalformed)
-		return event
+		return m.applyTransition(event, tagTransition{barrier: UncertaintyMalformed})
 	}
 	if (tag.Name == "fade" || tag.Name == "fad") && len(tag.Args) == 0 {
 		// Zero arguments keep the previous fade in all three renderers.
@@ -321,14 +363,12 @@ func (m *evaluator) consumeTag(tag renderer.Tag) TagEvent {
 		return event
 	}
 	if !known || tagSpec.VSFilterModOnly && len(tagSpec.Slots) == 0 {
-		m.markActiveLive()
-		m.invalidateAll()
+		t := tagTransition{live: true, invalidate: invalidateEverything, barrier: UncertaintyUnsupported}
 		if tag.Name == "mover" || tag.Name == "moves3" || tag.Name == "moves4" {
 			// These extensions can claim the same EF_MOVE latch as pos/move.
-			m.store.markUncertain("position")
+			t.uncertain = []string{"position"}
 		}
-		m.blockProofs(&event, UncertaintyUnsupported)
-		return event
+		return m.applyTransition(event, t)
 	}
 	if tagSpec.Counts != nil && !slices.Contains(tagSpec.Counts, len(tag.Args)) &&
 		op.signature != renderer.SignatureVerified {
@@ -348,50 +388,47 @@ func (m *evaluator) consumeTag(tag renderer.Tag) TagEvent {
 				return event
 			}
 		}
-		m.invalidateMalformedTag(tagSpec, index)
-		reason := UncertaintyMalformed
+		t := tagTransition{invalidate: invalidateMalformedSlots, tagSpec: tagSpec, barrier: UncertaintyMalformed}
 		if op.signature == renderer.SignatureUnknown && tagSpec.Semantic != spec.SemanticClip {
-			reason = UncertaintyUnresolved
+			t.barrier = UncertaintyUnresolved
 			if tagSpec.Behavior == spec.FirstWins {
-				for _, slot := range tagSpec.Slots {
-					m.store.markUncertain(slot)
-				}
+				t.uncertain = tagSpec.Slots
 			}
 		}
-		m.blockProofs(&event, reason)
-		return event
+		return m.applyTransition(event, t)
 	}
 	if tag.Name == "pos" && len(tag.Args) == 3 && m.profile.PositionDepth("pos") {
 		m.applyModPositionDepth(tag, index, &event)
 		return event
 	}
 	if tagSpec.VSFilterModOnly && op.signature != renderer.SignatureVerified {
-		m.markActiveLive()
-		m.invalidate(tagSpec.Slots)
-		m.blockProofs(&event, UncertaintyUnresolved)
-		return event
+		return m.applyTransition(event, tagTransition{
+			live: true, invalidate: invalidateSlots, slots: tagSpec.Slots,
+			barrier: UncertaintyUnresolved,
+		})
 	}
 	modEffectChild := tag.InTransition && m.profile.EffectInTransform() && op.signature == renderer.SignatureVerified &&
 		(tag.Name == "pos" || tag.Name == "move" || tag.Name == "org" || tag.Name == "fad" || tag.Name == "fade")
 	if modEffectChild {
 		// Mod reaches effect handlers inside transforms without animation.
 		// The parent timing model remains conservative.
-		m.blockProofs(&event, UncertaintyTimeDependent)
+		event = m.applyTransition(event, tagTransition{barrier: UncertaintyTimeDependent})
 	}
 	if tag.InTransition && !modEffectChild {
-		if reason := m.handleTransformChild(tag, tagSpec); reason != UncertaintyNone {
-			m.blockProofs(&event, reason)
+		reason := m.handleTransformChild(tag, tagSpec)
+		if reason == UncertaintyNone {
+			return event
 		}
-		return event
+		return m.applyTransition(event, tagTransition{barrier: reason})
 	}
 
 	event.Policy = tagSpec.Behavior
 	switch tagSpec.Semantic {
 	case spec.SemanticStyleReset:
-		if !m.resetStyle(tag) {
-			m.blockProofs(&event, UncertaintyUnresolved)
-		}
 		event.Applied = true
+		if !m.resetStyle(tag) {
+			event = m.applyTransition(event, tagTransition{barrier: UncertaintyUnresolved})
+		}
 		return event
 	case spec.SemanticTransform:
 		if !m.consumeTransform(tag, index) {
@@ -400,10 +437,11 @@ func (m *evaluator) consumeTag(tag renderer.Tag) TagEvent {
 		event.Applied = true
 		return event
 	case spec.SemanticKaraoke:
-		if reason := m.accumulate(tag); reason != UncertaintyNone {
-			m.blockProofs(&event, reason)
-		}
+		reason := m.accumulate(tag)
 		event.Applied = true
+		if reason != UncertaintyNone {
+			event = m.applyTransition(event, tagTransition{barrier: reason})
+		}
 		return event
 	}
 
@@ -421,7 +459,7 @@ func (m *evaluator) consumeTag(tag renderer.Tag) TagEvent {
 	if !valuesKnown {
 		// Renderer-dependent or malformed assignments cannot justify
 		// removing previously tracked tags, even before this boundary.
-		m.blockProofs(&event, assignmentUncertainty(tag, tagSpec))
+		event = m.applyTransition(event, tagTransition{barrier: assignmentUncertainty(tag, tagSpec)})
 	}
 	if behavior == spec.Assign && valuesKnown && m.sameSlotValues(slots, values) {
 		if !m.proofsDisabled {
