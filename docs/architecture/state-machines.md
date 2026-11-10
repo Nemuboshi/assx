@@ -62,8 +62,10 @@ Owner: `internal/semantic/effective.go`. Test: `tag_branch_test.go`.
 
 `consumeTag` has branches that end the fold. Each one returns a
 `tagTransition` value instead of calling the effect methods inline, and
-`applyTransition` is the only place that applies it. The value has independent
-fields, not one phase:
+`applyTransition` is the only place that applies it. The tag-specific handlers
+in `handlers.go` return the same value, so the transform, transform-child,
+position-depth, and relative-font-size paths have one owner too. The value has
+independent fields, not one phase:
 
 - `live` marks current owners as used by source text.
 - `invalidate` selects the scope: nothing, listed slots, all slots from the
@@ -74,7 +76,9 @@ fields, not one phase:
 A branch that continues into the assignment fold applies its barrier before
 the fold, because the fold's candidate proofs read `proofsDisabled`. The table
 test pins the effect set of every branch: uncertainty reason, barrier, ignored,
-applied, known, and the slots left known after the tag.
+applied, known, and the slots left known after the tag. It covers the eight
+`consumeTag` branches plus the transform, transform-child, position-depth,
+relative-font-size, and malformed-clip-value paths.
 
 ## Accepted implicit state
 
