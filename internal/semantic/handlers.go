@@ -12,16 +12,14 @@ import (
 // Tag-specific semantics live here; simple assignments remain metadata-driven.
 // No per-tag interface allocations or runtime registration are required.
 
-func (m *evaluator) handleTransformChild(tag renderer.Tag, tagSpec spec.TagSpec) SemanticUncertainty {
+func (m *evaluator) handleTransformChild(tag renderer.Tag, tagSpec spec.TagSpec) tagTransition {
 	if m.profile.RecursiveTransformChildren() {
 		// Mod recursively applies all handlers. Do not publish a static value
 		// for animated assignments or let a later child retain pos3 depth.
 		if tagSpec.Behavior == spec.Assign && len(tagSpec.Slots) != 0 {
-			m.invalidate(tagSpec.Slots)
-		} else {
-			m.invalidateAll()
+			return tagTransition{invalidate: invalidateSlots, slots: tagSpec.Slots, barrier: UncertaintyTimeDependent}
 		}
-		return UncertaintyTimeDependent
+		return tagTransition{invalidate: invalidateEverything, barrier: UncertaintyTimeDependent}
 	}
 	// A transform child is evaluated by its parent. Unsupported targets or
 	// syntax must still revoke proofs created before the parent transform.
@@ -33,18 +31,19 @@ func (m *evaluator) handleTransformChild(tag renderer.Tag, tagSpec spec.TagSpec)
 		unknown = !modeled
 	}
 	if !unknown {
-		return UncertaintyNone
+		return tagTransition{}
 	}
 	reason := assignmentUncertainty(tag, tagSpec)
 	if reason == UncertaintyMalformed || reason == UncertaintyRendererDependent {
-		return reason
+		return tagTransition{barrier: reason}
 	}
-	return UncertaintyUnsupported
+	return tagTransition{barrier: UncertaintyUnsupported}
 }
 
-func (m *evaluator) consumeTransform(tag renderer.Tag, index int) bool {
+func (m *evaluator) consumeTransform(tag renderer.Tag, index int) (bool, tagTransition) {
+	var transition tagTransition
 	if len(m.children[tag.Start]) > 0 {
-		m.markActiveLive()
+		transition.live = true
 	}
 	noEffect := m.transitionHasNoEffect(tag)
 	if noEffect && m.collisionDisabled && !m.proofsDisabled {
@@ -52,9 +51,9 @@ func (m *evaluator) consumeTransform(tag renderer.Tag, index int) bool {
 	}
 	m.collisionDisabled = true
 	if !noEffect {
-		m.invalidateAll()
+		transition.invalidate = invalidateEverything
 	}
-	return noEffect
+	return noEffect, transition
 }
 
 func resolveAssignmentPolicy(tag renderer.Tag, tagSpec spec.TagSpec) ([]string, spec.Behavior) {
@@ -71,25 +70,31 @@ func resolveAssignmentPolicy(tag renderer.Tag, tagSpec spec.TagSpec) ([]string, 
 
 // applyModPositionDepth retains the accepted depth write despite the pinned
 // three-argument position layout defect (RTS.cpp:3530-3539,4238-4241).
-func (m *evaluator) applyModPositionDepth(tag renderer.Tag, index int, event *TagEvent) {
+func (m *evaluator) applyModPositionDepth(tag renderer.Tag, index int, event TagEvent) TagEvent {
 	event.Policy = spec.FirstWins
 	event.Slots = []string{"position", "z_depth"}
 	m.fillValues(&event.Before, event.Slots)
 	if m.store.latch("position") != noLatch {
 		event.Ignored = true
 		m.fillValues(&event.After, event.Slots)
-		return
+		return event
 	}
-	m.markActiveLive()
-	m.blockProofs(event, UncertaintyRendererDependent)
-	if m.operationFor(tag).signature != renderer.SignatureVerified {
-		m.store.markUncertain("position")
+	// An unverified signature marks the latch uncertain. Reading the latch
+	// check before that write is safe: the answer is the same either way.
+	uncertain := m.operationFor(tag).signature != renderer.SignatureVerified
+	claimed := m.store.uncertainLatch("position") || uncertain
+	transition := tagTransition{live: true, barrier: UncertaintyRendererDependent}
+	if uncertain {
+		transition.uncertain = []string{"position"}
 	}
-	if m.store.uncertainLatch("position") {
+	if claimed {
 		// A preceding extension may have claimed EF_MOVE and blocked depth.
-		m.invalidate(event.Slots)
+		transition.invalidate, transition.slots = invalidateSlots, event.Slots
+	}
+	event = m.applyTransition(event, transition)
+	if claimed {
 		m.fillValues(&event.After, event.Slots)
-		return
+		return event
 	}
 	m.store.setLatch("position", index)
 	m.collisionDisabled = true
@@ -108,16 +113,14 @@ func (m *evaluator) applyModPositionDepth(tag renderer.Tag, index int, event *Ta
 	m.store.setOwner("z_depth", owner{index: index, start: m.position, proven: depth.Known})
 	event.Applied = true
 	m.fillValues(&event.After, event.Slots)
+	return event
 }
 
-func (m *evaluator) handleRelativeFontSize(tag renderer.Tag, tagSpec spec.TagSpec, event *TagEvent, slots []string) bool {
+func (m *evaluator) handleRelativeFontSize(tag renderer.Tag, tagSpec spec.TagSpec, slots []string) (bool, tagTransition) {
 	if tagSpec.Semantic != spec.SemanticFontSize || !RelativeFontSize(tag) {
-		return false
+		return false, tagTransition{}
 	}
-	m.invalidate([]string{"fontsize"})
-	m.blockProofs(event, UncertaintyUnsupported)
-	m.fillValues(&event.After, slots)
-	return true
+	return true, tagTransition{invalidate: invalidateSlots, slots: []string{"fontsize"}, barrier: UncertaintyUnsupported}
 }
 
 // assignmentUncertainty preserves the decoder's distinctions without

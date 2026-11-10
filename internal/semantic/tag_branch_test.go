@@ -82,6 +82,26 @@ func TestTagBranchEffects(t *testing.T) {
 			knownAfter: map[string]bool{"fontsize": true},
 		},
 		{
+			name: "supported transform child", text: `{\bord2\fs24\t(\bord2)}A`, tag: "bord", index: 3,
+			want:       UncertaintyNone,
+			knownAfter: map[string]bool{"fontsize": true, "border_x": true},
+		},
+		{
+			name: "mod position depth", text: `{\fs24\pos(1,2,3)}A`, tag: "pos", index: 1, mod: true,
+			want: UncertaintyRendererDependent, barrier: true, applied: true, known: false,
+			knownAfter: map[string]bool{"fontsize": true, "position": false, "z_depth": true},
+		},
+		{
+			name: "relative font size", text: `{\fs24\fs+10}A`, tag: "fs", index: 1,
+			want: UncertaintyUnsupported, barrier: true,
+			knownAfter: map[string]bool{"fontsize": false},
+		},
+		{
+			name: "malformed clip value", text: `{\fs24\clip(0,0,10,10)\clip(1.5,0,10,10)}A`, tag: "clip", index: 2,
+			want: UncertaintyRendererDependent, barrier: true, applied: true,
+			knownAfter: map[string]bool{"fontsize": true, "clip_rect": false},
+		},
+		{
 			name: "folded transform child", text: `{\fs24\t(\fsabc)}A`, tag: "fs", index: 2,
 			want: UncertaintyMalformed, barrier: true,
 			knownAfter: map[string]bool{"fontsize": false},

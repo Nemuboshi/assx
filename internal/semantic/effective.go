@@ -398,8 +398,7 @@ func (m *evaluator) consumeTag(tag renderer.Tag) TagEvent {
 		return m.applyTransition(event, t)
 	}
 	if tag.Name == "pos" && len(tag.Args) == 3 && m.profile.PositionDepth("pos") {
-		m.applyModPositionDepth(tag, index, &event)
-		return event
+		return m.applyModPositionDepth(tag, index, event)
 	}
 	if tagSpec.VSFilterModOnly && op.signature != renderer.SignatureVerified {
 		return m.applyTransition(event, tagTransition{
@@ -415,11 +414,7 @@ func (m *evaluator) consumeTag(tag renderer.Tag) TagEvent {
 		event = m.applyTransition(event, tagTransition{barrier: UncertaintyTimeDependent})
 	}
 	if tag.InTransition && !modEffectChild {
-		reason := m.handleTransformChild(tag, tagSpec)
-		if reason == UncertaintyNone {
-			return event
-		}
-		return m.applyTransition(event, tagTransition{barrier: reason})
+		return m.applyTransition(event, m.handleTransformChild(tag, tagSpec))
 	}
 
 	event.Policy = tagSpec.Behavior
@@ -431,11 +426,13 @@ func (m *evaluator) consumeTag(tag renderer.Tag) TagEvent {
 		}
 		return event
 	case spec.SemanticTransform:
-		if !m.consumeTransform(tag, index) {
+		noEffect, transition := m.consumeTransform(tag, index)
+		event.Applied = true
+		if !noEffect {
+			// A time-dependent transform never revokes SafeFix proofs.
 			event.Uncertainty = UncertaintyTimeDependent
 		}
-		event.Applied = true
-		return event
+		return m.applyTransition(event, transition)
 	case spec.SemanticKaraoke:
 		reason := m.accumulate(tag)
 		event.Applied = true
@@ -450,7 +447,9 @@ func (m *evaluator) consumeTag(tag renderer.Tag) TagEvent {
 	event.Slots = slots
 	m.fillValues(&event.Before, slots)
 
-	if m.handleRelativeFontSize(tag, tagSpec, &event, slots) {
+	if handled, transition := m.handleRelativeFontSize(tag, tagSpec, slots); handled {
+		event = m.applyTransition(event, transition)
+		m.fillValues(&event.After, slots)
 		return event
 	}
 
