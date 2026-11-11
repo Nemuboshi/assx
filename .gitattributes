@@ -1,3 +1,6 @@
+# Text files use LF in the repository and in every checkout.
+* text=auto eol=lf
+
 # Byte-sensitive fixtures must remain identical on Windows and Linux.
 # -text prevents Git from rewriting BOMs, CRLF or UTF-16 test inputs.
 testdata/contracts/cases/*.ass -text
@@ -9,9 +12,8 @@ testdata/contracts/golden/*.json text eol=lf
 internal/fontreport/testdata/*.golden text eol=lf
 
 # Raw benchstat input is line-oriented and platform-neutral.
-docs/development/baseline-6ba7453-windows-amd64.txt text eol=lf
+docs/development/baseline-*.txt text eol=lf
 
 # Renderer evidence and its generated representation are shared across OSes.
-# Keep repository copies canonical even with core.autocrlf=true.
-docs/rules/ass-tags.xml text eol=lf
-internal/ass/renderer/matrix_generated.go text eol=lf
+docs/reference/ass-tags.xml text eol=lf
+internal/ass/renderer/*_generated.go text eol=lf
