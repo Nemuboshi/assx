@@ -1,9 +1,11 @@
 package lint
 
 import (
+	"slices"
 	"strings"
 
 	"assx/internal/ass/renderer"
+	"assx/internal/edit"
 )
 
 // htmlTagNames lists the names that ParseHtmlTag accepts in the pinned
@@ -64,4 +66,70 @@ func isHTMLTagInner(inner string) bool {
 	}
 	_, ok := htmlTagNames[strings.ToLower(name)]
 	return ok
+}
+
+// anyRendererParsesHTML reports whether one selected target reads HTML tags.
+func anyRendererParsesHTML(profiles []renderer.Profile) bool {
+	for _, profile := range profiles {
+		if rendererParsesHTML(profile) {
+			return true
+		}
+	}
+	return false
+}
+
+// revokeCombinedHTMLChanges refuses every candidate in a dialogue when the
+// complete candidate group for that dialogue changes the consumed tag
+// sequence. Separate per-edit proofs are not sufficient here: two deletions
+// can each expose no tag and still expose one together. The apply step checks
+// the combined group again, so this pass keeps discovery and application
+// consistent.
+func revokeCombinedHTMLChanges(doc renderer.Document, diagnostics []Diagnostic, candidates []int, selected []FixEditProof, profiles []renderer.Profile) ([]int, []FixEditProof) {
+	if len(doc.Dialogues) == 0 || !anyRendererParsesHTML(profiles) {
+		return candidates, selected
+	}
+	byDialogue := dialogueEditsByIndex(doc, selected)
+	if len(byDialogue) == 0 {
+		return candidates, selected
+	}
+	var textEdits []FixEditProof
+	for _, edits := range byDialogue {
+		textEdits = append(textEdits, edits...)
+	}
+	changed, err := edit.Apply(doc.Text, proofTextEdits(textEdits))
+	if err != nil {
+		return candidates, selected
+	}
+	after, err := editedDialogueDocument(doc, changed, textEdits)
+	if err != nil {
+		return candidates, selected
+	}
+	changedLines := make(map[int]struct{})
+	for i := range doc.Dialogues {
+		if len(byDialogue[i]) == 0 {
+			continue
+		}
+		if !slices.Equal(htmlTagSequence(doc.Dialogues[i].Text), htmlTagSequence(after.Dialogues[i].Text)) {
+			changedLines[doc.Dialogues[i].Line] = struct{}{}
+		}
+	}
+	if len(changedLines) == 0 {
+		return candidates, selected
+	}
+	keptCandidates := make([]int, 0, len(candidates))
+	var keptSelected []FixEditProof
+	for _, index := range candidates {
+		if _, changed := changedLines[diagnostics[index].Line]; changed {
+			diagnostics[index].FixSafety = ""
+			diagnostics[index].Edits = nil
+			diagnostics[index].FixProof = nil
+			diagnostics[index].FixProofRef = 0
+			continue
+		}
+		keptCandidates = append(keptCandidates, index)
+		for _, sourceEdit := range diagnostics[index].Edits {
+			keptSelected = append(keptSelected, FixEditProof{Condition: diagnostics[index].Condition, Edit: sourceEdit})
+		}
+	}
+	return keptCandidates, keptSelected
 }

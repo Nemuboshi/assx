@@ -107,6 +107,7 @@ func proveSafeFixesBatchContext(ctx context.Context, doc renderer.Document, diag
 			selected = append(selected, FixEditProof{Condition: diagnostic.Condition, Edit: sourceEdit})
 		}
 	}
+	candidates, selected = revokeCombinedHTMLChanges(doc, diagnostics, candidates, selected, profiles)
 	if len(candidates) == 0 {
 		return diagnostics, nil
 	}

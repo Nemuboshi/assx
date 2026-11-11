@@ -58,8 +58,10 @@ replaces the derived severity and can disable the condition entirely.
   would consume a different HTML tag sequence after the edit. The check follows
   the renderer scan and compares the raw tag text. A block deletion that exposes
   `<b>` fails; an edit elsewhere on a line with a literal `<b>` stays available.
-  The diagnostic stays, but it carries no edit. libass-only targets keep their
-  SafeFix edits because libass does not parse HTML in dialogue text.
+  The check uses the complete candidate group for the dialogue, so two edits
+  that expose a tag only together are both refused. The diagnostic stays, but it
+  carries no edit. libass-only targets keep their SafeFix edits because libass
+  does not parse HTML in dialogue text.
 - Compatibility observations name every compared renderer. Primary tag findings
   use dialogue-relative columns; document findings use physical-line columns.
   Findings keep stable source ordering.

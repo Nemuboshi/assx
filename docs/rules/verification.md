@@ -57,7 +57,9 @@ the same modeled value before and after the edit. Keep a dialogue edit
 unavailable when an xy-VSFilter or VSFilterMod target would consume a different
 HTML tag sequence after the edit. The check follows the renderer scan and
 compares the raw tag text, so a block deletion that exposes `<b>` fails, while
-an edit elsewhere on a line with a literal `<b>` stays available. libass-only
+an edit elsewhere on a line with a literal `<b>` stays available. The check uses
+the complete candidate group for the dialogue. Two edits that expose a tag only
+together are both refused, because separate proofs are not sufficient. libass-only
 targets do not need this barrier, because the libass event-text path has no HTML
 branch.
 

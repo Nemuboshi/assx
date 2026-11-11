@@ -33,8 +33,9 @@ links only to the source relevant to that condition.
 A SafeFix can become unavailable when its proof fails. A dialogue edit has no
 SafeFix when an xy-VSFilter or VSFilterMod target would consume a different HTML
 tag sequence after the edit. A block deletion that exposes `<b>` is refused. An
-edit that leaves a literal `<b>` untouched keeps its SafeFix. The diagnostic
-remains, without an edit. This limit applies to `no-effect`, `redundant-style`,
+edit that leaves a literal `<b>` untouched keeps its SafeFix. The complete
+candidate group for the dialogue decides the result, so two edits that expose a
+tag only together are both refused. The diagnostic remains, without an edit. This limit applies to `no-effect`, `redundant-style`,
 `repeated-brace`, and `empty-block`. See
 [SafeFix proof scope](../rules/verification.md#safefix-proof-scope).
 

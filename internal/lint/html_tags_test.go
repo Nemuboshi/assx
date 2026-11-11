@@ -92,19 +92,45 @@ func TestSafeFixRejectsDialogueWithPossibleHTMLTag(t *testing.T) {
 }
 
 // TestHTMLBarrierKeepsUnrelatedDialoguesFixable checks that the barrier is
-// scoped to the dialogue whose text changes its HTML interpretation.
+// scoped to the dialogue whose complete edit group changes its HTML
+// interpretation.
 func TestHTMLBarrierKeepsUnrelatedDialoguesFixable(t *testing.T) {
 	doc := htmlFixtureDocDialogues(`{\b0\b0}<{}b>A`, `{\b0\b0}plain`)
 	findings := analyzeDocumentTest(doc)
 	fixed, count, err := ApplyFixes(doc.Text, findings, false)
-	if err != nil || count != 2 {
+	if err != nil || count != 1 {
 		t.Fatalf("apply: count=%d err=%v", count, err)
 	}
-	if !strings.Contains(fixed, `<{}b>A`) {
-		t.Errorf("HTML-sensitive empty-block edit was applied: %q", fixed)
+	if !strings.Contains(fixed, `{\b0\b0}<{}b>A`) {
+		t.Errorf("HTML-sensitive dialogue changed: %q", fixed)
 	}
 	if !strings.Contains(fixed, ",,plain") {
 		t.Errorf("unrelated dialogue was not fixed: %q", fixed)
+	}
+}
+
+// TestHTMLBarrierRejectsCombinedEditGroup covers two empty blocks that each
+// keep the text unrecognized but expose <b> together. The complete group must
+// be refused before application, or --fix would fail on the combined proof.
+func TestHTMLBarrierRejectsCombinedEditGroup(t *testing.T) {
+	doc := htmlFixtureDoc(`<{}b{}>A`)
+	findings := analyzeDocumentTest(doc)
+	var found int
+	for _, diagnostic := range findings {
+		if diagnostic.Condition != IssueEmptyOverrideBlock {
+			continue
+		}
+		found++
+		if diagnostic.FixSafety == SafeFix || len(diagnostic.Edits) != 0 {
+			t.Errorf("combined HTML-sensitive edit kept a proof: %#v", diagnostic)
+		}
+	}
+	if found != 2 {
+		t.Fatalf("empty-block findings = %d, want 2", found)
+	}
+	fixed, count, err := ApplyFixes(doc.Text, findings, false)
+	if err != nil || count != 0 || fixed != doc.Text {
+		t.Fatalf("combined edit was applied: count=%d err=%v", count, err)
 	}
 }
 
