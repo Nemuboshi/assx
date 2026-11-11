@@ -14,7 +14,7 @@ assx [lint] [--renderer=RENDERERS] [--format pretty|plain|json] [--severity sugg
 - Exit status: 0 for no primary errors, 1 for primary errors, 2 for usage, input/output, or fix-application failures.
 - `--format pretty|plain|json`: choose output format; defaults to `pretty`. Pretty output shows a compact diagnostic report with source frames; color is used only on an interactive terminal. A scan spinner appears only when stderr is interactive. `plain` preserves the text-oriented output; `json` emits machine-readable diagnostics.
 - `--severity suggestion|warning|error`: set the minimum reported severity; defaults to `suggestion`. The filter applies to every output format, fix counts, and `--fix`. Exit status depends only on primary errors, which this threshold never hides.
-- `--explain`: include expanded rule descriptions and evidence URLs in pretty output.
+- `--explain`: add the rule detail, the full rule description, and evidence URLs to pretty output. Without it, pretty output shows no explanation lines.
 - `--fix`: apply safe fixes. If the input is a symbolic link, update its target and preserve the link.
 - `--unsafe-fix`: apply safe and unsafe fixes.
 - `--force-ass`: bypass content recognition for intentionally partial input. This can permit writes with `--fix` or `--unsafe-fix`. It does not bypass encoding or SafeFix checks.

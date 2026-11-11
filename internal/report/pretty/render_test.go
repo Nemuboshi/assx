@@ -202,7 +202,7 @@ func TestPrettyReportGoldenNoColor(t *testing.T) {
 	view := report.Summary{Total: 1, Remaining: report.FixCounts{Unfixable: 1}, Groups: []report.Group{{
 		File: "sample.ass", Errors: 1, Diagnostics: []report.Diagnostic{{
 			Line: 1, Column: 2, SourceColumn: 12, SourceWidth: 6, Condition: "arity", Severity: "error",
-			Title: "Bad tag", Detail: "Invalid font size.", Outcome: report.FixNone,
+			Title: "Bad tag", Outcome: report.FixNone,
 		}},
 	}}}
 	source := `Dialogue: {\fsbad}hello`
@@ -214,7 +214,6 @@ func TestPrettyReportGoldenNoColor(t *testing.T) {
 		"error[arity]  Bad tag  1:12\n" +
 		"  1 | Dialogue: {\\fsbad}hello\n" +
 		"    |            ^~~~~~\n" +
-		"  Invalid font size.\n" +
 		"  Fix: edit manually\n\n" +
 		"1 diagnostics\n" +
 		"Fixes available: 0 safe, 0 unsafe, 1 not auto-fixable.\n"
@@ -251,7 +250,7 @@ func TestRenderEscapesTerminalControlsAndSeparatesExplanation(t *testing.T) {
 		t.Fatal(err)
 	}
 	got := out.String()
-	if strings.Contains(got, "\x1b") || !strings.Contains(got, "Short reason") || strings.Contains(got, "Long rule description") {
+	if strings.Contains(got, "\x1b") || strings.Contains(got, "Short reason") || strings.Contains(got, "Long rule description") {
 		t.Fatalf("default report has unsafe or expanded text: %q", got)
 	}
 	view.Explain = true
@@ -259,7 +258,7 @@ func TestRenderEscapesTerminalControlsAndSeparatesExplanation(t *testing.T) {
 	if err := Render(&out, view, "Dialogue: test\r\n", false, 80); err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(out.String(), "Long rule description") {
+	if !strings.Contains(out.String(), "Short reason") || !strings.Contains(out.String(), "Long rule description") {
 		t.Fatalf("expanded explanation missing: %q", out.String())
 	}
 }

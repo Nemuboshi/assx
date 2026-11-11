@@ -51,7 +51,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 	flags.SetOutput(stderr)
 	format := flags.String("format", "pretty", "diagnostic output: pretty, plain, or json")
 	severityName := flags.String("severity", "suggestion", "minimum reported severity: suggestion, warning, or error")
-	explain := flags.Bool("explain", false, "include expanded rule explanations and evidence in pretty output")
+	explain := flags.Bool("explain", false, "add rule detail, full descriptions, and evidence to pretty output")
 	fix := flags.Bool("fix", false, "apply safe fixes")
 	unsafeFix := flags.Bool("unsafe-fix", false, "apply safe and unsafe fixes")
 	forceASS := flags.Bool("force-ass", false, "analyze unrecognized ASS input explicitly")

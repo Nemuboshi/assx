@@ -80,7 +80,8 @@ func (r Result) notes() []string {
 }
 
 func Pretty(w io.Writer, r Result, source string, color bool, width int) error {
-	view := report.Summary{Heading: "Font check: ", Advisory: true, Total: len(r.Findings), Notes: r.notes()}
+	// The fonts command has no --explain switch, so its reason lines stay.
+	view := report.Summary{Heading: "Font check: ", Advisory: true, Total: len(r.Findings), Notes: r.notes(), Explain: true}
 	group := report.Group{File: r.File}
 	for _, d := range r.Findings {
 		u := d.Usages[0]

@@ -75,15 +75,15 @@ func Render(output io.Writer, summary report.Summary, source string, color bool,
 				writeWrapped(w, "  ", "Renderer: "+d.Renderer, width)
 			}
 			if summary.Explain {
-				writeWrapped(w, "  ", d.Detail, width)
+				if d.Detail != "" {
+					writeWrapped(w, "  ", d.Detail, width)
+				}
 				if d.Description != "" {
 					writeWrapped(w, "  ", d.Description, width)
 				}
 				for _, source := range d.Sources {
 					writeWrapped(w, "  ", "Evidence: "+source, width)
 				}
-			} else if d.Detail != "" {
-				writeWrapped(w, "  ", d.Detail, width)
 			}
 			if !summary.Advisory {
 				switch d.Outcome {
