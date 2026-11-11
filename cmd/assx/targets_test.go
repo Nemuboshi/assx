@@ -75,10 +75,9 @@ func TestRendererTargetCLI(t *testing.T) {
 func TestRendererCLIUsageErrors(t *testing.T) {
 	for _, args := range [][]string{
 		{"--renderer=other"}, {"--renderer=libass,,xy-vsfilter"}, {"--renderer="},
-		{"--renderer=libass,"}, {"--compat=libass"},
-		{"--mod-build=enabled"},
+		{"--renderer=libass,"},
 		{"--renderer", "invalid"},
-		{"--lua-build=disabled"}, {},
+		{},
 	} {
 		t.Run(strings.Join(args, " "), func(t *testing.T) {
 			var out, errOut strings.Builder

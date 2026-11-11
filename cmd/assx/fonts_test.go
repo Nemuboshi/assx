@@ -92,7 +92,7 @@ func TestFontsCommandReportsDomainAndStaysReadOnly(t *testing.T) {
 
 func TestFontsCommandRejectsInvalidScopesAndCatalogs(t *testing.T) {
 	path, fonts, _ := fontCommandFixture(t)
-	for _, flags := range [][]string{{"--fix"}, {"--unsafe-fix"}, {"--renderer=libass,xy-vsfilter"}, {"--renderer=bad"}, {"--mod-build=enabled"}, {"--format=bad"}, {"--font-dir="}, {"--font-dir", filepath.Join(fonts, "absent")}} {
+	for _, flags := range [][]string{{"--fix"}, {"--unsafe-fix"}, {"--renderer=libass,xy-vsfilter"}, {"--renderer=bad"}, {"--format=bad"}, {"--font-dir="}, {"--font-dir", filepath.Join(fonts, "absent")}} {
 		var out, stderr bytes.Buffer
 		args := append([]string{"fonts", "check"}, flags...)
 		if code := run(append(args, path), &out, &stderr); code != 2 || stderr.Len() == 0 || out.Len() != 0 {

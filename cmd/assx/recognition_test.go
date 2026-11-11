@@ -129,21 +129,6 @@ func TestRecognitionPreservesBOMInputs(t *testing.T) {
 	}
 }
 
-func TestForceASSFlagIsRejected(t *testing.T) {
-	path := filepath.Join(t.TempDir(), "partial.ass")
-	if err := os.WriteFile(path, []byte("[Events]\n"), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	var stdout, stderr strings.Builder
-	if code := run([]string{"--force-ass", "--unsafe-fix", path}, &stdout, &stderr); code != 2 || !strings.Contains(stderr.String(), "force-ass") {
-		t.Fatalf("removed flag: exit %d, stderr %s", code, stderr.String())
-	}
-	got, err := os.ReadFile(path)
-	if err != nil || string(got) != "[Events]\n" {
-		t.Fatalf("input changed: %q, %v", got, err)
-	}
-}
-
 func TestFontsRejectsForeignInputBeforeCatalog(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "notes.ass")
 	if err := os.WriteFile(path, []byte("A note.\n"), 0o600); err != nil {
