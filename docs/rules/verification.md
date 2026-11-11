@@ -53,7 +53,13 @@ matrix verifies only one-to-four-argument transform forms and records layout
 changes for the empty form. Keep parenthesized empty `\\b` and `\\i` forms
 unavailable until their signatures are verified for that exact form. Keep an
 integer Style edit unavailable when the semantic Style model cannot establish
-the same modeled value before and after the edit.
+the same modeled value before and after the edit. Keep a dialogue edit
+unavailable when an xy-VSFilter or VSFilterMod target would consume a different
+HTML tag sequence after the edit. The check follows the renderer scan and
+compares the raw tag text, so a block deletion that exposes `<b>` fails, while
+an edit elsewhere on a line with a literal `<b>` stays available. libass-only
+targets do not need this barrier, because the libass event-text path has no HTML
+branch.
 
 A custom layout cannot borrow the primary renderer's integer field proof. A proof
 for VSFilterMod alone cannot authorize a default fix. `--renderer` lists

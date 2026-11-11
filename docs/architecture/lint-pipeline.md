@@ -131,5 +131,6 @@ or foreign identity yields no action.
 | A location carries each condition once, with merged observations | `assemble` |
 | Output order is line, then column | stable sort after the passes |
 | SafeFix requires one proof for the complete edit group across every target | `ProveFixes` batch |
+| A VSFilter target refuses a dialogue edit that changes its HTML tag sequence | `proofBatch.build` |
 | A file that does not round-trip byte for byte is not written | CLI write guard |
 | Equal modeled state does not prove equal frames | `tools/rendercheck` |

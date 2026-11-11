@@ -265,6 +265,10 @@ func (b *proofBatch) build(edits []FixEditProof, validEdits map[FixEditProof]str
 			dialogueEdits := byDialogue[dialogueIndex]
 			proofBatchComparisons.Add(1)
 			afterTree := prep.afterDialogue(afterDialogue.Text, beforeEntry)
+			if len(dialogueEdits) != 0 && rendererParsesHTML(profile) &&
+				!slices.Equal(htmlTagSequence(beforeEntry.dialogue.Text), htmlTagSequence(afterDialogue.Text)) {
+				return nil, fmt.Errorf("%s dialogue line %d: the edit changes HTML tag interpretation", profile.Kind(), beforeEntry.dialogue.Line)
+			}
 			var comparison semantic.ProofComparison
 			if syntaxOnly {
 				comparison = semantic.CompareSyntaxProof(beforeEntry.tree, afterTree, profile,

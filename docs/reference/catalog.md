@@ -28,6 +28,16 @@ The references below are pinned to libass
 [`135a3015`](https://github.com/Masaiki/xy-VSFilter/tree/135a3015). Each section
 links only to the source relevant to that condition.
 
+## Edit availability
+
+A SafeFix can become unavailable when its proof fails. A dialogue edit has no
+SafeFix when an xy-VSFilter or VSFilterMod target would consume a different HTML
+tag sequence after the edit. A block deletion that exposes `<b>` is refused. An
+edit that leaves a literal `<b>` untouched keeps its SafeFix. The diagnostic
+remains, without an edit. This limit applies to `no-effect`, `redundant-style`,
+`repeated-brace`, and `empty-block`. See
+[SafeFix proof scope](../rules/verification.md#safefix-proof-scope).
+
 ## arity — Invalid argument count
 
 `pos`, `move`, `org`, `fade`, `fad`, `clip`, and `iclip` accept specific argument counts. A wrong count may cause the renderer to ignore the tag. Correct the argument list. Vector clips take one or two arguments; rectangular clips take four.
