@@ -110,8 +110,8 @@ func (ir TagIR) Argument(index int) DecodedArgument {
 		return value
 	}
 	switch {
-	case ir.Spec.Value == spec.HexValue && hasHexPrefix(strings.TrimSpace(raw)) &&
-		(ir.Tag.Paren || !strings.HasPrefix(strings.TrimSpace(raw), "&H")):
+	case ir.Spec.Value == spec.HexValue && hasHexPrefix(TrimArgumentSpace(raw)) &&
+		(ir.Tag.Paren || !strings.HasPrefix(TrimArgumentSpace(raw), "&H")):
 		value.Status = ValueAmbiguous
 	case ir.Tag.Name == "a" && (value.Integer == 4 || value.Integer == 8):
 		value.Status = ValueAmbiguous
@@ -236,10 +236,17 @@ func DecodeHex(raw string) DecodedArgument {
 	return result
 }
 
+// TrimArgumentSpace removes only the ASCII whitespace that the lint grammar
+// accepts around a tag argument. Unicode whitespace stays in the argument so a
+// renderer-dependent form cannot become an exact value.
+func TrimArgumentSpace(raw string) string {
+	return strings.Trim(raw, " \t\n\r\f")
+}
+
 // Exact decoders are used for proofs of equivalent render state. Prefix
 // success alone must never justify a SafeFix.
 func DecodeExactInteger(raw string) DecodedArgument {
-	raw = strings.TrimSpace(raw)
+	raw = TrimArgumentSpace(raw)
 	result := DecodeInteger(raw)
 	if result.Status == ValueValid && result.Consumed != len(raw) {
 		result.Status = ValueInvalid
@@ -248,7 +255,7 @@ func DecodeExactInteger(raw string) DecodedArgument {
 }
 
 func DecodeExactNumber(raw string) DecodedArgument {
-	raw = strings.TrimSpace(raw)
+	raw = TrimArgumentSpace(raw)
 	result := DecodeNumber(raw)
 	if result.Status == ValueValid && result.Consumed != len(raw) {
 		result.Status = ValueInvalid
@@ -257,7 +264,7 @@ func DecodeExactNumber(raw string) DecodedArgument {
 }
 
 func DecodeExactHex(raw string) DecodedArgument {
-	raw = strings.TrimSpace(raw)
+	raw = TrimArgumentSpace(raw)
 	result := DecodeHex(raw)
 	if result.Status == ValueValid && result.Consumed != len(raw) {
 		result.Status = ValueInvalid

@@ -24,6 +24,10 @@ has already been resolved. Semantic canonicalization, assignment handlers,
 and transform comparison receive this policy explicitly, without looking
 up a second, potentially different tag identity.
 
+Argument normalization removes only ASCII space, tab, newline, carriage
+return, and form feed. Non-ASCII space stays in the argument, so a
+renderer-dependent form stays unknown.
+
 ## Evaluation API
 
 `TagSpec` owns the static `SemanticKind` dispatch policy. Declared value kinds,

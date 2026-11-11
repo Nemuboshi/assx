@@ -283,8 +283,8 @@ func (m *evaluator) transitionHasNoEffect(tag renderer.Tag) bool {
 
 func (m *evaluator) resetStyle(tag renderer.Tag) bool {
 	target := m.originalStyle
-	if len(tag.Args) > 0 && strings.TrimSpace(tag.Args[0]) != "" {
-		target = strings.TrimSpace(tag.Args[0])
+	if len(tag.Args) > 0 && renderer.TrimArgumentSpace(tag.Args[0]) != "" {
+		target = renderer.TrimArgumentSpace(tag.Args[0])
 	}
 	// Reset clears explicit overrides, exposing the new Style defaults. It
 	// cannot clear first-wins slots nor state explicitly kept across resets.

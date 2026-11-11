@@ -26,7 +26,7 @@ func candidateScenarios(observation *Interpretation) []string {
 			scenarios = append(scenarios, "arg-form")
 		}
 	}
-	if len(r.Args) == 0 || len(r.Args) == 1 && strings.TrimSpace(r.Args[0].Raw) == "" {
+	if len(r.Args) == 0 || len(r.Args) == 1 && renderer.TrimArgumentSpace(r.Args[0].Raw) == "" {
 		scenarios = append(scenarios, "empty-arg")
 	}
 	if e.Policy == spec.FirstWins && !e.Applied && len(observation.Owners) > 0 {
@@ -47,7 +47,7 @@ func candidateScenarios(observation *Interpretation) []string {
 				scenarios = append(scenarios, "value-map")
 			}
 		case "fn":
-			if strings.TrimSpace(value.Raw) == "0" {
+			if renderer.TrimArgumentSpace(value.Raw) == "0" {
 				scenarios = append(scenarios, "value-map")
 			}
 		case "blur":

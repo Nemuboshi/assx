@@ -161,7 +161,7 @@ func resolveOperations(tree ass.ConcreteDialogue, profile renderer.Profile, coll
 					tag.RepeatedSlashes = length - 1
 				}
 				for _, arg := range result.Args {
-					tag.Args = append(tag.Args, strings.TrimSpace(arg.Raw))
+					tag.Args = append(tag.Args, renderer.TrimArgumentSpace(arg.Raw))
 				}
 				operations[tag.Start] = resolvedOperation{
 					tag: tag, policy: result.Policy, known: result.HasPolicy,

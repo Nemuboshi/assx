@@ -45,7 +45,7 @@ func CanonicalTagState(tag renderer.Tag, tagSpec spec.TagSpec, slots []string) (
 		}) {
 			return nil, false
 		}
-		raw := strings.TrimSpace(tag.Args[0])
+		raw := renderer.TrimArgumentSpace(tag.Args[0])
 		decoded := ir.Argument(0)
 		if decoded.Status != renderer.ValueValid || decoded.Consumed != len(decoded.Raw) {
 			return nil, false
@@ -166,7 +166,7 @@ func RelativeFontSize(tag renderer.Tag) bool {
 	if tag.Name != "fs" || len(tag.Args) == 0 {
 		return false
 	}
-	raw := strings.TrimSpace(tag.Args[0])
+	raw := renderer.TrimArgumentSpace(tag.Args[0])
 	return strings.HasPrefix(raw, "+") || strings.HasPrefix(raw, "-")
 }
 
