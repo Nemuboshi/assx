@@ -1171,19 +1171,19 @@
         <p i="1" name="modifiers" kind="modifiers" range="full-duration transform, accel 1"/>
       </sig>
       <sig n="2" form="paren" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:670-727 xy:src/subtitles/RTS.cpp:2670-2700 vsm:src/subtitles/RTS.cpp:3613-3644">
-        <p i="1" name="accel" kind="number" range="libass 681-684 reads TWO times (t1,t2, accel 1); xy 2681 reads the FIRST arg as accel — opposite meanings of \t(200,300,\c...) (scen value-map)"/>
+        <p i="1" name="accel" kind="number" range="accel for the whole event: libass 685-688 (cnt==1) and xy 2679-2683 both read the FIRST argument as accel; t2 stays 0, so the window is the event duration (libass 695-696, xy 2881-2882)"/>
         <p i="2" name="modifiers" kind="modifiers" range="transform body"/>
       </sig>
       <sig n="3" form="paren" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:670-727 xy:src/subtitles/RTS.cpp:2670-2700 vsm:src/subtitles/RTS.cpp:3613-3644">
-        <p i="1" name="t1" kind="ms" range="libass: t1,t2,modifiers (677-680); xy: t1,t2,accel — no modifiers arg"/>
+        <p i="1" name="t1" kind="ms" range="both read the first argument as t1 (libass 681-684 via dtoi32(argtod), xy 2686 via (int)wcstod, vsm 3631)"/>
         <p i="2" name="t2" kind="ms" range="window end"/>
-        <p i="3" name="modifiers" kind="modifiers" range="libass reads it as styles; xy reads it as accel"/>
+        <p i="3" name="modifiers" kind="modifiers" range="the transform body in all three (libass 681-684, xy 2684-2689, vsm 3629-3634); accel stays 1"/>
       </sig>
       <sig n="4" form="paren" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:670-727 xy:src/subtitles/RTS.cpp:2670-2700 vsm:src/subtitles/RTS.cpp:3613-3644">
-        <p i="1" name="t1" kind="ms" range="the only fully-agreeing shape"/>
+        <p i="1" name="t1" kind="ms" range="t1; integer prefix in all three (libass 678 argtoi32, xy 2692 wcstol, vsm 3637)"/>
         <p i="2" name="t2" kind="ms" range="window end"/>
         <p i="3" name="accel" kind="number" range="easing exponent, 1 = linear; unclamped"/>
-        <p i="4" name="modifiers" kind="modifiers" range="libass rejects cnt&gt;3 (709-710); xy has no upper guard"/>
+        <p i="4" name="modifiers" kind="modifiers" range="the transform body; five or more arguments drop the body in all three (libass 709-710, xy 2226, vsm 3615)"/>
       </sig>
       <sig n="0" form="bare" renderer="libass xy vsm" status="V" verified="libass xy vsm" cite="libass:libass/ass_parse.c:670-714 xy:src/subtitles/RTS.cpp:2670-2699 vsm:src/subtitles/RTS.cpp:3613">
         <p i="1" name="empty" kind="none" range="Empty bare suffix: renderer-defined reset, fallback, or zero value (pinned source citation)"/>
@@ -1197,19 +1197,25 @@
       collision layout (no-effect prose).
     </scen>
     <scen id="arg-count" status="V" verified="libass xy" base="ignored" vsfilter="keep-previous" vsfiltermod="unchecked"
-          cite="libass:libass/ass_parse.c:709-710 xy:src/subtitles/RTS.cpp:2675-2696">
-      libass requires 1..4 arguments (cnt 0..3 after the tag-arg shift); xy has
-      no guard for 5+ (falls through every case, animation flags still set).
+          cite="libass:libass/ass_parse.c:709-710 xy:src/subtitles/RTS.cpp:2225-2228,2675-2696 vsm:src/subtitles/RTS.cpp:3615">
+      All three accept 1..4 arguments (cnt 0..3 in libass after the tag-arg
+      shift) and drop the body at five or more. The tag still keeps the line
+      out of collision layout: libass clears detect_collisions at 694 before
+      the guard at 709-710; xy never builds the body at 2226 (count at most 4)
+      and still sets m_fAnimated and m_fAnimated2 at 2698-2699; vsm keeps an
+      empty body at 3615 and still parses it at 3643.
     </scen>
     <scen id="value-map" status="V" verified="libass xy" base="assign" vsfilter="assign" vsfiltermod="unchecked"
           cite="libass:libass/ass_parse.c:677-693 xy:src/subtitles/RTS.cpp:2675-2696">
-      Argument-shape mapping agrees on intent: trailing styles argument,
-      preceding time/accel arguments parsed by count — 2 = t1,t2 (accel 1);
-      3 = t1,t2,styles (libass) vs accel,styles (xy 2681-2682); 4 =
-      t1,t2,accel,styles in both. The 3-arg divergence (libass
-      dtoi32(args[0..1]) vs xy accel-first) is a classic footgun:
-      \t(200,300,\c...) in libass reads times 200,300; in xy that shape means
-      accel=200 with styles=300 and NO explicit times.
+      The argument count gives one shape in all three renderers: 1 = body;
+      2 = accel,body; 3 = t1,t2,body with accel 1; 4 = t1,t2,accel,body. Thus
+      \t(200,300,\fs24) is a 200..300 ms window everywhere, and \t(200,\fs24)
+      is accel 200 over the whole event. libass cnt==2 (681-684) and xy
+      count==3 (2684-2689) both read the first two arguments as times and the
+      third as the body. A t2 of 0 becomes the event duration in both (libass
+      695-696, xy 2881-2882). Time conversion differs: libass reads 3-argument
+      times through dtoi32(argtod) and 4-argument times through argtoi32;
+      xy reads (int)wcstod and wcstol.
     </scen>
   </tag>
 
