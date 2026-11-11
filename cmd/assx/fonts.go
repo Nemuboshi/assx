@@ -19,7 +19,6 @@ func runFonts(args []string, stdout, stderr io.Writer) int {
 	flags.SetOutput(stderr)
 	format := flags.String("format", "pretty", "output: pretty, plain, or json")
 	directory := flags.String("font-dir", "", "exclusive font directory (default: system directories)")
-	forceASS := flags.Bool("force-ass", false, "analyze unrecognized ASS input explicitly")
 	primary := flags.String("renderer", "libass", "primary renderer: libass, xy-vsfilter, or vsfiltermod")
 	if err := flags.Parse(args); err != nil {
 		if err == flag.ErrHelp {
@@ -62,13 +61,11 @@ func runFonts(args []string, stdout, stderr io.Writer) int {
 	}
 	parsed := ass.ParseSource(source.Text)
 	recognition := ass.RecognizeParsed(parsed)
-	if !*forceASS {
-		switch recognition.Class {
-		case ass.Rejected:
-			return fail(fmt.Errorf("input is not recognized as ASS/SSA; no font check was run. Use --force-ass to override input recognition"))
-		case ass.Tentative:
-			_, _ = fmt.Fprintln(stderr, "Input has tentative ASS/SSA structure; font analysis may be incomplete.")
-		}
+	switch recognition.Class {
+	case ass.Rejected:
+		return fail(fmt.Errorf("input is not recognized as ASS/SSA; no font check was run"))
+	case ass.Tentative:
+		_, _ = fmt.Fprintln(stderr, "Input has tentative ASS/SSA structure; font analysis may be incomplete.")
 	}
 	catalog, err := fontcheck.NewCatalog(fontcheck.Source{Directory: *directory})
 	if err != nil {

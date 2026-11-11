@@ -54,12 +54,11 @@ func run(args []string, stdout, stderr io.Writer) int {
 	explain := flags.Bool("explain", false, "add rule detail, full descriptions, and evidence to pretty output")
 	fix := flags.Bool("fix", false, "apply safe fixes")
 	unsafeFix := flags.Bool("unsafe-fix", false, "apply safe and unsafe fixes")
-	forceASS := flags.Bool("force-ass", false, "analyze unrecognized ASS input explicitly")
 	rendererNames := flags.String("renderer", "libass,xy-vsfilter", "renderers in priority order: the first is primary, the rest are compatibility and proof targets")
 	// Usage and fallback diagnostics on stderr are best-effort: their write
 	// failures cannot be reported through the same failing stream.
 	flags.Usage = func() {
-		_, _ = fmt.Fprintln(stderr, "Usage: assx [lint] [--format pretty|plain|json] [--severity suggestion|warning|error] [--renderer=RENDERERS] [--explain] [--fix] [--unsafe-fix] [--force-ass] file.ass")
+		_, _ = fmt.Fprintln(stderr, "Usage: assx [lint] [--format pretty|plain|json] [--severity suggestion|warning|error] [--renderer=RENDERERS] [--explain] [--fix] [--unsafe-fix] file.ass")
 	}
 	if err := flags.Parse(args); err != nil {
 		if strings.Contains(err.Error(), "flag provided but not defined: -check-fonts") || strings.Contains(err.Error(), "flag provided but not defined: -font-dir") {
@@ -118,15 +117,13 @@ func run(args []string, stdout, stderr io.Writer) int {
 	}
 	parsed := ass.ParseSource(source.Text)
 	recognition := ass.RecognizeParsed(parsed)
-	if !*forceASS {
-		switch recognition.Class {
-		case ass.Rejected:
-			progress.stop()
-			_, _ = fmt.Fprintln(stderr, "Input is not recognized as ASS/SSA; no lint or fixes were run. Use --force-ass to override input recognition.")
-			return 2
-		case ass.Tentative:
-			_, _ = fmt.Fprintln(stderr, "Input has tentative ASS/SSA structure; analysis is allowed, but fixes will not be written. Use --force-ass to override input recognition.")
-		}
+	switch recognition.Class {
+	case ass.Rejected:
+		progress.stop()
+		_, _ = fmt.Fprintln(stderr, "Input is not recognized as ASS/SSA; no lint or fixes were run.")
+		return 2
+	case ass.Tentative:
+		_, _ = fmt.Fprintln(stderr, "Input has tentative ASS/SSA structure; analysis is allowed, but fixes will not be written.")
 	}
 	snapshot, err := analysis.NewSnapshot(path, source.Text, nil)
 	if err != nil {
@@ -159,7 +156,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return 2
 	}
 	var appliedSafe, appliedUnsafe int
-	if (*fix || *unsafeFix) && (*forceASS || recognition.Class == ass.Recognized) {
+	if (*fix || *unsafeFix) && recognition.Class == ass.Recognized {
 		merged := diagnostics
 		availableSafe, availableUnsafe, _ := lint.CountFixes(merged)
 		fixedText, count, err := result.ApplyFixes(ctx, merged, *unsafeFix)

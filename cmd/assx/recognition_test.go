@@ -47,24 +47,6 @@ func TestInputRecognitionProtectsFiles(t *testing.T) {
 	}
 }
 
-func TestForceASSOverridesRecognitionOnly(t *testing.T) {
-	path := filepath.Join(t.TempDir(), "note.txt")
-	if err := os.WriteFile(path, []byte("A note.\n"), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	var stdout, stderr strings.Builder
-	if code := run([]string{"--force-ass", "--format=json", "--unsafe-fix", path}, &stdout, &stderr); code == 2 {
-		t.Fatalf("explicit override rejected: %s", stderr.String())
-	}
-	got, err := os.ReadFile(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !strings.Contains(string(got), "[Script Info]") {
-		t.Fatalf("explicit unsafe override did not permit edits: %q", got)
-	}
-}
-
 func TestRecognitionUsesContentNotExtension(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "subtitle.txt")
 	if err := os.WriteFile(path, []byte("[Events]\nDialogue: broken\n"), 0o600); err != nil {
@@ -79,9 +61,9 @@ func TestRecognitionUsesContentNotExtension(t *testing.T) {
 	}
 }
 
-func TestForceASSDoesNotBypassEncodingGuard(t *testing.T) {
+func TestEncodingGuardRefusesNonRoundTrippableInput(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "broken.ass")
-	words := utf16.Encode([]rune("A note.\n"))
+	words := utf16.Encode([]rune("[Events]\nDialogue: broken\n"))
 	words = append(words, 0xd800)
 	input := []byte{0xff, 0xfe}
 	for _, word := range words {
@@ -91,7 +73,7 @@ func TestForceASSDoesNotBypassEncodingGuard(t *testing.T) {
 		t.Fatal(err)
 	}
 	var stdout, stderr strings.Builder
-	if code := run([]string{"--force-ass", "--unsafe-fix", path}, &stdout, &stderr); code != 2 || !strings.Contains(stderr.String(), "losslessly round-tripped") {
+	if code := run([]string{"--unsafe-fix", path}, &stdout, &stderr); code != 2 || !strings.Contains(stderr.String(), "losslessly round-tripped") {
 		t.Fatalf("encoding guard: exit %d, stderr %s", code, stderr.String())
 	}
 	got, err := os.ReadFile(path)
@@ -147,18 +129,18 @@ func TestRecognitionPreservesBOMInputs(t *testing.T) {
 	}
 }
 
-func TestForceASSCanWriteTentativeInput(t *testing.T) {
+func TestForceASSFlagIsRejected(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "partial.ass")
 	if err := os.WriteFile(path, []byte("[Events]\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	var stdout, stderr strings.Builder
-	if code := run([]string{"--force-ass", "--unsafe-fix", path}, &stdout, &stderr); code == 2 {
-		t.Fatalf("explicit override rejected: %s", stderr.String())
+	if code := run([]string{"--force-ass", "--unsafe-fix", path}, &stdout, &stderr); code != 2 || !strings.Contains(stderr.String(), "force-ass") {
+		t.Fatalf("removed flag: exit %d, stderr %s", code, stderr.String())
 	}
 	got, err := os.ReadFile(path)
-	if err != nil || !strings.Contains(string(got), "[Script Info]") {
-		t.Fatalf("tentative input was not changed by explicit override: %q, %v", got, err)
+	if err != nil || string(got) != "[Events]\n" {
+		t.Fatalf("input changed: %q, %v", got, err)
 	}
 }
 

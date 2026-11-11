@@ -3,7 +3,7 @@ assx checks ASS subtitle files for lint issues.
 ## Usage
 
 ```text
-assx [lint] [--renderer=RENDERERS] [--format pretty|plain|json] [--severity suggestion|warning|error] [--explain] [--fix] [--unsafe-fix] [--force-ass] file.ass
+assx [lint] [--renderer=RENDERERS] [--format pretty|plain|json] [--severity suggestion|warning|error] [--explain] [--fix] [--unsafe-fix] file.ass
 ```
 
 - `file.ass`: the ASS file to check.
@@ -17,15 +17,14 @@ assx [lint] [--renderer=RENDERERS] [--format pretty|plain|json] [--severity sugg
 - `--explain`: add the rule detail, the full rule description, and evidence URLs to pretty output. Without it, pretty output shows no explanation lines.
 - `--fix`: apply safe fixes. If the input is a symbolic link, update its target and preserve the link.
 - `--unsafe-fix`: apply safe and unsafe fixes.
-- `--force-ass`: bypass content recognition for intentionally partial input. This can permit writes with `--fix` or `--unsafe-fix`. It does not bypass encoding or SafeFix checks.
 
-assx checks content before ASS analysis. A `.ass` or `.ssa` suffix does not prove the file type. A file with another suffix can still contain ASS/SSA. Credible ASS/SSA records in their sections permit normal analysis and fixes. Sparse structure, such as an empty `[Events]` section, permits analysis but not writes. The CLI prints a notice on stderr. Foreign or unrecognized input causes an input error (exit 2), with no ASS lint report or fixes. `--force-ass` overrides only this recognition decision. Lint errors in recognized input return exit 1. See [input recognition](docs/packages/syntax.md#input-recognition).
+assx checks content before ASS analysis. A `.ass` or `.ssa` suffix does not prove the file type. A file with another suffix can still contain ASS/SSA. Credible ASS/SSA records in their sections permit normal analysis and fixes. Sparse structure, such as an empty `[Events]` section, permits analysis but not writes. The CLI prints a notice on stderr. Foreign or unrecognized input causes an input error (exit 2), with no ASS lint report or fixes. Lint errors in recognized input return exit 1. See [input recognition](docs/packages/syntax.md#input-recognition).
 
 
 Font checks are separate from lint:
 
 ```sh
-assx fonts check [--force-ass] file.ass
+assx fonts check file.ass
 assx fonts check --font-dir ./fonts --format json file.ass
 ```
 
