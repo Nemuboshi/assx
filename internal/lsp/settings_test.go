@@ -36,6 +36,7 @@ func TestSettingsUseDefaultTargetsAndValidateBuildGates(t *testing.T) {
 		`{"assx":{"renderers":["bogus"]}}`,
 		`{"assx":{"vsfilterMod":{"mod":"yes"}}}`,
 		`{"assx":{"rules":{"UNKNOWN":{"disabled":true}}}}`,
+		`{"assx":{"forceASS":true}}`,
 		`{"assx":{"compatibilityRenderers":["libass","libass"]}}`,
 	} {
 		if _, err := parseSettings(jsontext.Value(invalid)); err == nil {

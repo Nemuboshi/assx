@@ -129,16 +129,14 @@ func TestPublishedDiagnosticUsesExactUTF16Range(t *testing.T) {
 	t.Fatal("missing unknown tag diagnostic")
 }
 
-func TestForcedAnalysisDoesNotTreatForeignTextAsASS(t *testing.T) {
+func TestRejectedInputIsNotAnalyzed(t *testing.T) {
 	var server Server
-	server.settings.ForceASS = true
 	for _, tc := range []struct {
 		uri  string
 		text string
-		want bool
 	}{
-		{"file:///empty.ass", "", true},
-		{"file:///foreign.ass", "WEBVTT\n00:01.000 --> 00:02.000\n", false},
+		{"file:///empty.ass", ""},
+		{"file:///foreign.ass", "WEBVTT\n00:01.000 --> 00:02.000\n"},
 	} {
 		if err := server.documents.Open(tc.uri, 1, tc.text); err != nil {
 			t.Fatal(err)
@@ -159,8 +157,8 @@ func TestForcedAnalysisDoesNotTreatForeignTextAsASS(t *testing.T) {
 		if err := json.Unmarshal(payload, &message); err != nil {
 			t.Fatal(err)
 		}
-		if got := len(message.Params.Diagnostics) > 0; got != tc.want {
-			t.Errorf("%s diagnostic presence = %t, want %t", tc.uri, got, tc.want)
+		if got := len(message.Params.Diagnostics); got != 0 {
+			t.Errorf("%s diagnostic count = %d, want 0", tc.uri, got)
 		}
 	}
 }

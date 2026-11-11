@@ -14,8 +14,7 @@ import (
 )
 
 type settings struct {
-	Options  analysis.Options
-	ForceASS bool
+	Options analysis.Options
 }
 
 func parseSettings(raw jsontext.Value) (settings, error) {
@@ -30,7 +29,6 @@ func parseSettings(raw jsontext.Value) (settings, error) {
 				Disabled bool          `json:"disabled"`
 				Severity lint.Severity `json:"severity"`
 			} `json:"rules"`
-			ForceASS bool `json:"forceASS"`
 		} `json:"assx"`
 	}
 	if err := json.Unmarshal(raw, &envelope, json.RejectUnknownMembers(true)); err != nil {
@@ -54,7 +52,6 @@ func parseSettings(raw jsontext.Value) (settings, error) {
 	if err := result.Options.Rules.Validate(); err != nil {
 		return settings{}, err
 	}
-	result.ForceASS = config.ForceASS
 	return result, nil
 }
 

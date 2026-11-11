@@ -36,15 +36,6 @@ func (server *Server) publish(ctx context.Context, output io.Writer, uri string)
 		identity := server.identityPrefix(doc)
 		recognition := ass.RecognizeParsed(doc.parsed)
 		analyze := recognition.Class != ass.Rejected
-		if !analyze && server.settings.ForceASS {
-			analyze = true
-			for _, evidence := range recognition.Evidence {
-				if evidence.ID != "input.no-ass-structure" {
-					analyze = false
-					break
-				}
-			}
-		}
 		if analyze {
 			version := int64(doc.version)
 			snapshot, err := analysis.NewSnapshot(uri, doc.text, &version)
